@@ -11,8 +11,8 @@ const nextConfig = {
 export default nextConfig
 ```
 
-Puis dans le terminal :
+**Ctrl+S** puis dans le terminal :
 ```
 git add .
-git commit -m "fix eslint"
-git pushss
+git commit -m "fix config"
+git push
