@@ -1,0 +1,263 @@
+'use client'
+
+// components/StripeCheckout.tsx
+// Composant de paiement BETI avec Stripe
+
+import { useState } from 'react'
+import { loadStripe } from '@stripe/stripe-js'
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js'
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+
+// ── Formulaire de paiement ────────────────────────────────────────
+
+function PaymentForm({
+  amount,
+  artisanName,
+  serviceTitle,
+  bookingId,
+  customerEmail,
+  onSuccess,
+  onClose,
+}: {
+  amount: number
+  artisanName: string
+  serviceTitle: string
+  bookingId: string
+  customerEmail: string
+  onSuccess: () => void
+  onClose: () => void
+}) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!stripe || !elements) return
+    setLoading(true)
+    setError('')
+
+    try {
+      // 1. Créer le Payment Intent côté serveur
+      const res = await fetch('/api/stripe/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, artisanName, serviceTitle, bookingId, customerEmail }),
+      })
+      const { clientSecret, error: serverError } = await res.json()
+      if (serverError) throw new Error(serverError)
+
+      // 2. Confirmer le paiement
+      const card = elements.getElement(CardElement)
+      if (!card) return
+
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card },
+      })
+
+      if (stripeError) {
+        setError(stripeError.message || 'Erreur de paiement')
+      } else if (paymentIntent?.status === 'succeeded') {
+        setSuccess(true)
+        setTimeout(onSuccess, 2000)
+      }
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (success) {
+    return (
+      <div style={{ textAlign: 'center', padding: '32px 0' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
+        <div style={{
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
+          fontSize: 24, color: '#F0EDE8', marginBottom: 10,
+        }}>
+          Paiement réussi !
+        </div>
+        <div style={{ fontSize: 13, color: '#555' }}>
+          Votre réservation est confirmée. L'artisan va vous contacter.
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {/* Récap commande */}
+      <div style={{
+        background: '#0D0D12', border: '0.5px solid #2a2a3a',
+        borderRadius: 12, padding: '16px 18px', marginBottom: 24,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: '#F0EDE8', marginBottom: 4 }}>
+              {serviceTitle}
+            </div>
+            <div style={{ fontSize: 12, color: '#555' }}>avec {artisanName}</div>
+          </div>
+          <div style={{
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontSize: 24, fontWeight: 500, color: '#C9A84C',
+          }}>
+            {amount} €
+          </div>
+        </div>
+        <div style={{ height: '0.5px', background: '#2a2a3a', margin: '12px 0' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 12, color: '#555' }}>Commission BETI (10%)</span>
+          <span style={{ fontSize: 12, color: '#555' }}>{(amount * 0.1).toFixed(2)} €</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#F0EDE8' }}>Total</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#C9A84C' }}>{amount} €</span>
+        </div>
+      </div>
+
+      {/* Champ carte */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={{
+          fontSize: 11, color: '#888', display: 'block',
+          marginBottom: 8, fontWeight: 500, letterSpacing: '0.05em',
+        }}>
+          INFORMATIONS DE CARTE
+        </label>
+        <div style={{
+          padding: '14px 16px',
+          background: '#0D0D12', border: '0.5px solid #2a2a3a',
+          borderRadius: 10,
+        }}>
+          <CardElement options={{
+            style: {
+              base: {
+                fontSize: '15px',
+                color: '#F0EDE8',
+                fontFamily: 'DM Sans, sans-serif',
+                '::placeholder': { color: '#3a3a4a' },
+              },
+              invalid: { color: '#f87171' },
+            },
+          }} />
+        </div>
+        <div style={{ fontSize: 11, color: '#444', marginTop: 6 }}>
+          🔒 Paiement sécurisé par Stripe — Carte de test : 4242 4242 4242 4242
+        </div>
+      </div>
+
+      {/* Erreur */}
+      {error && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 8, marginBottom: 16,
+          background: '#1a0a0a', border: '0.5px solid #2a1010',
+          fontSize: 13, color: '#f87171',
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Boutons */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={onClose} style={{
+          flex: 1, padding: '14px',
+          background: 'transparent', border: '0.5px solid #2a2a3a',
+          borderRadius: 10, color: '#666', fontSize: 14,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          Annuler
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={loading || !stripe}
+          style={{
+            flex: 2, padding: '14px',
+            background: loading ? '#a08030' : '#C9A84C',
+            border: 'none', borderRadius: 10,
+            color: '#0D0D12', fontSize: 14, fontWeight: 500,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
+          {loading ? 'Paiement en cours...' : `Payer ${amount} €`}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Composant principal avec modale ──────────────────────────────
+
+export function StripeCheckout({
+  amount,
+  artisanName,
+  serviceTitle,
+  bookingId,
+  customerEmail,
+  onSuccess,
+  onClose,
+}: {
+  amount: number
+  artisanName: string
+  serviceTitle: string
+  bookingId: string
+  customerEmail: string
+  onSuccess: () => void
+  onClose: () => void
+}) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24, zIndex: 300,
+    }}>
+      <div style={{
+        background: '#161620', border: '0.5px solid #2a2a3a',
+        borderRadius: 20, padding: '36px', maxWidth: 460, width: '100%',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, background: '#C9A84C', borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, fontWeight: 500, color: '#0D0D12',
+              fontFamily: 'Georgia, serif',
+            }}>B</div>
+            <span style={{
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontSize: 22, fontWeight: 500, color: '#F0EDE8',
+            }}>
+              Paiement BETI
+            </span>
+          </div>
+          <button onClick={onClose} style={{
+            background: 'transparent', border: 'none',
+            color: '#555', cursor: 'pointer', fontSize: 20,
+          }}>✕</button>
+        </div>
+
+        {/* Stripe Elements */}
+        <Elements stripe={stripePromise}>
+          <PaymentForm
+            amount={amount}
+            artisanName={artisanName}
+            serviceTitle={serviceTitle}
+            bookingId={bookingId}
+            customerEmail={customerEmail}
+            onSuccess={onSuccess}
+            onClose={onClose}
+          />
+        </Elements>
+      </div>
+    </div>
+  )
+}

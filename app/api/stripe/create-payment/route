@@ -1,0 +1,35 @@
+// app/api/stripe/create-payment/route.ts
+// API Route Next.js pour créer un paiement Stripe
+
+import { NextRequest, NextResponse } from 'next/server'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+})
+
+export async function POST(req: NextRequest) {
+  try {
+    const { amount, artisanName, serviceTitle, bookingId, customerEmail } = await req.json()
+
+    // Créer le Payment Intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe utilise les centimes
+      currency: 'eur',
+      metadata: {
+        booking_id: bookingId,
+        artisan_name: artisanName,
+        service_title: serviceTitle,
+      },
+      receipt_email: customerEmail,
+      description: `BETI — ${serviceTitle} avec ${artisanName}`,
+    })
+
+    return NextResponse.json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+    })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
