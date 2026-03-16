@@ -1,5 +1,5 @@
 'use client'
-
+import { ReviewList, RatingSummary } from '@/components/ReviewSystem'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
