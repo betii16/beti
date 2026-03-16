@@ -82,7 +82,7 @@ export default function ArtisanProfilePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0D0D12; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: #0D0D12; font-family: 'Nexa', sans-serif; -webkit-font-smoothing: antialiased; }
         @keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
       `}</style>
