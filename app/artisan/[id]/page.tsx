@@ -3,7 +3,7 @@ import { ReviewList, RatingSummary } from '@/components/ReviewSystem'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-
+import { AddressPicker } from '@/components/AddressPicker'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -31,7 +31,7 @@ const DEMO_ARTISAN = {
   color: '#C9A84C',
   bio: 'Plombier professionnel depuis 10 ans, spécialisé en rénovation et dépannage d\'urgence. Interviens en Île-de-France sous 1h. Travail soigné, devis gratuit.',
   years_experience: 10,
-  hourly_rate: 45,
+  hourly_rate: 3800,
   intervention_radius_km: 20,
   location_city: 'Paris',
   is_available: true,
@@ -191,7 +191,7 @@ export default function ArtisanProfilePage() {
                   <span style={{
                     fontFamily: 'Cormorant Garamond, Georgia, serif',
                     fontSize: 36, fontWeight: 500, color: '#C9A84C',
-                  }}>{a.hourly_rate} €</span>
+                  }}>{a.hourly_rate} DA</span>
                   <span style={{ fontSize: 13, color: '#555' }}>/heure</span>
                 </div>
                 <button
@@ -317,7 +317,7 @@ export default function ArtisanProfilePage() {
           {activeTab === 'rates' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
               {[
-                { service: 'Tarif horaire', price: `${a.hourly_rate} €/h`, desc: 'Pour toute intervention standard' },
+                { service: 'Tarif horaire', price: `${a.hourly_rate} DA/h`, desc: 'Pour toute intervention standard' },
                 { service: 'Déplacement', price: 'Gratuit', desc: 'Dans un rayon de 20 km' },
                 { service: 'Urgence nuit', price: '+50%', desc: 'Entre 20h et 8h' },
                 { service: 'Devis', price: 'Gratuit', desc: 'Estimation avant intervention' },
@@ -375,29 +375,35 @@ export default function ArtisanProfilePage() {
                   }}>✕</button>
                 </div>
 
-                {[
-                  { label: 'DATE', type: 'date', value: bookingDate, setter: setBookingDate },
-                  { label: 'HEURE', type: 'time', value: bookingTime, setter: setBookingTime },
-                  { label: 'ADRESSE', type: 'text', value: bookingAddress, setter: setBookingAddress, placeholder: '12 rue de la Paix, Paris' },
-                ].map(f => (
-                  <div key={f.label} style={{ marginBottom: 16 }}>
-                    <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 500, letterSpacing: '0.05em' }}>
-                      {f.label}
-                    </label>
-                    <input
-                      type={f.type}
-                      value={f.value}
-                      placeholder={f.placeholder}
-                      onChange={e => f.setter(e.target.value)}
-                      style={{
-                        width: '100%', padding: '13px 16px',
-                        background: '#0D0D12', border: '0.5px solid #2a2a3a',
-                        borderRadius: 10, color: '#F0EDE8', fontSize: 14,
-                        outline: 'none', fontFamily: 'DM Sans, sans-serif',
-                      }}
-                    />
-                  </div>
-                ))}
+                {/* Date & Heure */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  {[
+                    { label: 'DATE', type: 'date', value: bookingDate, setter: setBookingDate },
+                    { label: 'HEURE', type: 'time', value: bookingTime, setter: setBookingTime },
+                  ].map(f => (
+                    <div key={f.label}>
+                      <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.05em' }}>
+                        {f.label}
+                      </label>
+                      <input
+                        type={f.type}
+                        value={f.value}
+                        onChange={e => f.setter(e.target.value)}
+                        style={{ width: '100%', padding: '13px 16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', colorScheme: 'dark' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Adresse avec carte */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.05em' }}>
+                    ADRESSE D'INTERVENTION
+                  </label>
+                  <AddressPicker
+                    onConfirm={({ address: addr }) => setBookingAddress(addr)}
+                  />
+                </div>
 
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 500, letterSpacing: '0.05em' }}>

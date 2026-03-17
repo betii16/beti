@@ -10,31 +10,8 @@ export default function MapPage() {
   const [tracking, setTracking] = useState(false)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0D0D12', fontFamily: 'Nexa, sans-serif', padding: '80px 40px 40px' }}>
+    <div style={{ minHeight: '100vh', background: '#0D0D12', fontFamily: 'Nexa, sans-serif', padding: '84px 40px 40px' }}>
 
-      {/* Nav simple */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        height: 64, padding: '0 40px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(9,9,15,0.95)', backdropFilter: 'blur(20px)',
-        borderBottom: '0.5px solid #1e1e2a',
-      }}>
-        <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, background: '#C9A84C', borderRadius: 8,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 800, color: '#0D0D12',
-          }}>B</div>
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#F0EDE8', letterSpacing: '0.1em' }}>BETI</span>
-        </a>
-        <a href="/" style={{ fontSize: 13, color: '#555', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          Retour
-        </a>
-      </nav>
 
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         {/* Header */}

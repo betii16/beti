@@ -74,11 +74,10 @@ export default function SignupPage() {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=DM+Sans:wght@300;400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0D0D12; font-family: 'DM Sans', sans-serif; }
-      `}</style>
+      <style suppressHydrationWarning>{`
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0D0D12; font-family: 'Nexa', sans-serif; }
+`}</style>
 
       <div style={{
         minHeight: '100vh', background: '#0D0D12',

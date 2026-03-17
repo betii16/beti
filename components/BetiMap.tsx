@@ -295,7 +295,11 @@ export default function BetiMap({
       <div ref={mapRef} style={{ width: '100%', height: 520, background: '#0D0D12' }}>
         {!mapLoaded && (
           <div style={{
+<<<<<<< Updated upstream
             position: 'absolute', zIndex: 1000, zIndex: 1000, inset: 0, display: 'flex',
+=======
+            position: 'absolute', inset: 0, display: 'flex',
+>>>>>>> Stashed changes
             alignItems: 'center', justifyContent: 'center',
             background: '#0D0D12', color: '#555', fontSize: 14,
             fontFamily: 'Nexa, sans-serif',
@@ -307,7 +311,11 @@ export default function BetiMap({
 
       {/* Légende */}
       <div style={{
+<<<<<<< Updated upstream
         position: 'absolute', zIndex: 1000, zIndex: 1000, top: 16, left: 16, zIndex: 1000,
+=======
+        position: 'absolute', top: 16, left: 16,
+>>>>>>> Stashed changes
         background: 'rgba(9,9,15,0.92)', backdropFilter: 'blur(12px)',
         border: '0.5px solid #2a2a3a', borderRadius: 12, padding: '12px 16px',
       }}>
@@ -329,7 +337,11 @@ export default function BetiMap({
       {/* Tracking en temps réel */}
       {trackingArtisanId && (distance || eta) && (
         <div style={{
+<<<<<<< Updated upstream
           position: 'absolute', zIndex: 1000, zIndex: 1000, top: 16, right: 16,
+=======
+          position: 'absolute', top: 16, right: 16,
+>>>>>>> Stashed changes
           background: 'rgba(9,9,15,0.92)', backdropFilter: 'blur(12px)',
           border: '0.5px solid #C9A84C44', borderRadius: 12, padding: '16px 20px',
           minWidth: 200,
@@ -357,7 +369,11 @@ export default function BetiMap({
       {/* Fiche artisan sélectionné */}
       {selectedArtisan && (
         <div style={{
+<<<<<<< Updated upstream
           position: 'absolute', zIndex: 1000, zIndex: 1000, bottom: 16, left: 16, right: 16,
+=======
+          position: 'absolute', bottom: 16, left: 16, right: 16,
+>>>>>>> Stashed changes
           background: 'rgba(9,9,15,0.95)', backdropFilter: 'blur(16px)',
           border: `0.5px solid ${selectedArtisan.color}44`,
           borderRadius: 14, padding: '16px 20px',
