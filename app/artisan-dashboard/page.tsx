@@ -6,11 +6,6 @@ import { createClient } from '@supabase/supabase-js'
 import { ArtisanTagsInput } from '@/components/OtherCategory'
 import { ArtisanZonePicker } from '@/components/ArtisanZonePicker'
 
-<ArtisanZonePicker
-  artisanId={user.id}
-  initialRadius={stats?.intervention_radius_km || 20}
-  onSave={data => console.log('Zone sauvegardée', data)}
-/>
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -359,6 +354,18 @@ export default function ArtisanDashboard() {
               </div>
             )
           })()}
+        </div>
+      </div>
+
+      {/* Zone d'intervention + Mots-clés */}
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 40px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 16, padding: '24px' }}>
+          <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>MA ZONE D'INTERVENTION</div>
+          {user && <ArtisanZonePicker artisanId={user.id} initialRadius={stats?.intervention_radius_km || 20} onSave={data => console.log('Zone sauvegardée', data)}/>}
+        </div>
+        <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 16, padding: '24px' }}>
+          <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>MES SPÉCIALITÉS</div>
+          {user && <ArtisanTagsInput artisanId={user.id} initialTags={[]}/>}
         </div>
       </div>
 

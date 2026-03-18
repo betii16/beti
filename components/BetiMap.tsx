@@ -47,6 +47,7 @@ export default function BetiMap({
   const routeLayerRef = useRef<any>(null)
   const [selectedArtisan, setSelectedArtisan] = useState<ArtisanMarker | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
+const [mapReady, setMapReady] = useState(false)
   const [distance, setDistance] = useState('')
   const [eta, setEta] = useState('')
   const [artisans, setArtisans] = useState<ArtisanMarker[]>([])
@@ -149,9 +150,8 @@ export default function BetiMap({
 
   // Ajouter marqueurs artisans quand les données chargent
   useEffect(() => {
-    if (!mapLoaded || !mapInstance.current || artisans.length === 0) return
+    if (!mapReady || !mapInstance.current || artisans.length === 0) return
     const map = mapInstance.current
-    if (!map._loaded) return
     const L = (window as any).L
 
     // Nettoyer anciens marqueurs
@@ -186,7 +186,7 @@ export default function BetiMap({
 
       markersRef.current.push({ marker, circle })
     })
-  }, [artisans, mapLoaded, clientLat, clientLng])
+  }, [artisans, mapReady, clientLat, clientLng])
 
   // Suivi GPS artisan
   useEffect(() => {

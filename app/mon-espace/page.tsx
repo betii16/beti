@@ -383,3 +383,10 @@ export default function ArtisanDashboard() {
     </>
   )
 }
+{booking.status === 'completed' && (
+  <a href={`/facture/${booking.id}`} target="_blank">
+    <button style={{ padding: '8px 16px', borderRadius: 8, background: 'transparent', border: '0.5px solid #C9A84C44', color: '#C9A84C', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+      📄 Télécharger la facture
+    </button>
+  </a>
+)}
