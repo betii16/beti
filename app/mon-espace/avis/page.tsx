@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-
-
-
+import { supabase } from '@/lib/supabase'
 
 type Review = {
   id: string
@@ -31,7 +29,7 @@ function Stars({ rating, interactive = false, onRate }: { rating: number; intera
   )
 }
 
-export default function MesAvis() {
+function MesAvisContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('booking')
@@ -39,8 +37,6 @@ export default function MesAvis() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
-
-  // Form nouvel avis
   const [showForm, setShowForm] = useState(!!bookingId)
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
@@ -52,13 +48,11 @@ export default function MesAvis() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUserId(user.id)
-
       const { data } = await supabase
         .from('reviews')
         .select('*, artisans!reviews_artisan_id_fkey(full_name, category)')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
-
       if (data) setReviews(data)
       setLoading(false)
     }
@@ -68,23 +62,12 @@ export default function MesAvis() {
   const submitReview = async () => {
     if (!rating || !bookingId || !userId) return
     setSubmitting(true)
-
-    const { data: booking } = await supabase
-      .from('bookings')
-      .select('artisan_id')
-      .eq('id', bookingId)
-      .single()
-
+    const { data: booking } = await supabase.from('bookings').select('artisan_id').eq('id', bookingId).single()
     if (booking) {
       await supabase.from('reviews').insert({
-        client_id: userId,
-        artisan_id: booking.artisan_id,
-        booking_id: bookingId,
-        rating,
-        comment: comment.trim() || null,
+        client_id: userId, artisan_id: booking.artisan_id,
+        booking_id: bookingId, rating, comment: comment.trim() || null,
       })
-
-      // Recharger les avis
       const { data } = await supabase
         .from('reviews')
         .select('*, artisans!reviews_artisan_id_fkey(full_name, category)')
@@ -92,12 +75,7 @@ export default function MesAvis() {
         .order('created_at', { ascending: false })
       if (data) setReviews(data)
     }
-
-    setSubmitting(false)
-    setSubmitted(true)
-    setShowForm(false)
-    setRating(0)
-    setComment('')
+    setSubmitting(false); setSubmitted(true); setShowForm(false); setRating(0); setComment('')
   }
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -110,8 +88,6 @@ export default function MesAvis() {
 
   return (
     <div style={{ paddingTop: 64, minHeight: '100vh', background: '#0D0D12', fontFamily: 'Nexa, sans-serif' }}>
-
-      {/* Header */}
       <div style={{ background: '#09090f', borderBottom: '0.5px solid #1e1e2a', padding: '32px 40px' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{ fontSize: 10, color: '#C9A84C', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON ESPACE</div>
@@ -121,29 +97,20 @@ export default function MesAvis() {
       </div>
 
       <div style={{ maxWidth: 700, margin: '0 auto', padding: '32px 40px' }}>
-
-        {/* Formulaire nouvel avis */}
         {showForm && bookingId && (
           <div style={{ background: '#161620', border: '0.5px solid #C9A84C44', borderRadius: 16, padding: '28px', marginBottom: 28 }}>
             <div style={{ height: 2, background: 'linear-gradient(90deg, #C9A84C, #f59e0b)', borderRadius: 1, marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
             <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>LAISSER UN AVIS</div>
-
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: '#888', fontWeight: 300, marginBottom: 10 }}>Votre note</div>
               <Stars rating={rating} interactive onRate={setRating}/>
             </div>
-
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: '#888', fontWeight: 300, marginBottom: 10 }}>Commentaire <span style={{ color: '#444' }}>(optionnel)</span></div>
-              <textarea
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                placeholder="Décrivez votre expérience..."
-                rows={4}
+              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Décrivez votre expérience..." rows={4}
                 style={{ width: '100%', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, padding: '12px 14px', color: '#F0EDE8', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', outline: 'none' }}
               />
             </div>
-
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowForm(false)}
                 style={{ flex: 1, padding: '11px', background: 'transparent', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#555', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
@@ -164,7 +131,6 @@ export default function MesAvis() {
           </div>
         )}
 
-        {/* Liste des avis */}
         {reviews.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>⭐</div>
@@ -201,4 +167,14 @@ export default function MesAvis() {
   )
 }
 
-
+export default function MesAvis() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: 14, color: '#555', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
+      </div>
+    }>
+      <MesAvisContent />
+    </Suspense>
+  )
+}
