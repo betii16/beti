@@ -1,12 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+
+
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -80,7 +77,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0D0D12; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
@@ -491,3 +488,5 @@ export default function AdminDashboard() {
     </>
   )
 }
+
+

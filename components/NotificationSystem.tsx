@@ -1,15 +1,12 @@
 'use client'
 
+import { supabase } from '@/lib/supabase'
+
 // components/NotificationSystem.tsx
 // Notifications push temps réel — à mettre dans layout.tsx
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 type Notif = {
   id: string
@@ -174,3 +171,4 @@ export function NotificationBell() {
     </div>
   )
 }
+

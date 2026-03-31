@@ -407,3 +407,4 @@ export function WilayaSelector({ value, onChange }: { value: string; onChange: (
     </select>
   )
 }
+

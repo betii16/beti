@@ -5,12 +5,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+
+
 
 type Message = {
   id: string
@@ -119,7 +116,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}

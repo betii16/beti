@@ -1,5 +1,7 @@
 'use client'
 
+import { supabase } from '@/lib/supabase'
+
 // ================================================================
 // BETI — Catégorie "Autre" avec mots-clés libres
 // 2 composants :
@@ -8,12 +10,7 @@
 // ================================================================
 
 import { useState, useRef, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 // ── Suggestions populaires pour inspirer l'artisan ────────────────
 
@@ -360,3 +357,4 @@ export function ArtisanTagsInput({
     </div>
   )
 }
+

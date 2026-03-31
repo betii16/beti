@@ -1,15 +1,12 @@
 'use client'
 
+import { supabase } from '@/lib/supabase'
+
 // components/ArtisanZonePicker.tsx
 // Côté artisan — choisir son adresse + rayon d'intervention
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const RADIUS_OPTIONS = [
   { km: 5,  label: '5 km',  desc: 'Mon quartier' },
@@ -331,3 +328,4 @@ export function ArtisanZonePicker({
     </div>
   )
 }
+

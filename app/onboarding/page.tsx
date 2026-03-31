@@ -5,13 +5,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+
 import { ArtisanZonePicker } from '@/components/ArtisanZonePicker'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+
 
 const CATEGORIES = [
   { id: 'plomberie',    icon: '⚙',  label: 'Plomberie',    color: '#3b82f6' },
@@ -293,3 +290,5 @@ export default function OnboardingPage() {
     </>
   )
 }
+
+

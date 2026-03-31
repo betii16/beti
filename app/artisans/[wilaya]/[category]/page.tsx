@@ -1,11 +1,9 @@
+import { supabase } from '@/lib/supabase'
 import { Metadata } from 'next'
-import { createClient } from '@supabase/supabase-js'
+
 import { notFound } from 'next/navigation'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+
 
 const WILAYAS: Record<string, { name: string; lat: number; lng: number; num: number }> = {
   'alger':         { name: 'Alger',          lat: 36.7538, lng: 3.0588,  num: 16 },

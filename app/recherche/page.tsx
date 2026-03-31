@@ -4,13 +4,10 @@
 // Recherche avancée avec filtres — note, prix, disponibilité, distance
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+
 
 const CATEGORIES = [
   { id: '',             icon: '✳',  label: 'Tous',          color: '#888' },
@@ -295,3 +292,5 @@ export default function RecherchePage() {
     </>
   )
 }
+
+

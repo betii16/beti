@@ -1,0 +1,291 @@
+// lib/translations.ts
+// Toutes les traductions BETI — Français + Arabe
+
+export type Lang = 'fr' | 'ar'
+
+export const translations = {
+
+  // ── Navigation ────────────────────────────────────────────────
+  nav: {
+    services:     { fr: 'Services',          ar: 'الخدمات'         },
+    artisans:     { fr: 'Artisans',           ar: 'الحرفيون'        },
+    map:          { fr: '🗺 Carte',           ar: '🗺 الخريطة'      },
+    howItWorks:   { fr: 'Comment ça marche',  ar: 'كيف يعمل'        },
+    login:        { fr: 'Connexion',          ar: 'تسجيل الدخول'    },
+    signup:       { fr: 'Commencer',          ar: 'ابدأ الآن'       },
+    mySpace:      { fr: 'Mon espace',         ar: 'مساحتي'          },
+    myBookings:   { fr: 'Mes réservations',   ar: 'حجوزاتي'         },
+    mapArtisans:  { fr: 'Carte des artisans', ar: 'خريطة الحرفيين'  },
+    settings:     { fr: 'Paramètres',         ar: 'الإعدادات'       },
+    help:         { fr: 'Aide & Support',     ar: 'المساعدة والدعم'  },
+    logout:       { fr: 'Déconnexion',        ar: 'تسجيل الخروج'    },
+    language:     { fr: 'Langue',             ar: 'اللغة'           },
+    dashboard:    { fr: 'Mon dashboard',      ar: 'لوحة التحكم'     },
+    clientAcc:    { fr: 'COMPTE CLIENT',      ar: 'حساب العميل'     },
+    artisanAcc:   { fr: 'COMPTE ARTISAN',     ar: 'حساب الحرفي'     },
+    adminAcc:     { fr: 'ADMINISTRATEUR',     ar: 'المدير'          },
+    preferences:  { fr: 'PRÉFÉRENCES',        ar: 'التفضيلات'       },
+    account:      { fr: 'COMPTE',             ar: 'الحساب'          },
+  },
+
+  // ── Page d'accueil ────────────────────────────────────────────
+  home: {
+    badge:        { fr: 'ARTISANS CERTIFIÉS · RÉPONSE EN 30 MIN', ar: 'حرفيون معتمدون · رد في 30 دقيقة' },
+    title1:       { fr: "L'artisan qu'il vous faut,", ar: 'الحرفي الذي تحتاجه،' },
+    title2:       { fr: 'maintenant.',               ar: 'الآن.' },
+    subtitle:     { fr: 'Des professionnels vérifiés et certifiés BETI, proches de chez vous, disponibles immédiatement.', ar: 'محترفون موثقون ومعتمدون من BETI، بالقرب منك، متاحون فوراً.' },
+    serviceLabel: { fr: 'Choisir un service...',     ar: 'اختر خدمة...' },
+    cityLabel:    { fr: 'Votre ville...',             ar: 'مدينتك...' },
+    findBtn:      { fr: 'Trouver',                   ar: 'بحث' },
+    refine:       { fr: 'AFFINER :',                 ar: 'تصفية:' },
+    trust1:       { fr: 'Paiement en cash',          ar: 'دفع نقدي' },
+    trust2:       { fr: 'Pros vérifiés',             ar: 'محترفون موثقون' },
+    trust3:       { fr: 'Garantie satisfaction',     ar: 'ضمان الرضا' },
+    trust4:       { fr: '100% Algérien',             ar: '100% جزائري' },
+    statsA:       { fr: 'Artisans certifiés',        ar: 'حرفيون معتمدون' },
+    statsB:       { fr: 'Clients satisfaits',        ar: 'عملاء راضون' },
+    statsC:       { fr: 'Temps de réponse',          ar: 'وقت الاستجابة' },
+    statsD:       { fr: 'Villes couvertes',          ar: 'مدن مشمولة' },
+    servicesTag:  { fr: 'NOS SERVICES',              ar: 'خدماتنا' },
+    servicesTitle:{ fr: 'Tous vos besoins,\nun seul endroit.', ar: 'جميع احتياجاتك،\nمكان واحد.' },
+    artisansTag:  { fr: 'ARTISANS BETI',             ar: 'حرفيو BETI' },
+    artisansTitle:{ fr: 'Proches de vous,\nprêts à intervenir.', ar: 'بالقرب منك،\nجاهزون للتدخل.' },
+    seeOnMap:     { fr: 'Voir sur la carte →',       ar: 'عرض على الخريطة ←' },
+    noArtisan:    { fr: 'Aucun artisan trouvé',      ar: 'لم يتم العثور على حرفي' },
+    noArtisanSub: { fr: 'Aucun artisan disponible dans votre zone', ar: 'لا يوجد حرفي متاح في منطقتك' },
+    reset:        { fr: 'Réinitialiser la recherche', ar: 'إعادة ضبط البحث' },
+    howTag:       { fr: 'COMMENT ÇA MARCHE',         ar: 'كيف يعمل' },
+    howTitle:     { fr: 'Réservez en 3 étapes.',     ar: 'احجز في 3 خطوات.' },
+    step1t:       { fr: 'Choisissez votre service',  ar: 'اختر خدمتك' },
+    step1d:       { fr: "Sélectionnez le type d'intervention parmi nos catégories.", ar: 'اختر نوع التدخل من فئاتنا.' },
+    step2t:       { fr: 'Choisissez votre artisan',  ar: 'اختر حرفيك' },
+    step2d:       { fr: 'Comparez les profils, notes et avis des professionnels.', ar: 'قارن ملفات التعريف والتقييمات.' },
+    step3t:       { fr: 'Confirmez et payez',        ar: 'أكد وادفع' },
+    step3d:       { fr: "Payez en cash. L'artisan arrive à l'heure.", ar: 'ادفع نقداً. الحرفي يصل في الوقت المحدد.' },
+    ctaTag:       { fr: 'DEVENEZ PARTENAIRE',        ar: 'كن شريكاً' },
+    ctaTitle:     { fr: 'Vous êtes artisan ?\nRejoignez BETI.', ar: 'أنت حرفي؟\nانضم إلى BETI.' },
+    ctaSub:       { fr: 'Développez votre clientèle et bénéficiez de la certification BETI. Inscription gratuite.', ar: 'وسّع قاعدة عملائك واستفد من شهادة BETI. التسجيل مجاني.' },
+    ctaBtn:       { fr: 'Devenir partenaire',        ar: 'كن شريكاً' },
+  },
+
+  // ── Catégories ────────────────────────────────────────────────
+  categories: {
+    plomberie:    { fr: 'Plomberie',    ar: 'السباكة'       },
+    electricite:  { fr: 'Électricité',  ar: 'الكهرباء'      },
+    menage:       { fr: 'Ménage',       ar: 'التنظيف'       },
+    demenagement: { fr: 'Déménagement', ar: 'النقل'          },
+    jardinage:    { fr: 'Jardinage',    ar: 'البستنة'       },
+    peinture:     { fr: 'Peinture',     ar: 'الدهان'        },
+    serrurerie:   { fr: 'Serrurerie',   ar: 'أعمال الأقفال' },
+    informatique: { fr: 'Informatique', ar: 'الإعلام الآلي' },
+    coiffure:     { fr: 'Coiffure',     ar: 'الحلاقة'       },
+    autre:        { fr: 'Autre',        ar: 'أخرى'          },
+    allServices:  { fr: 'Tous les services', ar: 'جميع الخدمات' },
+  },
+
+  // ── Réservation ───────────────────────────────────────────────
+  booking: {
+    title:        { fr: 'Réserver',              ar: 'حجز'                },
+    step1:        { fr: 'Choisir une date',       ar: 'اختر تاريخاً'       },
+    step2:        { fr: 'Votre adresse',          ar: 'عنوانك'             },
+    step3:        { fr: 'Confirmer',              ar: 'تأكيد'              },
+    step:         { fr: 'ÉTAPE',                 ar: 'الخطوة'             },
+    slots:        { fr: 'CRÉNEAUX DISPONIBLES',   ar: 'الأوقات المتاحة'    },
+    morning:      { fr: 'Matin',                 ar: 'الصباح'             },
+    afternoon:    { fr: 'Après-midi',            ar: 'بعد الظهر'          },
+    evening:      { fr: 'Soir',                  ar: 'المساء'             },
+    address:      { fr: "ADRESSE D'INTERVENTION", ar: 'عنوان التدخل'      },
+    description:  { fr: 'DESCRIPTION (optionnel)', ar: 'الوصف (اختياري)'  },
+    descPlaceholder: { fr: 'Décrivez votre problème...', ar: 'صف مشكلتك...' },
+    artisan:      { fr: 'Artisan',               ar: 'الحرفي'             },
+    date:         { fr: 'Date',                  ar: 'التاريخ'            },
+    time:         { fr: 'Heure',                 ar: 'الوقت'              },
+    rate:         { fr: 'Tarif',                 ar: 'السعر'              },
+    cashPayment:  { fr: 'Paiement en cash',       ar: 'دفع نقدي'          },
+    send:         { fr: 'Envoyer la demande',     ar: 'إرسال الطلب'       },
+    confirm:      { fr: '✓ Envoyer la demande',   ar: '✓ إرسال الطلب'    },
+    next:         { fr: 'Continuer →',            ar: '← متابعة'          },
+    back:         { fr: '← Retour',              ar: 'رجوع →'            },
+    sent:         { fr: 'Demande envoyée !',      ar: 'تم إرسال الطلب!'   },
+    sentSub:      { fr: 'va vous répondre dans les plus brefs délais.', ar: 'سيرد عليك في أقرب وقت.' },
+    reserveNow:   { fr: 'Réserver maintenant',   ar: 'احجز الآن'          },
+  },
+
+  // ── Statuts ───────────────────────────────────────────────────
+  status: {
+    pending:     { fr: 'En attente',  ar: 'قيد الانتظار' },
+    accepted:    { fr: 'Accepté',     ar: 'مقبول'        },
+    in_progress: { fr: 'En cours',    ar: 'جارٍ'          },
+    completed:   { fr: 'Terminé',     ar: 'مكتمل'        },
+    refused:     { fr: 'Refusé',      ar: 'مرفوض'        },
+    cancelled:   { fr: 'Annulé',      ar: 'ملغى'         },
+  },
+
+  // ── Dashboard artisan ─────────────────────────────────────────
+  dashboard: {
+    title:        { fr: 'TABLEAU DE BORD',       ar: 'لوحة التحكم'       },
+    hello:        { fr: 'Bonjour 👋',            ar: 'مرحباً 👋'          },
+    online:       { fr: 'En ligne',              ar: 'متصل'               },
+    offline:      { fr: 'Hors ligne',            ar: 'غير متصل'           },
+    pending:      { fr: 'Demandes en attente',   ar: 'الطلبات المعلقة'    },
+    active:       { fr: 'Missions en cours',     ar: 'المهام الجارية'     },
+    total:        { fr: 'Total missions',        ar: 'إجمالي المهام'      },
+    revenue:      { fr: 'Revenus ce mois',       ar: 'إيرادات هذا الشهر'  },
+    requests:     { fr: 'Demandes',              ar: 'الطلبات'            },
+    inProgress:   { fr: 'En cours',              ar: 'جارٍ'               },
+    history:      { fr: 'Historique',            ar: 'السجل'              },
+    accept:       { fr: '✓ Accepter la mission', ar: '✓ قبول المهمة'     },
+    refuse:       { fr: 'Refuser',               ar: 'رفض'                },
+    complete:     { fr: 'Marquer comme terminé', ar: 'وضع علامة مكتمل'   },
+    newRequest:   { fr: 'NOUVELLE DEMANDE',      ar: 'طلب جديد'           },
+    from:         { fr: 'De',                    ar: 'من'                 },
+    noRequests:   { fr: 'Aucune demande en attente', ar: 'لا توجد طلبات معلقة' },
+    noActive:     { fr: 'Aucune mission en cours', ar: 'لا توجد مهام جارية' },
+    noHistory:    { fr: "Aucune mission dans l'historique", ar: 'لا يوجد سجل' },
+  },
+
+  // ── Mon espace client ─────────────────────────────────────────
+  mySpace: {
+    title:        { fr: 'MON ESPACE',            ar: 'مساحتي'             },
+    hello:        { fr: 'Bonjour',               ar: 'مرحباً'             },
+    total:        { fr: 'Total réservations',    ar: 'إجمالي الحجوزات'    },
+    pending:      { fr: 'En attente',            ar: 'قيد الانتظار'       },
+    active:       { fr: 'En cours',              ar: 'جارٍ'               },
+    completed:    { fr: 'Terminées',             ar: 'مكتملة'             },
+    bookArtisan:  { fr: 'Réserver un artisan',   ar: 'احجز حرفياً'        },
+    bookSub:      { fr: 'Trouvez un professionnel certifié BETI', ar: 'ابحث عن محترف معتمد من BETI' },
+    noBooking:    { fr: 'Aucune réservation',    ar: 'لا توجد حجوزات'     },
+    cancel:       { fr: 'Annuler',               ar: 'إلغاء'              },
+    viewArtisan:  { fr: "Voir l'artisan",        ar: 'عرض الحرفي'         },
+    history:      { fr: 'Historique',            ar: 'السجل'              },
+    requests:     { fr: 'En attente',            ar: 'قيد الانتظار'       },
+  },
+
+  // ── Page profil artisan ───────────────────────────────────────
+  profile: {
+    available:    { fr: 'Disponible',            ar: 'متاح'               },
+    busy:         { fr: 'Occupé',                ar: 'مشغول'              },
+    reviews:      { fr: 'Avis',                  ar: 'التقييمات'          },
+    missions:     { fr: 'Missions',              ar: 'المهام'             },
+    experience:   { fr: 'Expérience',            ar: 'الخبرة'             },
+    radius:       { fr: 'Rayon',                 ar: 'النطاق'             },
+    certified:    { fr: 'ARTISAN BETI CERTIFIÉ', ar: 'حرفي BETI معتمد'   },
+    about:        { fr: 'À propos',              ar: 'نبذة عنه'           },
+    rates:        { fr: 'Tarifs',                ar: 'الأسعار'            },
+    presentation: { fr: 'Présentation',          ar: 'التعريف'            },
+    specialties:  { fr: 'Spécialités',           ar: 'التخصصات'          },
+    ratingDist:   { fr: 'Répartition des avis',  ar: 'توزيع التقييمات'   },
+    hourlyRate:   { fr: 'Tarif horaire',         ar: 'السعر بالساعة'      },
+    travel:       { fr: 'Déplacement',           ar: 'التنقل'             },
+    nightEmergency:{ fr: 'Urgence nuit',         ar: 'طوارئ ليلية'       },
+    quote:        { fr: 'Devis',                 ar: 'تقدير السعر'        },
+    free:         { fr: 'Gratuit',               ar: 'مجاني'              },
+    perHour:      { fr: '/heure',                ar: '/ساعة'              },
+  },
+
+  // ── Auth ──────────────────────────────────────────────────────
+  auth: {
+    welcome:      { fr: 'Bienvenue sur BETI',    ar: 'مرحباً بك في BETI'  },
+    youAre:       { fr: 'Vous êtes ?',           ar: 'أنت؟'               },
+    client:       { fr: 'Un client',             ar: 'عميل'               },
+    clientDesc:   { fr: "Je cherche un artisan pour un service à domicile", ar: 'أبحث عن حرفي لخدمة منزلية' },
+    artisan:      { fr: 'Un artisan',            ar: 'حرفي'               },
+    artisanDesc:  { fr: 'Je propose mes services sur la plateforme BETI', ar: 'أقدم خدماتي على منصة BETI' },
+    continue:     { fr: 'Continuer →',           ar: '← متابعة'          },
+    yourInfo:     { fr: 'Vos informations',      ar: 'معلوماتك'           },
+    createAccount:{ fr: 'Créez votre compte BETI', ar: 'أنشئ حسابك في BETI' },
+    fullName:     { fr: 'NOM COMPLET',           ar: 'الاسم الكامل'       },
+    email:        { fr: 'EMAIL',                 ar: 'البريد الإلكتروني'  },
+    password:     { fr: 'MOT DE PASSE',          ar: 'كلمة المرور'        },
+    confirmation: { fr: 'Confirmation',          ar: 'تأكيد'              },
+    verify:       { fr: 'Vérifiez vos informations', ar: 'تحقق من معلوماتك' },
+    create:       { fr: 'Créer mon compte',      ar: 'إنشاء حسابي'        },
+    creating:     { fr: 'Création...',           ar: 'جارٍ الإنشاء...'    },
+    created:      { fr: 'Compte créé !',         ar: 'تم إنشاء الحساب!'   },
+    alreadyAccount: { fr: 'Déjà un compte ?',   ar: 'لديك حساب بالفعل؟'  },
+    signIn:       { fr: 'Se connecter',          ar: 'تسجيل الدخول'       },
+    goodBack:     { fr: 'Bon retour',            ar: 'مرحباً بعودتك'      },
+    connectSub:   { fr: 'Connectez-vous à votre compte BETI', ar: 'سجل دخولك إلى حساب BETI' },
+    connect:      { fr: 'Se connecter',          ar: 'تسجيل الدخول'       },
+    connecting:   { fr: 'Connexion...',          ar: 'جارٍ التسجيل...'    },
+    noAccount:    { fr: 'Pas encore de compte ?', ar: 'ليس لديك حساب؟'   },
+    register:     { fr: "S'inscrire",            ar: 'التسجيل'            },
+    wrongCredentials: { fr: 'Email ou mot de passe incorrect.', ar: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' },
+  },
+
+  // ── Carte ─────────────────────────────────────────────────────
+  map: {
+    title:        { fr: 'Artisans proches\nde vous', ar: 'حرفيون\nبالقرب منك' },
+    detecting:    { fr: '⏳ Détection de votre position...', ar: '⏳ جارٍ تحديد موقعك...' },
+    myPosition:   { fr: 'Ma position',           ar: 'موقعي'              },
+    trackGPS:     { fr: 'Simuler suivi GPS',      ar: 'محاكاة تتبع GPS'   },
+    tracking:     { fr: 'Suivi actif',            ar: 'التتبع نشط'        },
+    noArtisan:    { fr: "Aucun artisan inscrit pour l'instant.", ar: 'لا يوجد حرفي مسجل حالياً.' },
+    clickArtisan: { fr: "Cliquez sur un artisan", ar: 'انقر على حرفي'     },
+    colorCircle:  { fr: "Cercle coloré",          ar: 'دائرة ملونة'        },
+    goldDot:      { fr: "Point doré",             ar: 'نقطة ذهبية'        },
+    movingIcon:   { fr: "Icône animée",           ar: 'أيقونة متحركة'     },
+  },
+
+  // ── Paramètres ───────────────────────────────────────────────
+  settings: {
+    title:        { fr: 'Paramètres',            ar: 'الإعدادات'          },
+    myAccount:    { fr: 'MON COMPTE',            ar: 'حسابي'              },
+    profile:      { fr: 'Profil',                ar: 'الملف الشخصي'       },
+    security:     { fr: 'Sécurité',              ar: 'الأمان'             },
+    notifications:{ fr: 'Notifications',         ar: 'الإشعارات'          },
+    avatar:       { fr: 'AVATAR',                ar: 'الصورة الرمزية'     },
+    personalInfo: { fr: 'INFORMATIONS PERSONNELLES', ar: 'المعلومات الشخصية' },
+    fullName:     { fr: 'NOM COMPLET',           ar: 'الاسم الكامل'       },
+    phone:        { fr: 'TÉLÉPHONE',             ar: 'الهاتف'             },
+    email:        { fr: 'EMAIL',                 ar: 'البريد الإلكتروني'  },
+    save:         { fr: 'Sauvegarder',           ar: 'حفظ'                },
+    saved:        { fr: '✅ Sauvegardé !',        ar: '✅ تم الحفظ!'       },
+    saving:       { fr: 'Sauvegarde...',         ar: 'جارٍ الحفظ...'      },
+    dangerZone:   { fr: 'ZONE DANGEREUSE',       ar: 'منطقة الخطر'        },
+    deleteAcc:    { fr: 'Supprimer mon compte',  ar: 'حذف حسابي'          },
+    changePass:   { fr: 'Changer le mot de passe', ar: 'تغيير كلمة المرور' },
+  },
+
+  // ── Aide ─────────────────────────────────────────────────────
+  help: {
+    title:        { fr: 'Aide & Support',        ar: 'المساعدة والدعم'    },
+    center:       { fr: "CENTRE D'AIDE",         ar: 'مركز المساعدة'      },
+    faq:          { fr: 'QUESTIONS FRÉQUENTES',  ar: 'الأسئلة الشائعة'   },
+    contact:      { fr: 'NOUS CONTACTER',        ar: 'تواصل معنا'         },
+    sendMessage:  { fr: 'Envoyer un message',    ar: 'إرسال رسالة'        },
+    name:         { fr: 'NOM',                   ar: 'الاسم'              },
+    email:        { fr: 'EMAIL',                 ar: 'البريد الإلكتروني'  },
+    message:      { fr: 'MESSAGE',               ar: 'الرسالة'            },
+    send:         { fr: 'Envoyer le message',    ar: 'إرسال الرسالة'      },
+    sent:         { fr: 'Message envoyé !',      ar: 'تم إرسال الرسالة!'  },
+  },
+
+  // ── Commun ───────────────────────────────────────────────────
+  common: {
+    loading:      { fr: 'Chargement...',         ar: 'جارٍ التحميل...'   },
+    back:         { fr: '← Retour',              ar: 'رجوع →'            },
+    certified:    { fr: 'CERTIFIÉ',              ar: 'معتمد'              },
+    available:    { fr: 'Disponible maintenant', ar: 'متاح الآن'          },
+    unavailable:  { fr: 'Indisponible',          ar: 'غير متاح'           },
+    bookNow:      { fr: 'Réserver maintenant',   ar: 'احجز الآن'          },
+    viewProfile:  { fr: 'Voir le profil',        ar: 'عرض الملف'          },
+    da:           { fr: 'DA',                    ar: 'دج'                 },
+    perHour:      { fr: '/h',                    ar: '/س'                 },
+    km:           { fr: 'km',                    ar: 'كم'                 },
+    years:        { fr: 'ans',                   ar: 'سنوات'              },
+    newRating:    { fr: 'Nouveau',               ar: 'جديد'               },
+    reviews:      { fr: 'avis',                  ar: 'تقييم'              },
+  },
+
+} as const
+
+// ── Helper pour récupérer une traduction ──────────────────────────
+export function t(key: string, lang: Lang): string {
+  const keys = key.split('.')
+  let current: any = translations
+  for (const k of keys) {
+    current = current?.[k]
+  }
+  return current?.[lang] || current?.['fr'] || key
+}

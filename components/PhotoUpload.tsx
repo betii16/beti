@@ -4,12 +4,9 @@
 // Système de photos complet BETI
 
 import { useState, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+
+
 
 // ================================================================
 // 1. UPLOAD PHOTO DE PROFIL
@@ -376,3 +373,5 @@ export function BeforeAfterUpload({
     </div>
   )
 }
+
+
