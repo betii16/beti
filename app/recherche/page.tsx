@@ -1,13 +1,8 @@
 'use client'
 
-// app/recherche/page.tsx
-// Recherche avancée avec filtres — note, prix, disponibilité, distance
-
 import { useState, useEffect } from 'react'
-
+import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
-
-
 
 const CATEGORIES = [
   { id: '',             icon: '✳',  label: 'Tous',          color: '#888' },
@@ -30,7 +25,15 @@ type Artisan = {
 }
 
 function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
-  return <div style={{ display: 'flex', gap: 2 }}>{[1,2,3,4,5].map(i => <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= Math.round(rating) ? '#C9A84C' : '#2a2a3a'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>
+  return (
+    <div style={{ display: 'flex', gap: 2 }}>
+      {[1,2,3,4,5].map(i => (
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= Math.round(rating) ? '#C9A84C' : '#2a2a3a'}>
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+        </svg>
+      ))}
+    </div>
+  )
 }
 
 export default function RecherchePage() {
@@ -46,11 +49,29 @@ export default function RecherchePage() {
   const [maxPrice, setMaxPrice] = useState(15000)
   const [availableOnly, setAvailableOnly] = useState(false)
   const [sortBy, setSortBy] = useState<'distance' | 'rating' | 'price_asc' | 'price_desc'>('distance')
-  const [query, setQuery] = useState('')
+
+  // Système mots-clés
+  const [keywordInput, setKeywordInput] = useState('')
+  const [keywords, setKeywords] = useState<string[]>([])
+
+  const addKeyword = () => {
+    const kw = keywordInput.trim()
+    if (kw && !keywords.includes(kw)) {
+      setKeywords(prev => [...prev, kw])
+    }
+    setKeywordInput('')
+  }
+
+  const removeKeyword = (kw: string) => {
+    setKeywords(prev => prev.filter(k => k !== kw))
+  }
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }), () => {})
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {}
+      )
     }
   }, [])
 
@@ -66,7 +87,16 @@ export default function RecherchePage() {
       if (minRating > 0) results = results.filter(a => (a.rating_avg || 0) >= minRating)
       if (maxPrice < 15000) results = results.filter(a => (a.hourly_rate || 0) <= maxPrice)
       if (availableOnly) results = results.filter(a => a.is_available)
-      if (query) results = results.filter(a => a.full_name?.toLowerCase().includes(query.toLowerCase()) || a.category?.toLowerCase().includes(query.toLowerCase()))
+      // Filtre mots-clés — chaque mot-clé doit matcher nom ou catégorie
+      if (keywords.length > 0) {
+        results = results.filter(a =>
+          keywords.some(kw =>
+            a.full_name?.toLowerCase().includes(kw.toLowerCase()) ||
+            a.category?.toLowerCase().includes(kw.toLowerCase()) ||
+            a.bio?.toLowerCase().includes(kw.toLowerCase())
+          )
+        )
+      }
       results.sort((a, b) => {
         if (sortBy === 'rating') return (b.rating_avg || 0) - (a.rating_avg || 0)
         if (sortBy === 'price_asc') return (a.hourly_rate || 0) - (b.hourly_rate || 0)
@@ -84,7 +114,7 @@ export default function RecherchePage() {
 
   return (
     <>
-      <style>{`
+      <style suppressHydrationWarning>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         *{box-sizing:border-box;margin:0;padding:0}
@@ -100,12 +130,39 @@ export default function RecherchePage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-              {/* Recherche texte */}
+              {/* Mots-clés */}
               <div>
-                <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>MOT-CLÉ</label>
-                <input type="text" placeholder="Nom, spécialité..." value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search()}
-                  style={{ width: '100%', padding: '11px 14px', background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
-                />
+                <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>MOTS-CLÉS</label>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="Ex: hafaf, soudure..."
+                    value={keywordInput}
+                    onChange={e => setKeywordInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addKeyword()}
+                    style={{ flex: 1, padding: '10px 12px', background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 9, color: '#F0EDE8', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+                  />
+                  <button
+                    onClick={addKeyword}
+                    disabled={!keywordInput.trim()}
+                    style={{ padding: '10px 14px', background: keywordInput.trim() ? '#C9A84C' : '#1a1a2a', border: 'none', borderRadius: 9, color: keywordInput.trim() ? '#0D0D12' : '#444', fontSize: 12, fontWeight: 800, cursor: keywordInput.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Nexa, sans-serif', whiteSpace: 'nowrap' }}
+                  >+ Ajouter</button>
+                </div>
+                {/* Tags ajoutés */}
+                {keywords.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {keywords.map(kw => (
+                      <div key={kw} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#1a1508', border: '0.5px solid #C9A84C44', borderRadius: 20 }}>
+                        <span style={{ fontSize: 12, color: '#C9A84C', fontWeight: 300 }}>{kw}</span>
+                        <button onClick={() => removeKeyword(kw)} style={{ background: 'transparent', border: 'none', color: '#C9A84C', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+                      </div>
+                    ))}
+                    <button onClick={() => setKeywords([])} style={{ padding: '4px 10px', background: 'transparent', border: '0.5px solid #2a1010', borderRadius: 20, color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Tout effacer</button>
+                  </div>
+                )}
+                {keywords.length === 0 && (
+                  <div style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>Tapez un mot et cliquez <strong style={{ color: '#C9A84C' }}>+ Ajouter</strong></div>
+                )}
               </div>
 
               {/* Ville */}
@@ -176,8 +233,8 @@ export default function RecherchePage() {
               {/* Bouton rechercher */}
               <button onClick={search} disabled={loading}
                 style={{ width: '100%', padding: '14px', background: '#C9A84C', border: 'none', borderRadius: 12, color: '#0D0D12', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s' }}
-                onMouseEnter={e => (e.target as HTMLElement).style.background = '#d4b55a'}
-                onMouseLeave={e => (e.target as HTMLElement).style.background = '#C9A84C'}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#d4b55a'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#C9A84C'}
               >
                 {loading ? 'Recherche...' : '🔍 Rechercher'}
               </button>
@@ -186,7 +243,6 @@ export default function RecherchePage() {
 
           {/* ── RÉSULTATS ── */}
           <div>
-            {/* Barre de tri */}
             {searched && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ fontSize: 14, color: '#888', fontWeight: 300 }}>
@@ -207,7 +263,6 @@ export default function RecherchePage() {
               </div>
             )}
 
-            {/* État vide */}
             {!searched && !loading && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', textAlign: 'center' }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
@@ -216,7 +271,6 @@ export default function RecherchePage() {
               </div>
             )}
 
-            {/* Loading skeletons */}
             {loading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[1,2,3,4].map(i => (
@@ -231,7 +285,6 @@ export default function RecherchePage() {
               </div>
             )}
 
-            {/* Aucun résultat */}
             {searched && !loading && artisans.length === 0 && (
               <div style={{ textAlign: 'center', padding: '80px 0' }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
@@ -240,24 +293,20 @@ export default function RecherchePage() {
               </div>
             )}
 
-            {/* Liste artisans — format horizontal */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {artisans.map((a, idx) => {
                 const col = CATEGORIES.find(c => a.category?.toLowerCase().includes(c.id.slice(0, 5)))?.color || '#C9A84C'
                 const initials = a.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'A'
                 return (
                   <div key={a.artisan_id}
-                    style={{ background: '#161620', border: `0.5px solid #2a2a3a`, borderRadius: 14, padding: '20px', display: 'flex', gap: 16, alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s', animation: `fadeIn 0.3s ease ${idx * 0.05}s both' }}
+                    style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '20px', display: 'flex', gap: 16, alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s', animation: `fadeIn 0.3s ease ${idx * 0.05}s both` }}
                     onClick={() => window.location.href = `/artisan/${a.artisan_id}`}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = col + '55'; (e.currentTarget as HTMLElement).style.background = '#1c1c28' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#2a2a3a'; (e.currentTarget as HTMLElement).style.background = '#161620' }}
                   >
-                    {/* Avatar */}
                     <div style={{ width: 60, height: 60, borderRadius: '50%', background: col + '22', border: `2px solid ${col}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: col, flexShrink: 0 }}>
                       {a.avatar_url ? <img src={a.avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}/> : initials}
                     </div>
-
-                    {/* Infos */}
                     <div style={{ flex: 1, overflow: 'hidden' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>{a.full_name}</span>
@@ -273,8 +322,6 @@ export default function RecherchePage() {
                         <span style={{ fontSize: 11, color: '#555' }}>{a.total_missions || 0} missions</span>
                       </div>
                     </div>
-
-                    {/* Prix + dispo */}
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: 20, fontWeight: 800, color: '#C9A84C', marginBottom: 6 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>DA/h</span></div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
@@ -292,5 +339,3 @@ export default function RecherchePage() {
     </>
   )
 }
-
-
