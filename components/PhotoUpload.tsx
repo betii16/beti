@@ -4,10 +4,7 @@
 // Système de photos complet BETI
 
 import { useState, useRef } from 'react'
-
-
-
-
+import { supabase } from '@/lib/supabase'
 // ================================================================
 // 1. UPLOAD PHOTO DE PROFIL
 // ================================================================

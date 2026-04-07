@@ -274,6 +274,8 @@ export default function BetiHomePage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
         @keyframes dropIn{0%{opacity:0;transform:scale(.96) translateY(-8px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes statReveal{from{opacity:0;transform:translateY(20px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes countGlow{0%{text-shadow:0 0 0 transparent}50%{text-shadow:0 0 30px #C9A84C44}100%{text-shadow:0 0 0 transparent}}
         *{box-sizing:border-box;margin:0;padding:0}
         body{background:#0D0D12;color:#F0EDE8;font-family:Nexa,sans-serif;-webkit-font-smoothing:antialiased}
         ::-webkit-scrollbar{width:3px}
@@ -334,17 +336,36 @@ export default function BetiHomePage() {
         </section>
 
         {/* STATS */}
-        <div ref={statsRef} style={{ background: '#09090f', borderTop: '0.5px solid #1e1e2a', borderBottom: '0.5px solid #1e1e2a', padding: '56px 40px' }}>
-          <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
+        <div ref={statsRef} style={{ background: '#09090f', borderTop: '0.5px solid #1e1e2a', borderBottom: '0.5px solid #1e1e2a', padding: '72px 40px' }}>
+          <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
             {[
-              { value: counts.a.toLocaleString('fr-FR')+'+', label: t('home.statsA') },
-              { value: counts.b+'%',                         label: t('home.statsB') },
-              { value: '< '+counts.c+'min',                  label: t('home.statsC') },
-              { value: counts.d+'+',                         label: t('home.statsD') },
+              { display: `${counts.a.toLocaleString('fr-FR')}+`, label: t('home.statsA'), color: '#C9A84C' },
+              { display: `${counts.b}%`,                          label: t('home.statsB'), color: '#C9A84C' },
+              { display: `<${counts.c}min`,                       label: t('home.statsC'), color: '#C9A84C' },
+              { display: `${counts.d}+`,                          label: t('home.statsD'), color: '#C9A84C' },
             ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center', padding: '0 20px', borderRight: i < 3 ? '0.5px solid #1e1e2a' : 'none' }}>
-                <div style={{ fontSize: 'clamp(2rem,3vw,3rem)', fontWeight: 800, color: '#C9A84C', lineHeight: 1, marginBottom: 10 }}>{s.value}</div>
-                <div style={{ fontSize: 13, color: '#555', fontWeight: 300 }}>{s.label}</div>
+              <div key={i} style={{
+                textAlign: 'center', padding: '0 20px', position: 'relative',
+                opacity: statsAnimated.current ? 1 : 0,
+                transform: statsAnimated.current ? 'none' : 'translateY(24px)',
+                transition: `opacity 0.7s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.1}s, transform 0.7s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.1}s`,
+              }}>
+                {/* Séparateur vertical */}
+                {i < 3 && (
+                  <div style={{
+                    position: 'absolute', right: 0, top: '10%', height: '80%', width: 1,
+                    background: 'linear-gradient(to bottom, transparent, #C9A84C22, #C9A84C22, transparent)',
+                  }}/>
+                )}
+                <div style={{
+                  fontSize: 'clamp(2.8rem, 5vw, 3.8rem)', fontWeight: 800, color: s.color,
+                  lineHeight: 1, marginBottom: 14, fontFamily: 'Nexa, sans-serif',
+                  textShadow: statsAnimated.current ? '0 0 40px #C9A84C22' : 'none',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {s.display}
+                </div>
+                <div style={{ fontSize: 14, color: '#666', fontWeight: 300, letterSpacing: '0.02em' }}>{s.label}</div>
               </div>
             ))}
           </div>

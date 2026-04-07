@@ -16,16 +16,76 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [phoneError, setPhoneError] = useState('')
+
+  const checkPhoneUnique = async (phoneVal: string) => {
+    if (!phoneVal || phoneVal.length < 9) return
+    setPhoneError('')
+    const { data } = await supabase.from('profiles').select('id').eq('phone', phoneVal).limit(1)
+    if (data && data.length > 0) setPhoneError('Ce numéro est déjà utilisé')
+  }
 
   const handleSignup = async () => {
     if (!role) return
+    if (phoneError) return
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, role } } })
-    if (error) { setError(error.message) } else {
-      setSuccess(true)
-      setTimeout(() => router.push(role === 'artisan' ? '/artisan-dashboard' : '/mon-espace'), 2000)
+
+    // Vérifier unicité du téléphone une dernière fois
+    if (phone) {
+      const { data: phoneCheck } = await supabase.from('profiles').select('id').eq('phone', phone).limit(1)
+      if (phoneCheck && phoneCheck.length > 0) {
+        setError('Ce numéro de téléphone est déjà associé à un compte')
+        setLoading(false)
+        return
+      }
     }
+
+    // 1. Créer le compte auth
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName, role, phone } }
+    })
+
+    if (signUpError) {
+      setError(signUpError.message)
+      setLoading(false)
+      return
+    }
+
+    const userId = signUpData.user?.id
+    if (!userId) {
+      setError('Erreur lors de la création du compte')
+      setLoading(false)
+      return
+    }
+
+    // 2. Créer/mettre à jour le profil avec le BON rôle
+    await supabase.from('profiles').upsert({
+      id: userId,
+      full_name: fullName,
+      phone: phone,
+      role: role,
+    }, { onConflict: 'id' })
+
+    // 3. Si artisan, créer la ligne dans la table artisans
+    if (role === 'artisan') {
+      await supabase.from('artisans').upsert({
+        id: userId,
+        category: 'plomberie',
+        hourly_rate: 0,
+        is_available: false,
+        rating_avg: 0,
+        rating_count: 0,
+        total_missions: 0,
+      }, { onConflict: 'id' })
+    }
+
+    setSuccess(true)
+    // Artisan → config profil, Client → espace
+    setTimeout(() => router.push(role === 'artisan' ? '/artisan-dashboard/profil' : '/mon-espace'), 2000)
     setLoading(false)
   }
 
@@ -109,10 +169,25 @@ export default function SignupPage() {
                       style={{ width: '100%', padding: '13px 16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
                   </div>
                 ))}
+                {/* Téléphone — obligatoire, unique */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>
+                    {isAr ? 'رقم الهاتف' : 'TÉLÉPHONE'} <span style={{ color: '#f87171' }}>*</span>
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ padding: '13px 12px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#888', fontSize: 14, fontWeight: 300, flexShrink: 0 }}>+213</div>
+                    <input type="tel" placeholder="0555 12 34 56" value={phone}
+                      onChange={e => { setPhone(e.target.value); setPhoneError('') }}
+                      onBlur={() => checkPhoneUnique(phone)}
+                      style={{ flex: 1, padding: '13px 16px', background: '#0D0D12', border: `0.5px solid ${phoneError ? '#f87171' : '#2a2a3a'}`, borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                  </div>
+                  {phoneError && <p style={{ fontSize: 11, color: '#f87171', marginTop: 6, fontWeight: 300 }}>{phoneError}</p>}
+                  <p style={{ fontSize: 10, color: '#444', marginTop: 6, fontWeight: 300 }}>🔒 {isAr ? 'حساب واحد فقط لكل رقم هاتف' : 'Un seul compte par numéro de téléphone'}</p>
+                </div>
                 <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
                   <button onClick={() => setStep(1)} style={{ flex: 1, padding: '13px', background: 'transparent', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#666', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>{t('booking.back')}</button>
-                  <button onClick={() => fullName && email && password.length >= 6 && setStep(3)}
-                    style={{ flex: 2, padding: '13px', background: fullName && email && password.length >= 6 ? '#C9A84C' : '#1a1a2a', border: 'none', borderRadius: 10, color: fullName && email && password.length >= 6 ? '#0D0D12' : '#444', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                  <button onClick={() => fullName && email && password.length >= 6 && phone.length >= 9 && !phoneError && setStep(3)}
+                    style={{ flex: 2, padding: '13px', background: fullName && email && password.length >= 6 && phone.length >= 9 && !phoneError ? '#C9A84C' : '#1a1a2a', border: 'none', borderRadius: 10, color: fullName && email && password.length >= 6 && phone.length >= 9 && !phoneError ? '#0D0D12' : '#444', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
                     {t('auth.continue')}
                   </button>
                 </div>
@@ -128,6 +203,7 @@ export default function SignupPage() {
                     { label: isAr ? 'الدور' : 'Rôle',  value: role === 'client' ? `👤 ${t('auth.client')}` : `🔧 ${t('auth.artisan')}` },
                     { label: isAr ? 'الاسم' : 'Nom',   value: fullName },
                     { label: isAr ? 'البريد' : 'Email', value: email },
+                    { label: isAr ? 'الهاتف' : 'Téléphone', value: `+213 ${phone}` },
                   ].map(item => (
                     <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '0.5px solid #1e1e2a' }}>
                       <span style={{ fontSize: 12, color: '#555' }}>{item.label}</span>

@@ -1,197 +1,615 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { ArtisanAvatar } from '@/components/ReviewPhotos'
 
+// ── Types ──
 
-
-
-type Review = {
-  id: string
-  rating: number
-  comment: string | null
-  created_at: string
-  profiles: { full_name: string } | null
+type Service = {
+  category: string
+  description: string
+  price_type: 'hour' | 'service' | 'quote' | 'negotiable'
+  price: number
 }
 
-function Stars({ rating }: { rating: number }) {
-  return (
-    <div style={{ display: 'flex', gap: 3 }}>
-      {[1,2,3,4,5].map(n => (
-        <span key={n} style={{ fontSize: 14, color: n <= rating ? '#C9A84C' : '#2a2a3a' }}>★</span>
-      ))}
-    </div>
-  )
-}
+// ── Constantes ──
 
-export default function ProfilPublic() {
+const CATEGORIES = [
+  { id: 'plomberie',    icon: '⚙',  label: 'Plomberie',    color: '#3b82f6' },
+  { id: 'electricite',  icon: '⚡',  label: 'Électricité',  color: '#f59e0b' },
+  { id: 'menage',       icon: '✦',  label: 'Ménage',        color: '#10b981' },
+  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#8b5cf6' },
+  { id: 'jardinage',    icon: '❧',  label: 'Jardinage',     color: '#22c55e' },
+  { id: 'peinture',     icon: '◉',  label: 'Peinture',      color: '#ef4444' },
+  { id: 'serrurerie',   icon: '⌘',  label: 'Serrurerie',    color: '#f97316' },
+  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#6366f1' },
+  { id: 'coiffure',     icon: '✂',  label: 'Coiffure',      color: '#ec4899' },
+]
+
+const PRICE_TYPES = [
+  { id: 'hour',       label: 'À l\'heure',      suffix: 'DA/h',       icon: '🕐' },
+  { id: 'service',    label: 'Par prestation',   suffix: 'DA/prestation', icon: '📋' },
+  { id: 'quote',      label: 'Sur devis',        suffix: '',           icon: '📝' },
+  { id: 'negotiable', label: 'À négocier',       suffix: '',           icon: '🤝' },
+]
+
+const POPULAR_TAGS = [
+  'piscine', 'climatisation', 'chauffe-eau solaire', 'domotique', 'panneau solaire',
+  'carrelage', 'parquet', 'faux plafond', 'isolation', 'menuiserie',
+  'livreur', 'livraison', 'coursier', 'vitrier', 'tapissier',
+]
+
+// ── Page ──
+
+export default function ArtisanProfileConfig() {
   const router = useRouter()
-  const [artisan, setArtisan] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [tags, setTags] = useState<string[]>([])
+  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [previewMode, setPreviewMode] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [activeSection, setActiveSection] = useState<'services' | 'info' | 'tags'>('services')
+
+  // Profile data
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [bio, setBio] = useState('')
+  const [experience, setExperience] = useState(1)
+  const [locationCity, setLocationCity] = useState('')
+
+  // Services (multi-catégorie)
+  const [services, setServices] = useState<Service[]>([])
+  const [addingService, setAddingService] = useState(false)
+
+  // Tags / mots-clés
+  const [tags, setTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
+
+  // Validation
+  const [phoneError, setPhoneError] = useState('')
+  const [isNewProfile, setIsNewProfile] = useState(false)
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-
-      const [{ data: art }, { data: prof }] = await Promise.all([
-        supabase.from('artisans').select('*').eq('id', user.id).single(),
-        supabase.from('profiles').select('full_name, phone, avatar_url').eq('id', user.id).single(),
-      ])
-
-      if (art) setArtisan(art)
-      if (prof) setProfile(prof)
-
-      const { data: revs } = await supabase
-        .from('reviews')
-        .select('*, profiles!reviews_client_id_fkey(full_name)')
-        .eq('artisan_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10)
-      if (revs) setReviews(revs)
-
-      const { data: t } = await supabase
-        .from('artisan_tags')
-        .select('tag')
-        .eq('artisan_id', user.id)
-      if (t) setTags(t.map((x: any) => x.tag))
-
-      setLoading(false)
-    }
-    init()
+    loadProfile()
   }, [])
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  const loadProfile = async () => {
+    const { data: { user: u } } = await supabase.auth.getUser()
+    if (!u) { router.push('/auth/login'); return }
+    setUser(u)
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: '#555', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
-    </div>
-  )
+    const [{ data: prof }, { data: art }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', u.id).single(),
+      supabase.from('artisans').select('*').eq('id', u.id).single(),
+    ])
 
-  const ratingAvg = artisan?.rating_avg || 0
-  const ratingCount = artisan?.rating_count || 0
+    if (prof) {
+      setFullName(prof.full_name || '')
+      setPhone(prof.phone || '')
+      setAvatarUrl(prof.avatar_url || null)
+    }
+
+    if (art) {
+      setBio(art.bio || '')
+      setExperience(art.years_experience || 1)
+      setLocationCity(art.location_city || '')
+      setTags(art.tags || [])
+
+      // Charger les services
+      if (art.services && Array.isArray(art.services)) {
+        setServices(art.services)
+      } else if (art.category) {
+        // Migration depuis l'ancien format (single category)
+        setServices([{
+          category: art.category,
+          description: art.bio || '',
+          price_type: 'hour',
+          price: art.hourly_rate || 3000,
+        }])
+      }
+
+      if (!art.category && !art.services) setIsNewProfile(true)
+    } else {
+      setIsNewProfile(true)
+    }
+
+    setLoading(false)
+  }
+
+  // ── Vérification téléphone unique ──
+
+  const checkPhone = async (phoneVal: string) => {
+    if (!phoneVal || phoneVal.length < 9) return
+    setPhoneError('')
+    const { data } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('phone', phoneVal)
+      .neq('id', user?.id || '')
+      .limit(1)
+    if (data && data.length > 0) {
+      setPhoneError('Ce numéro est déjà utilisé par un autre compte')
+    }
+  }
+
+  // ── Gestion des services ──
+
+  const addService = (categoryId: string) => {
+    if (services.find(s => s.category === categoryId)) return
+    setServices(prev => [...prev, {
+      category: categoryId,
+      description: '',
+      price_type: 'hour',
+      price: 3000,
+    }])
+    setAddingService(false)
+  }
+
+  const updateService = (index: number, updates: Partial<Service>) => {
+    setServices(prev => prev.map((s, i) => i === index ? { ...s, ...updates } : s))
+  }
+
+  const removeService = (index: number) => {
+    setServices(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // ── Tags ──
+
+  const addTag = (tag: string) => {
+    const t = tag.trim().toLowerCase()
+    if (!t || tags.includes(t) || tags.length >= 15 || t.length > 30) return
+    setTags(prev => [...prev, t])
+    setTagInput('')
+  }
+
+  const removeTag = (tag: string) => setTags(prev => prev.filter(t => t !== tag))
+
+  // ── Sauvegarder ──
+
+  const handleSave = async () => {
+    if (!user) return
+    if (phoneError) return
+
+    // Validation
+    if (!phone || phone.length < 9) {
+      setPhoneError('Numéro de téléphone obligatoire')
+      setActiveSection('info')
+      return
+    }
+    if (services.length === 0 && tags.length === 0) {
+      setActiveSection('services')
+      return
+    }
+
+    setSaving(true)
+
+    // Sauvegarder profil
+    await supabase.from('profiles').update({
+      full_name: fullName,
+      phone: phone,
+    }).eq('id', user.id)
+
+    // Calculer la catégorie principale (première ajoutée)
+    const mainCategory = services.length > 0 ? services[0].category : 'plomberie'
+    const mainRate = services.length > 0 ? services[0].price : 0
+
+    // Sauvegarder artisan
+    await supabase.from('artisans').update({
+      bio,
+      category: mainCategory,
+      hourly_rate: mainRate,
+      services: services,
+      tags,
+      years_experience: experience,
+    }).eq('id', user.id)
+
+    setSaving(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  // ── Helpers ──
+
+  const getCat = (id: string) => CATEGORIES.find(c => c.id === id)
+  const getPriceType = (id: string) => PRICE_TYPES.find(p => p.id === id)
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: 14, color: '#555' }}>Chargement...</div>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: '#0D0D12', fontFamily: 'Nexa, sans-serif' }}>
+    <>
+      <style suppressHydrationWarning>{`
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0D0D12; font-family: 'Nexa', sans-serif; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        input[type=range] { accent-color: #C9A84C; cursor: pointer; }
+        textarea:focus, input:focus { border-color: #C9A84C66 !important; }
+      `}</style>
 
-      {/* Header */}
-      <div style={{ background: '#09090f', borderBottom: '0.5px solid #1e1e2a', padding: '32px 40px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ fontSize: 10, color: '#C9A84C', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON DASHBOARD</div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#F0EDE8' }}>Mon profil public</h1>
+      <div style={{ minHeight: '100vh', background: '#0D0D12', paddingTop: 64, fontFamily: 'Nexa, sans-serif' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+            <div>
+              <div style={{ fontSize: 10, color: '#C9A84C', letterSpacing: '.1em', fontWeight: 800, marginBottom: 6 }}>
+                {isNewProfile ? 'CONFIGURATION INITIALE' : 'MODIFIER MON PROFIL'}
+              </div>
+              <h1 style={{ fontSize: 28, fontWeight: 800, color: '#F0EDE8' }}>Mon profil artisan</h1>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {user && (
+                <ArtisanAvatar
+                  userId={user.id}
+                  currentUrl={avatarUrl}
+                  name={fullName}
+                  size={52}
+                  editable={true}
+                  onUpload={url => setAvatarUrl(url)}
+                />
+              )}
+            </div>
           </div>
-          <button onClick={() => setPreviewMode(!previewMode)}
-            style={{ padding: '10px 20px', background: previewMode ? '#C9A84C' : 'transparent', border: '0.5px solid #C9A84C44', borderRadius: 10, color: previewMode ? '#0D0D12' : '#C9A84C', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s' }}>
-            {previewMode ? '✕ Fermer la preview' : '👁 Voir comme un client'}
-          </button>
-        </div>
-      </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px', display: 'grid', gridTemplateColumns: previewMode ? '1fr' : '1fr 1fr', gap: 24 }}>
-
-        {/* Carte profil — vue client */}
-        <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 16, overflow: 'hidden' }}>
-          {/* Banner */}
-          <div style={{ height: 80, background: 'linear-gradient(135deg, #1a1508 0%, #2a2010 100%)' }}/>
-
-          <div style={{ padding: '0 24px 24px' }}>
-            {/* Avatar */}
-            <div style={{ marginTop: -28, marginBottom: 16 }}>
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#C9A84C22', border: '2px solid #C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#C9A84C' }}>
-                {(profile?.full_name || 'A')[0].toUpperCase()}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#F0EDE8', marginBottom: 4 }}>{profile?.full_name || 'Artisan'}</div>
-                <div style={{ fontSize: 13, color: '#C9A84C', fontWeight: 300 }}>{artisan?.category}</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: artisan?.is_available ? '#0a2010' : '#1a1a1a', border: `0.5px solid ${artisan?.is_available ? '#4ade8044' : '#2a2a3a'}`, borderRadius: 20, padding: '4px 10px' }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: artisan?.is_available ? '#4ade80' : '#555', boxShadow: artisan?.is_available ? '0 0 6px #4ade80' : 'none' }}/>
-                <span style={{ fontSize: 11, color: artisan?.is_available ? '#4ade80' : '#555', fontWeight: 300 }}>
-                  {artisan?.is_available ? 'Disponible' : 'Indisponible'}
-                </span>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
-              {[
-                { value: ratingAvg.toFixed(1), label: 'Note', icon: '⭐' },
-                { value: ratingCount, label: 'Avis', icon: '💬' },
-                { value: artisan?.total_missions || 0, label: 'Missions', icon: '✅' },
-              ].map(s => (
-                <div key={s.label} style={{ background: '#0D0D12', borderRadius: 10, padding: '12px', textAlign: 'center', border: '0.5px solid #1e1e2a' }}>
-                  <div style={{ fontSize: 16, marginBottom: 2 }}>{s.icon}</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#F0EDE8' }}>{s.value}</div>
-                  <div style={{ fontSize: 10, color: '#555', fontWeight: 300 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Tarif */}
-            {artisan?.hourly_rate && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '10px 14px', background: '#0D0D12', borderRadius: 10, border: '0.5px solid #1e1e2a' }}>
-                <span style={{ fontSize: 16 }}>💶</span>
-                <span style={{ fontSize: 13, color: '#F0EDE8', fontWeight: 800 }}>{artisan.hourly_rate} DA/h</span>
-                <span style={{ fontSize: 12, color: '#555', fontWeight: 300 }}>· tarif indicatif</span>
-              </div>
-            )}
-
-            {/* Tags */}
-            {tags.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                {tags.map(tag => (
-                  <span key={tag} style={{ padding: '4px 12px', background: '#1a1508', border: '0.5px solid #C9A84C33', borderRadius: 20, fontSize: 11, color: '#C9A84C', fontWeight: 300 }}>{tag}</span>
-                ))}
-              </div>
-            )}
-
-            {/* Bio */}
-            {artisan?.bio && (
-              <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, fontWeight: 300 }}>{artisan.bio}</div>
-            )}
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: '#161620', borderRadius: 12, padding: 4 }}>
+            {([
+              { id: 'services', label: 'Mes métiers', icon: '🔧', badge: services.length },
+              { id: 'info',     label: 'Informations', icon: '👤' },
+              { id: 'tags',     label: 'Mots-clés', icon: '🏷️', badge: tags.length },
+            ] as const).map(tab => (
+              <button key={tab.id} onClick={() => setActiveSection(tab.id)}
+                style={{
+                  flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none',
+                  background: activeSection === tab.id ? '#1a1508' : 'transparent',
+                  color: activeSection === tab.id ? '#C9A84C' : '#555',
+                  fontSize: 13, fontWeight: activeSection === tab.id ? 800 : 300,
+                  cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span>{tab.icon}</span> {tab.label}
+                {'badge' in tab && (tab as any).badge > 0 && (
+                  <span style={{ padding: '1px 7px', borderRadius: 10, background: '#C9A84C', color: '#0D0D12', fontSize: 10, fontWeight: 800 }}>{(tab as any).badge}</span>
+                )}
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Avis clients */}
-        <div>
-          <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>AVIS CLIENTS ({ratingCount})</div>
+          {/* ═══ SECTION : MES MÉTIERS ═══ */}
+          {activeSection === 'services' && (
+            <div style={{ animation: 'fadeIn 0.3s ease' }}>
 
-          {reviews.length === 0 ? (
-            <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '32px', textAlign: 'center', color: '#333' }}>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>⭐</div>
-              <div style={{ fontSize: 13, fontWeight: 300 }}>Aucun avis pour l'instant</div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {reviews.map(r => (
-                <div key={r.id} style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '16px 18px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8' }}>{r.profiles?.full_name || 'Client'}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Stars rating={r.rating}/>
-                      <span style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{fmt(r.created_at)}</span>
+              {/* Liste des services ajoutés */}
+              {services.map((service, i) => {
+                const cat = getCat(service.category)
+                return (
+                  <div key={i} style={{ background: '#161620', border: `0.5px solid ${cat?.color || '#2a2a3a'}33`, borderRadius: 16, padding: '24px', marginBottom: 16 }}>
+
+                    {/* Header service */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: (cat?.color || '#C9A84C') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{cat?.icon || '🔧'}</div>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: '#F0EDE8' }}>{cat?.label || service.category}</div>
+                          <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Service {i + 1}{i === 0 ? ' · Principal' : ''}</div>
+                        </div>
+                      </div>
+                      <button onClick={() => removeService(i)}
+                        style={{ padding: '4px 12px', borderRadius: 8, background: '#1a0a0a', border: '0.5px solid #2a1010', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                        Retirer
+                      </button>
                     </div>
+
+                    {/* Description pour ce métier */}
+                    <div style={{ marginBottom: 20 }}>
+                      <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>
+                        DESCRIPTION — {cat?.label?.toUpperCase()}
+                      </label>
+                      <textarea
+                        value={service.description}
+                        onChange={e => updateService(i, { description: e.target.value })}
+                        placeholder={`Décrivez vos compétences en ${cat?.label?.toLowerCase()}... (ex: spécialisé en rénovation, 10 ans d'expérience, intervention rapide)`}
+                        rows={3}
+                        maxLength={300}
+                        style={{
+                          width: '100%', padding: '12px 14px', background: '#0D0D12',
+                          border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8',
+                          fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif',
+                          fontWeight: 300, resize: 'none', lineHeight: 1.6,
+                        }}
+                      />
+                      <div style={{ fontSize: 10, color: '#444', textAlign: 'right', marginTop: 4 }}>{service.description.length}/300</div>
+                    </div>
+
+                    {/* Type de tarification */}
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 10 }}>
+                        TARIFICATION
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                        {PRICE_TYPES.map(pt => (
+                          <button key={pt.id} onClick={() => updateService(i, { price_type: pt.id as any })}
+                            style={{
+                              padding: '10px 14px', borderRadius: 10,
+                              border: `0.5px solid ${service.price_type === pt.id ? '#C9A84C' : '#2a2a3a'}`,
+                              background: service.price_type === pt.id ? '#1a1508' : '#0D0D12',
+                              color: service.price_type === pt.id ? '#C9A84C' : '#555',
+                              fontSize: 12, fontWeight: service.price_type === pt.id ? 800 : 300,
+                              cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
+                              display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
+                            }}
+                          >
+                            <span>{pt.icon}</span> {pt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Prix (si applicable) */}
+                    {(service.price_type === 'hour' || service.price_type === 'service') && (
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                          <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em' }}>
+                            {service.price_type === 'hour' ? 'TARIF HORAIRE' : 'TARIF PAR PRESTATION'}
+                          </label>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: '#C9A84C' }}>
+                            {service.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 12, color: '#555', fontWeight: 300 }}>{getPriceType(service.price_type)?.suffix}</span>
+                          </div>
+                        </div>
+                        <input type="range" min={500} max={30000} step={500}
+                          value={service.price}
+                          onChange={e => updateService(i, { price: Number(e.target.value) })}
+                          style={{ width: '100%' }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                          <span style={{ fontSize: 10, color: '#444' }}>500 DA</span>
+                          <span style={{ fontSize: 10, color: '#444' }}>30 000 DA</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {service.price_type === 'quote' && (
+                      <div style={{ padding: '10px 14px', borderRadius: 8, background: '#0D0D12', border: '0.5px solid #2a2a3a' }}>
+                        <span style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>📝 Les clients vous contacteront pour obtenir un devis personnalisé</span>
+                      </div>
+                    )}
+                    {service.price_type === 'negotiable' && (
+                      <div style={{ padding: '10px 14px', borderRadius: 8, background: '#0D0D12', border: '0.5px solid #2a2a3a' }}>
+                        <span style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>🤝 Le prix sera discuté avec le client selon la prestation</span>
+                      </div>
+                    )}
                   </div>
-                  {r.comment && (
-                    <div style={{ fontSize: 13, color: '#666', lineHeight: 1.6, fontWeight: 300 }}>"{r.comment}"</div>
+                )
+              })}
+
+              {/* Bouton ajouter un métier */}
+              {!addingService ? (
+                <button onClick={() => setAddingService(true)}
+                  style={{
+                    width: '100%', padding: '16px', borderRadius: 14,
+                    background: 'transparent', border: '1px dashed #C9A84C44',
+                    color: '#C9A84C', fontSize: 14, fontWeight: 800,
+                    cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  + Ajouter un métier {services.length === 0 && '(obligatoire)'}
+                </button>
+              ) : (
+                <div style={{ background: '#161620', border: '0.5px solid #C9A84C33', borderRadius: 16, padding: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8' }}>Choisir un métier</div>
+                    <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', fontSize: 16 }}>✕</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    {CATEGORIES.filter(c => !services.find(s => s.category === c.id)).map(cat => (
+                      <button key={cat.id} onClick={() => addService(cat.id)}
+                        style={{
+                          padding: '14px 10px', borderRadius: 12, border: '0.5px solid #2a2a3a',
+                          background: '#0D0D12', cursor: 'pointer', display: 'flex',
+                          flexDirection: 'column', alignItems: 'center', gap: 8,
+                          fontFamily: 'Nexa, sans-serif', transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = cat.color; e.currentTarget.style.background = cat.color + '12' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a3a'; e.currentTarget.style.background = '#0D0D12' }}
+                      >
+                        <span style={{ fontSize: 22 }}>{cat.icon}</span>
+                        <span style={{ fontSize: 11, color: '#888', fontWeight: 300 }}>{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {services.length === 0 && (
+                    <p style={{ fontSize: 11, color: '#555', fontWeight: 300, marginTop: 12, textAlign: 'center' }}>
+                      Vous pouvez sélectionner plusieurs métiers
+                    </p>
                   )}
                 </div>
-              ))}
+              )}
+
+              {services.length === 0 && (
+                <p style={{ fontSize: 12, color: '#f87171', fontWeight: 300, marginTop: 8, textAlign: 'center' }}>
+                  Ajoutez au moins un métier ou des mots-clés dans l'onglet "Mots-clés"
+                </p>
+              )}
             </div>
           )}
+
+          {/* ═══ SECTION : INFORMATIONS ═══ */}
+          {activeSection === 'info' && (
+            <div style={{ animation: 'fadeIn 0.3s ease' }}>
+              <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 16, padding: '24px' }}>
+
+                {/* Nom */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>NOM COMPLET</label>
+                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                    style={{ width: '100%', padding: '13px 16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                </div>
+
+                {/* Téléphone (unique!) */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>
+                    NUMÉRO DE TÉLÉPHONE <span style={{ color: '#f87171' }}>*</span>
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ padding: '13px 14px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#888', fontSize: 14, fontWeight: 300, flexShrink: 0 }}>
+                      +213
+                    </div>
+                    <input type="tel" value={phone} placeholder="0555 12 34 56"
+                      onChange={e => { setPhone(e.target.value); setPhoneError('') }}
+                      onBlur={() => checkPhone(phone)}
+                      style={{ flex: 1, padding: '13px 16px', background: '#0D0D12', border: `0.5px solid ${phoneError ? '#f87171' : '#2a2a3a'}`, borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                  </div>
+                  {phoneError && <p style={{ fontSize: 12, color: '#f87171', marginTop: 6, fontWeight: 300 }}>{phoneError}</p>}
+                  <p style={{ fontSize: 11, color: '#444', marginTop: 6, fontWeight: 300 }}>
+                    🔒 Un seul compte par numéro — les clients pourront vous appeler directement
+                  </p>
+                </div>
+
+                {/* Bio */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>BIO / PRÉSENTATION</label>
+                  <textarea value={bio} onChange={e => setBio(e.target.value)}
+                    placeholder="Présentez-vous en quelques mots... (parcours, expérience, ce qui vous distingue)"
+                    rows={4} maxLength={500}
+                    style={{ width: '100%', padding: '12px 14px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', lineHeight: 1.6 }}/>
+                  <div style={{ fontSize: 10, color: '#444', textAlign: 'right', marginTop: 4 }}>{bio.length}/500</div>
+                </div>
+
+                {/* Expérience */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 10 }}>ANNÉES D'EXPÉRIENCE</label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[1, 2, 3, 5, 7, 10, 15, 20].map(y => (
+                      <button key={y} onClick={() => setExperience(y)}
+                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#C9A84C' : '#2a2a3a'}`, background: experience === y ? '#1a1508' : '#0D0D12', color: experience === y ? '#C9A84C' : '#555', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                        {y} an{y > 1 ? 's' : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Photo de profil */}
+                <div>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 12 }}>PHOTO DE PROFIL</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    {user && (
+                      <ArtisanAvatar
+                        userId={user.id}
+                        currentUrl={avatarUrl}
+                        name={fullName}
+                        size={72}
+                        editable={true}
+                        onUpload={url => setAvatarUrl(url)}
+                      />
+                    )}
+                    <div>
+                      <p style={{ fontSize: 13, color: '#888', fontWeight: 300, marginBottom: 4 }}>Une photo aide les clients à vous faire confiance</p>
+                      <p style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>JPG ou PNG · Max 5MB</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══ SECTION : MOTS-CLÉS ═══ */}
+          {activeSection === 'tags' && (
+            <div style={{ animation: 'fadeIn 0.3s ease' }}>
+              <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 16, padding: '24px' }}>
+
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8', marginBottom: 6 }}>Mots-clés & spécialités</div>
+                  <p style={{ fontSize: 12, color: '#555', fontWeight: 300, lineHeight: 1.6 }}>
+                    Ajoutez des mots-clés pour décrire vos spécialités. Les clients qui cherchent ces termes vous trouveront plus facilement.
+                    {services.length === 0 && <><br/><span style={{ color: '#C9A84C' }}>Si vous n'avez sélectionné aucun métier standard, vos mots-clés sont essentiels !</span></>}
+                  </p>
+                </div>
+
+                {/* Zone de saisie tags */}
+                <div style={{ minHeight: 52, padding: '8px 12px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 12 }}>
+                  {tags.map(tag => (
+                    <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: '#1a1508', border: '0.5px solid #C9A84C', fontSize: 12, color: '#C9A84C', fontWeight: 800 }}>
+                      {tag}
+                      <button onClick={() => removeTag(tag)} style={{ background: 'transparent', border: 'none', color: '#C9A84C', cursor: 'pointer', fontSize: 11, padding: 0, opacity: 0.7 }}>✕</button>
+                    </div>
+                  ))}
+                  <input
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
+                    placeholder={tags.length === 0 ? 'Tapez un mot-clé et appuyez Entrée...' : '+ Ajouter...'}
+                    style={{ flex: 1, minWidth: 120, background: 'transparent', border: 'none', outline: 'none', color: '#F0EDE8', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300, padding: '4px' }}
+                  />
+                  {tagInput.trim() && (
+                    <button onClick={() => addTag(tagInput)}
+                      style={{ padding: '4px 14px', borderRadius: 20, background: '#C9A84C', border: 'none', color: '#0D0D12', fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0 }}>
+                      + Ajouter
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <span style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{tags.length}/15 mots-clés</span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {Array.from({ length: 15 }).map((_, i) => (
+                      <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < tags.length ? '#C9A84C' : '#2a2a3a' }}/>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Suggestions */}
+                {tags.length < 15 && (
+                  <div>
+                    <div style={{ fontSize: 10, color: '#555', fontWeight: 800, letterSpacing: '.08em', marginBottom: 8 }}>SUGGESTIONS</div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {POPULAR_TAGS.filter(t => !tags.includes(t)).slice(0, 10).map(t => (
+                        <button key={t} onClick={() => addTag(t)}
+                          style={{ padding: '5px 14px', borderRadius: 20, background: 'transparent', border: '0.5px solid #2a2a3a', color: '#555', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'all 0.15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a3a'; e.currentTarget.style.color = '#555' }}
+                        >+ {t}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Bouton Sauvegarder (fixe en bas) ── */}
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, #0D0D12 30%)', padding: '40px 24px 24px', zIndex: 50 }}>
+            <div style={{ maxWidth: 720, margin: '0 auto' }}>
+              <button onClick={handleSave} disabled={saving}
+                style={{
+                  width: '100%', padding: '16px',
+                  background: saved ? '#0a2010' : saving ? '#a08030' : '#C9A84C',
+                  border: saved ? '0.5px solid #4ade8044' : 'none',
+                  borderRadius: 14,
+                  color: saved ? '#4ade80' : '#0D0D12',
+                  fontSize: 15, fontWeight: 800,
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',
+                  boxShadow: saved ? 'none' : '0 4px 20px #C9A84C44',
+                }}
+              >
+                {saving ? 'Sauvegarde...' : saved ? '✅ Profil sauvegardé !' : isNewProfile ? '🚀 Créer mon profil' : 'Sauvegarder les modifications'}
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
-    </div>
+    </>
   )
 }
-
-

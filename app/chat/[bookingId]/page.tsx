@@ -5,9 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-
-
-
+import { supabase } from '@/lib/supabase'
 
 type Message = {
   id: string

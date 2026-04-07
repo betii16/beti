@@ -1,36 +1,23 @@
 'use client'
 
 // components/ReviewSystem.tsx
-// Système d'avis complet BETI
+// Système d'avis BETI — avec upload photos travaux (clients vérifiés uniquement)
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
+import { ReviewPhotoUpload } from '@/components/ReviewPhotos'
 
-
-
-// ── Composant étoiles interactif ─────────────────────────────────
+// ── Étoiles interactives ─────────────────────────────────────────
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hovered, setHovered] = useState(0)
-
   return (
     <div style={{ display: 'flex', gap: 6 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <button
-          key={i}
-          onMouseEnter={() => setHovered(i)}
-          onMouseLeave={() => setHovered(0)}
-          onClick={() => onChange(i)}
-          style={{
-            background: 'transparent', border: 'none', cursor: 'pointer', padding: 2,
-          }}
-        >
-          <svg
-            width="32" height="32" viewBox="0 0 24 24"
-            fill={(hovered || value) >= i ? '#C9A84C' : '#2a2a3a'}
-            style={{ transition: 'fill 0.15s' }}
-          >
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+        <button key={i} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(0)} onClick={() => onChange(i)}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 2 }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill={(hovered || value) >= i ? '#C9A84C' : '#2a2a3a'} style={{ transition: 'fill 0.15s' }}>
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
           </svg>
         </button>
       ))}
@@ -39,14 +26,10 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
 }
 
 const RATING_LABELS: Record<number, string> = {
-  1: 'Très décevant',
-  2: 'Décevant',
-  3: 'Correct',
-  4: 'Très bien',
-  5: 'Excellent !',
+  1: 'Très décevant', 2: 'Décevant', 3: 'Correct', 4: 'Très bien', 5: 'Excellent !',
 }
 
-// ── Formulaire laisser un avis ───────────────────────────────────
+// ── Formulaire laisser un avis (avec photos) ─────────────────────
 
 export function LeaveReview({
   bookingId,
@@ -67,6 +50,7 @@ export function LeaveReview({
 }) {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
+  const [photos, setPhotos] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -82,6 +66,7 @@ export function LeaveReview({
       client_id: clientId,
       rating,
       comment: comment.trim() || null,
+      photos: photos.length > 0 ? photos : null,
     })
 
     if (err) {
@@ -97,143 +82,87 @@ export function LeaveReview({
     return (
       <div style={{ textAlign: 'center', padding: '32px 0' }}>
         <div style={{ fontSize: 52, marginBottom: 16 }}>⭐</div>
-        <div style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
-          fontSize: 24, color: '#F0EDE8', marginBottom: 10,
-        }}>Merci pour votre avis !</div>
-        <div style={{ fontSize: 13, color: '#555' }}>
-          Votre avis aide la communauté BETI.
-        </div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: '#F0EDE8', marginBottom: 10, fontFamily: 'Nexa, sans-serif' }}>Merci pour votre avis !</div>
+        <div style={{ fontSize: 13, color: '#555' }}>Votre avis aide la communauté BETI.</div>
       </div>
     )
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24, zIndex: 300,
-    }}>
-      <div style={{
-        background: '#161620', border: '0.5px solid #2a2a3a',
-        borderRadius: 20, padding: '36px', maxWidth: 460, width: '100%',
-      }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 300 }}>
+      <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 20, padding: '36px', maxWidth: 480, width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
+        
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 28 }}>
           <div>
-            <div style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: 24, fontWeight: 500, color: '#F0EDE8', marginBottom: 4,
-            }}>
-              Notez votre artisan
-            </div>
-            <div style={{ fontSize: 13, color: '#555' }}>
-              {serviceTitle} · {artisanName}
-            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: '#F0EDE8', marginBottom: 4, fontFamily: 'Nexa, sans-serif' }}>Notez votre artisan</div>
+            <div style={{ fontSize: 13, color: '#555' }}>{serviceTitle} · {artisanName}</div>
           </div>
-          <button onClick={onClose} style={{
-            background: 'transparent', border: 'none',
-            color: '#555', cursor: 'pointer', fontSize: 20,
-          }}>✕</button>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', fontSize: 20 }}>✕</button>
         </div>
 
         {/* Étoiles */}
         <div style={{ marginBottom: 24, textAlign: 'center' }}>
-          <StarPicker value={rating} onChange={setRating} />
-          {rating > 0 && (
-            <div style={{
-              fontSize: 14, color: '#C9A84C', marginTop: 10, fontWeight: 500,
-            }}>
-              {RATING_LABELS[rating]}
-            </div>
-          )}
+          <StarPicker value={rating} onChange={setRating}/>
+          {rating > 0 && <div style={{ fontSize: 14, color: '#C9A84C', marginTop: 10, fontWeight: 800 }}>{RATING_LABELS[rating]}</div>}
         </div>
 
         {/* Commentaire */}
-        <div style={{ marginBottom: 24 }}>
-          <label style={{
-            fontSize: 11, color: '#888', display: 'block',
-            marginBottom: 8, fontWeight: 500, letterSpacing: '0.05em',
-          }}>
-            COMMENTAIRE (optionnel)
-          </label>
-          <textarea
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            placeholder="Décrivez votre expérience avec cet artisan..."
-            rows={4}
-            maxLength={500}
-            style={{
-              width: '100%', padding: '14px 16px',
-              background: '#0D0D12', border: '0.5px solid #2a2a3a',
-              borderRadius: 10, color: '#F0EDE8', fontSize: 14,
-              outline: 'none', fontFamily: 'DM Sans, sans-serif',
-              resize: 'none', lineHeight: 1.6,
-            }}
-          />
-          <div style={{ fontSize: 11, color: '#444', textAlign: 'right', marginTop: 4 }}>
-            {comment.length}/500
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.05em' }}>COMMENTAIRE (optionnel)</label>
+          <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Décrivez votre expérience..." rows={3} maxLength={500}
+            style={{ width: '100%', padding: '14px 16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', resize: 'none', lineHeight: 1.6, fontWeight: 300 }}/>
+          <div style={{ fontSize: 11, color: '#444', textAlign: 'right', marginTop: 4 }}>{comment.length}/500</div>
+        </div>
+
+        {/* PHOTOS DE TRAVAUX — uniquement pour clients ayant réservé */}
+        <div style={{ marginBottom: 20, padding: '16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 12 }}>
+          <ReviewPhotoUpload bookingId={bookingId} onPhotosChange={setPhotos}/>
+          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#4ade80' }}/>
+            <span style={{ fontSize: 10, color: '#4ade80', fontWeight: 300 }}>
+              Vos photos seront visibles sur le profil de l'artisan avec le badge "Client vérifié"
+            </span>
           </div>
         </div>
 
-        {/* Critères */}
-        <div style={{
-          background: '#0D0D12', border: '0.5px solid #2a2a3a',
-          borderRadius: 10, padding: '14px 16px', marginBottom: 20,
-        }}>
-          <div style={{ fontSize: 11, color: '#555', marginBottom: 10, fontWeight: 500, letterSpacing: '0.05em' }}>
-            CRITÈRES RAPIDES
-          </div>
+        {/* Critères rapides */}
+        <div style={{ background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, padding: '14px 16px', marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: '#555', marginBottom: 10, fontWeight: 800, letterSpacing: '0.05em' }}>CRITÈRES RAPIDES</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {['Ponctuel', 'Propre', 'Efficace', 'Prix correct', 'Pro', 'Recommande'].map(tag => (
-              <button
-                key={tag}
-                onClick={() => setComment(prev =>
-                  prev.includes(tag) ? prev.replace(tag + '. ', '') : prev + tag + '. '
-                )}
+              <button key={tag}
+                onClick={() => setComment(prev => prev.includes(tag) ? prev.replace(tag + '. ', '') : prev + tag + '. ')}
                 style={{
                   padding: '5px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
                   background: comment.includes(tag) ? '#1a1508' : 'transparent',
                   border: `0.5px solid ${comment.includes(tag) ? '#C9A84C' : '#2a2a3a'}`,
                   color: comment.includes(tag) ? '#C9A84C' : '#555',
-                  fontFamily: 'inherit', transition: 'all 0.15s',
+                  fontFamily: 'Nexa, sans-serif', transition: 'all 0.15s',
                 }}
-              >
-                {tag}
-              </button>
+              >{tag}</button>
             ))}
           </div>
         </div>
 
-        {/* Erreur */}
         {error && (
-          <div style={{
-            padding: '10px 14px', borderRadius: 8, marginBottom: 16,
-            background: '#1a0a0a', border: '0.5px solid #2a1010',
-            fontSize: 13, color: '#f87171',
-          }}>{error}</div>
+          <div style={{ padding: '10px 14px', borderRadius: 8, marginBottom: 16, background: '#1a0a0a', border: '0.5px solid #2a1010', fontSize: 13, color: '#f87171' }}>{error}</div>
         )}
 
         {/* Boutons */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{
-            flex: 1, padding: '14px', background: 'transparent',
-            border: '0.5px solid #2a2a3a', borderRadius: 10,
-            color: '#666', fontSize: 14, cursor: 'pointer', fontFamily: 'inherit',
-          }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '14px', background: 'transparent', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#666', fontSize: 14, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
             Plus tard
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || rating === 0}
+          <button onClick={handleSubmit} disabled={loading || rating === 0}
             style={{
               flex: 2, padding: '14px',
-              background: rating === 0 ? '#1a1a2a' : loading ? '#a08030' : '#C9A84C',
+              background: rating === 0 ? '#1a1a2a' : '#C9A84C',
               border: 'none', borderRadius: 10,
               color: rating === 0 ? '#444' : '#0D0D12',
-              fontSize: 14, fontWeight: 500,
+              fontSize: 14, fontWeight: 800,
               cursor: rating === 0 ? 'not-allowed' : 'pointer',
-              fontFamily: 'inherit',
+              fontFamily: 'Nexa, sans-serif',
             }}
           >
             {loading ? 'Envoi...' : 'Publier mon avis'}
@@ -248,17 +177,12 @@ export function LeaveReview({
 
 export function ReviewList({ reviews }: {
   reviews: {
-    id: string
-    rating: number
-    comment?: string
-    created_at: string
-    client?: { full_name: string }
-    reply?: string
+    id: string; rating: number; comment?: string; photos?: string[]
+    created_at: string; client?: { full_name: string }; reply?: string
   }[]
 }) {
   const timeAgo = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime()
-    const d = Math.floor(diff / 86400000)
+    const d = Math.floor((Date.now() - new Date(date).getTime()) / 86400000)
     if (d === 0) return 'Aujourd\'hui'
     if (d === 1) return 'Hier'
     if (d < 7) return `Il y a ${d} jours`
@@ -267,70 +191,43 @@ export function ReviewList({ reviews }: {
   }
 
   if (reviews.length === 0) {
-    return (
-      <div style={{
-        textAlign: 'center', padding: '48px',
-        color: '#444', fontSize: 14,
-      }}>
-        Aucun avis pour l'instant.
-      </div>
-    )
+    return <div style={{ textAlign: 'center', padding: '48px', color: '#444', fontSize: 14 }}>Aucun avis pour l'instant.</div>
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {reviews.map(r => (
-        <div key={r.id} style={{
-          background: '#161620', border: '0.5px solid #2a2a3a',
-          borderRadius: 14, padding: '20px 24px',
-        }}>
-          {/* Header */}
+        <div key={r.id} style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '20px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: '50%',
-                background: '#2a2a3a', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: 14, color: '#888', fontWeight: 500,
-              }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#2a2a3a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#888', fontWeight: 800 }}>
                 {(r.client?.full_name || 'C')[0].toUpperCase()}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#F0EDE8' }}>
-                  {r.client?.full_name || 'Client anonyme'}
-                </div>
-                <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>
-                  {timeAgo(r.created_at)}
-                </div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8' }}>{r.client?.full_name || 'Client vérifié'}</div>
+                <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{timeAgo(r.created_at)}</div>
               </div>
             </div>
-            {/* Étoiles */}
             <div style={{ display: 'flex', gap: 2 }}>
-              {[1, 2, 3, 4, 5].map(i => (
-                <svg key={i} width="13" height="13" viewBox="0 0 24 24"
-                  fill={i <= r.rating ? '#C9A84C' : '#2a2a3a'}>
-                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                </svg>
+              {[1,2,3,4,5].map(i => (
+                <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill={i <= r.rating ? '#C9A84C' : '#2a2a3a'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
               ))}
             </div>
           </div>
-
-          {/* Commentaire */}
-          {r.comment && (
-            <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, fontWeight: 300 }}>
-              {r.comment}
-            </p>
+          {r.comment && <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, fontWeight: 300 }}>{r.comment}</p>}
+          
+          {/* Photos de travaux */}
+          {r.photos && r.photos.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+              {r.photos.map((url, i) => (
+                <img key={i} src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: 'cover', border: '0.5px solid #2a2a3a', cursor: 'pointer' }}/>
+              ))}
+            </div>
           )}
 
-          {/* Réponse artisan */}
           {r.reply && (
-            <div style={{
-              marginTop: 14, padding: '12px 16px',
-              background: '#0D0D12', borderRadius: 10,
-              borderLeft: '2px solid #C9A84C',
-            }}>
-              <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 500, marginBottom: 6, letterSpacing: '0.05em' }}>
-                RÉPONSE DE L'ARTISAN
-              </div>
+            <div style={{ marginTop: 14, padding: '12px 16px', background: '#0D0D12', borderRadius: 10, borderLeft: '2px solid #C9A84C' }}>
+              <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, marginBottom: 6, letterSpacing: '0.05em' }}>RÉPONSE DE L'ARTISAN</div>
               <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6 }}>{r.reply}</p>
             </div>
           )}
@@ -340,57 +237,30 @@ export function ReviewList({ reviews }: {
   )
 }
 
-// ── Résumé des notes ─────────────────────────────────────────────
-
-export function RatingSummary({ reviews }: {
-  reviews: { rating: number }[]
-}) {
+export function RatingSummary({ reviews }: { reviews: { rating: number }[] }) {
   if (reviews.length === 0) return null
-
   const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-  const dist = [5, 4, 3, 2, 1].map(star => ({
-    star,
-    count: reviews.filter(r => r.rating === star).length,
+  const dist = [5,4,3,2,1].map(star => ({
+    star, count: reviews.filter(r => r.rating === star).length,
     pct: Math.round((reviews.filter(r => r.rating === star).length / reviews.length) * 100),
   }))
 
   return (
-    <div style={{
-      background: '#161620', border: '0.5px solid #2a2a3a',
-      borderRadius: 14, padding: '24px', marginBottom: 24,
-      display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center',
-    }}>
-      {/* Note globale */}
+    <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '24px', marginBottom: 24, display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
       <div style={{ textAlign: 'center', minWidth: 100 }}>
-        <div style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
-          fontSize: 56, fontWeight: 500, color: '#C9A84C', lineHeight: 1,
-        }}>
-          {avg.toFixed(1)}
-        </div>
+        <div style={{ fontSize: 48, fontWeight: 800, color: '#C9A84C', lineHeight: 1, fontFamily: 'Nexa, sans-serif' }}>{avg.toFixed(1)}</div>
         <div style={{ display: 'flex', gap: 2, justifyContent: 'center', margin: '8px 0' }}>
-          {[1, 2, 3, 4, 5].map(i => (
-            <svg key={i} width="14" height="14" viewBox="0 0 24 24"
-              fill={i <= Math.round(avg) ? '#C9A84C' : '#2a2a3a'}>
-              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-            </svg>
-          ))}
+          {[1,2,3,4,5].map(i => <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i <= Math.round(avg) ? '#C9A84C' : '#2a2a3a'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}
         </div>
         <div style={{ fontSize: 11, color: '#555' }}>{reviews.length} avis</div>
       </div>
-
-      {/* Distribution */}
       <div style={{ flex: 1, minWidth: 200 }}>
         {dist.map(d => (
-          <div key={d.star} style={{
-            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6,
-          }}>
+          <div key={d.star} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <span style={{ fontSize: 11, color: '#555', width: 8 }}>{d.star}</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="#C9A84C">
-              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-            </svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#C9A84C"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
             <div style={{ flex: 1, height: 5, background: '#1e1e2a', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ width: `${d.pct}%`, height: '100%', background: '#C9A84C', borderRadius: 3, transition: 'width 0.5s ease' }} />
+              <div style={{ width: `${d.pct}%`, height: '100%', background: '#C9A84C', borderRadius: 3 }}/>
             </div>
             <span style={{ fontSize: 11, color: '#555', width: 28 }}>{d.pct}%</span>
           </div>

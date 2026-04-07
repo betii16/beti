@@ -5,10 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-
-
-
-
+import { supabase } from '@/lib/supabase'
 function pad(n: number) { return String(n).padStart(2, '0') }
 
 function formatDate(dateStr: string) {
