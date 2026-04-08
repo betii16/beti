@@ -29,11 +29,13 @@ export default function BetiMap({
   clientLat = 36.7538,
   clientLng = 3.0588,
   showAllArtisans = true,
+  categoryFilter = '',
 }: {
   trackingArtisanId?: string
   clientLat?: number
   clientLng?: number
   showAllArtisans?: boolean
+  categoryFilter?: string
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<any>(null)
@@ -154,9 +156,15 @@ export default function BetiMap({
         zoomControl: false,
       })
 
-      // Tile layer dark avec bonne lisibilité
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // Satellite — ESRI World Imagery
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
+      }).addTo(map)
+
+      // Labels par-dessus le satellite
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        pane: 'overlayPane',
       }).addTo(map)
 
       L.control.zoom({ position: 'bottomright' }).addTo(map)
@@ -221,17 +229,17 @@ export default function BetiMap({
           radius: artisan.radius_km * 1000,
           color: artisan.color,
           fillColor: artisan.color,
-          fillOpacity: 0.05,
-          weight: 1,
-          opacity: 0.3,
+          fillOpacity: 0.08,
+          weight: 1.5,
+          opacity: 0.4,
           dashArray: '4 4',
         }).addTo(map)
 
-        // Marqueur artisan
+        // Marqueur artisan — visible sur satellite
         const icon = L.divIcon({
-          html: `<div style="width:40px;height:40px;border-radius:50%;background:${artisan.color}22;border:2px solid ${artisan.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${artisan.color};box-shadow:0 0 12px ${artisan.color}44;cursor:pointer;transition:transform 0.2s;${!artisan.available ? 'opacity:0.4;filter:grayscale(0.6)' : ''}">${artisan.initials}</div>`,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
+          html: `<div style="width:42px;height:42px;border-radius:50%;background:rgba(13,13,18,0.85);border:2.5px solid ${artisan.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${artisan.color};box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 12px ${artisan.color}44;cursor:pointer;${!artisan.available ? 'opacity:0.4;filter:grayscale(0.6)' : ''}">${artisan.initials}</div>`,
+          iconSize: [42, 42],
+          iconAnchor: [21, 21],
           className: '',
         })
 
@@ -263,7 +271,7 @@ export default function BetiMap({
     addMarkers()
   }, [addMarkers])
 
-  // ── Suivi GPS artisan en route ──
+  // ── Suivi GPS RÉEL via Supabase Realtime ──
   useEffect(() => {
     if (!trackingArtisanId || !mapReady || !mapInstance.current || !leafletRef.current) return
     const L = leafletRef.current
@@ -272,52 +280,71 @@ export default function BetiMap({
     const artisan = artisans.find(a => a.id === trackingArtisanId) || artisans[0]
     if (!artisan) return
 
-    let lat = artisan.lat + 0.02
-    let lng = artisan.lng + 0.02
-
     const vehicleIcon = L.divIcon({
-      html: `<div style="width:44px;height:44px;border-radius:50%;background:#C9A84C;border:3px solid #0D0D12;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px #C9A84C88">🔧</div>`,
+      html: `<div style="width:44px;height:44px;border-radius:50%;background:rgba(13,13,18,0.9);border:3px solid #C9A84C;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#C9A84C;box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 20px #C9A84C44">${artisan.initials}</div>`,
       iconSize: [44, 44],
       iconAnchor: [22, 22],
       className: '',
     })
 
-    if (!trackingMarkerRef.current) {
-      trackingMarkerRef.current = L.marker([lat, lng], { icon: vehicleIcon }).addTo(map)
+    // Placer le marqueur à la position actuelle de l'artisan
+    if (trackingMarkerRef.current) {
+      try { map.removeLayer(trackingMarkerRef.current) } catch {}
     }
+    trackingMarkerRef.current = L.marker([artisan.lat, artisan.lng], { icon: vehicleIcon }).addTo(map)
 
-    const interval = setInterval(() => {
-      lat += (clientLat - lat) * 0.05
-      lng += (clientLng - lng) * 0.05
+    const updatePosition = (lat: number, lng: number) => {
       trackingMarkerRef.current?.setLatLng([lat, lng])
       if (routeLayerRef.current) {
         try { map.removeLayer(routeLayerRef.current) } catch {}
       }
       routeLayerRef.current = L.polyline(
         [[lat, lng], [clientLat, clientLng]],
-        { color: '#C9A84C', weight: 2, opacity: 0.8, dashArray: '8 6' }
+        { color: '#C9A84C', weight: 2.5, opacity: 0.9, dashArray: '8 6' }
       ).addTo(map)
       const dist = calcDist(lat, lng, clientLat, clientLng)
       setDistance(dist.toFixed(1))
       setEta(Math.max(1, Math.round(dist / 30 * 60)) + ' min')
-    }, 2000)
+      map.fitBounds([[lat, lng], [clientLat, clientLng]], { padding: [80, 80] })
+    }
+
+    // Position initiale
+    updatePosition(artisan.lat, artisan.lng)
+
+    // Écouter les mises à jour GPS en temps réel
+    const channel = supabase
+      .channel(`track-${trackingArtisanId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'artisans',
+        filter: `id=eq.${trackingArtisanId}`,
+      }, (payload: any) => {
+        const { lat, lng } = payload.new
+        if (lat && lng) updatePosition(lat, lng)
+      })
+      .subscribe()
 
     return () => {
-      clearInterval(interval)
+      supabase.removeChannel(channel)
       if (trackingMarkerRef.current) {
         try { map.removeLayer(trackingMarkerRef.current) } catch {}
         trackingMarkerRef.current = null
+      }
+      if (routeLayerRef.current) {
+        try { map.removeLayer(routeLayerRef.current) } catch {}
+        routeLayerRef.current = null
       }
     }
   }, [trackingArtisanId, mapReady, artisans, clientLat, clientLng])
 
   return (
     <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: '0.5px solid #2a2a3a' }}>
-      <div ref={mapRef} style={{ width: '100%', height: 520, background: '#12141e' }} />
+      <div ref={mapRef} style={{ width: '100%', height: 520, background: '#1a2030' }} />
 
       {/* Loading state */}
       {!mapReady && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#12141e', zIndex: 1000 }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a2030', zIndex: 1000 }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0D0D12', margin: '0 auto 12px', animation: 'mapPulse 1.5s infinite' }}>B</div>
             <div style={{ fontSize: 13, color: '#555', fontWeight: 300 }}>Chargement de la carte...</div>
@@ -385,11 +412,11 @@ export default function BetiMap({
       )}
 
       <style>{`
-        .leaflet-container { background: #12141e !important; }
-        .leaflet-tile { filter: brightness(1.3) saturate(0.5) contrast(1.1); }
-        .leaflet-popup-content-wrapper { background: #161620 !important; border: 0.5px solid #2a2a3a !important; border-radius: 10px !important; color: #F0EDE8 !important; }
-        .leaflet-popup-tip { background: #161620 !important; }
-        .leaflet-control-zoom a { background: #161620 !important; color: #F0EDE8 !important; border: 0.5px solid #2a2a3a !important; }
+        .leaflet-container { background: #1a2030 !important; }
+        .leaflet-tile { }
+        .leaflet-popup-content-wrapper { background: rgba(13,13,18,0.95) !important; border: 0.5px solid #C9A84C44 !important; border-radius: 10px !important; color: #F0EDE8 !important; backdrop-filter: blur(12px); }
+        .leaflet-popup-tip { background: rgba(13,13,18,0.95) !important; }
+        .leaflet-control-zoom a { background: rgba(13,13,18,0.85) !important; color: #F0EDE8 !important; border: 0.5px solid rgba(201,168,76,0.2) !important; backdrop-filter: blur(8px); }
         .leaflet-control-attribution { display: none; }
         @keyframes mapPulse { 0% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(2.5); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
       `}</style>

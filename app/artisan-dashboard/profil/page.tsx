@@ -58,6 +58,11 @@ export default function ArtisanProfileConfig() {
   const [bio, setBio] = useState('')
   const [experience, setExperience] = useState(1)
   const [locationCity, setLocationCity] = useState('')
+  const [artisanAddress, setArtisanAddress] = useState('')
+  const [artisanLat, setArtisanLat] = useState<number | null>(null)
+  const [artisanLng, setArtisanLng] = useState<number | null>(null)
+  const [radiusKm, setRadiusKm] = useState(20)
+  const [detectingAddr, setDetectingAddr] = useState(false)
 
   // Services (multi-catégorie)
   const [services, setServices] = useState<Service[]>([])
@@ -69,11 +74,44 @@ export default function ArtisanProfileConfig() {
 
   // Validation
   const [phoneError, setPhoneError] = useState('')
+  const [addressError, setAddressError] = useState('')
   const [isNewProfile, setIsNewProfile] = useState(false)
 
   useEffect(() => {
     loadProfile()
   }, [])
+
+  // Géocode une adresse texte en lat/lng
+  const geocodeAddress = async (addr: string) => {
+    if (!addr || addr.length < 3) return
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`)
+      const data = await res.json()
+      if (data && data[0]) {
+        setArtisanLat(parseFloat(data[0].lat))
+        setArtisanLng(parseFloat(data[0].lon))
+        setAddressError('')
+      }
+    } catch {}
+  }
+
+  // Détecter la position GPS de l'artisan
+  const detectPosition = () => {
+    if (!navigator.geolocation) return
+    setDetectingAddr(true)
+    navigator.geolocation.getCurrentPosition(async pos => {
+      setArtisanLat(pos.coords.latitude)
+      setArtisanLng(pos.coords.longitude)
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=fr`)
+        const data = await res.json()
+        const addr = data.address
+        const full = addr?.road ? `${addr.road}, ${addr.city || addr.town || addr.village || ''}` : addr?.city || addr?.town || ''
+        if (full) { setArtisanAddress(full); setLocationCity(addr?.city || addr?.town || addr?.village || '') }
+      } catch {}
+      setDetectingAddr(false)
+    }, () => setDetectingAddr(false))
+  }
 
   const loadProfile = async () => {
     const { data: { user: u } } = await supabase.auth.getUser()
@@ -96,6 +134,10 @@ export default function ArtisanProfileConfig() {
       setExperience(art.years_experience || 1)
       setLocationCity(art.location_city || '')
       setTags(art.tags || [])
+      setArtisanLat(art.lat || null)
+      setArtisanLng(art.lng || null)
+      setRadiusKm(art.intervention_radius_km || 20)
+      if (art.location_city) setArtisanAddress(art.location_city)
 
       // Charger les services
       if (art.services && Array.isArray(art.services)) {
@@ -166,44 +208,77 @@ export default function ArtisanProfileConfig() {
 
   const removeTag = (tag: string) => setTags(prev => prev.filter(t => t !== tag))
 
+  const [saveError, setSaveError] = useState('')
+
   // ── Sauvegarder ──
 
   const handleSave = async () => {
     if (!user) return
     if (phoneError) return
+    setSaveError('')
 
     // Validation
-    if (!phone || phone.length < 9) {
+    if (!phone || phone.length < 8) {
       setPhoneError('Numéro de téléphone obligatoire')
       setActiveSection('info')
       return
     }
+    if (!artisanAddress) {
+      setAddressError('Adresse obligatoire pour apparaître dans les résultats')
+      setActiveSection('info')
+      return
+    }
     if (services.length === 0 && tags.length === 0) {
+      setSaveError('Ajoutez au moins un métier ou des mots-clés')
       setActiveSection('services')
       return
     }
 
+    // Géocoder l'adresse si pas encore de coordonnées
+    if (!artisanLat || !artisanLng) {
+      await geocodeAddress(artisanAddress)
+    }
+
     setSaving(true)
 
-    // Sauvegarder profil
-    await supabase.from('profiles').update({
+    // 1. Sauvegarder profil
+    const { error: profErr } = await supabase.from('profiles').update({
       full_name: fullName,
       phone: phone,
     }).eq('id', user.id)
 
-    // Calculer la catégorie principale (première ajoutée)
+    if (profErr) { setSaveError('Erreur profil: ' + profErr.message); setSaving(false); return }
+
+    // 2. Catégorie principale
     const mainCategory = services.length > 0 ? services[0].category : 'plomberie'
     const mainRate = services.length > 0 ? services[0].price : 0
+    const city = artisanAddress.split(',').pop()?.trim() || artisanAddress
 
-    // Sauvegarder artisan
-    await supabase.from('artisans').update({
+    // 3. Sauvegarder artisan — essayer avec services d'abord
+    const artisanUpdate: any = {
       bio,
       category: mainCategory,
       hourly_rate: mainRate,
-      services: services,
       tags,
       years_experience: experience,
+      is_available: true,
+      lat: artisanLat,
+      lng: artisanLng,
+      intervention_radius_km: radiusKm,
+      location_city: city,
+    }
+
+    // Essayer avec le champ services (jsonb)
+    const { error: artErr } = await supabase.from('artisans').update({
+      ...artisanUpdate,
+      services: services,
     }).eq('id', user.id)
+
+    if (artErr) {
+      // Si le champ services n'existe pas, sauvegarder sans
+      const { error: artErr2 } = await supabase.from('artisans').update(artisanUpdate).eq('id', user.id)
+      if (artErr2) { setSaveError('Erreur: ' + artErr2.message); setSaving(false); return }
+    }
 
     setSaving(false)
     setSaved(true)
@@ -499,6 +574,55 @@ export default function ArtisanProfileConfig() {
                   </div>
                 </div>
 
+                {/* Adresse de l'artisan */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>
+                    ADRESSE <span style={{ color: '#f87171' }}>*</span>
+                  </label>
+                  <p style={{ fontSize: 11, color: '#444', fontWeight: 300, marginBottom: 10 }}>
+                    Les clients proches de cette adresse vous trouveront en priorité
+                  </p>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="text"
+                      value={artisanAddress}
+                      onChange={e => { setArtisanAddress(e.target.value); setAddressError('') }}
+                      onBlur={() => geocodeAddress(artisanAddress)}
+                      placeholder="Ex: 12 Rue Didouche Mourad, Alger"
+                      style={{ flex: 1, padding: '13px 16px', background: '#0D0D12', border: `0.5px solid ${addressError ? '#f87171' : '#2a2a3a'}`, borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+                    />
+                    <button onClick={detectPosition} disabled={detectingAddr}
+                      style={{ padding: '13px 16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#888', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, flexShrink: 0, transition: 'all 0.2s' }}
+                    >
+                      {detectingAddr ? '...' : 'Ma position'}
+                    </button>
+                  </div>
+                  {addressError && <p style={{ fontSize: 11, color: '#f87171', marginTop: 6, fontWeight: 300 }}>{addressError}</p>}
+                  {artisanLat && artisanLng && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ade80' }}/>
+                      <span style={{ fontSize: 11, color: '#4ade80', fontWeight: 300 }}>Position enregistrée</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Rayon d'intervention */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em' }}>RAYON D'INTERVENTION</label>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: '#C9A84C' }}>{radiusKm} km</span>
+                  </div>
+                  <input type="range" min={5} max={100} step={5}
+                    value={radiusKm}
+                    onChange={e => setRadiusKm(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: '#C9A84C', cursor: 'pointer' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                    <span style={{ fontSize: 10, color: '#444' }}>5 km</span>
+                    <span style={{ fontSize: 10, color: '#444' }}>100 km</span>
+                  </div>
+                </div>
+
                 {/* Photo de profil */}
                 <div>
                   <label style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 12 }}>PHOTO DE PROFIL</label>
@@ -590,6 +714,9 @@ export default function ArtisanProfileConfig() {
           {/* ── Bouton Sauvegarder (fixe en bas) ── */}
           <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, #0D0D12 30%)', padding: '40px 24px 24px', zIndex: 50 }}>
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
+              {saveError && (
+                <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 10, background: '#1a0a0a', border: '0.5px solid #2a1010', fontSize: 12, color: '#f87171', fontWeight: 300 }}>{saveError}</div>
+              )}
               <button onClick={handleSave} disabled={saving}
                 style={{
                   width: '100%', padding: '16px',
@@ -603,7 +730,7 @@ export default function ArtisanProfileConfig() {
                   boxShadow: saved ? 'none' : '0 4px 20px #C9A84C44',
                 }}
               >
-                {saving ? 'Sauvegarde...' : saved ? '✅ Profil sauvegardé !' : isNewProfile ? '🚀 Créer mon profil' : 'Sauvegarder les modifications'}
+                {saving ? 'Sauvegarde...' : saved ? 'Profil sauvegardé' : isNewProfile ? 'Créer mon profil' : 'Sauvegarder les modifications'}
               </button>
             </div>
           </div>

@@ -148,12 +148,54 @@ export default function ArtisanDashboard() {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b))
   }
 
+  const gpsWatchRef = useRef<number | null>(null)
+
   const toggleAvailability = async () => {
     if (!user) return
     const newVal = !isAvailable
     setIsAvailable(newVal)
-    await supabase.from('artisans').update({ is_available: newVal }).eq('id', user.id)
+
+    if (newVal) {
+      // Aller en ligne → partager la position GPS
+      if (navigator.geolocation) {
+        // Position immédiate
+        navigator.geolocation.getCurrentPosition(async pos => {
+          await supabase.from('artisans').update({
+            is_available: true,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          }).eq('id', user.id)
+        }, () => {
+          // GPS refusé → juste mettre disponible sans position
+          supabase.from('artisans').update({ is_available: true }).eq('id', user.id)
+        })
+
+        // Suivi continu → mise à jour toutes les 15s
+        gpsWatchRef.current = navigator.geolocation.watchPosition(async pos => {
+          await supabase.from('artisans').update({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          }).eq('id', user.id)
+        }, () => {}, { enableHighAccuracy: true, maximumAge: 10000 })
+      } else {
+        await supabase.from('artisans').update({ is_available: true }).eq('id', user.id)
+      }
+    } else {
+      // Hors ligne → arrêter le partage GPS
+      if (gpsWatchRef.current !== null) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current)
+        gpsWatchRef.current = null
+      }
+      await supabase.from('artisans').update({ is_available: false }).eq('id', user.id)
+    }
   }
+
+  // Nettoyer le watch GPS au démontage
+  useEffect(() => {
+    return () => {
+      if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current)
+    }
+  }, [])
 
   const pending      = bookings.filter(b => b.status === 'pending')
   const active       = bookings.filter(b => ['accepted', 'in_progress'].includes(b.status))

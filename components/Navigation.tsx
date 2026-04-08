@@ -144,15 +144,53 @@ export default function Navigation() {
                     {/* Infos */}
                     <div style={{ padding: '12px 14px', borderBottom: '0.5px solid #2a2a3a', background: '#0D0D12' }}>
                       <div style={{ fontSize: 12, fontWeight: 800, color: '#F0EDE8', marginBottom: 2 }}>{user.email}</div>
-                      <div style={{ fontSize: 10, color: '#555', fontWeight: 300 }}>
+                      <div style={{ fontSize: 10, color: role === 'artisan' ? '#C9A84C' : '#555', fontWeight: 800, letterSpacing: '0.06em' }}>
                         {role === 'artisan' ? t('nav.artisanAcc') : role === 'admin' ? t('nav.adminAcc') : t('nav.clientAcc')}
                       </div>
                     </div>
 
                     {/* Liens artisan */}
                     {role === 'artisan' && [
-                      { href: '/artisan-dashboard', label: t('nav.dashboard') },
-                      { href: '/map',               label: t('nav.mapArtisans') },
+                      { href: '/artisan-dashboard',          label: t('nav.dashboard'),    icon: '📋' },
+                      { href: '/artisan-dashboard/profil',   label: 'Mon profil',          icon: '👤' },
+                      { href: '/artisan-dashboard/planning', label: 'Planning',            icon: '📅' },
+                      { href: '/artisan-dashboard/revenus',  label: 'Revenus',             icon: '💰' },
+                      { href: '/map',                        label: t('nav.mapArtisans'),  icon: '🗺️' },
+                    ].map(item => (
+                      <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>
+                        <div style={{ padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s', fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 10 }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        ><span style={{ fontSize: 14 }}>{item.icon}</span>{item.label}</div>
+                      </a>
+                    ))}
+
+                    {/* Liens client */}
+                    {(role === 'client' || role === null) && [
+                      { href: '/mon-espace',              label: t('nav.mySpace'),     icon: '🏠' },
+                      { href: '/mon-espace/reservations', label: t('nav.myBookings'),  icon: '📋' },
+                      { href: '/map',                     label: t('nav.mapArtisans'), icon: '🗺️' },
+                    ].map(item => (
+                      <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>
+                        <div style={{ padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s', fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 10 }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        ><span style={{ fontSize: 14 }}>{item.icon}</span>{item.label}</div>
+                      </a>
+                    ))}
+
+                    {/* Préférences — pour TOUS les rôles */}
+                    <div style={{ height: '0.5px', background: '#2a2a3a' }}/>
+                    <div style={{ padding: '8px 14px 4px', fontSize: 10, color: '#444', fontWeight: 800, letterSpacing: '0.08em' }}>{t('nav.preferences')}</div>
+                    <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('nav.language')}</span>
+                      <LangToggle/>
+                    </div>
+                    <div style={{ height: '0.5px', background: '#2a2a3a' }}/>
+                    <div style={{ padding: '8px 14px 4px', fontSize: 10, color: '#444', fontWeight: 800, letterSpacing: '0.08em' }}>{t('nav.account')}</div>
+                    {[
+                      { href: '/parametres', label: t('nav.settings') },
+                      { href: '/aide',       label: t('nav.help')     },
                     ].map(item => (
                       <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>
                         <div style={{ padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s', fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
@@ -161,45 +199,6 @@ export default function Navigation() {
                         >{item.label}</div>
                       </a>
                     ))}
-
-                    {/* Liens client */}
-                    {(role === 'client' || role === null) && [
-                      { href: '/mon-espace', label: t('nav.mySpace')    },
-                      { href: '/mon-espace', label: t('nav.myBookings') },
-                      { href: '/map',        label: t('nav.mapArtisans')},
-                    ].map(item => (
-                      <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>
-                        <div style={{ padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s', fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                        >{item.label}</div>
-                      </a>
-                    ))}
-
-                    {/* Préférences */}
-                    {(role === 'client' || role === null) && (
-                      <>
-                        <div style={{ height: '0.5px', background: '#2a2a3a' }}/>
-                        <div style={{ padding: '8px 14px 4px', fontSize: 10, color: '#444', fontWeight: 800, letterSpacing: '0.08em' }}>{t('nav.preferences')}</div>
-                        <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('nav.language')}</span>
-                          <LangToggle/>
-                        </div>
-                        <div style={{ height: '0.5px', background: '#2a2a3a' }}/>
-                        <div style={{ padding: '8px 14px 4px', fontSize: 10, color: '#444', fontWeight: 800, letterSpacing: '0.08em' }}>{t('nav.account')}</div>
-                        {[
-                          { href: '/parametres', label: t('nav.settings') },
-                          { href: '/aide',       label: t('nav.help')     },
-                        ].map(item => (
-                          <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none' }}>
-                            <div style={{ padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s', fontSize: 12, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
-                              onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
-                              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                            >{item.label}</div>
-                          </a>
-                        ))}
-                      </>
-                    )}
 
                     <div style={{ height: '0.5px', background: '#2a2a3a' }}/>
                     <div onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s' }}

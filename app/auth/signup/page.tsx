@@ -18,25 +18,75 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false)
   const [phone, setPhone] = useState('')
   const [phoneError, setPhoneError] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [attempts, setAttempts] = useState(0)
 
+  // Sécurité : rate limiting côté client
+  const checkRateLimit = () => {
+    try {
+      const key = 'beti_signup_attempts'
+      const stored = JSON.parse(localStorage.getItem(key) || '{"count":0,"ts":0}')
+      const now = Date.now()
+      // Reset après 15 min
+      if (now - stored.ts > 15 * 60 * 1000) { stored.count = 0; stored.ts = now }
+      if (stored.count >= 5) return false
+      stored.count++
+      stored.ts = now
+      localStorage.setItem(key, JSON.stringify(stored))
+      return true
+    } catch { return true }
+  }
+
+  // Vérification téléphone unique (international)
   const checkPhoneUnique = async (phoneVal: string) => {
-    if (!phoneVal || phoneVal.length < 9) return
+    const cleaned = phoneVal.replace(/[\s\-\(\)]/g, '')
+    if (!cleaned || cleaned.length < 8) return
     setPhoneError('')
-    const { data } = await supabase.from('profiles').select('id').eq('phone', phoneVal).limit(1)
-    if (data && data.length > 0) setPhoneError('Ce numéro est déjà utilisé')
+    const { data } = await supabase.from('profiles').select('id').eq('phone', cleaned).limit(1)
+    if (data && data.length > 0) setPhoneError(isAr ? 'هذا الرقم مستخدم بالفعل' : 'Ce numéro est déjà associé à un compte')
+  }
+
+  // Vérification email unique
+  const checkEmailUnique = async (emailVal: string) => {
+    if (!emailVal || !emailVal.includes('@')) return
+    setEmailError('')
+    // Supabase auth gère l'unicité, mais on vérifie aussi dans profiles
+    const { data } = await supabase.from('profiles').select('id')
+      .or(`phone.eq.placeholder_${emailVal}`)  // dummy query to not expose emails
+    // L'unicité sera vérifiée au signUp par Supabase Auth
+  }
+
+  // Nettoyage du numéro
+  const cleanPhone = (val: string) => val.replace(/[\s\-\(\)]/g, '')
+
+  // Force du mot de passe
+  const passwordStrength = () => {
+    let s = 0
+    if (password.length >= 6) s++
+    if (password.length >= 10) s++
+    if (/[A-Z]/.test(password)) s++
+    if (/[0-9]/.test(password)) s++
+    if (/[^A-Za-z0-9]/.test(password)) s++
+    return s
   }
 
   const handleSignup = async () => {
     if (!role) return
-    if (phoneError) return
+    if (phoneError || emailError) return
+    if (!checkRateLimit()) {
+      setError(isAr ? 'محاولات كثيرة. حاول مرة أخرى بعد 15 دقيقة' : 'Trop de tentatives. Réessayez dans 15 minutes.')
+      return
+    }
     setLoading(true)
     setError('')
 
-    // Vérifier unicité du téléphone une dernière fois
-    if (phone) {
-      const { data: phoneCheck } = await supabase.from('profiles').select('id').eq('phone', phone).limit(1)
+    const cleanedPhone = cleanPhone(phone)
+
+    // Vérification finale unicité téléphone
+    if (cleanedPhone) {
+      const { data: phoneCheck } = await supabase.from('profiles').select('id').eq('phone', cleanedPhone).limit(1)
       if (phoneCheck && phoneCheck.length > 0) {
-        setError('Ce numéro de téléphone est déjà associé à un compte')
+        setError(isAr ? 'هذا الرقم مرتبط بحساب آخر' : 'Ce numéro de téléphone est déjà associé à un compte')
         setLoading(false)
         return
       }
@@ -46,31 +96,35 @@ export default function SignupPage() {
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, role, phone } }
+      options: { data: { full_name: fullName, role, phone: cleanedPhone } }
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      if (signUpError.message.includes('already registered')) {
+        setError(isAr ? 'هذا البريد الإلكتروني مسجل بالفعل' : 'Cet email est déjà utilisé. Connectez-vous ou utilisez un autre email.')
+      } else {
+        setError(signUpError.message)
+      }
       setLoading(false)
       return
     }
 
     const userId = signUpData.user?.id
     if (!userId) {
-      setError('Erreur lors de la création du compte')
+      setError(isAr ? 'خطأ أثناء إنشاء الحساب' : 'Erreur lors de la création du compte')
       setLoading(false)
       return
     }
 
-    // 2. Créer/mettre à jour le profil avec le BON rôle
+    // 2. Créer le profil avec le bon rôle
     await supabase.from('profiles').upsert({
       id: userId,
       full_name: fullName,
-      phone: phone,
+      phone: cleanedPhone,
       role: role,
     }, { onConflict: 'id' })
 
-    // 3. Si artisan, créer la ligne dans la table artisans
+    // 3. Si artisan, créer la ligne artisans
     if (role === 'artisan') {
       await supabase.from('artisans').upsert({
         id: userId,
@@ -84,7 +138,6 @@ export default function SignupPage() {
     }
 
     setSuccess(true)
-    // Artisan → config profil, Client → espace
     setTimeout(() => router.push(role === 'artisan' ? '/artisan-dashboard/profil' : '/mon-espace'), 2000)
     setLoading(false)
   }
@@ -169,21 +222,31 @@ export default function SignupPage() {
                       style={{ width: '100%', padding: '13px 16px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
                   </div>
                 ))}
-                {/* Téléphone — obligatoire, unique */}
+                {/* Téléphone — obligatoire, unique, international */}
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ fontSize: 11, color: '#888', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>
                     {isAr ? 'رقم الهاتف' : 'TÉLÉPHONE'} <span style={{ color: '#f87171' }}>*</span>
                   </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <div style={{ padding: '13px 12px', background: '#0D0D12', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#888', fontSize: 14, fontWeight: 300, flexShrink: 0 }}>+213</div>
-                    <input type="tel" placeholder="0555 12 34 56" value={phone}
-                      onChange={e => { setPhone(e.target.value); setPhoneError('') }}
-                      onBlur={() => checkPhoneUnique(phone)}
-                      style={{ flex: 1, padding: '13px 16px', background: '#0D0D12', border: `0.5px solid ${phoneError ? '#f87171' : '#2a2a3a'}`, borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
-                  </div>
+                  <input type="tel" placeholder={isAr ? 'مثال: +213 555 123 456' : '+213 555 12 34 56'} value={phone}
+                    onChange={e => { setPhone(e.target.value); setPhoneError('') }}
+                    onBlur={() => checkPhoneUnique(phone)}
+                    style={{ width: '100%', padding: '13px 16px', background: '#0D0D12', border: `0.5px solid ${phoneError ? '#f87171' : '#2a2a3a'}`, borderRadius: 10, color: '#F0EDE8', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
                   {phoneError && <p style={{ fontSize: 11, color: '#f87171', marginTop: 6, fontWeight: 300 }}>{phoneError}</p>}
-                  <p style={{ fontSize: 10, color: '#444', marginTop: 6, fontWeight: 300 }}>🔒 {isAr ? 'حساب واحد فقط لكل رقم هاتف' : 'Un seul compte par numéro de téléphone'}</p>
+                  <p style={{ fontSize: 10, color: '#444', marginTop: 6, fontWeight: 300 }}>{isAr ? 'حساب واحد لكل رقم · أي دولة' : 'Un seul compte par numéro · Tous pays acceptés'}</p>
                 </div>
+                {/* Indicateur force mot de passe */}
+                {password.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+                      {[1,2,3,4,5].map(i => (
+                        <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= passwordStrength() ? (passwordStrength() <= 2 ? '#f87171' : passwordStrength() <= 3 ? '#f59e0b' : '#4ade80') : '#1e1e2a', transition: 'all 0.3s' }}/>
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 10, color: passwordStrength() <= 2 ? '#f87171' : passwordStrength() <= 3 ? '#f59e0b' : '#4ade80', fontWeight: 300 }}>
+                      {passwordStrength() <= 2 ? (isAr ? 'ضعيف' : 'Faible') : passwordStrength() <= 3 ? (isAr ? 'متوسط' : 'Moyen') : (isAr ? 'قوي' : 'Fort')}
+                    </span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
                   <button onClick={() => setStep(1)} style={{ flex: 1, padding: '13px', background: 'transparent', border: '0.5px solid #2a2a3a', borderRadius: 10, color: '#666', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>{t('booking.back')}</button>
                   <button onClick={() => fullName && email && password.length >= 6 && phone.length >= 9 && !phoneError && setStep(3)}
@@ -203,7 +266,7 @@ export default function SignupPage() {
                     { label: isAr ? 'الدور' : 'Rôle',  value: role === 'client' ? `👤 ${t('auth.client')}` : `🔧 ${t('auth.artisan')}` },
                     { label: isAr ? 'الاسم' : 'Nom',   value: fullName },
                     { label: isAr ? 'البريد' : 'Email', value: email },
-                    { label: isAr ? 'الهاتف' : 'Téléphone', value: `+213 ${phone}` },
+                    { label: isAr ? 'الهاتف' : 'Téléphone', value: phone },
                   ].map(item => (
                     <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '0.5px solid #1e1e2a' }}>
                       <span style={{ fontSize: 12, color: '#555' }}>{item.label}</span>

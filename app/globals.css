@@ -1,40 +1,43 @@
-  @font-face {
-    font-family: 'Nexa';
-    src: url('/fonts/Nexa-Heavy.ttf') format('truetype');
-    font-weight: 800;
-  }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+  font-family: 'Nexa';
+  src: url('/fonts/Nexa-Heavy.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}
 
-  @font-face {
-    font-family: 'Nexa';
-    src: url('/fonts/Nexa-ExtraLight.ttf') format('truetype');
-    font-weight: 300;
-  }
+@font-face {
+  font-family: 'Nexa';
+  src: url('/fonts/Nexa-ExtraLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+:root {
+  --background: #0D0D12;
+  --foreground: #F0EDE8;
+}
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0D0D12;
+    --foreground: #F0EDE8;
   }
+}
 
-  html,
-  body {
-    background: #0D0D12;
-    font-family: 'Nexa', sans-serif;
-    color: #F0EDE8;
+html, body {
+  margin: 0;
+  padding: 0;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Nexa', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
-
-  ::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #2a2a3a;
-    border-radius: 2px;
-  }
-
-  @keyframes slideIn {
-    from { transform: translateX(120%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  } 
+}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import './globals.css'
 import Navigation from '@/components/Navigation'
 import { LangProvider } from '@/lib/LangContext'
 
@@ -42,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           "areaServed": "DZ",
         })}}/>
       </head>
-      <body>
+      <body style={{ margin: 0, padding: 0, background: '#0D0D12', minHeight: '100vh' }}>
         <LangProvider>
           <Navigation/>
           {children}
