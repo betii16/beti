@@ -269,3 +269,4 @@ export function RatingSummary({ reviews }: { reviews: { rating: number }[] }) {
     </div>
   )
 }
+  
