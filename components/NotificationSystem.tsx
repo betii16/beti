@@ -19,7 +19,7 @@ type Notif = {
 }
 
 const NOTIF_ICONS = {
-  booking_new:       { icon: '📋', color: '#C9A84C' },
+  booking_new:       { icon: '📋', color: '#6366f1' },
   booking_accepted:  { icon: '✅', color: '#4ade80' },
   booking_refused:   { icon: '❌', color: '#f87171' },
   booking_completed: { icon: '🏁', color: '#a78bfa' },
@@ -123,21 +123,21 @@ export function NotificationBell() {
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button onClick={() => { setOpen(!open); if (!open) requestPushPermission() }}
-        style={{ position: 'relative', width: 38, height: 38, borderRadius: 10, background: open ? '#1a1508' : '#161620', border: `0.5px solid ${open ? '#C9A84C44' : '#2a2a3a'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+        style={{ position: 'relative', width: 38, height: 38, borderRadius: 10, background: open ? '#6366f10d' : '#13131e', border: `0.5px solid ${open ? '#6366f144' : '#1c1c30'}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={open ? '#C9A84C' : '#888'} strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={open ? '#6366f1' : '#888'} strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         {unread > 0 && (
-          <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#ef4444', border: '2px solid #0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 800 }}>
+          <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#ef4444', border: '2px solid #0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 800 }}>
             {unread > 9 ? '9+' : unread}
           </div>
         )}
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 340, background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 9999, overflow: 'hidden' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #1e1e2a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8' }}>Notifications</div>
-            {unread > 0 && <button onClick={markAllRead} style={{ fontSize: 11, color: '#C9A84C', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Tout marquer lu</button>}
+        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 340, background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 9999, overflow: 'hidden' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #1c1c30', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5' }}>Notifications</div>
+            {unread > 0 && <button onClick={markAllRead} style={{ fontSize: 11, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Tout marquer lu</button>}
           </div>
 
           <div style={{ maxHeight: 360, overflowY: 'auto' }}>
@@ -150,13 +150,13 @@ export function NotificationBell() {
               const { icon, color } = NOTIF_ICONS[n.type] || { icon: '📢', color: '#888' }
               return (
                 <a key={n.id} href={n.link || '#'} style={{ textDecoration: 'none', display: 'block' }}>
-                  <div style={{ padding: '12px 16px', borderBottom: '0.5px solid #1e1e2a', display: 'flex', gap: 10, alignItems: 'flex-start', background: n.read ? 'transparent' : '#1a1508', transition: 'background 0.15s', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#1e1e2a'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = n.read ? 'transparent' : '#1a1508'}
+                  <div style={{ padding: '12px 16px', borderBottom: '0.5px solid #1c1c30', display: 'flex', gap: 10, alignItems: 'flex-start', background: n.read ? 'transparent' : '#6366f10d', transition: 'background 0.15s', cursor: 'pointer' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#1c1c30'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = n.read ? 'transparent' : '#6366f10d'}
                   >
                     <div style={{ width: 34, height: 34, borderRadius: 9, background: color + '18', border: `0.5px solid ${color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>{icon}</div>
                     <div style={{ flex: 1, overflow: 'hidden' }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8', marginBottom: 2 }}>{n.title}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5', marginBottom: 2 }}>{n.title}</div>
                       <div style={{ fontSize: 12, color: '#555', fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.desc}</div>
                       <div style={{ fontSize: 10, color: '#444', marginTop: 4, fontWeight: 300 }}>{new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
                     </div>

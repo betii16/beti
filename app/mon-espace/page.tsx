@@ -66,14 +66,14 @@ type ReviewRow = {
 // ── Helpers ──
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  active:      { label: 'Actif',       bg: '#0a2010', color: '#4ade80', border: '#0a3a20' },
-  pending:     { label: 'En attente',  bg: '#2a2010', color: '#C9A84C', border: '#3a3010' },
-  suspended:   { label: 'Suspendu',    bg: '#1a0a0a', color: '#f87171', border: '#2a1010' },
-  completed:   { label: 'Terminé',     bg: '#0a2010', color: '#4ade80', border: '#0a3a20' },
+  active:      { label: 'Actif',       bg: '#10b98112', color: '#10b981', border: '#10b98122' },
+  pending:     { label: 'En attente',  bg: '#6366f118', color: '#6366f1', border: '#3a3010' },
+  suspended:   { label: 'Suspendu',    bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
+  completed:   { label: 'Terminé',     bg: '#10b98112', color: '#10b981', border: '#10b98122' },
   accepted:    { label: 'Accepté',     bg: '#0d1a2a', color: '#60a5fa', border: '#1a2a3a' },
   in_progress: { label: 'En cours',    bg: '#1a0a2a', color: '#a78bfa', border: '#2a1a3a' },
-  refused:     { label: 'Refusé',      bg: '#1a0a0a', color: '#f87171', border: '#2a1010' },
-  cancelled:   { label: 'Annulé',      bg: '#1a1a1a', color: '#666',    border: '#2a2a2a' },
+  refused:     { label: 'Refusé',      bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
+  cancelled:   { label: 'Annulé',      bg: '#1a1a1a', color: '#8585a0',    border: '#2a2a2a' },
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -254,10 +254,10 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 40, height: 40, background: '#C9A84C', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0D0D12', margin: '0 auto 16px' }}>B</div>
-          <div style={{ fontSize: 14, color: '#555' }}>Chargement du dashboard...</div>
+          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0b0b12', margin: '0 auto 16px' }}>B</div>
+          <div style={{ fontSize: 14, color: '#4a4a65' }}>Chargement du dashboard...</div>
         </div>
       </div>
     )
@@ -267,25 +267,25 @@ export default function AdminDashboard() {
     <>
       <style suppressHydrationWarning>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0D0D12; font-family: 'Nexa', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: #0b0b12; font-family: 'Nexa', sans-serif; -webkit-font-smoothing: antialiased; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: #1c1c30; border-radius: 2px; }
         table { border-collapse: collapse; width: 100%; }
-        th { font-size: 11px; font-weight: 800; color: #555; letter-spacing: 0.06em; padding: 12px 16px; text-align: left; border-bottom: 0.5px solid #2a2a3a; font-family: Nexa, sans-serif; }
-        td { font-size: 13px; color: #F0EDE8; padding: 14px 16px; border-bottom: 0.5px solid #1e1e2a; font-family: Nexa, sans-serif; font-weight: 300; }
+        th { font-size: 11px; font-weight: 800; color: #4a4a65; letter-spacing: 0.06em; padding: 12px 16px; text-align: left; border-bottom: 0.5px solid #1c1c30; font-family: Nexa, sans-serif; }
+        td { font-size: 13px; color: #e0dfe5; padding: 14px 16px; border-bottom: 0.5px solid #1c1c30; font-family: Nexa, sans-serif; font-weight: 300; }
         tr:hover td { background: #1a1a24; }
       `}</style>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#0D0D12' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#0b0b12' }}>
 
         {/* ── Sidebar ── */}
-        <aside style={{ width: 220, background: '#09090f', borderRight: '0.5px solid #1e1e2a', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', flexShrink: 0 }}>
-          <div style={{ padding: '24px 20px', borderBottom: '0.5px solid #1e1e2a', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, background: '#C9A84C', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0D0D12' }}>B</div>
+        <aside style={{ width: 220, background: '#0b0b12', borderRight: '0.5px solid #1c1c30', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', flexShrink: 0 }}>
+          <div style={{ padding: '24px 20px', borderBottom: '0.5px solid #1c1c30', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0b0b12' }}>B</div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8', letterSpacing: '0.06em' }}>BETI</div>
-              <div style={{ fontSize: 9, color: '#C9A84C', letterSpacing: '0.08em', fontWeight: 800 }}>ADMIN</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5', letterSpacing: '0.06em' }}>BETI</div>
+              <div style={{ fontSize: 9, color: '#6366f1', letterSpacing: '0.08em', fontWeight: 800 }}>ADMIN</div>
             </div>
           </div>
 
@@ -300,10 +300,10 @@ export default function AdminDashboard() {
               <button key={item.id} onClick={() => setTab(item.id as Tab)}
                 style={{
                   width: '100%', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
-                  background: tab === item.id ? '#1a1508' : 'transparent',
-                  border: tab === item.id ? '0.5px solid #2a2010' : '0.5px solid transparent',
+                  background: tab === item.id ? '#6366f10d' : 'transparent',
+                  border: tab === item.id ? '0.5px solid #6366f118' : '0.5px solid transparent',
                   borderRadius: 8, cursor: 'pointer', marginBottom: 4,
-                  color: tab === item.id ? '#C9A84C' : '#555',
+                  color: tab === item.id ? '#6366f1' : '#4a4a65',
                   fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: tab === item.id ? 800 : 300,
                   transition: 'all 0.15s',
                 }}
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: 14 }}>{item.icon}</span>
                 <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
                 {'badge' in item && (item as any).badge > 0 && (
-                  <span style={{ padding: '1px 7px', borderRadius: 10, background: '#C9A84C', color: '#0D0D12', fontSize: 10, fontWeight: 800 }}>
+                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#0b0b12', fontSize: 10, fontWeight: 800 }}>
                     {(item as any).badge}
                   </span>
                 )}
@@ -319,8 +319,8 @@ export default function AdminDashboard() {
             ))}
           </nav>
 
-          <div style={{ padding: '16px 20px', borderTop: '0.5px solid #1e1e2a' }}>
-            <a href="/" style={{ fontSize: 12, color: '#444', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+          <div style={{ padding: '16px 20px', borderTop: '0.5px solid #1c1c30' }}>
+            <a href="/" style={{ fontSize: 12, color: '#4a4a65', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
               ← Retour au site
             </a>
           </div>
@@ -329,19 +329,19 @@ export default function AdminDashboard() {
         {/* ── Contenu principal ── */}
         <main style={{ flex: 1, overflow: 'auto' }}>
           {/* Header */}
-          <div style={{ padding: '24px 32px', borderBottom: '0.5px solid #1e1e2a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#09090f', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ padding: '24px 32px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b0b12', position: 'sticky', top: 0, zIndex: 10 }}>
             <div>
-              <div style={{ fontSize: 10, color: '#555', letterSpacing: '0.08em', marginBottom: 4, fontWeight: 800 }}>TABLEAU DE BORD</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#F0EDE8', fontFamily: 'Nexa, sans-serif' }}>
+              <div style={{ fontSize: 10, color: '#4a4a65', letterSpacing: '0.08em', marginBottom: 4, fontWeight: 800 }}>TABLEAU DE BORD</div>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#e0dfe5', fontFamily: 'Nexa, sans-serif' }}>
                 {{ overview: 'Vue d\'ensemble', artisans: 'Gestion des artisans', bookings: 'Réservations', users: 'Utilisateurs', reviews: 'Avis & Modération' }[tab]}
               </h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button onClick={() => { setLoading(true); loadAll().then(() => setLoading(false)) }}
-                style={{ padding: '6px 14px', background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 8, color: '#888', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                style={{ padding: '6px 14px', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 8, color: '#8585a0', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
                 ↻ Actualiser
               </button>
-              <div style={{ fontSize: 12, color: '#555', padding: '6px 12px', background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 8, fontWeight: 300 }}>
+              <div style={{ fontSize: 12, color: '#4a4a65', padding: '6px 12px', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 8, fontWeight: 300 }}>
                 {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
             </div>
@@ -355,34 +355,34 @@ export default function AdminDashboard() {
                 {/* Stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
                   {[
-                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, icon: '💰', color: '#C9A84C' },
+                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, icon: '💰', color: '#6366f1' },
                     { label: 'Réservations', value: stats.totalBookings.toString(), icon: '📋', color: '#60a5fa', sub: `${stats.completedBookings} terminées` },
                     { label: 'Utilisateurs', value: stats.totalUsers.toString(), icon: '👤', color: '#a78bfa' },
-                    { label: 'Artisans', value: stats.totalArtisans.toString(), icon: '👷', color: '#4ade80', sub: `${stats.activeArtisans} actifs` },
+                    { label: 'Artisans', value: stats.totalArtisans.toString(), icon: '👷', color: '#10b981', sub: `${stats.activeArtisans} actifs` },
                     { label: 'Avis', value: stats.totalReviews.toString(), icon: '⭐', color: '#f59e0b' },
-                    { label: 'En attente', value: stats.pendingBookings.toString(), icon: '⏳', color: '#f87171' },
+                    { label: 'En attente', value: stats.pendingBookings.toString(), icon: '⏳', color: '#ef4444' },
                   ].map(s => (
-                    <div key={s.label} style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '20px 22px' }}>
+                    <div key={s.label} style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, padding: '20px 22px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <span style={{ fontSize: 12, color: '#555', fontWeight: 300 }}>{s.label}</span>
+                        <span style={{ fontSize: 12, color: '#4a4a65', fontWeight: 300 }}>{s.label}</span>
                         <span style={{ fontSize: 18 }}>{s.icon}</span>
                       </div>
                       <div style={{ fontSize: 32, fontWeight: 800, color: s.color, fontFamily: 'Nexa, sans-serif', lineHeight: 1 }}>{s.value}</div>
-                      {s.sub && <div style={{ fontSize: 11, color: '#555', marginTop: 6, fontWeight: 300 }}>{s.sub}</div>}
+                      {s.sub && <div style={{ fontSize: 11, color: '#4a4a65', marginTop: 6, fontWeight: 300 }}>{s.sub}</div>}
                     </div>
                   ))}
                 </div>
 
                 {/* Réservations en attente */}
-                <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #2a2a3a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>Réservations en attente</span>
-                    <span style={{ padding: '3px 10px', borderRadius: 20, background: '#2a2010', color: '#C9A84C', border: '0.5px solid #3a3010', fontSize: 11, fontWeight: 800 }}>
+                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Réservations en attente</span>
+                    <span style={{ padding: '3px 10px', borderRadius: 20, background: '#6366f118', color: '#6366f1', border: '0.5px solid #3a3010', fontSize: 11, fontWeight: 800 }}>
                       {bookings.filter(b => b.status === 'pending').length}
                     </span>
                   </div>
                   {bookings.filter(b => b.status === 'pending').length === 0 ? (
-                    <div style={{ padding: '32px', textAlign: 'center', color: '#444', fontSize: 13, fontWeight: 300 }}>Aucune réservation en attente ✓</div>
+                    <div style={{ padding: '32px', textAlign: 'center', color: '#4a4a65', fontSize: 13, fontWeight: 300 }}>Aucune réservation en attente ✓</div>
                   ) : (
                     <table>
                       <thead><tr><th>CLIENT</th><th>ARTISAN</th><th>SERVICE</th><th>MONTANT</th><th>DATE</th><th>ACTIONS</th></tr></thead>
@@ -392,16 +392,16 @@ export default function AdminDashboard() {
                             <td style={{ fontWeight: 800 }}>{b.client?.full_name || '—'}</td>
                             <td>{b.artisan?.full_name || '—'}</td>
                             <td>{b.title}</td>
-                            <td style={{ color: '#C9A84C', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
-                            <td style={{ color: '#555' }}>{formatDate(b.scheduled_at)}</td>
+                            <td style={{ color: '#6366f1', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
+                            <td style={{ color: '#4a4a65' }}>{formatDate(b.scheduled_at)}</td>
                             <td>
                               <div style={{ display: 'flex', gap: 6 }}>
                                 <button onClick={() => updateBookingStatus(b.id, 'accepted')}
-                                  style={{ padding: '4px 12px', borderRadius: 6, background: '#0a2010', border: '0.5px solid #0a3a20', color: '#4ade80', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  style={{ padding: '4px 12px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
                                   Accepter
                                 </button>
                                 <button onClick={() => updateBookingStatus(b.id, 'cancelled')}
-                                  style={{ padding: '4px 12px', borderRadius: 6, background: '#1a0a0a', border: '0.5px solid #2a1010', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  style={{ padding: '4px 12px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
                                   Annuler
                                 </button>
                               </div>
@@ -414,9 +414,9 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Dernières inscriptions artisans */}
-                <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #2a2a3a' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>Derniers artisans inscrits</span>
+                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Derniers artisans inscrits</span>
                   </div>
                   <table>
                     <thead><tr><th>ARTISAN</th><th>CATÉGORIE</th><th>VILLE</th><th>NOTE</th><th>STATUT</th></tr></thead>
@@ -425,7 +425,7 @@ export default function AdminDashboard() {
                         <tr key={a.id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#2a2010', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#C9A84C', fontWeight: 800 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#6366f118', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#6366f1', fontWeight: 800 }}>
                                 {(a.profiles?.full_name || 'A').split(' ').map(n => n[0]).join('').slice(0, 2)}
                               </div>
                               <span style={{ fontWeight: 800 }}>{a.profiles?.full_name || '—'}</span>
@@ -433,11 +433,11 @@ export default function AdminDashboard() {
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#C9A84C' : '#444' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)}` : '—'}</td>
+                          <td style={{ color: a.rating_avg > 0 ? '#6366f1' : '#4a4a65' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)}` : '—'}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'pending'}/></td>
                         </tr>
                       ))}
-                      {artisans.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: '#444', padding: 32 }}>Aucun artisan inscrit</td></tr>}
+                      {artisans.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: '#4a4a65', padding: 32 }}>Aucun artisan inscrit</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -447,13 +447,13 @@ export default function AdminDashboard() {
             {/* ═══ ARTISANS ═══ */}
             {tab === 'artisans' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #2a2a3a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>Tous les artisans ({filteredArtisans.length})</span>
+                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Tous les artisans ({filteredArtisans.length})</span>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {([['all', 'Tous'], ['active', 'Actifs'], ['pending', 'En attente'], ['suspended', 'Inactifs']] as const).map(([id, label]) => (
                         <button key={id} onClick={() => setArtisanFilter(id)}
-                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: artisanFilter === id ? '#2a2010' : 'transparent', border: `0.5px solid ${artisanFilter === id ? '#3a3010' : '#2a2a3a'}`, color: artisanFilter === id ? '#C9A84C' : '#555', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: artisanFilter === id ? 800 : 300 }}>
+                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: artisanFilter === id ? '#6366f118' : 'transparent', border: `0.5px solid ${artisanFilter === id ? '#3a3010' : '#1c1c30'}`, color: artisanFilter === id ? '#6366f1' : '#4a4a65', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: artisanFilter === id ? 800 : 300 }}>
                           {label}
                         </button>
                       ))}
@@ -466,42 +466,42 @@ export default function AdminDashboard() {
                         <tr key={a.id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#2a2010', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#C9A84C', fontWeight: 800 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#6366f118', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#6366f1', fontWeight: 800 }}>
                                 {(a.profiles?.full_name || 'A').split(' ').map(n => n[0]).join('').slice(0, 2)}
                               </div>
                               <div>
                                 <div style={{ fontWeight: 800 }}>{a.profiles?.full_name || '—'}</div>
-                                <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>{a.profiles?.phone || ''}</div>
+                                <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{a.profiles?.phone || ''}</div>
                               </div>
                             </div>
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td style={{ color: '#C9A84C', fontWeight: 800 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#C9A84C' : '#444' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)} (${a.rating_count})` : '—'}</td>
+                          <td style={{ color: '#6366f1', fontWeight: 800 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
+                          <td style={{ color: a.rating_avg > 0 ? '#6366f1' : '#4a4a65' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)} (${a.rating_count})` : '—'}</td>
                           <td>{a.total_missions || 0}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'suspended'}/></td>
                           <td>
                             <div style={{ display: 'flex', gap: 6 }}>
                               {!a.is_available ? (
                                 <button onClick={() => toggleArtisanAvailability(a.id, true)}
-                                  style={{ padding: '4px 10px', borderRadius: 6, background: '#0a2010', border: '0.5px solid #0a3a20', color: '#4ade80', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
                                   Activer
                                 </button>
                               ) : (
                                 <button onClick={() => toggleArtisanAvailability(a.id, false)}
-                                  style={{ padding: '4px 10px', borderRadius: 6, background: '#1a0a0a', border: '0.5px solid #2a1010', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
                                   Désactiver
                                 </button>
                               )}
-                              <a href={`/artisan/${a.id}`} style={{ padding: '4px 10px', borderRadius: 6, background: '#161620', border: '0.5px solid #2a2a3a', color: '#888', fontSize: 11, textDecoration: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                              <a href={`/artisan/${a.id}`} style={{ padding: '4px 10px', borderRadius: 6, background: '#13131e', border: '0.5px solid #1c1c30', color: '#8585a0', fontSize: 11, textDecoration: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
                                 Voir
                               </a>
                             </div>
                           </td>
                         </tr>
                       ))}
-                      {filteredArtisans.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#444', padding: 32, fontWeight: 300 }}>Aucun artisan trouvé</td></tr>}
+                      {filteredArtisans.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#4a4a65', padding: 32, fontWeight: 300 }}>Aucun artisan trouvé</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -511,13 +511,13 @@ export default function AdminDashboard() {
             {/* ═══ RÉSERVATIONS ═══ */}
             {tab === 'bookings' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #2a2a3a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>Réservations ({filteredBookings.length})</span>
+                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Réservations ({filteredBookings.length})</span>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {([['all', 'Toutes'], ['pending', 'En attente'], ['completed', 'Terminées'], ['cancelled', 'Annulées']] as const).map(([id, label]) => (
                         <button key={id} onClick={() => setBookingFilter(id)}
-                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: bookingFilter === id ? '#2a2010' : 'transparent', border: `0.5px solid ${bookingFilter === id ? '#3a3010' : '#2a2a3a'}`, color: bookingFilter === id ? '#C9A84C' : '#555', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: bookingFilter === id ? 800 : 300 }}>
+                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: bookingFilter === id ? '#6366f118' : 'transparent', border: `0.5px solid ${bookingFilter === id ? '#3a3010' : '#1c1c30'}`, color: bookingFilter === id ? '#6366f1' : '#4a4a65', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: bookingFilter === id ? 800 : 300 }}>
                           {label}
                         </button>
                       ))}
@@ -531,25 +531,25 @@ export default function AdminDashboard() {
                           <td style={{ fontWeight: 800 }}>{b.client?.full_name || '—'}</td>
                           <td>{b.artisan?.full_name || '—'}</td>
                           <td>{b.title}</td>
-                          <td style={{ color: '#C9A84C', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: '#555' }}>{formatDate(b.scheduled_at)}</td>
+                          <td style={{ color: '#6366f1', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
+                          <td style={{ color: '#4a4a65' }}>{formatDate(b.scheduled_at)}</td>
                           <td><StatusBadge status={b.status}/></td>
                           <td>
                             <div style={{ display: 'flex', gap: 6 }}>
                               {b.status === 'pending' && (
                                 <>
-                                  <button onClick={() => updateBookingStatus(b.id, 'accepted')} style={{ padding: '4px 10px', borderRadius: 6, background: '#0a2010', border: '0.5px solid #0a3a20', color: '#4ade80', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Accepter</button>
-                                  <button onClick={() => updateBookingStatus(b.id, 'cancelled')} style={{ padding: '4px 10px', borderRadius: 6, background: '#1a0a0a', border: '0.5px solid #2a1010', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Annuler</button>
+                                  <button onClick={() => updateBookingStatus(b.id, 'accepted')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Accepter</button>
+                                  <button onClick={() => updateBookingStatus(b.id, 'cancelled')} style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Annuler</button>
                                 </>
                               )}
                               {b.status === 'accepted' && (
-                                <button onClick={() => updateBookingStatus(b.id, 'completed')} style={{ padding: '4px 10px', borderRadius: 6, background: '#0a2010', border: '0.5px solid #0a3a20', color: '#4ade80', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Terminer</button>
+                                <button onClick={() => updateBookingStatus(b.id, 'completed')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Terminer</button>
                               )}
                             </div>
                           </td>
                         </tr>
                       ))}
-                      {filteredBookings.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: '#444', padding: 32, fontWeight: 300 }}>Aucune réservation</td></tr>}
+                      {filteredBookings.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: '#4a4a65', padding: 32, fontWeight: 300 }}>Aucune réservation</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -559,9 +559,9 @@ export default function AdminDashboard() {
             {/* ═══ UTILISATEURS ═══ */}
             {tab === 'users' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #2a2a3a' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>Utilisateurs ({users.length})</span>
+                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Utilisateurs ({users.length})</span>
                   </div>
                   <table>
                     <thead><tr><th>NOM</th><th>TÉLÉPHONE</th><th>RÔLE</th><th>INSCRIT LE</th></tr></thead>
@@ -573,7 +573,7 @@ export default function AdminDashboard() {
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}/>
                               ) : (
-                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#2a2a3a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#888', fontWeight: 800 }}>
+                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1c1c30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#8585a0', fontWeight: 800 }}>
                                   {(u.full_name || 'U')[0].toUpperCase()}
                                 </div>
                               )}
@@ -584,17 +584,17 @@ export default function AdminDashboard() {
                           <td>
                             <span style={{
                               padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800,
-                              background: u.role === 'artisan' ? '#1a1508' : u.role === 'admin' ? '#1a0a2a' : '#161620',
-                              color: u.role === 'artisan' ? '#C9A84C' : u.role === 'admin' ? '#a78bfa' : '#888',
-                              border: `0.5px solid ${u.role === 'artisan' ? '#2a2010' : u.role === 'admin' ? '#2a1a3a' : '#2a2a3a'}`,
+                              background: u.role === 'artisan' ? '#6366f10d' : u.role === 'admin' ? '#1a0a2a' : '#13131e',
+                              color: u.role === 'artisan' ? '#6366f1' : u.role === 'admin' ? '#a78bfa' : '#8585a0',
+                              border: `0.5px solid ${u.role === 'artisan' ? '#6366f118' : u.role === 'admin' ? '#2a1a3a' : '#1c1c30'}`,
                             }}>
                               {u.role === 'artisan' ? 'Artisan' : u.role === 'admin' ? 'Admin' : 'Client'}
                             </span>
                           </td>
-                          <td style={{ color: '#555' }}>{formatDate(u.created_at)}</td>
+                          <td style={{ color: '#4a4a65' }}>{formatDate(u.created_at)}</td>
                         </tr>
                       ))}
-                      {users.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: '#444', padding: 32, fontWeight: 300 }}>Aucun utilisateur</td></tr>}
+                      {users.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: '#4a4a65', padding: 32, fontWeight: 300 }}>Aucun utilisateur</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -604,31 +604,31 @@ export default function AdminDashboard() {
             {/* ═══ AVIS & MODÉRATION ═══ */}
             {tab === 'reviews' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #2a2a3a' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8' }}>Tous les avis ({reviews.length})</span>
+                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Tous les avis ({reviews.length})</span>
                   </div>
                   {reviews.length === 0 ? (
-                    <div style={{ padding: '48px', textAlign: 'center', color: '#444', fontSize: 13, fontWeight: 300 }}>Aucun avis pour l'instant</div>
+                    <div style={{ padding: '48px', textAlign: 'center', color: '#4a4a65', fontSize: 13, fontWeight: 300 }}>Aucun avis pour l'instant</div>
                   ) : (
                     <div style={{ padding: '16px' }}>
                       {reviews.map(r => (
-                        <div key={r.id} style={{ background: '#0D0D12', border: '0.5px solid #1e1e2a', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
+                        <div key={r.id} style={{ background: '#0b0b12', border: '0.5px solid #1c1c30', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                                 <div style={{ display: 'flex', gap: 2 }}>
-                                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: 12, color: i <= r.rating ? '#C9A84C' : '#2a2a3a' }}>★</span>)}
+                                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: 12, color: i <= r.rating ? '#6366f1' : '#1c1c30' }}>★</span>)}
                                 </div>
-                                <span style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>
+                                <span style={{ fontSize: 12, color: '#8585a0', fontWeight: 300 }}>
                                   {r.client?.full_name || 'Client'} → {r.artisan_profile?.full_name || 'Artisan'}
                                 </span>
-                                <span style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{timeAgo(r.created_at)}</span>
+                                <span style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{timeAgo(r.created_at)}</span>
                               </div>
-                              {r.comment && <p style={{ fontSize: 13, color: '#888', lineHeight: 1.6, fontWeight: 300 }}>{r.comment}</p>}
+                              {r.comment && <p style={{ fontSize: 13, color: '#8585a0', lineHeight: 1.6, fontWeight: 300 }}>{r.comment}</p>}
                             </div>
                             <button onClick={() => deleteReview(r.id)}
-                              style={{ padding: '4px 10px', borderRadius: 6, background: '#1a0a0a', border: '0.5px solid #2a1010', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800, flexShrink: 0, marginLeft: 12 }}>
+                              style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800, flexShrink: 0, marginLeft: 12 }}>
                               Supprimer
                             </button>
                           </div>

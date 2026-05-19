@@ -59,27 +59,27 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
   return (
     <>
       <style suppressHydrationWarning>{`
-        .cat-link:hover { border-color: #C9A84C !important; color: #C9A84C !important; }
-        .art-card:hover { border-color: #C9A84C44 !important; transform: translateY(-2px); }
-        .wilaya-link:hover { color: #C9A84C !important; }
+        .cat-link:hover { border-color: #6366f1 !important; color: #6366f1 !important; }
+        .art-card:hover { border-color: #6366f144 !important; transform: translateY(-2px); }
+        .wilaya-link:hover { color: #6366f1 !important; }
         .cta-btn:hover { background: #d4b55a !important; }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: '#0D0D12', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: '#0b0b12', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
 
         {/* Hero SEO */}
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 32px' }}>
-          <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
             WILAYA {w.num} · {w.nameAr}
           </div>
-          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: '#F0EDE8', marginBottom: 16, lineHeight: 1.1 }}>
+          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: '#e0dfe5', marginBottom: 16, lineHeight: 1.1 }}>
             Artisans à {w.name}
           </h1>
-          <p style={{ fontSize: 15, color: '#555', maxWidth: 600, lineHeight: 1.7, fontWeight: 300, marginBottom: 32 }}>
+          <p style={{ fontSize: 15, color: '#4a4a65', maxWidth: 600, lineHeight: 1.7, fontWeight: 300, marginBottom: 32 }}>
             Trouvez un artisan certifié BETI à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Disponibles maintenant, paiement en cash.
           </p>
           <a href={`/?wilaya=${params.wilaya}`}>
-            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: '#C9A84C', border: 'none', color: '#0D0D12', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
+            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#0b0b12', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
               Trouver un artisan à {w.name}
             </button>
           </a>
@@ -87,13 +87,13 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
 
         {/* Liens par catégorie */}
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 48px' }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#F0EDE8', marginBottom: 20 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#e0dfe5', marginBottom: 20 }}>
             Par spécialité à {w.name}
           </h2>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {Object.entries(CATEGORIES_LABELS).map(([id, label]) => (
               <a key={id} href={`/artisans/${params.wilaya}/${id}`} style={{ textDecoration: 'none' }}>
-                <div className="cat-link" style={{ padding: '8px 16px', borderRadius: 20, background: '#161620', border: '0.5px solid #2a2a3a', color: '#888', fontSize: 13, fontWeight: 300, transition: 'all 0.2s', cursor: 'pointer' }}>
+                <div className="cat-link" style={{ padding: '8px 16px', borderRadius: 20, background: '#13131e', border: '0.5px solid #1c1c30', color: '#8585a0', fontSize: 13, fontWeight: 300, transition: 'all 0.2s', cursor: 'pointer' }}>
                   {label} {w.name}
                 </div>
               </a>
@@ -104,18 +104,18 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
         {/* Artisans disponibles */}
         {artisans.length > 0 && (
           <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 80px' }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#F0EDE8', marginBottom: 20 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#e0dfe5', marginBottom: 20 }}>
               Artisans disponibles à {w.name}
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
               {artisans.map((a: any) => (
                 <a key={a.id} href={`/artisan/${a.id}`} style={{ textDecoration: 'none' }}>
-                  <div className="art-card" style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '18px', transition: 'all 0.2s', cursor: 'pointer' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8', marginBottom: 4 }}>{a.profiles?.full_name || 'Artisan'}</div>
-                    <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
+                  <div className="art-card" style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, padding: '18px', transition: 'all 0.2s', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5', marginBottom: 4 }}>{a.profiles?.full_name || 'Artisan'}</div>
+                    <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 12, color: '#4ade80' }}>● Disponible</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#C9A84C' }}>{a.hourly_rate} DA/h</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#6366f1' }}>{a.hourly_rate} DA/h</span>
                     </div>
                   </div>
                 </a>
@@ -125,12 +125,12 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
         )}
 
         {/* Autres wilayas */}
-        <section style={{ background: '#09090f', borderTop: '0.5px solid #1e1e2a', padding: '48px 40px' }}>
+        <section style={{ background: '#0b0b12', borderTop: '0.5px solid #1c1c30', padding: '48px 40px' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#F0EDE8', marginBottom: 20 }}>Autres wilayas</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#e0dfe5', marginBottom: 20 }}>Autres wilayas</h2>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {Object.entries(WILAYAS).filter(([id]) => id !== params.wilaya).map(([id, data]) => (
-                <a key={id} href={`/artisans/${id}`} className="wilaya-link" style={{ fontSize: 12, color: '#444', textDecoration: 'none', padding: '4px 10px', borderRadius: 20, border: '0.5px solid #1e1e2a', transition: 'color 0.2s' }}>
+                <a key={id} href={`/artisans/${id}`} className="wilaya-link" style={{ fontSize: 12, color: '#4a4a65', textDecoration: 'none', padding: '4px 10px', borderRadius: 20, border: '0.5px solid #1c1c30', transition: 'color 0.2s' }}>
                   {data.name}
                 </a>
               ))}

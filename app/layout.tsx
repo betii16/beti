@@ -30,10 +30,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico"/>
         <link rel="manifest" href="/site.webmanifest"/>
+        {/* Theme init BEFORE React — prevents white flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('beti-theme');
+              if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+              else document.documentElement.setAttribute('data-theme','dark');
+            } catch(e) {
+              document.documentElement.setAttribute('data-theme','dark');
+            }
+          })();
+        `}}/>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
@@ -43,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           "areaServed": "DZ",
         })}}/>
       </head>
-      <body style={{ margin: 0, padding: 0, background: '#0D0D12', minHeight: '100vh' }}>
+      <body>
         <LangProvider>
           <Navigation/>
           {children}

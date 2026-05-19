@@ -90,12 +90,12 @@ export function AddressPicker({
         <div style="position:relative;display:flex;flex-direction:column;align-items:center">
           <div style="
             width:44px;height:44px;border-radius:50% 50% 50% 0;
-            background:#C9A84C;transform:rotate(-45deg);
-            border:3px solid #0D0D12;
-            box-shadow:0 0 0 3px #C9A84C44, 0 4px 12px rgba(0,0,0,0.4);
+            background:#6366f1;transform:rotate(-45deg);
+            border:3px solid #0b0b12;
+            box-shadow:0 0 0 3px #6366f144, 0 4px 12px rgba(0,0,0,0.4);
           "></div>
           <div style="
-            width:2px;height:18px;background:#C9A84C;
+            width:2px;height:18px;background:#6366f1;
             margin-top:-2px;opacity:0.7;
           "></div>
         </div>`,
@@ -220,13 +220,13 @@ export function AddressPicker({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 14, overflow: 'hidden', border: '0.5px solid #2a2a3a' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 14, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
 
       {/* Barre de recherche */}
-      <div ref={dropRef} style={{ position: 'relative', background: '#161620' }}>
+      <div ref={dropRef} style={{ position: 'relative', background: '#13131e' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {/* Icône adresse */}
-          <div style={{ padding: '0 14px', fontSize: 16, color: '#C9A84C', flexShrink: 0 }}>📍</div>
+          <div style={{ padding: '0 14px', fontSize: 16, color: '#6366f1', flexShrink: 0 }}>📍</div>
 
           {/* Input */}
           <input
@@ -238,7 +238,7 @@ export function AddressPicker({
             style={{
               flex: 1, padding: '14px 0',
               background: 'transparent', border: 'none',
-              color: '#F0EDE8', fontSize: 14, outline: 'none',
+              color: '#e0dfe5', fontSize: 14, outline: 'none',
               fontFamily: 'Nexa, sans-serif', fontWeight: 300,
             }}
           />
@@ -248,7 +248,7 @@ export function AddressPicker({
             onClick={handleGPS}
             style={{
               padding: '14px 16px', background: 'transparent', border: 'none',
-              borderLeft: '0.5px solid #2a2a3a', color: loading ? '#555' : '#C9A84C',
+              borderLeft: '0.5px solid #1c1c30', color: loading ? '#555' : '#6366f1',
               cursor: 'pointer', fontSize: 16, flexShrink: 0,
               transition: 'color 0.2s',
             }}
@@ -262,7 +262,7 @@ export function AddressPicker({
         {showSuggestions && suggestions.length > 0 && (
           <div style={{
             position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000,
-            background: '#161620', border: '0.5px solid #2a2a3a',
+            background: '#13131e', border: '0.5px solid #1c1c30',
             borderTop: 'none', borderRadius: '0 0 12px 12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden',
           }}>
@@ -272,16 +272,16 @@ export function AddressPicker({
                 onClick={() => handleSelectSuggestion(s)}
                 style={{
                   padding: '11px 16px', cursor: 'pointer',
-                  borderTop: '0.5px solid #1e1e2a',
+                  borderTop: '0.5px solid #1c1c30',
                   display: 'flex', alignItems: 'center', gap: 10,
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
+                onMouseEnter={e => (e.currentTarget.style.background = '#1c1c30')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <span style={{ fontSize: 14, flexShrink: 0 }}>📍</span>
                 <div style={{ overflow: 'hidden' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.address?.road || s.address?.suburb || s.name || s.display_name.split(',')[0]}
                   </div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -302,7 +302,7 @@ export function AddressPicker({
         <div style={{
           position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)',
-          border: '0.5px solid #2a2a3a', borderRadius: 20,
+          border: '0.5px solid #1c1c30', borderRadius: 20,
           padding: '6px 14px', zIndex: 1000, whiteSpace: 'nowrap',
         }}>
           <span style={{ fontSize: 11, color: '#888', fontWeight: 300, fontFamily: 'Nexa, sans-serif' }}>
@@ -311,24 +311,24 @@ export function AddressPicker({
         </div>
 
         <style>{`
-          .leaflet-container { background: #0D0D12 !important; }
+          .leaflet-container { background: #0b0b12 !important; }
           .leaflet-tile { filter: brightness(0.9) saturate(0.7); }
-          .leaflet-control-zoom a { background: #161620 !important; color: #F0EDE8 !important; border: 0.5px solid #2a2a3a !important; }
+          .leaflet-control-zoom a { background: #13131e !important; color: #e0dfe5 !important; border: 0.5px solid #1c1c30 !important; }
           .leaflet-control-attribution { display: none; }
         `}</style>
       </div>
 
       {/* Bouton confirmer */}
-      <div style={{ background: '#161620', padding: '12px', borderTop: '0.5px solid #1e1e2a' }}>
+      <div style={{ background: '#13131e', padding: '12px', borderTop: '0.5px solid #1c1c30' }}>
         <button
           onClick={handleConfirm}
           disabled={!address}
           style={{
             width: '100%', padding: '13px',
-            background: confirmed ? '#0a2010' : address ? '#C9A84C' : '#1a1a2a',
+            background: confirmed ? '#0a2010' : address ? '#6366f1' : '#1a1a2a',
             border: confirmed ? '0.5px solid #4ade8044' : 'none',
             borderRadius: 10,
-            color: confirmed ? '#4ade80' : address ? '#0D0D12' : '#444',
+            color: confirmed ? '#4ade80' : address ? '#0b0b12' : '#444',
             fontSize: 14, fontWeight: 800,
             cursor: address ? 'pointer' : 'not-allowed',
             fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',

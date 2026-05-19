@@ -1,39 +1,134 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @font-face {
   font-family: 'Nexa';
   src: url('/fonts/Nexa-Heavy.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
 }
-
 @font-face {
   font-family: 'Nexa';
   src: url('/fonts/Nexa-ExtraLight.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
 }
-:root {
-  --background: #0D0D12;
-  --foreground: #F0EDE8;
+
+/* ═══ DARK THEME (default) ═══ */
+:root,
+[data-theme="dark"] {
+  --bg: #0b0b12;
+  --bg2: #13131e;
+  --bg3: #0e0e18;
+  --tx: #e0dfe5;
+  --tx2: #8585a0;
+  --tx3: #4a4a65;
+  --border: #1c1c30;
+  --border2: #26263e;
+  --accent: #6366f1;
+  --accent2: #8b5cf6;
+  --gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --gradient-text: linear-gradient(135deg, #818cf8, #a78bfa);
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0D0D12;
-    --foreground: #F0EDE8;
-  }
+/* ═══ LIGHT THEME ═══ */
+[data-theme="light"] {
+  --bg: #f5f5f7;
+  --bg2: #ffffff;
+  --bg3: #f0f0f3;
+  --tx: #111827;
+  --tx2: #6b7280;
+  --tx3: #9ca3af;
+  --border: #e5e7eb;
+  --border2: #d1d5db;
+  --accent: #6366f1;
+  --accent2: #8b5cf6;
+  --gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --gradient-text: linear-gradient(135deg, #6366f1, #a78bfa);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.04);
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+[id] {
+  scroll-margin-top: 100px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Nexa', sans-serif;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: 'Nexa', system-ui, -apple-system, sans-serif;
   font-weight: 300;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ═══ FORCE THEME ON ALL INLINE STYLES ═══ */
+/* Override hardcoded dark backgrounds */
+[data-theme="light"] body {
+  background: #f5f5f7 !important;
+  color: #111827 !important;
+}
+
+/* Fix all cards/containers with old dark backgrounds */
+[data-theme="light"] div[style*="background: '#0b0b12'"],
+[data-theme="light"] div[style*="background:'#0b0b12'"],
+[data-theme="light"] div[style*="background: '#13131e'"],
+[data-theme="light"] div[style*="background:'#13131e'"],
+[data-theme="light"] div[style*="background: '#0e0e18'"],
+[data-theme="light"] div[style*="background:'#0e0e18'"] {
+  background: var(--bg2) !important;
+}
+
+[data-theme="light"] div[style*="border"] {
+  border-color: var(--border) !important;
+}
+
+/* Fix text colors in light mode */
+[data-theme="light"] div[style*="color: '#e0dfe5'"],
+[data-theme="light"] span[style*="color: '#e0dfe5'"],
+[data-theme="light"] div[style*="color:'#e0dfe5'"],
+[data-theme="light"] span[style*="color:'#e0dfe5'"],
+[data-theme="light"] h1[style*="color:'#e0dfe5'"],
+[data-theme="light"] h2[style*="color:'#e0dfe5'"],
+[data-theme="light"] h3[style*="color:'#e0dfe5'"] {
+  color: #111827 !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  opacity: 0.2;
+  border-radius: 4px;
+}
+
+/* Focus styles */
+input:focus,
+textarea:focus {
+  border-color: var(--accent) !important;
+  outline: none;
 }
 
 @layer utilities {

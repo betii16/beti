@@ -92,7 +92,7 @@ export function ArtisanZonePicker({
 
     // Marqueur artisan
     const pinIcon = L.divIcon({
-      html: `<div style="width:36px;height:36px;border-radius:50%;background:#C9A84C22;border:2.5px solid #C9A84C;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px #C9A84C44;cursor:grab">🔧</div>`,
+      html: `<div style="width:36px;height:36px;border-radius:50%;background:#6366f122;border:2.5px solid #6366f1;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px #6366f144;cursor:grab">🔧</div>`,
       iconSize: [36, 36], iconAnchor: [18, 18], className: '',
     })
 
@@ -101,7 +101,7 @@ export function ArtisanZonePicker({
     // Zone d'intervention
     const circle = L.circle([lat, lng], {
       radius: radius * 1000,
-      color: '#C9A84C', fillColor: '#C9A84C',
+      color: '#6366f1', fillColor: '#6366f1',
       fillOpacity: 0.08, weight: 1.5, opacity: 0.6,
       dashArray: '6 4',
     }).addTo(map)
@@ -227,33 +227,33 @@ export function ArtisanZonePicker({
 
       {/* Barre adresse + GPS */}
       <div ref={dropRef} style={{ position: 'relative', marginBottom: 16 }}>
-        <div style={{ display: 'flex', background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 12, overflow: 'visible' }}>
-          <div style={{ padding: '0 14px', fontSize: 16, color: '#C9A84C', display: 'flex', alignItems: 'center', flexShrink: 0 }}>🔧</div>
+        <div style={{ display: 'flex', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 12, overflow: 'visible' }}>
+          <div style={{ padding: '0 14px', fontSize: 16, color: '#6366f1', display: 'flex', alignItems: 'center', flexShrink: 0 }}>🔧</div>
           <input
             type="text"
             value={address}
             onChange={e => handleAddressInput(e.target.value)}
             onFocus={() => { if (suggestions.length > 0) setShowSugg(true) }}
             placeholder="Votre adresse (rue, quartier, ville)..."
-            style={{ flex: 1, padding: '13px 0', background: 'transparent', border: 'none', color: '#F0EDE8', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+            style={{ flex: 1, padding: '13px 0', background: 'transparent', border: 'none', color: '#e0dfe5', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
           />
-          <button onClick={handleGPS} style={{ padding: '0 16px', background: 'transparent', border: 'none', borderLeft: '0.5px solid #2a2a3a', color: detecting ? '#555' : '#C9A84C', cursor: 'pointer', fontSize: 16, flexShrink: 0 }} title="Ma position">
+          <button onClick={handleGPS} style={{ padding: '0 16px', background: 'transparent', border: 'none', borderLeft: '0.5px solid #1c1c30', color: detecting ? '#555' : '#6366f1', cursor: 'pointer', fontSize: 16, flexShrink: 0 }} title="Ma position">
             {detecting ? '⏳' : '🎯'}
           </button>
         </div>
 
         {/* Suggestions */}
         {showSugg && suggestions.length > 0 && (
-          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 1000, background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+          <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 1000, background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
             {suggestions.map((s, i) => (
               <div key={i} onClick={() => handleSelectSuggestion(s)}
-                style={{ padding: '11px 16px', cursor: 'pointer', borderTop: i > 0 ? '0.5px solid #1e1e2a' : 'none', display: 'flex', gap: 10, alignItems: 'center', transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
+                style={{ padding: '11px 16px', cursor: 'pointer', borderTop: i > 0 ? '0.5px solid #1c1c30' : 'none', display: 'flex', gap: 10, alignItems: 'center', transition: 'background 0.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#1c1c30')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <span style={{ fontSize: 14, flexShrink: 0 }}>📍</span>
                 <div style={{ overflow: 'hidden' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.address?.road || s.address?.suburb || s.display_name.split(',')[0]}
                   </div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -278,15 +278,15 @@ export function ArtisanZonePicker({
               onClick={() => { setRadius(opt.km); setSaved(false) }}
               style={{
                 flex: 1, minWidth: 80, padding: '10px 8px', borderRadius: 10, cursor: 'pointer',
-                background: radius === opt.km ? '#1a1508' : '#161620',
-                border: `0.5px solid ${radius === opt.km ? '#C9A84C' : '#2a2a3a'}`,
+                background: radius === opt.km ? '#6366f10d' : '#13131e',
+                border: `0.5px solid ${radius === opt.km ? '#6366f1' : '#1c1c30'}`,
                 outline: 'none', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif',
               }}
             >
-              <div style={{ fontSize: 15, fontWeight: 800, color: radius === opt.km ? '#C9A84C' : '#F0EDE8', marginBottom: 2 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: radius === opt.km ? '#6366f1' : '#e0dfe5', marginBottom: 2 }}>
                 {opt.label}
               </div>
-              <div style={{ fontSize: 10, color: radius === opt.km ? '#C9A84C' : '#555', fontWeight: 300 }}>
+              <div style={{ fontSize: 10, color: radius === opt.km ? '#6366f1' : '#555', fontWeight: 300 }}>
                 {opt.desc}
               </div>
             </button>
@@ -295,17 +295,17 @@ export function ArtisanZonePicker({
       </div>
 
       {/* Carte */}
-      <div style={{ borderRadius: 12, overflow: 'hidden', border: '0.5px solid #2a2a3a', marginBottom: 16, position: 'relative' }}>
+      <div style={{ borderRadius: 12, overflow: 'hidden', border: '0.5px solid #1c1c30', marginBottom: 16, position: 'relative' }}>
         <div ref={mapRef} style={{ width: '100%', height: 260 }}/>
-        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)', border: '0.5px solid #2a2a3a', borderRadius: 20, padding: '5px 12px', zIndex: 1000, whiteSpace: 'nowrap' }}>
+        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)', border: '0.5px solid #1c1c30', borderRadius: 20, padding: '5px 12px', zIndex: 1000, whiteSpace: 'nowrap' }}>
           <span style={{ fontSize: 11, color: '#888', fontWeight: 300 }}>
-            Zone couverte : <strong style={{ color: '#C9A84C', fontWeight: 800 }}>{radius} km</strong> autour de votre position
+            Zone couverte : <strong style={{ color: '#6366f1', fontWeight: 800 }}>{radius} km</strong> autour de votre position
           </span>
         </div>
         <style>{`
-          .leaflet-container { background: #0D0D12 !important; }
+          .leaflet-container { background: #0b0b12 !important; }
           .leaflet-tile { filter: brightness(0.85) saturate(0.7); }
-          .leaflet-control-zoom a { background: #161620 !important; color: #F0EDE8 !important; border: 0.5px solid #2a2a3a !important; }
+          .leaflet-control-zoom a { background: #13131e !important; color: #e0dfe5 !important; border: 0.5px solid #1c1c30 !important; }
           .leaflet-control-attribution { display: none; }
         `}</style>
       </div>
@@ -314,10 +314,10 @@ export function ArtisanZonePicker({
       <button onClick={handleSave} disabled={!address || saving}
         style={{
           width: '100%', padding: '13px',
-          background: saved ? '#0a2010' : !address ? '#1a1a2a' : '#C9A84C',
+          background: saved ? '#0a2010' : !address ? '#1a1a2a' : '#6366f1',
           border: saved ? '0.5px solid #4ade8044' : 'none',
           borderRadius: 10,
-          color: saved ? '#4ade80' : !address ? '#444' : '#0D0D12',
+          color: saved ? '#4ade80' : !address ? '#444' : '#0b0b12',
           fontSize: 14, fontWeight: 800,
           cursor: !address ? 'not-allowed' : 'pointer',
           fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',

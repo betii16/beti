@@ -76,7 +76,7 @@ export function ReviewPhotoUpload({
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
         {/* Photos preview */}
         {photos.map((photo, i) => (
-          <div key={i} style={{ position: 'relative', width: 80, height: 80, borderRadius: 10, overflow: 'hidden', border: '0.5px solid #2a2a3a' }}>
+          <div key={i} style={{ position: 'relative', width: 80, height: 80, borderRadius: 10, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
             <img src={photo.preview || photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
             <button
               onClick={() => removePhoto(i)}
@@ -98,8 +98,8 @@ export function ReviewPhotoUpload({
             disabled={uploading}
             style={{
               width: 80, height: 80, borderRadius: 10,
-              background: '#0D0D12', border: '1px dashed #2a2a3a',
-              color: uploading ? '#444' : '#C9A84C', fontSize: 24,
+              background: '#0b0b12', border: '1px dashed #1c1c30',
+              color: uploading ? '#444' : '#6366f1', fontSize: 24,
               cursor: uploading ? 'wait' : 'pointer',
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 4,
@@ -170,7 +170,7 @@ export function WorkGallery({
             style={{
               position: 'relative', borderRadius: 12, overflow: 'hidden',
               cursor: 'pointer', aspectRatio: '1',
-              border: '0.5px solid #2a2a3a', transition: 'all 0.2s',
+              border: '0.5px solid #1c1c30', transition: 'all 0.2s',
             }}
           >
             <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
@@ -187,7 +187,7 @@ export function WorkGallery({
               {photo.rating && (
                 <div style={{ display: 'flex', gap: 2, marginTop: 2 }}>
                   {[1,2,3,4,5].map(n => (
-                    <span key={n} style={{ fontSize: 8, color: n <= photo.rating! ? '#C9A84C' : '#444' }}>★</span>
+                    <span key={n} style={{ fontSize: 8, color: n <= photo.rating! ? '#6366f1' : '#444' }}>★</span>
                   ))}
                 </div>
               )}
@@ -225,12 +225,12 @@ export function WorkGallery({
             <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 {photos[selectedPhoto].client_name && (
-                  <div style={{ fontSize: 13, color: '#F0EDE8', fontWeight: 300 }}>
+                  <div style={{ fontSize: 13, color: '#e0dfe5', fontWeight: 300 }}>
                     Photo par <span style={{ fontWeight: 800 }}>{photos[selectedPhoto].client_name}</span>
                   </div>
                 )}
                 {photos[selectedPhoto].service && (
-                  <div style={{ fontSize: 11, color: '#C9A84C', marginTop: 4 }}>{photos[selectedPhoto].service}</div>
+                  <div style={{ fontSize: 11, color: '#6366f1', marginTop: 4 }}>{photos[selectedPhoto].service}</div>
                 )}
               </div>
               <div style={{ padding: '4px 12px', borderRadius: 20, background: '#0a2010', border: '0.5px solid #0a3a20', fontSize: 11, color: '#4ade80', fontWeight: 800 }}>
@@ -242,20 +242,20 @@ export function WorkGallery({
             {selectedPhoto > 0 && (
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedPhoto(selectedPhoto - 1) }}
-                style={{ position: 'absolute', left: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: '#161620', border: '0.5px solid #2a2a3a', color: '#F0EDE8', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ position: 'absolute', left: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: '#13131e', border: '0.5px solid #1c1c30', color: '#e0dfe5', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >‹</button>
             )}
             {selectedPhoto < photos.length - 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedPhoto(selectedPhoto + 1) }}
-                style={{ position: 'absolute', right: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: '#161620', border: '0.5px solid #2a2a3a', color: '#F0EDE8', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ position: 'absolute', right: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: '#13131e', border: '0.5px solid #1c1c30', color: '#e0dfe5', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >›</button>
             )}
 
             {/* Close */}
             <button
               onClick={() => setSelectedPhoto(null)}
-              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: '#161620', border: '0.5px solid #2a2a3a', color: '#F0EDE8', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: '#13131e', border: '0.5px solid #1c1c30', color: '#e0dfe5', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >✕</button>
           </div>
         </div>
@@ -275,7 +275,7 @@ export function ArtisanAvatar({
   name,
   size = 88,
   editable = false,
-  color = '#C9A84C',
+  color = '#6366f1',
   onUpload,
 }: {
   userId: string
@@ -349,8 +349,8 @@ export function ArtisanAvatar({
             style={{
               position: 'absolute', bottom: -2, right: -2,
               width: 28, height: 28, borderRadius: '50%',
-              background: '#C9A84C', border: '2px solid #0D0D12',
-              color: '#0D0D12', fontSize: 12, cursor: 'pointer',
+              background: '#6366f1', border: '2px solid #0b0b12',
+              color: '#0b0b12', fontSize: 12, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >

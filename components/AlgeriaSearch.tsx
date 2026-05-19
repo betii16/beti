@@ -282,7 +282,7 @@ export function AlgeriaCitySearch({
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         {/* Input */}
         <div style={{ position: 'relative', flex: 1 }}>
-          <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14, pointerEvents: 'none', color: selected ? '#C9A84C' : '#555' }}>📍</div>
+          <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 14, pointerEvents: 'none', color: selected ? '#6366f1' : '#555' }}>📍</div>
           <input
             ref={inputRef}
             type="text"
@@ -292,8 +292,8 @@ export function AlgeriaCitySearch({
             placeholder={detecting ? 'Détection...' : placeholder}
             style={{
               width: '100%', padding: '11px 36px 11px 34px',
-              background: '#161620', border: `0.5px solid ${selected ? '#C9A84C44' : '#2a2a3a'}`,
-              borderRadius: 10, color: '#F0EDE8', fontSize: 13, outline: 'none',
+              background: '#13131e', border: `0.5px solid ${selected ? '#6366f144' : '#1c1c30'}`,
+              borderRadius: 10, color: '#e0dfe5', fontSize: 13, outline: 'none',
               fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'border-color 0.2s',
             }}
           />
@@ -316,13 +316,13 @@ export function AlgeriaCitySearch({
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 999,
-          background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14,
+          background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14,
           overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
         }}>
           {/* Tuiles rapides si pas de recherche */}
           {query.length < 2 && (
             <>
-              <div style={{ padding: '10px 14px 6px', borderBottom: '0.5px solid #1e1e2a' }}>
+              <div style={{ padding: '10px 14px 6px', borderBottom: '0.5px solid #1c1c30' }}>
                 <div style={{ fontSize: 10, color: '#555', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 8 }}>
                   VILLES POPULAIRES
                 </div>
@@ -333,13 +333,13 @@ export function AlgeriaCitySearch({
                       onClick={() => handleSelect(city)}
                       style={{
                         padding: '5px 12px', borderRadius: 20,
-                        background: '#1a1508', border: '0.5px solid #2a2010',
-                        color: '#C9A84C', fontSize: 12, cursor: 'pointer',
+                        background: '#6366f10d', border: '0.5px solid #6366f118',
+                        color: '#6366f1', fontSize: 12, cursor: 'pointer',
                         fontFamily: 'Nexa, sans-serif', fontWeight: 300,
                         transition: 'all 0.15s',
                       }}
                       onMouseEnter={e => (e.target as HTMLElement).style.background = '#241e08'}
-                      onMouseLeave={e => (e.target as HTMLElement).style.background = '#1a1508'}
+                      onMouseLeave={e => (e.target as HTMLElement).style.background = '#6366f10d'}
                     >
                       {city.name}
                     </button>
@@ -350,12 +350,12 @@ export function AlgeriaCitySearch({
               <div
                 onClick={detectLocation}
                 style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', transition: 'background 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
+                onMouseEnter={e => (e.currentTarget.style.background = '#1c1c30')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <span style={{ fontSize: 16 }}>🎯</span>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8' }}>Utiliser ma position</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5' }}>Utiliser ma position</div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Détection GPS automatique</div>
                 </div>
               </div>
@@ -369,22 +369,22 @@ export function AlgeriaCitySearch({
               onClick={() => handleSelect(city)}
               style={{
                 padding: '11px 16px', cursor: 'pointer',
-                borderTop: '0.5px solid #1e1e2a',
+                borderTop: '0.5px solid #1c1c30',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 transition: 'background 0.15s',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#1e1e2a')}
+              onMouseEnter={e => (e.currentTarget.style.background = '#1c1c30')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 14 }}>📍</span>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#F0EDE8' }}>{city.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5' }}>{city.name}</div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>{city.wilaya}</div>
                 </div>
               </div>
               {city.priority === 1 && (
-                <span style={{ fontSize: 9, background: '#1a1508', border: '0.5px solid #2a2010', color: '#C9A84C', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>
+                <span style={{ fontSize: 9, background: '#6366f10d', border: '0.5px solid #6366f118', color: '#6366f1', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>
                   POPULAIRE
                 </span>
               )}
@@ -401,7 +401,7 @@ export function AlgeriaCitySearch({
 export function WilayaSelector({ value, onChange }: { value: string; onChange: (w: string) => void }) {
   const wilayas = [...new Set(ALGERIA_CITIES.map(c => c.wilaya))].sort()
   return (
-    <select value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', padding: '11px 16px', background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 10, color: value ? '#F0EDE8' : '#555', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, cursor: 'pointer', appearance: 'none' }}>
+    <select value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', padding: '11px 16px', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 10, color: value ? '#e0dfe5' : '#555', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, cursor: 'pointer', appearance: 'none' }}>
       <option value="">Choisir une wilaya...</option>
       {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
     </select>

@@ -14,13 +14,13 @@ type Notif = {
 }
 
 const NOTIF_CONFIG: Record<string, { icon: string; color: string }> = {
-  booking_accepted:  { icon: '✅', color: '#4ade80' },
-  booking_refused:   { icon: '❌', color: '#f87171' },
-  booking_completed: { icon: '🎉', color: '#C9A84C' },
+  booking_accepted:  { icon: '✅', color: '#10b981' },
+  booking_refused:   { icon: '❌', color: '#ef4444' },
+  booking_completed: { icon: '🎉', color: '#6366f1' },
   new_booking:       { icon: '📩', color: '#60a5fa' },
   new_message:       { icon: '💬', color: '#a78bfa' },
-  reminder:          { icon: '⏰', color: '#C9A84C' },
-  payment:           { icon: '💶', color: '#4ade80' },
+  reminder:          { icon: '⏰', color: '#6366f1' },
+  payment:           { icon: '💶', color: '#10b981' },
 }
 
 function timeAgo(dateStr: string): string {
@@ -114,36 +114,36 @@ export default function Notifications() {
   })
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: '#555', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
+    <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontSize: 14, color: '#4a4a65', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
     </div>
   )
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: '#0D0D12', fontFamily: 'Nexa, sans-serif' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', background: '#0b0b12', fontFamily: 'Nexa, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ background: '#09090f', borderBottom: '0.5px solid #1e1e2a', padding: '32px 40px' }}>
+      <div style={{ background: '#0b0b12', borderBottom: '0.5px solid #1c1c30', padding: '32px 40px' }}>
         <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 10, color: '#C9A84C', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON COMPTE</div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#F0EDE8', marginBottom: 4 }}>Notifications</h1>
-            <p style={{ fontSize: 13, color: unreadCount > 0 ? '#C9A84C' : '#555', fontWeight: unreadCount > 0 ? 800 : 300 }}>
+            <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON COMPTE</div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#e0dfe5', marginBottom: 4 }}>Notifications</h1>
+            <p style={{ fontSize: 13, color: unreadCount > 0 ? '#6366f1' : '#4a4a65', fontWeight: unreadCount > 0 ? 800 : 300 }}>
               {unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : 'Tout est lu ✓'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: 4, background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 8, padding: 3 }}>
+            <div style={{ display: 'flex', gap: 4, background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 8, padding: 3 }}>
               {(['all', 'unread'] as const).map(f => (
                 <button key={f} onClick={() => setFilter(f)}
-                  style={{ padding: '6px 12px', background: filter === f ? '#2a2a3a' : 'transparent', border: 'none', borderRadius: 6, color: filter === f ? '#F0EDE8' : '#555', fontSize: 12, fontWeight: filter === f ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                  style={{ padding: '6px 12px', background: filter === f ? '#1c1c30' : 'transparent', border: 'none', borderRadius: 6, color: filter === f ? '#e0dfe5' : '#4a4a65', fontSize: 12, fontWeight: filter === f ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
                   {f === 'all' ? 'Toutes' : 'Non lues'}
                 </button>
               ))}
             </div>
             {notifs.length > 0 && (
               <button onClick={deleteAll}
-                style={{ padding: '8px 14px', background: 'transparent', border: '0.5px solid #2a1010', borderRadius: 8, color: '#f87171', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                style={{ padding: '8px 14px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 8, color: '#ef4444', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
                 Tout effacer
               </button>
             )}
@@ -163,35 +163,35 @@ export default function Notifications() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {Object.entries(grouped).map(([date, items]) => (
               <div key={date}>
-                <div style={{ fontSize: 11, color: '#444', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 12 }}>
                   {date.toUpperCase()}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {items.map(n => {
-                    const cfg = NOTIF_CONFIG[n.type] || { icon: '🔔', color: '#555' }
+                    const cfg = NOTIF_CONFIG[n.type] || { icon: '🔔', color: '#4a4a65' }
                     return (
                       <div key={n.id} style={{
-                        background: n.is_read ? '#161620' : '#1a1610',
-                        border: `0.5px solid ${n.is_read ? '#2a2a3a' : '#C9A84C22'}`,
+                        background: n.is_read ? '#13131e' : '#1a1610',
+                        border: `0.5px solid ${n.is_read ? '#1c1c30' : '#6366f122'}`,
                         borderRadius: 14, padding: '14px 16px',
                         display: 'flex', alignItems: 'flex-start', gap: 12,
                       }}>
-                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#0D0D12', border: '0.5px solid #1e1e2a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#0b0b12', border: '0.5px solid #1c1c30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
                           {cfg.icon}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                            <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8' }}>{n.title}</div>
+                            <div style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5' }}>{n.title}</div>
                             {!n.is_read && (
-                              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 6px #C9A84C', flexShrink: 0 }}/>
+                              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 0 6px #6366f1', flexShrink: 0 }}/>
                             )}
                           </div>
-                          <div style={{ fontSize: 13, color: '#666', fontWeight: 300, lineHeight: 1.5, marginBottom: 6 }}>{n.body}</div>
-                          <div style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{timeAgo(n.created_at)}</div>
+                          <div style={{ fontSize: 13, color: '#8585a0', fontWeight: 300, lineHeight: 1.5, marginBottom: 6 }}>{n.body}</div>
+                          <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{timeAgo(n.created_at)}</div>
                         </div>
                         <button onClick={() => deleteOne(n.id)}
                           style={{ background: 'transparent', border: 'none', color: '#333', fontSize: 20, cursor: 'pointer', padding: '0 2px', flexShrink: 0, lineHeight: 1 }}
-                          onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+                          onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
                           onMouseLeave={e => (e.currentTarget.style.color = '#333')}>
                           ×
                         </button>

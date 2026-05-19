@@ -64,11 +64,11 @@ export function AvatarUpload({
       {/* Avatar */}
       <div style={{
         width: 88, height: 88, borderRadius: '50%',
-        background: preview ? 'transparent' : '#C9A84C22',
-        border: '2px solid #C9A84C',
+        background: preview ? 'transparent' : '#6366f122',
+        border: '2px solid #6366f1',
         overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 28, fontWeight: 800, color: '#C9A84C',
+        fontSize: 28, fontWeight: 800, color: '#6366f1',
         cursor: 'pointer', position: 'relative',
       }} onClick={() => inputRef.current?.click()}>
         {preview
@@ -98,7 +98,7 @@ export function AvatarUpload({
         style={{
           position: 'absolute', bottom: 0, right: 0,
           width: 26, height: 26, borderRadius: '50%',
-          background: '#C9A84C', border: '2px solid #0D0D12',
+          background: '#6366f1', border: '2px solid #0b0b12',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', fontSize: 12,
         }}
@@ -165,7 +165,7 @@ export function ProblemPhotosUpload({
         {/* Photos existantes */}
         {photos.map(url => (
           <div key={url} style={{ position: 'relative', width: 80, height: 80 }}>
-            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, border: '0.5px solid #2a2a3a' }}/>
+            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, border: '0.5px solid #1c1c30' }}/>
             <button
               onClick={() => removePhoto(url)}
               style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#f87171', border: 'none', color: 'white', cursor: 'pointer', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -180,7 +180,7 @@ export function ProblemPhotosUpload({
             disabled={loading}
             style={{
               width: 80, height: 80, borderRadius: 8,
-              background: '#0D0D12', border: '0.5px dashed #2a2a3a',
+              background: '#0b0b12', border: '0.5px dashed #1c1c30',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', color: '#555', fontSize: 11, gap: 4, fontFamily: 'Nexa, sans-serif', fontWeight: 300,
             }}
@@ -244,7 +244,7 @@ export function PortfolioUpload({
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10, marginBottom: 12 }}>
         {photos.map((url, i) => (
-          <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, overflow: 'hidden', border: '0.5px solid #2a2a3a' }}>
+          <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
             <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
             <button
               onClick={async () => {
@@ -262,7 +262,7 @@ export function PortfolioUpload({
             onClick={() => inputRef.current?.click()}
             style={{
               aspectRatio: '1', borderRadius: 10,
-              background: '#0D0D12', border: '0.5px dashed #2a2a3a',
+              background: '#0b0b12', border: '0.5px dashed #1c1c30',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', color: '#555', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300, fontSize: 12,
             }}
@@ -318,7 +318,7 @@ export function BeforeAfterUpload({
             onClick={() => beforeRef.current?.click()}
             style={{
               aspectRatio: '4/3', borderRadius: 12, overflow: 'hidden',
-              background: '#0D0D12', border: `0.5px dashed ${before ? '#2a2a3a' : '#f97316'}`,
+              background: '#0b0b12', border: `0.5px dashed ${before ? '#1c1c30' : '#f97316'}`,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', position: 'relative',
             }}
@@ -343,7 +343,7 @@ export function BeforeAfterUpload({
             onClick={() => afterRef.current?.click()}
             style={{
               aspectRatio: '4/3', borderRadius: 12, overflow: 'hidden',
-              background: '#0D0D12', border: `0.5px dashed ${after ? '#2a2a3a' : '#4ade80'}`,
+              background: '#0b0b12', border: `0.5px dashed ${after ? '#1c1c30' : '#4ade80'}`,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', position: 'relative',
             }}

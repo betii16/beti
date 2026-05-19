@@ -12,12 +12,12 @@ type Booking = {
 }
 
 const STATUS_CONFIG = {
-  pending:     { fr: 'En attente',  ar: 'قيد الانتظار', bg: '#2a2010', color: '#C9A84C', border: '#3a3010' },
+  pending:     { fr: 'En attente',  ar: 'قيد الانتظار', bg: '#6366f118', color: '#6366f1', border: '#3a3010' },
   accepted:    { fr: 'Accepté',     ar: 'مقبول',         bg: '#0d1a2a', color: '#60a5fa', border: '#1a2a3a' },
   in_progress: { fr: 'En cours',    ar: 'جارٍ',           bg: '#1a0a2a', color: '#a78bfa', border: '#2a1a3a' },
-  completed:   { fr: 'Terminé',     ar: 'مكتمل',         bg: '#0a2010', color: '#4ade80', border: '#0a3a20' },
-  refused:     { fr: 'Refusé',      ar: 'مرفوض',         bg: '#1a0a0a', color: '#f87171', border: '#2a1010' },
-  cancelled:   { fr: 'Annulé',      ar: 'ملغى',           bg: '#1a1a1a', color: '#666',    border: '#2a2a2a' },
+  completed:   { fr: 'Terminé',     ar: 'مكتمل',         bg: '#10b98112', color: '#10b981', border: '#10b98122' },
+  refused:     { fr: 'Refusé',      ar: 'مرفوض',         bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
+  cancelled:   { fr: 'Annulé',      ar: 'ملغى',           bg: '#1a1a1a', color: '#8585a0',    border: '#2a2a2a' },
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -32,28 +32,28 @@ function BookingCard({ booking, onAccept, onRefuse, onComplete }: { booking: Boo
   const fmt = (d: string) => new Date(d).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div style={{ background: '#161620', border: `0.5px solid ${booking.status === 'pending' ? '#C9A84C33' : '#2a2a3a'}`, borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.3s' }}>
-      {booking.status === 'pending' && <div style={{ height: 2, background: 'linear-gradient(90deg, #C9A84C, #f59e0b)' }}/>}
+    <div style={{ background: '#13131e', border: `0.5px solid ${booking.status === 'pending' ? '#6366f133' : '#1c1c30'}`, borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.3s' }}>
+      {booking.status === 'pending' && <div style={{ height: 2, background: 'linear-gradient(90deg, #6366f1, #f59e0b)' }}/>}
       <div style={{ padding: '18px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#2a2a3a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#888', fontWeight: 800 }}>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#1c1c30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#8585a0', fontWeight: 800 }}>
               {(booking.profiles?.full_name || 'C')[0].toUpperCase()}
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8', marginBottom: 2 }}>{booking.profiles?.full_name || (isAr ? 'عميل' : 'Client')}</div>
-              {booking.profiles?.phone && <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>{booking.profiles.phone}</div>}
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5', marginBottom: 2 }}>{booking.profiles?.full_name || (isAr ? 'عميل' : 'Client')}</div>
+              {booking.profiles?.phone && <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{booking.profiles.phone}</div>}
             </div>
           </div>
           <StatusBadge status={booking.status}/>
         </div>
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8', marginBottom: 6 }}>{booking.title}</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5', marginBottom: 6 }}>{booking.title}</div>
           {booking.description && (
-            <div style={{ fontSize: 13, color: '#666', lineHeight: 1.6, fontWeight: 300, display: expanded ? 'block' : '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{booking.description}</div>
+            <div style={{ fontSize: 13, color: '#8585a0', lineHeight: 1.6, fontWeight: 300, display: expanded ? 'block' : '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{booking.description}</div>
           )}
           {booking.description && booking.description.length > 80 && (
-            <button onClick={() => setExpanded(!expanded)} style={{ background: 'transparent', border: 'none', color: '#C9A84C', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, marginTop: 4 }}>
+            <button onClick={() => setExpanded(!expanded)} style={{ background: 'transparent', border: 'none', color: '#6366f1', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, marginTop: 4 }}>
               {expanded ? (isAr ? 'عرض أقل' : 'Voir moins') : (isAr ? 'عرض المزيد' : 'Voir plus')}
             </button>
           )}
@@ -64,26 +64,26 @@ function BookingCard({ booking, onAccept, onRefuse, onComplete }: { booking: Boo
             { icon: '📅', text: fmt(booking.scheduled_at) },
             { icon: '💰', text: booking.price_agreed ? `${booking.price_agreed} DA/h` : (isAr ? 'السعر يحدد' : 'Tarif à définir') },
           ].map(item => (
-            <div key={item.icon} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#666', fontWeight: 300 }}>
+            <div key={item.icon} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#8585a0', fontWeight: 300 }}>
               <span>{item.icon}</span>{item.text}
             </div>
           ))}
         </div>
         {booking.status === 'pending' && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => onRefuse(booking.id)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '0.5px solid #2a1010', borderRadius: 10, color: '#f87171', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
-              onMouseEnter={e => (e.target as HTMLElement).style.background = '#1a0a0a'}
+            <button onClick={() => onRefuse(booking.id)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 10, color: '#ef4444', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+              onMouseEnter={e => (e.target as HTMLElement).style.background = '#ef444410'}
               onMouseLeave={e => (e.target as HTMLElement).style.background = 'transparent'}
             >{t('dashboard.refuse')}</button>
-            <button onClick={() => onAccept(booking.id)} style={{ flex: 2, padding: '10px', background: '#C9A84C', border: 'none', borderRadius: 10, color: '#0D0D12', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
+            <button onClick={() => onAccept(booking.id)} style={{ flex: 2, padding: '10px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 10, color: '#0b0b12', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
               onMouseEnter={e => (e.target as HTMLElement).style.background = '#d4b55a'}
-              onMouseLeave={e => (e.target as HTMLElement).style.background = '#C9A84C'}
+              onMouseLeave={e => (e.target as HTMLElement).style.background = '#6366f1'}
             >{t('dashboard.accept')}</button>
           </div>
         )}
         {booking.status === 'accepted' && (
-          <button onClick={() => onComplete(booking.id)} style={{ width: '100%', padding: '10px', background: 'transparent', border: '0.5px solid #4ade8044', borderRadius: 10, color: '#4ade80', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
-            onMouseEnter={e => (e.target as HTMLElement).style.background = '#0a2010'}
+          <button onClick={() => onComplete(booking.id)} style={{ width: '100%', padding: '10px', background: 'transparent', border: '0.5px solid #10b98144', borderRadius: 10, color: '#10b981', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
+            onMouseEnter={e => (e.target as HTMLElement).style.background = '#10b98112'}
             onMouseLeave={e => (e.target as HTMLElement).style.background = 'transparent'}
           >{t('dashboard.complete')}</button>
         )}
@@ -203,8 +203,8 @@ export default function ArtisanDashboard() {
   const monthRevenue = bookings.filter(b => b.status === 'completed' && new Date(b.created_at).getMonth() === new Date().getMonth()).reduce((s, b) => s + (b.price_agreed || 0), 0)
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0D0D12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: '#555', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('common.loading')}</div>
+    <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontSize: 14, color: '#4a4a65', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('common.loading')}</div>
     </div>
   )
 
@@ -212,40 +212,40 @@ export default function ArtisanDashboard() {
     <>
       <style suppressHydrationWarning>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0D0D12; font-family: 'Nexa', sans-serif; }
+        body { background: #0b0b12; font-family: 'Nexa', sans-serif; }
         ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: #1c1c30; border-radius: 2px; }
         @keyframes slideIn { from { transform: translateX(${isAr ? '-120%' : '120%'}); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       `}</style>
 
-      <div style={{ paddingTop: 52, minHeight: '100vh', background: '#0D0D12', direction: isAr ? 'rtl' : 'ltr' }}>
+      <div style={{ paddingTop: 52, minHeight: '100vh', background: '#0b0b12', direction: isAr ? 'rtl' : 'ltr' }}>
 
-        <div style={{ background: '#09090f', borderBottom: '0.5px solid #1e1e2a', padding: '28px 32px' }}>
+        <div style={{ background: '#0b0b12', borderBottom: '0.5px solid #1c1c30', padding: '28px 32px' }}>
           <div style={{ maxWidth: 1000, margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
               <div>
-                <div style={{ fontSize: 10, color: '#C9A84C', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('dashboard.title')}</div>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: '#F0EDE8' }}>{t('dashboard.hello')}</h1>
+                <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('dashboard.title')}</div>
+                <h1 style={{ fontSize: 26, fontWeight: 800, color: '#e0dfe5' }}>{t('dashboard.hello')}</h1>
               </div>
-              <div onClick={toggleAvailability} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#161620', border: `0.5px solid ${isAvailable ? '#4ade8044' : '#2a2a3a'}`, borderRadius: 12, padding: '10px 16px', cursor: 'pointer', transition: 'all 0.3s', userSelect: 'none' }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isAvailable ? '#4ade80' : '#555', boxShadow: isAvailable ? '0 0 8px #4ade8088' : 'none', transition: 'all 0.3s' }}/>
-                <span style={{ fontSize: 12, color: isAvailable ? '#4ade80' : '#555', fontWeight: 300, minWidth: 60 }}>{isAvailable ? t('dashboard.online') : t('dashboard.offline')}</span>
-                <div style={{ width: 36, height: 20, borderRadius: 10, background: isAvailable ? '#0a3020' : '#1a1a2a', border: `0.5px solid ${isAvailable ? '#4ade80' : '#2a2a3a'}`, position: 'relative', transition: 'all 0.3s' }}>
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: isAvailable ? '#4ade80' : '#555', position: 'absolute', top: 2, left: isAvailable ? 18 : 2, transition: 'all 0.3s', boxShadow: isAvailable ? '0 0 6px #4ade8088' : 'none' }}/>
+              <div onClick={toggleAvailability} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#13131e', border: `0.5px solid ${isAvailable ? '#10b98144' : '#1c1c30'}`, borderRadius: 12, padding: '10px 16px', cursor: 'pointer', transition: 'all 0.3s', userSelect: 'none' }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isAvailable ? '#10b981' : '#4a4a65', boxShadow: isAvailable ? '0 0 8px #10b98188' : 'none', transition: 'all 0.3s' }}/>
+                <span style={{ fontSize: 12, color: isAvailable ? '#10b981' : '#4a4a65', fontWeight: 300, minWidth: 60 }}>{isAvailable ? t('dashboard.online') : t('dashboard.offline')}</span>
+                <div style={{ width: 36, height: 20, borderRadius: 10, background: isAvailable ? '#0a3020' : '#1a1a2a', border: `0.5px solid ${isAvailable ? '#10b981' : '#1c1c30'}`, position: 'relative', transition: 'all 0.3s' }}>
+                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: isAvailable ? '#10b981' : '#4a4a65', position: 'absolute', top: 2, left: isAvailable ? 18 : 2, transition: 'all 0.3s', boxShadow: isAvailable ? '0 0 6px #10b98188' : 'none' }}/>
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
               {[
-                { value: pending.length,                label: t('dashboard.pending'),  color: '#C9A84C', bg: '#1a1508' },
+                { value: pending.length,                label: t('dashboard.pending'),  color: '#6366f1', bg: '#6366f10d' },
                 { value: active.length,                 label: t('dashboard.active'),   color: '#60a5fa', bg: '#0d1a2a' },
-                { value: stats?.total_missions || 0,    label: t('dashboard.total'),    color: '#F0EDE8', bg: '#161620' },
-                { value: `${monthRevenue.toLocaleString()} DA`, label: t('dashboard.revenue'), color: '#4ade80', bg: '#0a2010' },
+                { value: stats?.total_missions || 0,    label: t('dashboard.total'),    color: '#e0dfe5', bg: '#13131e' },
+                { value: `${monthRevenue.toLocaleString()} DA`, label: t('dashboard.revenue'), color: '#10b981', bg: '#10b98112' },
               ].map(s => (
-                <div key={s.label} style={{ background: s.bg, border: '0.5px solid #2a2a3a', borderRadius: 12, padding: '16px 18px' }}>
+                <div key={s.label} style={{ background: s.bg, border: '0.5px solid #1c1c30', borderRadius: 12, padding: '16px 18px' }}>
                   <div style={{ fontSize: 24, fontWeight: 800, color: s.color, marginBottom: 6 }}>{s.value}</div>
-                  <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -253,16 +253,16 @@ export default function ArtisanDashboard() {
         </div>
 
         <div style={{ maxWidth: 1000, margin: '0 auto', padding: '28px 32px' }}>
-          <div style={{ display: 'flex', borderBottom: '0.5px solid #2a2a3a', marginBottom: 28 }}>
+          <div style={{ display: 'flex', borderBottom: '0.5px solid #1c1c30', marginBottom: 28 }}>
             {[
               { id: 'pending', label: t('dashboard.requests'),   count: pending.length },
               { id: 'active',  label: t('dashboard.inProgress'), count: active.length  },
               { id: 'history', label: t('dashboard.history'),    count: history.length },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-                style={{ padding: '12px 20px', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? '#C9A84C' : 'transparent'}`, color: activeTab === tab.id ? '#C9A84C' : '#555', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}>
+                style={{ padding: '12px 20px', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? '#6366f1' : 'transparent'}`, color: activeTab === tab.id ? '#6366f1' : '#4a4a65', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}>
                 {tab.label}
-                {tab.count > 0 && <span style={{ background: activeTab === tab.id ? '#C9A84C' : '#2a2a3a', color: activeTab === tab.id ? '#0D0D12' : '#888', fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 20 }}>{tab.count}</span>}
+                {tab.count > 0 && <span style={{ background: activeTab === tab.id ? '#6366f1' : '#1c1c30', color: activeTab === tab.id ? '#0b0b12' : '#8585a0', fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 20 }}>{tab.count}</span>}
               </button>
             ))}
           </div>
@@ -285,19 +285,19 @@ export default function ArtisanDashboard() {
       </div>
 
       {newBookingAlert && (
-        <div style={{ position: 'fixed', bottom: 24, right: isAr ? 'auto' : 24, left: isAr ? 24 : 'auto', zIndex: 400, background: '#161620', border: '0.5px solid #C9A84C44', borderRadius: 16, padding: '20px 24px', maxWidth: 340, animation: 'slideIn 0.4s ease', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-          <div style={{ height: 2, background: '#C9A84C', marginBottom: 14, marginTop: -20, marginLeft: -24, marginRight: -24 }}/>
+        <div style={{ position: 'fixed', bottom: 24, right: isAr ? 'auto' : 24, left: isAr ? 24 : 'auto', zIndex: 400, background: '#13131e', border: '0.5px solid #6366f144', borderRadius: 16, padding: '20px 24px', maxWidth: 340, animation: 'slideIn 0.4s ease', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+          <div style={{ height: 2, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', marginBottom: 14, marginTop: -20, marginLeft: -24, marginRight: -24 }}/>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 8px #C9A84C' }}/>
-            <span style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.08em' }}>{t('dashboard.newRequest')}</span>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', boxShadow: '0 0 8px #6366f1' }}/>
+            <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em' }}>{t('dashboard.newRequest')}</span>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8', marginBottom: 4 }}>{newBookingAlert.title}</div>
-          <div style={{ fontSize: 12, color: '#555', fontWeight: 300, marginBottom: 14 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5', marginBottom: 4 }}>{newBookingAlert.title}</div>
+          <div style={{ fontSize: 12, color: '#4a4a65', fontWeight: 300, marginBottom: 14 }}>
             {t('dashboard.from')} {newBookingAlert.profiles?.full_name || (isAr ? 'عميل' : 'Client')} · {newBookingAlert.address}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => { updateStatus(newBookingAlert.id, 'refused'); setNewBookingAlert(null) }} style={{ flex: 1, padding: '8px', background: 'transparent', border: '0.5px solid #2a1010', borderRadius: 8, color: '#f87171', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('dashboard.refuse')}</button>
-            <button onClick={() => { updateStatus(newBookingAlert.id, 'accepted'); setNewBookingAlert(null) }} style={{ flex: 2, padding: '8px', background: '#C9A84C', border: 'none', borderRadius: 8, color: '#0D0D12', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>✓ {isAr ? 'قبول' : 'Accepter'}</button>
+            <button onClick={() => { updateStatus(newBookingAlert.id, 'refused'); setNewBookingAlert(null) }} style={{ flex: 1, padding: '8px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 8, color: '#ef4444', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('dashboard.refuse')}</button>
+            <button onClick={() => { updateStatus(newBookingAlert.id, 'accepted'); setNewBookingAlert(null) }} style={{ flex: 2, padding: '8px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 8, color: '#0b0b12', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>✓ {isAr ? 'قبول' : 'Accepter'}</button>
           </div>
         </div>
       )}
