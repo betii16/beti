@@ -22,7 +22,7 @@ export const supabase: SupabaseClient = supabaseUrl
         storageKey:         'beti-auth',
         persistSession:     true,
         autoRefreshToken:   true,
-        detectSessionInUrl: false,
+        detectSessionInUrl: true,
       },
     })
   : (new Proxy({} as SupabaseClient, {

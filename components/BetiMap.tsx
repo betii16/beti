@@ -77,7 +77,7 @@ export default function BetiMap({
             rating: a.rating_avg || 0,
             price: a.hourly_rate || 0,
             available: a.is_available,
-            color: CAT_COLORS[a.category] || '#6366f1',
+            color: CAT_COLORS[a.category] || '#C9A84C',
             lat: a.lat,
             lng: a.lng,
             radius_km: a.intervention_radius_km || 20,
@@ -172,15 +172,15 @@ export default function BetiMap({
       // Marqueur client
       const clientIcon = L.divIcon({
         html: `<div style="position:relative;width:18px;height:18px">
-          <div style="position:absolute;inset:-8px;border-radius:50%;background:#6366f133;animation:mapPulse 2s infinite"></div>
-          <div style="width:18px;height:18px;border-radius:50%;background:#6366f1;border:3px solid #0b0b12;box-shadow:0 0 0 3px #6366f144,0 0 20px #6366f166;position:relative;z-index:2"></div>
+          <div style="position:absolute;inset:-8px;border-radius:50%;background:#C9A84C33;animation:mapPulse 2s infinite"></div>
+          <div style="width:18px;height:18px;border-radius:50%;background:#C9A84C;border:3px solid #0D0D12;box-shadow:0 0 0 3px #C9A84C44,0 0 20px #C9A84C66;position:relative;z-index:2"></div>
         </div>`,
         iconSize: [18, 18],
         iconAnchor: [9, 9],
         className: '',
       })
       clientMarkerRef.current = L.marker([clientLat, clientLng], { icon: clientIcon }).addTo(map)
-      clientMarkerRef.current.bindPopup('<div style="font-family:sans-serif;font-weight:800;color:#0b0b12">📍 Votre position</div>')
+      clientMarkerRef.current.bindPopup('<div style="font-family:sans-serif;font-weight:800;color:#0D0D12">📍 Votre position</div>')
 
       mapInstance.current = map
 
@@ -281,7 +281,7 @@ export default function BetiMap({
     if (!artisan) return
 
     const vehicleIcon = L.divIcon({
-      html: `<div style="width:44px;height:44px;border-radius:50%;background:rgba(13,13,18,0.9);border:3px solid #6366f1;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#6366f1;box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 20px #6366f144">${artisan.initials}</div>`,
+      html: `<div style="width:44px;height:44px;border-radius:50%;background:rgba(13,13,18,0.9);border:3px solid #C9A84C;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#C9A84C;box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 20px #C9A84C44">${artisan.initials}</div>`,
       iconSize: [44, 44],
       iconAnchor: [22, 22],
       className: '',
@@ -300,7 +300,7 @@ export default function BetiMap({
       }
       routeLayerRef.current = L.polyline(
         [[lat, lng], [clientLat, clientLng]],
-        { color: '#6366f1', weight: 2.5, opacity: 0.9, dashArray: '8 6' }
+        { color: '#C9A84C', weight: 2.5, opacity: 0.9, dashArray: '8 6' }
       ).addTo(map)
       const dist = calcDist(lat, lng, clientLat, clientLng)
       setDistance(dist.toFixed(1))
@@ -339,45 +339,34 @@ export default function BetiMap({
   }, [trackingArtisanId, mapReady, artisans, clientLat, clientLng])
 
   return (
-    <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
+    <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: '0.5px solid #2a2a3a' }}>
       <div ref={mapRef} style={{ width: '100%', height: 520, background: '#1a2030' }} />
 
       {/* Loading state */}
       {!mapReady && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a2030', zIndex: 1000 }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0b0b12', margin: '0 auto 12px', animation: 'mapPulse 1.5s infinite' }}>B</div>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0D0D12', margin: '0 auto 12px', animation: 'mapPulse 1.5s infinite' }}>B</div>
             <div style={{ fontSize: 13, color: '#555', fontWeight: 300 }}>Chargement de la carte...</div>
           </div>
         </div>
       )}
 
-      {/* Légende */}
-      <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 1000, background: 'rgba(9,9,15,0.92)', backdropFilter: 'blur(12px)', border: '0.5px solid #1c1c30', borderRadius: 12, padding: '12px 16px' }}>
-        <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 10 }}>LÉGENDE</div>
-        {[{ color: '#6366f1', label: 'Vous' }, { color: '#4ade80', label: 'Artisan disponible' }, { color: '#555', label: 'Artisan occupé' }].map(item => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
-            <span style={{ fontSize: 12, color: '#888', fontWeight: 300 }}>{item.label}</span>
-          </div>
-        ))}
-      </div>
-
       {/* Tracking info */}
       {trackingArtisanId && (distance || eta) && (
-        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, background: 'rgba(9,9,15,0.92)', backdropFilter: 'blur(12px)', border: '0.5px solid #6366f144', borderRadius: 12, padding: '16px 20px', minWidth: 200 }}>
+        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, background: 'rgba(9,9,15,0.92)', backdropFilter: 'blur(12px)', border: '0.5px solid #C9A84C44', borderRadius: 12, padding: '16px 20px', minWidth: 200 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
             <span style={{ fontSize: 11, color: '#4ade80', fontWeight: 800, letterSpacing: '0.08em' }}>ARTISAN EN ROUTE</span>
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#6366f1' }}>{distance} km</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#C9A84C' }}>{distance} km</div>
               <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Distance</div>
             </div>
-            <div style={{ width: '0.5px', background: '#1c1c30' }} />
+            <div style={{ width: '0.5px', background: '#2a2a3a' }} />
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#e0dfe5' }}>{eta}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#F0EDE8' }}>{eta}</div>
               <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Arrivée estimée</div>
             </div>
           </div>
@@ -391,20 +380,20 @@ export default function BetiMap({
             {selectedArtisan.initials}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5', marginBottom: 2 }}>{selectedArtisan.name}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8', marginBottom: 2 }}>{selectedArtisan.name}</div>
             <div style={{ fontSize: 11, color: selectedArtisan.color, letterSpacing: '0.06em', fontWeight: 800 }}>
               {selectedArtisan.category.toUpperCase()} · {distance ? `${distance} km` : ''} · ETA {eta}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#6366f1', marginBottom: 8 }}>{selectedArtisan.price.toLocaleString('fr-DZ')} DA/h</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#C9A84C', marginBottom: 8 }}>{selectedArtisan.price.toLocaleString('fr-DZ')} DA/h</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setSelectedArtisan(null); if (routeLayerRef.current && mapInstance.current) { try { mapInstance.current.removeLayer(routeLayerRef.current) } catch {} } }}
-                style={{ padding: '8px 14px', borderRadius: 8, background: 'transparent', border: '0.5px solid #1c1c30', color: '#666', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                style={{ padding: '8px 14px', borderRadius: 8, background: 'transparent', border: '0.5px solid #2a2a3a', color: '#666', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
                 Fermer
               </button>
               <a href={`/artisan/${selectedArtisan.id}`}>
-                <button style={{ padding: '8px 16px', borderRadius: 8, background: '#6366f1', border: 'none', color: '#0b0b12', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Réserver</button>
+                <button style={{ padding: '8px 16px', borderRadius: 8, background: '#C9A84C', border: 'none', color: '#0D0D12', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Réserver</button>
               </a>
             </div>
           </div>
@@ -414,9 +403,9 @@ export default function BetiMap({
       <style>{`
         .leaflet-container { background: #1a2030 !important; }
         .leaflet-tile { }
-        .leaflet-popup-content-wrapper { background: rgba(13,13,18,0.95) !important; border: 0.5px solid #6366f144 !important; border-radius: 10px !important; color: #e0dfe5 !important; backdrop-filter: blur(12px); }
+        .leaflet-popup-content-wrapper { background: rgba(13,13,18,0.95) !important; border: 0.5px solid #C9A84C44 !important; border-radius: 10px !important; color: #F0EDE8 !important; backdrop-filter: blur(12px); }
         .leaflet-popup-tip { background: rgba(13,13,18,0.95) !important; }
-        .leaflet-control-zoom a { background: rgba(13,13,18,0.85) !important; color: #e0dfe5 !important; border: 0.5px solid rgba(201,168,76,0.2) !important; backdrop-filter: blur(8px); }
+        .leaflet-control-zoom a { background: rgba(13,13,18,0.85) !important; color: #F0EDE8 !important; border: 0.5px solid rgba(201,168,76,0.2) !important; backdrop-filter: blur(8px); }
         .leaflet-control-attribution { display: none; }
         @keyframes mapPulse { 0% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(2.5); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
       `}</style>

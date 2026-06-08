@@ -1,304 +1,180 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 
-const COUNTRIES = [
-  { code: '+213', flag: '🇩🇿', name: 'Algérie' },
-  { code: '+33',  flag: '🇫🇷', name: 'France' },
-  { code: '+212', flag: '🇲🇦', name: 'Maroc' },
-  { code: '+216', flag: '🇹🇳', name: 'Tunisie' },
-  { code: '+218', flag: '🇱🇾', name: 'Libye' },
-  { code: '+20',  flag: '🇪🇬', name: 'Égypte' },
-  { code: '+966', flag: '🇸🇦', name: 'Arabie Saoudite' },
-  { code: '+971', flag: '🇦🇪', name: 'EAU' },
-  { code: '+974', flag: '🇶🇦', name: 'Qatar' },
-  { code: '+90',  flag: '🇹🇷', name: 'Turquie' },
-  { code: '+49',  flag: '🇩🇪', name: 'Allemagne' },
-  { code: '+44',  flag: '🇬🇧', name: 'Royaume-Uni' },
-  { code: '+1',   flag: '🇺🇸', name: 'États-Unis' },
-  { code: '+39',  flag: '🇮🇹', name: 'Italie' },
-  { code: '+34',  flag: '🇪🇸', name: 'Espagne' },
-  { code: '+32',  flag: '🇧🇪', name: 'Belgique' },
-  { code: '+41',  flag: '🇨🇭', name: 'Suisse' },
-  { code: '+1',   flag: '🇨🇦', name: 'Canada' },
+const CC = [
+  {c:'+213',f:'🇩🇿',n:'Algérie'},{c:'+33',f:'🇫🇷',n:'France'},{c:'+212',f:'🇲🇦',n:'Maroc'},
+  {c:'+216',f:'🇹🇳',n:'Tunisie'},{c:'+218',f:'🇱🇾',n:'Libye'},{c:'+20',f:'🇪🇬',n:'Égypte'},
+  {c:'+966',f:'🇸🇦',n:'Arabie Saoudite'},{c:'+971',f:'🇦🇪',n:'EAU'},{c:'+974',f:'🇶🇦',n:'Qatar'},
+  {c:'+90',f:'🇹🇷',n:'Turquie'},{c:'+49',f:'🇩🇪',n:'Allemagne'},{c:'+44',f:'🇬🇧',n:'UK'},
+  {c:'+1',f:'🇺🇸',n:'USA'},{c:'+39',f:'🇮🇹',n:'Italie'},{c:'+34',f:'🇪🇸',n:'Espagne'},
+  {c:'+32',f:'🇧🇪',n:'Belgique'},{c:'+41',f:'🇨🇭',n:'Suisse'},{c:'+1',f:'🇨🇦',n:'Canada'},
 ]
 
 export default function SignupPage() {
   const router = useRouter()
   const { t, isAr } = useLang()
-  const [dark, setDark] = useState(true)
   const [step, setStep] = useState(1)
-  const [role, setRole] = useState<'client' | 'artisan' | null>(null)
-  const [fullName, setFullName] = useState('')
+  const [role, setRole] = useState<'client'|'artisan'|null>(null)
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [pw, setPw] = useState('')
   const [phone, setPhone] = useState('')
-  const [countryCode, setCountryCode] = useState('+213')
-  const [showCountries, setShowCountries] = useState(false)
-  const [phoneError, setPhoneError] = useState('')
+  const [cc, setCc] = useState('+213')
+  const [showCc, setShowCc] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState('')
+  const [phoneErr, setPhoneErr] = useState('')
+  const [ok, setOk] = useState(false)
+  const [okMsg, setOkMsg] = useState('Compte créé !')
 
-  useEffect(() => {
-    const saved = localStorage.getItem('beti-theme')
-    if (saved === 'light') setDark(false)
-  }, [])
+  const fullPhone = `${cc}${phone.replace(/[\s\-()]/g,'')}`
+  const sel = CC.find(x=>x.c===cc)||CC[0]
+  const pws = (()=>{let s=0;if(pw.length>=6)s++;if(pw.length>=10)s++;if(/[A-Z]/.test(pw))s++;if(/[0-9]/.test(pw))s++;if(/[^A-Za-z0-9]/.test(pw))s++;return s})()
+  const canGo = name && email && pw.length>=6 && phone.length>=6 && !phoneErr
 
-  const bg = dark ? '#0b0b12' : '#f5f5f7'
-  const bg2 = dark ? '#13131e' : '#ffffff'
-  const bg3 = dark ? '#0e0e18' : '#f0f0f3'
-  const tx = dark ? '#e0dfe5' : '#111827'
-  const tx2 = dark ? '#8585a0' : '#6b7280'
-  const tx3 = dark ? '#4a4a65' : '#9ca3af'
-  const brd = dark ? '#1c1c30' : '#e5e7eb'
-
-  const checkRateLimit = () => {
-    try {
-      const key = 'beti_signup_attempts'
-      const stored = JSON.parse(localStorage.getItem(key) || '{"count":0,"ts":0}')
-      const now = Date.now()
-      if (now - stored.ts > 15 * 60 * 1000) { stored.count = 0; stored.ts = now }
-      if (stored.count >= 5) return false
-      stored.count++; stored.ts = now
-      localStorage.setItem(key, JSON.stringify(stored))
-      return true
-    } catch { return true }
+  const checkPhone = async()=>{
+    if(phone.length<6)return;setPhoneErr('')
+    const{data}=await supabase.from('profiles').select('id').eq('phone',fullPhone).limit(1)
+    if(data&&data.length>0)setPhoneErr('Ce numéro est déjà utilisé')
   }
 
-  const fullPhone = `${countryCode}${phone.replace(/[\s\-\(\)]/g, '')}`
+  const submit = async()=>{
+    if(!role||phoneErr)return;setLoading(true);setErr('')
+    // Rate limit
+    try{const k='beti_sr';const s=JSON.parse(localStorage.getItem(k)||'{"c":0,"t":0}');if(Date.now()-s.t>9e5){s.c=0;s.t=Date.now()};if(s.c>=5){setErr('Trop de tentatives');setLoading(false);return};s.c++;localStorage.setItem(k,JSON.stringify(s))}catch{}
+    // Phone check
+    const{data:pc}=await supabase.from('profiles').select('id').eq('phone',fullPhone).limit(1)
+    if(pc&&pc.length>0){setErr('Ce numéro est déjà utilisé');setLoading(false);return}
+    // Signup
+    const{data:sd,error:se}=await supabase.auth.signUp({email,password:pw,options:{data:{full_name:name,role,phone:fullPhone}}})
+    if(se){
+      setErr(se.message.includes('already registered')?'Cet email est déjà utilisé':se.message.includes('valid email')?'Email invalide':se.message.includes('6 char')?'Mot de passe trop court':se.message)
+      setLoading(false);return
+    }
+    const uid=sd.user?.id;if(!uid){setErr('Erreur de création');setLoading(false);return}
 
-  const checkPhoneUnique = async () => {
-    if (!phone || phone.length < 6) return
-    setPhoneError('')
-    const { data } = await supabase.from('profiles').select('id').eq('phone', fullPhone).limit(1)
-    if (data && data.length > 0) setPhoneError(isAr ? 'هذا الرقم مستخدم بالفعل' : 'Ce numéro est déjà associé à un compte')
-  }
-
-  const passwordStrength = () => {
-    let s = 0
-    if (password.length >= 6) s++
-    if (password.length >= 10) s++
-    if (/[A-Z]/.test(password)) s++
-    if (/[0-9]/.test(password)) s++
-    if (/[^A-Za-z0-9]/.test(password)) s++
-    return s
-  }
-
-  const canContinue = fullName && email && password.length >= 6 && phone.length >= 6 && !phoneError
-
-  const handleSignup = async () => {
-    if (!role || phoneError) return
-    if (!checkRateLimit()) { setError(isAr ? 'محاولات كثيرة. انتظر 15 دقيقة' : 'Trop de tentatives. Réessayez dans 15 minutes.'); return }
-    setLoading(true); setError('')
-
-    const { data: phoneCheck } = await supabase.from('profiles').select('id').eq('phone', fullPhone).limit(1)
-    if (phoneCheck && phoneCheck.length > 0) { setError(isAr ? 'هذا الرقم مرتبط بحساب آخر' : 'Ce numéro est déjà associé à un compte'); setLoading(false); return }
-
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, role, phone: fullPhone } } })
-    if (signUpError) {
-      setError(signUpError.message.includes('already registered') ? (isAr ? 'هذا البريد مسجل بالفعل' : 'Cet email est déjà utilisé') : signUpError.message)
-      setLoading(false); return
+    // Si pas de session = email confirmation activée dans Supabase
+    if(!sd.session){
+      setOk(true);setOkMsg('Vérifiez votre boîte email pour confirmer votre compte');setLoading(false);return
     }
 
-    const userId = signUpData.user?.id
-    if (!userId) { setError('Erreur création compte'); setLoading(false); return }
+    // Session OK → créer le profil
+    try{
+      await supabase.from('profiles').upsert({id:uid,full_name:name,phone:fullPhone,role},{onConflict:'id'})
+      if(role==='artisan')await supabase.from('artisans').upsert({id:uid,category:'plomberie',hourly_rate:0,is_available:false,rating_avg:0,rating_count:0,total_missions:0},{onConflict:'id'})
+    }catch(e:any){console.error('Profile creation error:',e)}
 
-    await supabase.from('profiles').upsert({ id: userId, full_name: fullName, phone: fullPhone, role }, { onConflict: 'id' })
-    if (role === 'artisan') await supabase.from('artisans').upsert({ id: userId, category: 'plomberie', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' })
-
-    setSuccess(true)
-    setTimeout(() => router.push(role === 'artisan' ? '/artisan-dashboard/profil' : '/mon-espace'), 2000)
-    setLoading(false)
+    setOk(true);setOkMsg('Compte créé !');setTimeout(()=>router.push(role==='artisan'?'/artisan-dashboard/profil':'/mon-espace'),2000);setLoading(false)
   }
 
-  const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || COUNTRIES[0]
+  const inp = {width:'100%',padding:'13px 16px',background:'var(--bg3,#0e0e18)',border:'1px solid var(--border,#1c1c30)',borderRadius:10,color:'var(--tx,#e0dfe5)',fontSize:14,outline:'none' as const,fontFamily:'Nexa,sans-serif',fontWeight:300 as const}
+  const btn = (active:boolean)=>({width:'100%',padding:14,border:'none' as const,borderRadius:10,fontSize:14,fontWeight:700 as const,cursor:active?'pointer':'not-allowed' as const,fontFamily:'Nexa,sans-serif',background:active?'linear-gradient(135deg,#6366f1,#8b5cf6)':'var(--border,#1c1c30)',color:active?'#fff':'var(--tx3,#4a4a65)',transition:'all 0.2s'})
 
-  if (success) return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', animation: 'fadeUp 0.6s ease' }}>
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#10b98118', border: '2px solid #10b98133', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+  if(ok)return(
+    <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{width:64,height:64,borderRadius:'50%',background:'#10b98115',border:'2px solid #10b98133',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
         </div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: tx, marginBottom: 8, fontFamily: 'Nexa, sans-serif' }}>{isAr ? 'تم إنشاء حسابك' : 'Compte créé'}</div>
-        <div style={{ fontSize: 13, color: tx2, fontWeight: 300 }}>{isAr ? 'جارٍ التوجيه...' : 'Redirection en cours...'}</div>
+        <div style={{fontSize:24,fontWeight:800,color:'var(--tx)'}}>{okMsg}</div>
+        <div style={{fontSize:13,color:'var(--tx2)',marginTop:8}}>{okMsg.includes('email')?'Puis connectez-vous':'Redirection...'}</div>
       </div>
-      <style suppressHydrationWarning>{`@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   )
 
-  return (
-    <>
-      <style suppressHydrationWarning>{`
-        *{box-sizing:border-box;margin:0;padding:0}body{background:${bg};font-family:Nexa,system-ui,sans-serif}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        .sinput{width:100%;padding:13px 16px;background:${bg3};border:1px solid ${brd};border-radius:10px;color:${tx};font-size:14px;outline:none;font-family:Nexa,sans-serif;font-weight:300;transition:border-color 0.2s}
-        .sinput:focus{border-color:#6366f1}
-        .sbtn{width:100%;padding:14px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.2s}
-      `}</style>
+  return(
+    <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div style={{width:'100%',maxWidth:440}}>
+        {/* Logo */}
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <a href="/" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',gap:10}}>
+            <div style={{width:36,height:36,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:'#fff'}}>B</div>
+            <span style={{fontSize:20,fontWeight:800,color:'var(--tx)',letterSpacing:'0.08em'}}>BETI</span>
+          </a>
+        </div>
+        {/* Steps */}
+        <div style={{display:'flex',gap:6,marginBottom:28,justifyContent:'center'}}>
+          {[1,2,3].map(i=><div key={i} style={{height:3,width:48,borderRadius:2,background:i<=step?'#6366f1':'var(--border)',transition:'all 0.3s'}}/>)}
+        </div>
 
-      <div style={{ minHeight: '100vh', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, direction: isAr ? 'rtl' : 'ltr' }}>
-        <div style={{ width: '100%', maxWidth: 440, position: 'relative', animation: 'fadeUp 0.5s ease' }}>
-          {/* Logo */}
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff' }}>B</div>
-              <span style={{ fontSize: 20, fontWeight: 800, color: tx, letterSpacing: '0.08em' }}>BETI</span>
-            </a>
-          </div>
+        <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:18,padding:'36px 32px',boxShadow:'var(--card-shadow)'}}>
 
-          {/* Steps */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 28, justifyContent: 'center' }}>
-            {[1, 2, 3].map(i => <div key={i} style={{ height: 3, width: 48, borderRadius: 2, background: i <= step ? '#6366f1' : brd, transition: 'background 0.3s' }}/>)}
-          </div>
+          {step===1&&<>
+            <h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)',marginBottom:8}}>Bienvenue sur BETI</h1>
+            <p style={{fontSize:13,color:'var(--tx2)',marginBottom:28}}>Vous êtes...</p>
+            {[{v:'client',t:'Client',d:'Je cherche un artisan'},{v:'artisan',t:'Artisan / Prestataire',d:'Je propose mes services'}].map(o=>
+              <div key={o.v} onClick={()=>setRole(o.v as any)} style={{padding:'16px 18px',borderRadius:12,cursor:'pointer',border:`1px solid ${role===o.v?'#6366f1':'var(--border)'}`,background:role===o.v?'#6366f10d':'var(--bg3)',marginBottom:10,transition:'all 0.2s'}}>
+                <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{o.t}</div>
+                <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{o.d}</div>
+              </div>
+            )}
+            <button onClick={()=>role&&setStep(2)} style={btn(!!role)}>Continuer</button>
+            <p style={{textAlign:'center',fontSize:13,color:'var(--tx2)',marginTop:20}}>Déjà un compte ? <a href="/auth/login" style={{color:'#6366f1',textDecoration:'none',fontWeight:700}}>Se connecter</a></p>
+          </>}
 
-          <div style={{ background: bg2, border: `1px solid ${brd}`, borderRadius: 18, padding: '36px 32px', boxShadow: dark ? '0 4px 24px rgba(0,0,0,0.3)' : '0 4px 24px rgba(0,0,0,0.06)' }}>
+          {step===2&&<>
+            <h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)',marginBottom:8}}>Vos informations</h1>
+            <p style={{fontSize:13,color:'var(--tx2)',marginBottom:24}}>Créez votre compte BETI</p>
 
-            {/* Step 1: Rôle */}
-            {step === 1 && (
-              <>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: tx, marginBottom: 8 }}>{t('auth.welcome')}</h1>
-                <p style={{ fontSize: 13, color: tx2, marginBottom: 28, fontWeight: 300 }}>{t('auth.youAre')}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-                  {[
-                    { value: 'client', title: t('auth.client'), desc: t('auth.clientDesc') },
-                    { value: 'artisan', title: t('auth.artisan'), desc: t('auth.artisanDesc') },
-                  ].map(opt => (
-                    <div key={opt.value} onClick={() => setRole(opt.value as any)}
-                      style={{ padding: '16px 18px', borderRadius: 12, cursor: 'pointer', border: `1px solid ${role === opt.value ? '#6366f1' : brd}`, background: role === opt.value ? '#6366f10d' : bg3, transition: 'all 0.2s' }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: tx, marginBottom: 3 }}>{opt.title}</div>
-                      <div style={{ fontSize: 12, color: tx2, fontWeight: 300 }}>{opt.desc}</div>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => role && setStep(2)} className="sbtn"
-                  style={{ background: role ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : brd, color: role ? '#fff' : tx3 }}>
-                  {t('auth.continue')}
+            {[{l:'NOM COMPLET',t:'text',p:'Karim Benali',v:name,s:setName},{l:'EMAIL',t:'email',p:'votre@email.com',v:email,s:setEmail},{l:'MOT DE PASSE',t:'password',p:'Min. 6 caractères',v:pw,s:setPw}].map(f=>
+              <div key={f.l} style={{marginBottom:14}}>
+                <label style={{fontSize:11,color:'var(--tx2)',display:'block',marginBottom:6,fontWeight:700,letterSpacing:'0.06em'}}>{f.l}</label>
+                <input type={f.t} placeholder={f.p} value={f.v} onChange={e=>f.s(e.target.value)} style={inp}/>
+              </div>
+            )}
+
+            {pw.length>0&&<div style={{marginBottom:14}}>
+              <div style={{display:'flex',gap:4,marginBottom:4}}>{[1,2,3,4,5].map(i=><div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=pws?(pws<=2?'#ef4444':pws<=3?'#f59e0b':'#10b981'):'var(--border)',transition:'all 0.3s'}}/>)}</div>
+              <span style={{fontSize:10,color:pws<=2?'#ef4444':pws<=3?'#f59e0b':'#10b981'}}>{pws<=2?'Faible':pws<=3?'Moyen':'Fort'}</span>
+            </div>}
+
+            {/* Phone */}
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:11,color:'var(--tx2)',display:'block',marginBottom:6,fontWeight:700,letterSpacing:'0.06em'}}>TÉLÉPHONE <span style={{color:'#ef4444'}}>*</span></label>
+              <div style={{display:'flex',position:'relative'}}>
+                <button onClick={()=>setShowCc(!showCc)} type="button" style={{display:'flex',alignItems:'center',gap:6,padding:'13px 12px',background:'var(--bg3)',border:'1px solid var(--border)',borderRight:'none',borderRadius:'10px 0 0 10px',cursor:'pointer',fontSize:14,color:'var(--tx)',fontFamily:'Nexa,sans-serif',flexShrink:0,minWidth:100}}>
+                  <span style={{fontSize:18}}>{sel.f}</span><span style={{fontSize:13,color:'var(--tx2)'}}>{cc}</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{transform:showCc?'rotate(180deg)':'none',transition:'transform 0.2s'}}><path d="M6 9l6 6 6-6"/></svg>
                 </button>
-                <p style={{ textAlign: 'center', fontSize: 13, color: tx2, marginTop: 20 }}>
-                  {t('auth.alreadyAccount')}{' '}
-                  <a href="/auth/login" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 700 }}>{t('auth.signIn')}</a>
-                </p>
-              </>
-            )}
+                {showCc&&<div style={{position:'absolute',top:'100%',left:0,zIndex:50,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,boxShadow:'var(--card-shadow)',maxHeight:220,overflowY:'auto',width:260,marginTop:4}}>
+                  {CC.map(c=><div key={c.c+c.n} onClick={()=>{setCc(c.c);setShowCc(false)}} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',cursor:'pointer',borderBottom:'0.5px solid var(--border)'}} onMouseEnter={e=>(e.currentTarget.style.background='var(--bg3)')} onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>
+                    <span style={{fontSize:18}}>{c.f}</span><span style={{fontSize:13,color:'var(--tx)',flex:1}}>{c.n}</span><span style={{fontSize:12,color:'var(--tx3)'}}>{c.c}</span>
+                  </div>)}
+                </div>}
+                <input type="tel" placeholder="555 12 34 56" value={phone} onChange={e=>{setPhone(e.target.value);setPhoneErr('')}} onBlur={checkPhone} style={{...inp,borderRadius:'0 10px 10px 0',borderColor:phoneErr?'#ef4444':'var(--border,#1c1c30)'}}/>
+              </div>
+              {phoneErr&&<p style={{fontSize:11,color:'#ef4444',marginTop:6}}>{phoneErr}</p>}
+              <p style={{fontSize:10,color:'var(--tx3)',marginTop:6}}>Un seul compte par numéro</p>
+            </div>
 
-            {/* Step 2: Info */}
-            {step === 2 && (
-              <>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: tx, marginBottom: 8 }}>{t('auth.yourInfo')}</h1>
-                <p style={{ fontSize: 13, color: tx2, marginBottom: 28, fontWeight: 300 }}>{t('auth.createAccount')}</p>
+            <div style={{display:'flex',gap:10,marginTop:16}}>
+              <button onClick={()=>setStep(1)} style={{flex:1,padding:14,borderRadius:10,background:'transparent',border:'1px solid var(--border)',color:'var(--tx2)',fontSize:13,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Retour</button>
+              <button onClick={()=>canGo&&setStep(3)} style={{...btn(canGo),flex:2}}>Continuer</button>
+            </div>
+          </>}
 
-                {[
-                  { label: t('auth.fullName'), type: 'text', placeholder: 'Karim Benali', value: fullName, setter: setFullName },
-                  { label: t('auth.email'), type: 'email', placeholder: 'votre@email.com', value: email, setter: setEmail },
-                  { label: t('auth.password'), type: 'password', placeholder: 'Min. 6 caractères', value: password, setter: setPassword },
-                ].map(f => (
-                  <div key={f.label} style={{ marginBottom: 14 }}>
-                    <label style={{ fontSize: 11, color: tx2, display: 'block', marginBottom: 6, fontWeight: 700, letterSpacing: '0.06em' }}>{f.label}</label>
-                    <input type={f.type} placeholder={f.placeholder} value={f.value} onChange={e => f.setter(e.target.value)} className="sinput"/>
-                  </div>
-                ))}
-
-                {/* Password strength */}
-                {password.length > 0 && (
-                  <div style={{ marginBottom: 14 }}>
-                    <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= passwordStrength() ? (passwordStrength() <= 2 ? '#ef4444' : passwordStrength() <= 3 ? '#f59e0b' : '#10b981') : brd, transition: 'all 0.3s' }}/>
-                      ))}
-                    </div>
-                    <span style={{ fontSize: 10, color: passwordStrength() <= 2 ? '#ef4444' : passwordStrength() <= 3 ? '#f59e0b' : '#10b981', fontWeight: 300 }}>
-                      {passwordStrength() <= 2 ? 'Faible' : passwordStrength() <= 3 ? 'Moyen' : 'Fort'}
-                    </span>
-                  </div>
-                )}
-
-                {/* Phone with country selector */}
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 11, color: tx2, display: 'block', marginBottom: 6, fontWeight: 700, letterSpacing: '0.06em' }}>
-                    {isAr ? 'رقم الهاتف' : 'TÉLÉPHONE'} <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <div style={{ display: 'flex', gap: 0, position: 'relative' }}>
-                    {/* Country selector */}
-                    <button onClick={() => setShowCountries(!showCountries)} type="button"
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '13px 12px', background: bg3, border: `1px solid ${brd}`, borderRight: 'none', borderRadius: '10px 0 0 10px', cursor: 'pointer', fontSize: 14, color: tx, fontFamily: 'Nexa, sans-serif', fontWeight: 300, flexShrink: 0, transition: 'border-color 0.2s', minWidth: 100 }}>
-                      <span style={{ fontSize: 18 }}>{selectedCountry.flag}</span>
-                      <span style={{ fontSize: 13, color: tx2 }}>{countryCode}</span>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={tx3} strokeWidth="2" style={{ transform: showCountries ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6"/></svg>
-                    </button>
-
-                    {/* Country dropdown */}
-                    {showCountries && (
-                      <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 50, background: bg2, border: `1px solid ${brd}`, borderRadius: 12, boxShadow: dark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)', maxHeight: 240, overflowY: 'auto', width: 260, marginTop: 4 }}>
-                        {COUNTRIES.map(c => (
-                          <div key={c.code + c.name} onClick={() => { setCountryCode(c.code); setShowCountries(false) }}
-                            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'background 0.15s', borderBottom: `0.5px solid ${brd}` }}
-                            onMouseEnter={e => (e.currentTarget.style.background = bg3)}
-                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                            <span style={{ fontSize: 18 }}>{c.flag}</span>
-                            <span style={{ fontSize: 13, color: tx, fontWeight: 300, flex: 1 }}>{c.name}</span>
-                            <span style={{ fontSize: 12, color: tx3, fontWeight: 300 }}>{c.code}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Phone input */}
-                    <input type="tel" placeholder="555 12 34 56" value={phone}
-                      onChange={e => { setPhone(e.target.value); setPhoneError('') }}
-                      onBlur={checkPhoneUnique}
-                      style={{ flex: 1, padding: '13px 16px', background: bg3, border: `1px solid ${phoneError ? '#ef4444' : brd}`, borderRadius: '0 10px 10px 0', color: tx, fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'border-color 0.2s' }}/>
-                  </div>
-                  {phoneError && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6, fontWeight: 300 }}>{phoneError}</p>}
-                  <p style={{ fontSize: 10, color: tx3, marginTop: 6, fontWeight: 300 }}>Un seul compte par numéro</p>
+          {step===3&&<>
+            <h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)',marginBottom:8}}>Confirmation</h1>
+            <p style={{fontSize:13,color:'var(--tx2)',marginBottom:24}}>Vérifiez vos informations</p>
+            <div style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:12,padding:18,marginBottom:24}}>
+              {[{l:'Rôle',v:role==='client'?'Client':'Artisan'},{l:'Nom',v:name},{l:'Email',v:email},{l:'Téléphone',v:`${cc} ${phone}`}].map(i=>
+                <div key={i.l} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'0.5px solid var(--border)'}}>
+                  <span style={{fontSize:12,color:'var(--tx3)'}}>{i.l}</span><span style={{fontSize:13,color:'var(--tx)',fontWeight:700}}>{i.v}</span>
                 </div>
-
-                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                  <button onClick={() => setStep(1)} className="sbtn" style={{ flex: 1, background: 'transparent', border: `1px solid ${brd}`, color: tx2 }}>{t('booking.back')}</button>
-                  <button onClick={() => canContinue && setStep(3)} className="sbtn" style={{ flex: 2, background: canContinue ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : brd, color: canContinue ? '#fff' : tx3 }}>{t('auth.continue')}</button>
-                </div>
-              </>
-            )}
-
-            {/* Step 3: Confirmation */}
-            {step === 3 && (
-              <>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: tx, marginBottom: 8 }}>{t('auth.confirmation')}</h1>
-                <p style={{ fontSize: 13, color: tx2, marginBottom: 24, fontWeight: 300 }}>{t('auth.verify')}</p>
-
-                <div style={{ background: bg3, border: `1px solid ${brd}`, borderRadius: 12, padding: 18, marginBottom: 24 }}>
-                  {[
-                    { label: 'Rôle', value: role === 'client' ? t('auth.client') : t('auth.artisan') },
-                    { label: 'Nom', value: fullName },
-                    { label: 'Email', value: email },
-                    { label: 'Téléphone', value: `${countryCode} ${phone}` },
-                  ].map(item => (
-                    <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: `0.5px solid ${brd}` }}>
-                      <span style={{ fontSize: 12, color: tx3, fontWeight: 300 }}>{item.label}</span>
-                      <span style={{ fontSize: 13, color: tx, fontWeight: 700 }}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {error && <div style={{ padding: '10px 14px', borderRadius: 8, marginBottom: 16, background: '#ef444412', border: '1px solid #ef444422', fontSize: 13, color: '#ef4444' }}>{error}</div>}
-
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => setStep(2)} className="sbtn" style={{ flex: 1, background: 'transparent', border: `1px solid ${brd}`, color: tx2 }}>{t('booking.back')}</button>
-                  <button onClick={handleSignup} disabled={loading} className="sbtn"
-                    style={{ flex: 2, background: loading ? '#6366f188' : 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', cursor: loading ? 'wait' : 'pointer' }}>
-                    {loading ? (isAr ? 'جارٍ...' : 'Création...') : (isAr ? 'إنشاء حسابي' : 'Créer mon compte')}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+              )}
+            </div>
+            {err&&<div style={{padding:'10px 14px',borderRadius:8,marginBottom:16,background:'#ef444412',border:'1px solid #ef444422',fontSize:13,color:'#ef4444'}}>{err}</div>}
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setStep(2)} style={{flex:1,padding:14,borderRadius:10,background:'transparent',border:'1px solid var(--border)',color:'var(--tx2)',fontSize:13,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Retour</button>
+              <button onClick={submit} disabled={loading} style={{...btn(!loading),flex:2,cursor:loading?'wait':'pointer'}}>{loading?'Création...':'Créer mon compte'}</button>
+            </div>
+          </>}
         </div>
       </div>
-
-      {showCountries && <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setShowCountries(false)}/>}
-    </>
+      {showCc&&<div style={{position:'fixed',inset:0,zIndex:40}} onClick={()=>setShowCc(false)}/>}
+    </div>
   )
 }
