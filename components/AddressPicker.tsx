@@ -4,6 +4,7 @@
 // Saisie d'adresse + carte avec curseur draggable — style Yassir
 
 import { useState, useEffect, useRef } from 'react'
+import { MapPin, Crosshair, Check } from 'lucide-react'
 
 type Location = {
   lat: number
@@ -91,7 +92,7 @@ export function AddressPicker({
           <div style="
             width:44px;height:44px;border-radius:50% 50% 50% 0;
             background:#6366f1;transform:rotate(-45deg);
-            border:3px solid #0b0b12;
+            border:3px solid #fff;
             box-shadow:0 0 0 3px #6366f144, 0 4px 12px rgba(0,0,0,0.4);
           "></div>
           <div style="
@@ -220,13 +221,13 @@ export function AddressPicker({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 14, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 14, overflow: 'hidden', border: '0.5px solid var(--border)' }}>
 
       {/* Barre de recherche */}
-      <div ref={dropRef} style={{ position: 'relative', background: '#13131e' }}>
+      <div ref={dropRef} style={{ position: 'relative', background: 'var(--bg2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {/* Icône adresse */}
-          <div style={{ padding: '0 14px', fontSize: 16, color: '#6366f1', flexShrink: 0 }}>📍</div>
+          <div style={{ padding: '0 14px', color: '#6366f1', flexShrink: 0, display: 'flex', alignItems: 'center' }}><MapPin size={16}/></div>
 
           {/* Input */}
           <input
@@ -238,7 +239,7 @@ export function AddressPicker({
             style={{
               flex: 1, padding: '14px 0',
               background: 'transparent', border: 'none',
-              color: '#e0dfe5', fontSize: 14, outline: 'none',
+              color: 'var(--tx)', fontSize: 14, outline: 'none',
               fontFamily: 'Nexa, sans-serif', fontWeight: 300,
             }}
           />
@@ -248,13 +249,13 @@ export function AddressPicker({
             onClick={handleGPS}
             style={{
               padding: '14px 16px', background: 'transparent', border: 'none',
-              borderLeft: '0.5px solid #1c1c30', color: loading ? '#555' : '#6366f1',
+              borderLeft: '0.5px solid var(--border)', color: loading ? '#555' : '#6366f1',
               cursor: 'pointer', fontSize: 16, flexShrink: 0,
               transition: 'color 0.2s',
             }}
             title="Ma position actuelle"
           >
-            {loading ? '⏳' : '🎯'}
+            {loading ? '…' : <Crosshair size={16}/>}
           </button>
         </div>
 
@@ -262,7 +263,7 @@ export function AddressPicker({
         {showSuggestions && suggestions.length > 0 && (
           <div style={{
             position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000,
-            background: '#13131e', border: '0.5px solid #1c1c30',
+            background: 'var(--bg2)', border: '0.5px solid var(--border)',
             borderTop: 'none', borderRadius: '0 0 12px 12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)', overflow: 'hidden',
           }}>
@@ -272,16 +273,16 @@ export function AddressPicker({
                 onClick={() => handleSelectSuggestion(s)}
                 style={{
                   padding: '11px 16px', cursor: 'pointer',
-                  borderTop: '0.5px solid #1c1c30',
+                  borderTop: '0.5px solid var(--border)',
                   display: 'flex', alignItems: 'center', gap: 10,
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#1c1c30')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--border)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <span style={{ fontSize: 14, flexShrink: 0 }}>📍</span>
+                <span style={{ flexShrink: 0, display: 'inline-flex', color: '#6366f1' }}><MapPin size={14}/></span>
                 <div style={{ overflow: 'hidden' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.address?.road || s.address?.suburb || s.name || s.display_name.split(',')[0]}
                   </div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -302,39 +303,39 @@ export function AddressPicker({
         <div style={{
           position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)',
-          border: '0.5px solid #1c1c30', borderRadius: 20,
+          border: '0.5px solid var(--border)', borderRadius: 20,
           padding: '6px 14px', zIndex: 1000, whiteSpace: 'nowrap',
         }}>
           <span style={{ fontSize: 11, color: '#888', fontWeight: 300, fontFamily: 'Nexa, sans-serif' }}>
-            Glissez le curseur 📍 devant votre porte
+            Glissez le curseur devant votre porte
           </span>
         </div>
 
         <style>{`
-          .leaflet-container { background: #0b0b12 !important; }
+          .leaflet-container { background: var(--bg) !important; }
           .leaflet-tile { filter: brightness(0.9) saturate(0.7); }
-          .leaflet-control-zoom a { background: #13131e !important; color: #e0dfe5 !important; border: 0.5px solid #1c1c30 !important; }
+          .leaflet-control-zoom a { background: var(--bg2) !important; color: var(--tx) !important; border: 0.5px solid var(--border) !important; }
           .leaflet-control-attribution { display: none; }
         `}</style>
       </div>
 
       {/* Bouton confirmer */}
-      <div style={{ background: '#13131e', padding: '12px', borderTop: '0.5px solid #1c1c30' }}>
+      <div style={{ background: 'var(--bg2)', padding: '12px', borderTop: '0.5px solid var(--border)' }}>
         <button
           onClick={handleConfirm}
           disabled={!address}
           style={{
             width: '100%', padding: '13px',
-            background: confirmed ? '#0a2010' : address ? '#6366f1' : '#1a1a2a',
-            border: confirmed ? '0.5px solid #4ade8044' : 'none',
+            background: confirmed ? 'rgba(74,222,128,0.08)' : address ? '#6366f1' : 'var(--bg3)',
+            border: confirmed ? '0.5px solid rgba(74,222,128,0.3)' : 'none',
             borderRadius: 10,
-            color: confirmed ? '#4ade80' : address ? '#0b0b12' : '#444',
+            color: confirmed ? '#4ade80' : address ? '#fff' : 'var(--tx3)',
             fontSize: 14, fontWeight: 800,
             cursor: address ? 'pointer' : 'not-allowed',
             fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',
           }}
         >
-          {confirmed ? '✅ Adresse confirmée' : '📍 Confirmer cette adresse'}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{confirmed ? <><Check size={15}/>Adresse confirmée</> : <><MapPin size={15}/>Confirmer cette adresse</>}</span>
         </button>
       </div>
     </div>

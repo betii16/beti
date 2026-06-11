@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PortfolioFeed } from '@/components/Portfolio'
 
 function Stars({r,s=14}:{r:number;s?:number}){return<div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border,#2a2a3a)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
@@ -9,19 +10,17 @@ const COLORS:Record<string,string>={plomberie:'#3b82f6',electricite:'#f59e0b',me
 
 export default function ArtisanPage(){
   const params=useParams();const id=params?.id as string;const router=useRouter()
-  const [dark,setDark]=useState(true)
   const [a,setA]=useState<any>(null)
   const [p,setP]=useState<any>(null)
   const [revs,setRevs]=useState<any[]>([])
   const [loading,setLoading]=useState(true)
   const [uid,setUid]=useState<string|null>(null)
-  const [tab,setTab]=useState<'about'|'reviews'|'rates'>('about')
+  const [tab,setTab]=useState<'about'|'portfolio'|'reviews'|'rates'>('about')
   const [sent,setSent]=useState(false)
 
-  useEffect(()=>{const s=localStorage.getItem('beti-theme');if(s==='light')setDark(false)},[])
-  const bg=dark?'#0b0b12':'#f5f5f7';const bg2=dark?'#13131e':'#fff';const bg3=dark?'#0e0e18':'#f0f0f3'
-  const tx=dark?'#e0dfe5':'#111827';const tx2=dark?'#8585a0':'#6b7280';const tx3=dark?'#4a4a65':'#9ca3af'
-  const brd=dark?'#1c1c30':'#e5e7eb'
+  const bg='var(--bg)';const bg2='var(--bg2)';const bg3='var(--bg3)'
+  const tx='var(--tx)';const tx2='var(--tx2)';const tx3='var(--tx3)'
+  const brd='var(--border)'
 
   useEffect(()=>{load()},[id])
   const load=async()=>{
@@ -37,16 +36,22 @@ export default function ArtisanPage(){
     setLoading(false)
   }
 
-  const contact=async(ty:'message'|'call')=>{
+  const [contactErr,setContactErr]=useState("");const contact=async(ty:"message"|"call")=>{setContactErr("");
     if(!uid){router.push('/auth/login');return}
-    const{data:b}=await supabase.from('bookings').insert({client_id:uid,artisan_id:id,title:`Demande ${a?.category||'service'}`,description:ty==='call'?'Appel':'Message',address:'',status:'pending',price_agreed:a?.hourly_rate||0}).select('id').single()
-    await supabase.from('notifications').insert({user_id:id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'})
-    if(ty==='message'&&b)router.push(`/chat/${b.id}`);else setSent(true)
+    // Insert sans .select() pour éviter le problème RLS SELECT-after-INSERT
+    await supabase.from('bookings').insert({client_id:uid,artisan_id:id,title:`Demande ${a?.category||'service'}`,description:ty==='call'?'Appel':'Message',address:'',status:'pending',price_agreed:a?.hourly_rate||0})
+    // Notification (fire & forget)
+    supabase.from('notifications').insert({user_id:id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'})
+    if(ty==='message'){
+      // Récupérer la réservation la plus récente entre ce client et cet artisan
+      const{data:b}=await supabase.from('bookings').select('id').eq('client_id',uid).eq('artisan_id',id).order('created_at',{ascending:false}).limit(1).single()
+      if(b?.id)router.push(`/chat/${b.id}`);else setContactErr('Impossible d\'ouvrir le chat, réessaie.')
+    }else{setSent(true)}
   }
 
   const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?"Aujourd'hui":x===1?'Hier':x<7?`${x}j`:x<30?`${Math.floor(x/7)} sem.`:`${Math.floor(x/30)} mois`}
 
-  if(loading)return<div style={{minHeight:'100vh',background:bg,display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:tx3}}>Chargement...</div></div>
+  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>Chargement...</div></div>
 
   const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}
@@ -57,7 +62,7 @@ export default function ArtisanPage(){
   return(
     <>
       <style suppressHydrationWarning>{`
-        *{box-sizing:border-box;margin:0;padding:0}body{background:${bg};font-family:Nexa,system-ui,sans-serif}
+        *{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);font-family:Nexa,system-ui,sans-serif}
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
       `}</style>
@@ -73,7 +78,7 @@ export default function ArtisanPage(){
 
         {/* ── PROFILE CARD overlapping banner ── */}
         <div style={{maxWidth:800,margin:'-100px auto 0',padding:'0 24px',position:'relative',zIndex:2}}>
-          <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:24,boxShadow:dark?'0 8px 40px rgba(0,0,0,0.3)':'0 8px 40px rgba(0,0,0,0.06)',overflow:'hidden',animation:'fadeUp 0.6s ease'}}>
+          <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:24,boxShadow:'var(--card-shadow)',overflow:'hidden',animation:'fadeUp 0.6s ease'}}>
             
             {/* Avatar + Name section */}
             <div style={{padding:'32px 32px 24px',textAlign:'center'}}>
@@ -132,6 +137,7 @@ export default function ArtisanPage(){
                   </>
                 )}
               </div>
+              {contactErr&&<div style={{textAlign:'center',marginTop:10,fontSize:12,color:'#f87171',fontWeight:500}}>{contactErr}</div>}
             </div>
 
             {/* Tags */}
@@ -145,6 +151,7 @@ export default function ArtisanPage(){
             <div style={{borderTop:`1px solid ${brd}`,display:'flex'}}>
               {([
                 {id:'about',label:'À propos'},
+                {id:'portfolio',label:'Réalisations'},
                 {id:'reviews',label:`Avis (${revs.length})`},
                 {id:'rates',label:'Tarifs'},
               ] as const).map(t=>(
@@ -162,6 +169,13 @@ export default function ArtisanPage(){
                   <p style={{fontSize:14,color:tx2,lineHeight:1.8,fontWeight:300,marginBottom:28}}>{art.bio||'Artisan professionnel certifié BETI, disponible pour vos interventions à domicile.'}</p>
                   <h3 style={{fontSize:16,fontWeight:800,color:tx,marginBottom:10}}>Zone d'intervention</h3>
                   <p style={{fontSize:14,color:tx2,fontWeight:300}}>{art.location_city||'Algérie'} — Rayon de {art.intervention_radius_km||20} km</p>
+                </div>
+              )}
+
+              {/* Portfolio / Réalisations */}
+              {tab==='portfolio'&&(
+                <div style={{animation:'fadeUp 0.3s ease'}}>
+                  <PortfolioFeed artisanId={id}/>
                 </div>
               )}
 
@@ -233,9 +247,13 @@ export default function ArtisanPage(){
                         <div style={{fontSize:11,color:tx3,fontWeight:700,letterSpacing:'0.06em',marginBottom:4}}>TARIF</div>
                         <div style={{fontSize:32,fontWeight:800,color:tx}}>{(art.hourly_rate||0).toLocaleString('fr-DZ')} <span style={{fontSize:14,color:tx3,fontWeight:300}}>DA</span></div>
                       </div>
-                      <div style={{padding:'10px 16px',borderRadius:10,background:bg2,border:`1px solid ${brd}`}}>
-                        <div style={{fontSize:11,color:tx3,fontWeight:700,marginBottom:2}}>PAIEMENT</div>
-                        <div style={{fontSize:13,color:tx,fontWeight:300}}>Cash uniquement</div>
+                      <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                        {(['CIB','Edahabia','Cash'] as const).map(m=>(
+                          <div key={m} style={{padding:'4px 10px',borderRadius:8,background:bg2,border:`0.5px solid ${brd}`,fontSize:11,color:tx3,fontWeight:300,display:'flex',alignItems:'center',gap:6}}>
+                            <div style={{width:5,height:5,borderRadius:'50%',background:'#10b981'}}/>
+                            {m}
+                          </div>
+                        ))}
                       </div>
                     </div>
                     <div style={{height:1,background:brd,marginBottom:16}}/>

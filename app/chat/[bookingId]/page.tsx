@@ -1,240 +1,128 @@
 'use client'
-
-// app/chat/[bookingId]/page.tsx
-// Chat temps réel entre client et artisan via Supabase Realtime
-
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { AlgerianPayment } from '@/components/AlgerianPayment'
 
-type Message = {
-  id: string
-  booking_id: string
-  sender_id: string
-  sender_name: string
-  sender_role: 'client' | 'artisan'
-  content: string
-  created_at: string
-  read: boolean
-}
+type Msg = { id:string; booking_id:string; sender_id:string; sender_name:string; sender_role:string; content:string; created_at:string }
 
-export default function ChatPage() {
-  const { bookingId } = useParams()
-  const router = useRouter()
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [booking, setBooking] = useState<any>(null)
-  const [sending, setSending] = useState(false)
-  const [otherTyping, setOtherTyping] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const typingTimeout = useRef<any>(null)
+export default function ChatPage(){
+  const { bookingId }=useParams();const router=useRouter()
+  const [msgs,setMsgs]=useState<Msg[]>([])
+  const [input,setInput]=useState('')
+  const [user,setUser]=useState<any>(null)
+  const [profile,setProfile]=useState<any>(null)
+  const [booking,setBooking]=useState<any>(null)
+  const [otherName,setOtherName]=useState('')
+  const [sending,setSending]=useState(false)
+  const [showPay,setShowPay]=useState(false)
+  const endRef=useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-      setUser(user)
+  useEffect(()=>{
+    const init=async()=>{
+      const{data:{user:u}}=await supabase.auth.getUser()
+      if(!u){router.push('/auth/login');return};setUser(u)
+      const{data:p}=await supabase.from('profiles').select('full_name,role').eq('id',u.id).single()
+      if(p)setProfile(p)
+      const{data:b}=await supabase.from('bookings').select('*').eq('id',bookingId).single()
+      if(b){setBooking(b)
+        const otherId=b.client_id===u.id?b.artisan_id:b.client_id
+        const{data:op}=await supabase.from('profiles').select('full_name').eq('id',otherId).single()
+        if(op)setOtherName(op.full_name)
+      }
+      const{data:m}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
+      if(m)setMsgs(m as any)
+    };init()
 
-      // Charger profil
-      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      setProfile(prof)
+    const ch=supabase.channel(`chat-${bookingId}`)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`booking_id=eq.${bookingId}`},(payload:any)=>{
+        setMsgs(prev=>[...prev,payload.new as Msg])
+      }).subscribe()
+    return()=>{supabase.removeChannel(ch)}
+  },[bookingId])
 
-      // Charger réservation
-      const { data: book } = await supabase.from('bookings')
-        .select('*, artisan:artisans(id, profiles(full_name, avatar_url)), client:profiles!bookings_client_id_fkey(full_name, avatar_url)')
-        .eq('id', bookingId).single()
-      setBooking(book)
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'})},[msgs])
 
-      // Charger messages existants
-      const { data: msgs } = await supabase.from('messages')
-        .select('*').eq('booking_id', bookingId).order('created_at', { ascending: true })
-      if (msgs) setMessages(msgs)
-
-      // Marquer comme lus
-      await supabase.from('messages').update({ read: true })
-        .eq('booking_id', bookingId).neq('sender_id', user.id)
-    }
-    init()
-  }, [bookingId])
-
-  // Écoute temps réel
-  useEffect(() => {
-    if (!bookingId) return
-    const channel = supabase.channel(`chat-${bookingId}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'messages',
-        filter: `booking_id=eq.${bookingId}`,
-      }, payload => {
-        setMessages(prev => [...prev, payload.new as Message])
-        setOtherTyping(false)
-      })
-      .on('broadcast', { event: 'typing' }, () => {
-        setOtherTyping(true)
-        clearTimeout(typingTimeout.current)
-        typingTimeout.current = setTimeout(() => setOtherTyping(false), 2000)
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [bookingId])
-
-  // Scroll auto vers le bas
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, otherTyping])
-
-  const sendTyping = () => {
-    supabase.channel(`chat-${bookingId}`).send({ type: 'broadcast', event: 'typing', payload: {} })
+  const send=async()=>{
+    if(!input.trim()||!user||!profile||sending)return;setSending(true)
+    await supabase.from('messages').insert({booking_id:bookingId,sender_id:user.id,sender_name:profile.full_name||'Moi',sender_role:profile.role||'client',content:input.trim()})
+    setInput('');setSending(false)
   }
 
-  const sendMessage = async () => {
-    if (!input.trim() || !user || sending) return
-    setSending(true)
-    const msg = {
-      booking_id: bookingId,
-      sender_id: user.id,
-      sender_name: profile?.full_name || user.email,
-      sender_role: profile?.role || 'client',
-      content: input.trim(),
-      read: false,
-    }
-    await supabase.from('messages').insert(msg)
-    setInput('')
-    setSending(false)
+  const isClient=booking&&user&&booking.client_id===user.id
+  const canPay=isClient&&booking?.status==='confirmed'&&(booking?.price_agreed||0)>0
+  const onPaid=async()=>{
+    await supabase.from('bookings').update({status:'completed'}).eq('id',bookingId)
+    setBooking((b:any)=>b?{...b,status:'completed'}:b);setShowPay(false)
   }
 
-  const otherName = profile?.role === 'artisan'
-    ? booking?.client?.full_name || 'Client'
-    : booking?.artisan?.profiles?.full_name || 'Artisan'
+  const formatTime=(d:string)=>{const t=new Date(d);return`${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`}
+  const formatDate=(d:string)=>{const t=new Date(d);const now=new Date();if(t.toDateString()===now.toDateString())return"Aujourd'hui";const y=new Date(now);y.setDate(y.getDate()-1);if(t.toDateString()===y.toDateString())return'Hier';return t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}
 
-  const otherAvatar = profile?.role === 'artisan'
-    ? booking?.client?.avatar_url
-    : booking?.artisan?.profiles?.avatar_url
+  let lastDate=''
 
-  return (
-    <>
-      <style suppressHydrationWarning>{`
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-        *{box-sizing:border-box;margin:0;padding:0}
-      `}</style>
-      <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', flexDirection: 'column', fontFamily: 'Nexa, sans-serif', paddingTop: 64 }}>
-
-        {/* Header chat */}
-        <div style={{ background: '#13131e', borderBottom: '0.5px solid #1c1c30', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 14, position: 'sticky', top: 64, zIndex: 10 }}>
-          <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: '#4a4a65', cursor: 'pointer', fontSize: 20, padding: 4 }}>←</button>
-          <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#6366f122', border: '1.5px solid #6366f144', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#6366f1', flexShrink: 0 }}>
-            {otherAvatar ? <img src={otherAvatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}/> : (otherName[0] || 'A')}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>{otherName}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981', animation: 'pulse 2s infinite' }}/>
-              <span style={{ fontSize: 11, color: '#10b981', fontWeight: 300 }}>En ligne · Réservation #{String(bookingId).slice(0, 8)}</span>
-            </div>
-          </div>
-          {booking?.status === 'accepted' && (
-            <div style={{ padding: '6px 14px', borderRadius: 20, background: '#10b98112', border: '0.5px solid #10b98144', fontSize: 11, color: '#10b981', fontWeight: 800 }}>
-              MISSION EN COURS
-            </div>
-          )}
+  return(
+    <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',flexDirection:'column',paddingTop:52}}>
+      {/* Header */}
+      <div style={{background:'var(--bg2)',borderBottom:'1px solid var(--border)',padding:'14px 24px',display:'flex',alignItems:'center',gap:14}}>
+        <button onClick={()=>router.back()} style={{background:'transparent',border:'none',color:'var(--tx2)',fontSize:20,cursor:'pointer'}}>←</button>
+        <div style={{width:36,height:36,borderRadius:10,background:'#6366f115',border:'1px solid #6366f122',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:800,color:'#6366f1'}}>{(otherName||'?')[0]}</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{otherName||'Chargement...'}</div>
+          <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{booking?.title||'Conversation'}</div>
         </div>
+        {booking&&<span style={{padding:'4px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:booking.status==='confirmed'?'#6366f112':booking.status==='completed'?'#10b98112':'#f59e0b12',color:booking.status==='confirmed'?'#6366f1':booking.status==='completed'?'#10b981':'#f59e0b'}}>{booking.status==='confirmed'?'Confirmé':booking.status==='completed'?'Terminé':'En attente'}</span>}
+        {canPay&&<button onClick={()=>setShowPay(true)} style={{padding:'7px 16px',borderRadius:9,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',whiteSpace:'nowrap'}}>Payer {(booking.price_agreed||0).toLocaleString('fr-FR')} €</button>}
+      </div>
 
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720, margin: '0 auto', width: '100%' }}>
-
-          {/* Date separator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '8px 0' }}>
-            <div style={{ flex: 1, height: '0.5px', background: '#1c1c30' }}/>
-            <span style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>Aujourd'hui</span>
-            <div style={{ flex: 1, height: '0.5px', background: '#1c1c30' }}/>
+      {/* Messages */}
+      <div style={{flex:1,overflowY:'auto',padding:'16px 24px'}}>
+        {msgs.length===0&&(
+          <div style={{textAlign:'center',padding:'48px 0'}}>
+            <div style={{fontSize:14,color:'var(--tx3)',fontWeight:300,marginBottom:8}}>Démarrez la conversation</div>
+            <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>Décrivez votre besoin à l'artisan</div>
           </div>
-
-          {messages.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
-              <div style={{ fontSize: 14, color: '#4a4a65', fontWeight: 300 }}>Commencez la conversation avec {otherName}</div>
-            </div>
-          )}
-
-          {messages.map((msg, i) => {
-            const isMe = msg.sender_id === user?.id
-            const showAvatar = !isMe && (i === 0 || messages[i-1]?.sender_id !== msg.sender_id)
-            return (
-              <div key={msg.id} style={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, animation: 'slideUp 0.2s ease' }}>
-                {!isMe && (
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#6366f122', border: '1px solid #6366f133', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#6366f1', flexShrink: 0, opacity: showAvatar ? 1 : 0 }}>
-                    {msg.sender_name[0]}
-                  </div>
-                )}
-                <div style={{ maxWidth: '70%', display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', gap: 3 }}>
-                  <div style={{
-                    padding: '10px 16px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                    background: isMe ? '#6366f1' : '#13131e',
-                    border: isMe ? 'none' : '0.5px solid #1c1c30',
-                    fontSize: 14, color: isMe ? '#0b0b12' : '#e0dfe5', fontWeight: isMe ? 500 : 300, lineHeight: 1.5,
-                  }}>
-                    {msg.content}
-                  </div>
-                  <div style={{ fontSize: 10, color: '#4a4a65', fontWeight: 300 }}>
-                    {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    {isMe && <span style={{ marginLeft: 6, color: msg.read ? '#6366f1' : '#4a4a65' }}>{msg.read ? '✓✓' : '✓'}</span>}
-                  </div>
+        )}
+        {msgs.map((m,i)=>{
+          const mine=m.sender_id===user?.id
+          const dateStr=formatDate(m.created_at)
+          let showDate=false;if(dateStr!==lastDate){showDate=true;lastDate=dateStr}
+          return(
+            <div key={m.id}>
+              {showDate&&<div style={{textAlign:'center',margin:'16px 0 8px'}}><span style={{padding:'4px 14px',borderRadius:10,background:'var(--bg2)',border:'1px solid var(--border)',fontSize:11,color:'var(--tx3)'}}>{dateStr}</span></div>}
+              <div style={{display:'flex',justifyContent:mine?'flex-end':'flex-start',marginBottom:6}}>
+                <div className="anim-msg-in" style={{maxWidth:'75%',padding:'10px 14px',borderRadius:mine?'14px 14px 4px 14px':'14px 14px 14px 4px',background:mine?'linear-gradient(135deg,#6366f1,#8b5cf6)':'var(--bg2)',border:mine?'none':'1px solid var(--border)',color:mine?'#fff':'var(--tx)'}}>
+                  {!mine&&<div style={{fontSize:10,color:'#6366f1',fontWeight:700,marginBottom:4}}>{m.sender_name}</div>}
+                  <div style={{fontSize:13,lineHeight:1.6,fontWeight:300}}>{m.content}</div>
+                  <div style={{fontSize:9,marginTop:4,textAlign:'right',color:mine?'rgba(255,255,255,0.6)':'var(--tx3)'}}>{formatTime(m.created_at)}</div>
                 </div>
               </div>
-            )
-          })}
-
-          {/* Indicateur frappe */}
-          {otherTyping && (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-              <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#6366f122', border: '1px solid #6366f133', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#6366f1', flexShrink: 0 }}>
-                {otherName[0]}
-              </div>
-              <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', background: '#13131e', border: '0.5px solid #1c1c30', display: 'flex', gap: 4, alignItems: 'center' }}>
-                {[0,1,2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#4a4a65', animation: `typing 1s infinite ${i * 0.2}s` }}/>)}
-              </div>
             </div>
-          )}
-
-          <div ref={bottomRef}/>
-        </div>
-
-        {/* Suggestions rapides */}
-        <div style={{ padding: '8px 24px', maxWidth: 720, margin: '0 auto', width: '100%', display: 'flex', gap: 8, overflowX: 'auto' }}>
-          {["Je suis en route 🚗", "J'arrive dans 10 min ⏰", "Travail terminé ✅", "Combien ça coûte ?", "Merci !"].map(s => (
-            <button key={s} onClick={() => setInput(s)}
-              style={{ padding: '6px 14px', borderRadius: 20, background: '#13131e', border: '0.5px solid #1c1c30', color: '#8585a0', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, whiteSpace: 'nowrap', transition: 'all 0.15s', flexShrink: 0 }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = '#6366f1'; (e.target as HTMLElement).style.color = '#6366f1' }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = '#1c1c30'; (e.target as HTMLElement).style.color = '#8585a0' }}
-            >{s}</button>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div style={{ padding: '12px 24px 24px', background: '#0b0b12', borderTop: '0.5px solid #1c1c30', maxWidth: 720, margin: '0 auto', width: '100%' }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 16, padding: '12px 16px', transition: 'border-color 0.2s' }}
-            onFocus={() => {}} onBlur={() => {}}
-          >
-            <textarea
-              value={input}
-              onChange={e => { setInput(e.target.value); sendTyping() }}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-              placeholder="Écrire un message..."
-              rows={1}
-              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#e0dfe5', fontSize: 14, fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', lineHeight: 1.5 }}
-            />
-            <button onClick={sendMessage} disabled={!input.trim() || sending}
-              style={{ width: 38, height: 38, borderRadius: '50%', background: input.trim() ? '#6366f1' : '#1c1c30', border: 'none', cursor: input.trim() ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', flexShrink: 0 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={input.trim() ? '#0b0b12' : '#4a4a65'} strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
-            </button>
-          </div>
-          <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: '#333', fontWeight: 300 }}>Entrée pour envoyer · Shift+Entrée pour nouvelle ligne</div>
-        </div>
+          )
+        })}
+        <div ref={endRef}/>
       </div>
-    </>
+
+      {showPay&&booking&&(
+        <AlgerianPayment
+          amount={booking.price_agreed||0}
+          artisanName={otherName||'Artisan'}
+          serviceTitle={booking.title||'Service'}
+          bookingId={String(bookingId)}
+          onSuccess={onPaid}
+          onClose={()=>setShowPay(false)}
+        />
+      )}
+
+      {/* Input */}
+      <div style={{background:'var(--bg2)',borderTop:'1px solid var(--border)',padding:'12px 24px',display:'flex',gap:10}}>
+        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()}
+          placeholder="Écrire un message..." style={{flex:1,padding:'12px 16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:12,color:'var(--tx)',fontSize:14,outline:'none',fontFamily:'Nexa,sans-serif',fontWeight:300}}/>
+        <button onClick={send} disabled={sending||!input.trim()}
+          style={{padding:'12px 20px',borderRadius:12,background:input.trim()?'linear-gradient(135deg,#6366f1,#8b5cf6)':'var(--border)',border:'none',color:input.trim()?'#fff':'var(--tx3)',fontSize:13,fontWeight:700,cursor:input.trim()?'pointer':'not-allowed',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>
+          {sending?'...':'Envoyer'}
+        </button>
+      </div>
+    </div>
   )
 }

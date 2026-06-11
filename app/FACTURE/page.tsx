@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { AlertTriangle, Banknote } from 'lucide-react'
 function pad(n: number) { return String(n).padStart(2, '0') }
 
 function formatDate(dateStr: string) {
@@ -54,16 +55,16 @@ export default function FacturePage() {
   const handlePrint = () => window.print()
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif' }}>
-      <div style={{ fontSize: 14, color: '#4a4a65' }}>Chargement de la facture...</div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif' }}>
+      <div style={{ fontSize: 14, color: 'var(--tx3)' }}>Chargement de la facture...</div>
     </div>
   )
 
   if (error) return (
-    <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>
-      <div style={{ fontSize: 40 }}>⚠️</div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', color: '#ef4444' }}><AlertTriangle size={40}/></div>
       <div style={{ fontSize: 16, color: '#ef4444', fontWeight: 800 }}>{error}</div>
-      <button onClick={() => router.back()} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 10, color: '#0b0b12', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Retour</button>
+      <button onClick={() => router.back()} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Retour</button>
     </div>
   )
 
@@ -87,7 +88,7 @@ export default function FacturePage() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-          background: #0b0b12;
+          background: var(--bg);
           font-family: 'Inter', sans-serif;
           color: #111;
         }
@@ -99,8 +100,8 @@ export default function FacturePage() {
           left: 0;
           right: 0;
           z-index: 100;
-          background: #13131e;
-          border-bottom: 0.5px solid #1c1c30;
+          background: var(--bg2);
+          border-bottom: 0.5px solid var(--border);
           padding: 14px 40px;
           display: flex;
           align-items: center;
@@ -312,17 +313,17 @@ export default function FacturePage() {
       <div className="action-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => router.back()}
-            style={{ background: 'transparent', border: 'none', color: '#4a4a65', cursor: 'pointer', fontSize: 18, padding: 4 }}>←</button>
+            style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', fontSize: 18, padding: 4 }}>←</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#0b0b12' }}>B</div>
+            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff' }}>B</div>
             <span style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5' }}>Facture {factureNum}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={handlePrint}
-            style={{ padding: '10px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#0b0b12', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}
+            style={{ padding: '10px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0b0b12" strokeWidth="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
             Imprimer / Télécharger PDF
           </button>
         </div>
@@ -394,9 +395,9 @@ export default function FacturePage() {
                   <div style={{ fontWeight: 600, color: '#111', marginBottom: 3 }}>{booking.title || `Intervention ${category}`}</div>
                   {booking.description && <div style={{ fontSize: 12, color: '#8585a0', fontWeight: 400, lineHeight: 1.5 }}>{booking.description}</div>}
                 </td>
-                <td style={{ color: '#4a4a65' }}>{formatDate(booking.booking_date || booking.created_at)}</td>
-                <td style={{ color: '#4a4a65' }}>{hours}h</td>
-                <td style={{ color: '#4a4a65' }}>{hourlyRate.toLocaleString('fr-DZ')} DA/h</td>
+                <td style={{ color: 'var(--tx3)' }}>{formatDate(booking.booking_date || booking.created_at)}</td>
+                <td style={{ color: 'var(--tx3)' }}>{hours}h</td>
+                <td style={{ color: 'var(--tx3)' }}>{hourlyRate.toLocaleString('fr-DZ')} DA/h</td>
                 <td style={{ fontWeight: 600, color: '#111' }}>{subtotal.toLocaleString('fr-DZ')} DA</td>
               </tr>
               {booking.travel_fee > 0 && (
@@ -437,7 +438,7 @@ export default function FacturePage() {
 
           {/* Mode de paiement */}
           <div className="inv-payment">
-            <div className="inv-payment-icon">💵</div>
+            <div className="inv-payment-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Banknote size={22}/></div>
             <div>
               <div className="inv-payment-title">Paiement en espèces</div>
               <div className="inv-payment-desc">Règlement effectué directement à l'artisan lors de l'intervention · Référence : {factureNum}</div>

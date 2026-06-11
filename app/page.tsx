@@ -1,10 +1,14 @@
 'use client'
 import { supabase } from '@/lib/supabase'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { haversineKm } from '@/lib/distance'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
+import { CategoryIcon } from '@/components/icons'
+import { LayoutGrid } from 'lucide-react'
 
-type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number;is_available:boolean;total_missions:number;bio?:string;phone?:string }
+type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string;phone?:string }
 type Review = { id:string;rating:number;comment:string|null;created_at:string;photos?:string[];profiles?:{full_name:string}|null }
 
 const SVC = [
@@ -43,6 +47,7 @@ const DEMO:Artisan[] = [
 function Stars({r,s=12}:{r:number;s?:number}){return<div style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
 export default function Home(){
+  const router=useRouter()
   const {t,isAr}=useLang()
   const [dark,setDark]=useState(true)
   const [artisans,setArtisans]=useState<Artisan[]>([])
@@ -67,7 +72,7 @@ export default function Home(){
     const saved=localStorage.getItem('beti-theme')
     if(saved==='light')setDark(false)
   },[])
-  const toggleTheme=()=>{const next=!dark;setDark(next);localStorage.setItem('beti-theme',next?'dark':'light')}
+  const toggleTheme=()=>{const next=!dark;setDark(next);localStorage.setItem('beti-theme',next?'dark':'light');document.documentElement.setAttribute('data-theme',next?'dark':'light')}
 
   useEffect(()=>{
     supabase.auth.getUser().then(({data})=>{if(data.user)setUser(data.user)})
@@ -80,15 +85,15 @@ export default function Home(){
     if(cat==='autre'&&tags.length===0){setArtisans([]);setLoading(false);return}
     setLoading(true)
     try{const{data,error}=await supabase.rpc('get_nearby_artisans',{lat:loc.lat,lng:loc.lng,radius_km:50,category_filter:cat||null});if(!error&&data&&data.length>0){setArtisans(data);setLoading(false);return}}catch{}
-    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,profiles(full_name,avatar_url,phone)').limit(30)
+    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,lat,lng,profiles(full_name,avatar_url,phone)').limit(30)
     if(cat&&cat!=='autre')q=q.eq('category',cat);if(cat==='autre'&&tags.length>0)q=q.overlaps('tags',tags)
     const{data}=await q
-    const real:Artisan[]=(data||[]).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:Math.round(Math.random()*80+5)/10,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||'',phone:a.profiles?.phone||null}))
+    const real:Artisan[]=(data||[]).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||'',phone:a.profiles?.phone||null}))
     if(cat==='autre'){setArtisans(real);setLoading(false);return}
     const d=cat?DEMO.filter(x=>x.category===cat):DEMO;const ids=new Set(real.map(a=>a.full_name));setArtisans([...real,...d.filter(x=>!ids.has(x.full_name))]);setLoading(false)
   }
   const openA=async(a:Artisan)=>{setSel(a);setLoadR(true);setSent(false);const{data}=await supabase.from('reviews').select('id,rating,comment,created_at,photos,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',a.artisan_id).order('created_at',{ascending:false}).limit(20);setRevs((data||[])as any);setLoadR(false)}
-  const contact=async(ty:'message'|'call')=>{if(!user||!sel){window.location.href='/auth/login';return};const{data:b}=await supabase.from('bookings').insert({client_id:user.id,artisan_id:sel.artisan_id,title:`Demande ${sel.category}`,description:ty==='call'?'Appel':'Message',address:addr,status:'pending',price_agreed:sel.hourly_rate}).select('id').single();await supabase.from('notifications').insert({user_id:sel.artisan_id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'});if(ty==='message'&&b)window.location.href=`/chat/${b.id}`;else setSent(true)}
+  const [contactErr,setContactErr]=useState(""); const contact=async(ty:"message"|"call")=>{if(!user||!sel){router.push("/auth/login");return};setContactErr("");setSent(false);const{error:bErr}=await supabase.from("bookings").insert({client_id:user.id,artisan_id:sel.artisan_id,title:"Demande "+sel.category,description:ty==="call"?"Appel":"Message",address:addr,status:"pending",price_agreed:sel.hourly_rate});if(bErr){setContactErr("Erreur: "+bErr.message);return};supabase.from("notifications").insert({user_id:sel.artisan_id,type:ty==="call"?"call_request":"new_message",title:ty==="call"?"Demande appel":"Nouveau message",message:"Un client souhaite vous contacter."}).then(()=>{});if(ty==="message"){const{data:b}=await supabase.from("bookings").select("id").eq("client_id",user.id).eq("artisan_id",sel.artisan_id).order("created_at",{ascending:false}).limit(1).single();if(b?.id)router.push("/chat/"+b.id);else setContactErr("Impossible d'ouvrir le chat, réessaie.")}else{setSent(true)}}
 
   useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!sa.current){sa.current=true;const t={a:12000,b:98,c:30,d:50};const s=Date.now();const tick=()=>{const p=Math.min((Date.now()-s)/1800,1);const e=1-Math.pow(1-p,3);setCnt({a:Math.floor(e*t.a),b:Math.floor(e*t.b),c:Math.floor(e*t.c),d:Math.floor(e*t.d)});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:0.3});if(sr.current)o.observe(sr.current);return()=>o.disconnect()},[])
 
@@ -101,21 +106,6 @@ export default function Home(){
   return(
     <>
       <style suppressHydrationWarning>{`
-        :root{
-          --bg:${dark?'#0b0b12':'#f5f5f7'};
-          --bg2:${dark?'#13131e':'#ffffff'};
-          --bg3:${dark?'#0e0e18':'#f0f0f3'};
-          --tx:${dark?'#e0dfe5':'#111827'};
-          --tx2:${dark?'#8585a0':'#6b7280'};
-          --tx3:${dark?'#4a4a65':'#9ca3af'};
-          --border:${dark?'#1c1c30':'#e5e7eb'};
-          --border2:${dark?'#26263e':'#d1d5db'};
-          --card-shadow:${dark?'0 2px 8px rgba(0,0,0,0.25)':'0 1px 3px rgba(0,0,0,0.06),0 6px 20px rgba(0,0,0,0.04)'};
-          --accent:#6366f1;
-          --accent2:#8b5cf6;
-          --gradient:linear-gradient(135deg,#6366f1,#8b5cf6);
-          --gradient-text:linear-gradient(135deg,#818cf8,#a78bfa);
-        }
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
@@ -128,9 +118,9 @@ export default function Home(){
         #services,#artisans,#comment{scroll-margin-top:100px}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--accent)22;border-radius:4px}
         .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
-        .card:hover{transform:translateY(-4px);box-shadow:${dark?'0 12px 40px rgba(0,0,0,0.4)':'0 12px 40px rgba(99,102,241,0.1)'};border-color:var(--accent)33}
+        .card:hover{transform:translateY(-4px);box-shadow:var(--hover-shadow);border-color:var(--accent)33}
         .acard{transition:all 0.35s cubic-bezier(0.4,0,0.2,1)}
-        .acard:hover{transform:translateY(-6px) scale(1.01);box-shadow:${dark?'0 16px 48px rgba(0,0,0,0.45)':'0 16px 48px rgba(99,102,241,0.12)'};border-color:var(--accent)44}
+        .acard:hover{transform:translateY(-6px) scale(1.01);box-shadow:var(--hover-shadow-lg);border-color:var(--accent)44}
         .acard:hover::after{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,var(--accent)44,transparent 50%,transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
         .btn-primary{background:var(--gradient);color:#fff;border:none;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.3s;box-shadow:0 4px 16px #6366f133}
         .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px #6366f155}
@@ -138,7 +128,7 @@ export default function Home(){
         .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
         .chip{padding:6px 16px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--tx2);font-size:12px;font-weight:400;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.25s;display:flex;align-items:center;gap:6px}
         .chip:hover{border-color:var(--accent)66;color:var(--accent)}
-        .chip-active{background:${dark?'#6366f118':'#6366f10d'};border-color:var(--accent);color:var(--accent);font-weight:700}
+        .chip-active{background:var(--accent)12;border-color:var(--accent);color:var(--accent);font-weight:700}
         .badge{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.04em}
         .section-label{font-size:11px;letter-spacing:0.14em;font-weight:800;background:var(--gradient-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
         .tag{padding:4px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--border);font-size:10px;color:var(--tx3);font-weight:400}
@@ -219,13 +209,13 @@ export default function Home(){
             {SVC.map(s=>(
               <div key={s.id} onClick={()=>{setCat(s.id);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card" style={{padding:18,cursor:'pointer',position:'relative',borderColor:cat===s.id?s.color:'var(--border)'}}>
                 {s.u&&<div className="badge" style={{position:'absolute',top:10,right:10,background:'#ef444412',color:'#ef4444'}}>URGENT</div>}
-                <div style={{fontSize:20,marginBottom:10,opacity:0.7}}>{s.icon}</div>
+                <div style={{marginBottom:10}}><CategoryIcon id={s.id} size={22} color={cat===s.id?s.color:'var(--tx2)'} strokeWidth={1.75}/></div>
                 <div style={{fontSize:14,fontWeight:700,color:cat===s.id?s.color:'var(--tx)',marginBottom:4,transition:'color 0.2s'}}>{s.label}</div>
                 <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{s.desc}</div>
               </div>
             ))}
             <div onClick={()=>{setCat('autre');setTags([])}} className="card" style={{padding:18,cursor:'pointer',borderColor:cat==='autre'?'#a78bfa':'var(--border)'}}>
-              <div style={{fontSize:20,marginBottom:10,opacity:0.6}}>◇</div>
+              <div style={{marginBottom:10}}><LayoutGrid size={22} color={cat==='autre'?'#a78bfa':'var(--tx2)'} strokeWidth={1.75}/></div>
               <div style={{fontSize:14,fontWeight:700,color:cat==='autre'?'#a78bfa':'var(--tx)',marginBottom:4}}>Autre service</div>
               <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>Recherche personnalisée</div>
             </div>
@@ -292,7 +282,7 @@ export default function Home(){
                           <Stars r={a.rating_avg} s={13}/><span style={{fontSize:14,fontWeight:800,color:'#f59e0b'}}>{a.rating_avg?.toFixed(1)}</span><span style={{fontSize:12,color:'var(--tx3)'}}>({a.rating_count} avis)</span>
                         </div>
                         <div style={{display:'flex',justifyContent:'center',gap:14,marginBottom:18,fontSize:12,color:'var(--tx2)'}}>
-                          <span>{a.distance_km?.toFixed(1)} km</span><span style={{color:'var(--border)'}}>·</span>
+                          <span>{a.distance_km!=null?`${a.distance_km.toFixed(1)} km`:'—'}</span><span style={{color:'var(--border)'}}>·</span>
                           <span>{a.total_missions} missions</span><span style={{color:'var(--border)'}}>·</span>
                           <span style={{color:'#3b82f6'}}>~{rt} min</span>
                         </div>
@@ -431,15 +421,17 @@ export default function Home(){
             <button onClick={()=>setSel(null)} style={{background:'transparent',border:'none',color:'var(--tx3)',fontSize:18,cursor:'pointer'}}>✕</button>
           </div>
           <div style={{padding:'14px 24px',display:'flex',gap:10,borderBottom:'1px solid var(--border)'}}>
-            {[{v:`${(sel.hourly_rate||0).toLocaleString('fr-DZ')} DA`,l:'Tarif'},{v:`${sel.distance_km?.toFixed(1)} km`,l:'Distance'},{v:sel.total_missions.toString(),l:'Missions'}].map(s=>(
+            {[{v:`${(sel.hourly_rate||0).toLocaleString('fr-DZ')} DA`,l:'Tarif'},{v:sel.distance_km!=null?`${sel.distance_km.toFixed(1)} km`:'—',l:'Distance'},{v:sel.total_missions.toString(),l:'Missions'}].map(s=>(
               <div key={s.l} style={{flex:1,textAlign:'center',padding:12,background:'var(--bg2)',borderRadius:10,border:'1px solid var(--border)'}}><div style={{fontSize:15,fontWeight:800}}>{s.v}</div><div style={{fontSize:10,color:'var(--tx3)',fontWeight:300}}>{s.l}</div></div>
             ))}
           </div>
-          <div style={{padding:'14px 24px',display:'flex',gap:10,borderBottom:'1px solid var(--border)'}}>
-            {sent?<div style={{flex:1,padding:14,borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}><span style={{fontSize:13,color:'#10b981',fontWeight:700}}>Demande envoyée</span></div>:(<>
+          <div style={{padding:'14px 24px',display:'flex',flexDirection:'column',gap:10,borderBottom:'1px solid var(--border)'}}>
+            {contactErr&&<div style={{padding:'10px 14px',borderRadius:8,background:'#ef444412',border:'1px solid #ef444422',fontSize:12,color:'#ef4444'}}>{contactErr}</div>}
+            {sent?<div style={{padding:14,borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}><span style={{fontSize:13,color:'#10b981',fontWeight:700}}>Demande envoyée — l'artisan sera notifié</span></div>:(
+            <div style={{display:'flex',gap:10}}>
               <button onClick={()=>contact('message')} className="btn-primary" style={{flex:1,padding:14}}>Envoyer un message</button>
               <button onClick={()=>contact('call')} className="btn-ghost" style={{padding:'14px 20px',borderColor:'#10b98144',color:'#10b981'}}>Appeler</button>
-            </>)}
+            </div>)}
           </div>
           <div style={{padding:'16px 24px'}}>
             <div style={{fontSize:13,fontWeight:800,marginBottom:14}}>Avis ({revs.length})</div>

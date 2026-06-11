@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
+import { haversineKm } from '@/lib/distance'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
+import { CategoryIcon } from '@/components/icons'
+import { LayoutGrid } from 'lucide-react'
 
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
 
@@ -23,7 +26,7 @@ const CATS = [
 
 type Art = {
   id:string; full_name:string; avatar_url:string|null; category:string
-  rating_avg:number; rating_count:number; hourly_rate:number; distance_km:number
+  rating_avg:number; rating_count:number; hourly_rate:number; distance_km:number|null
   is_available:boolean; total_missions:number
 }
 
@@ -43,7 +46,6 @@ function Stars({r,s=11}:{r:number;s?:number}){return<div style={{display:'flex',
 export default function MapPage() {
   const {t,isAr}=useLang()
   const router=useRouter()
-  const [dark,setDark]=useState(true)
   const [cat,setCat]=useState('')
   const [lat,setLat]=useState(36.7538)
   const [lng,setLng]=useState(3.0588)
@@ -57,7 +59,6 @@ export default function MapPage() {
   const [sent,setSent]=useState(false)
 
   useEffect(()=>{
-    const s=localStorage.getItem('beti-theme');if(s==='light')setDark(false)
     supabase.auth.getUser().then(({data})=>{if(data.user)setUser(data.user)})
     if(navigator.geolocation){
       navigator.geolocation.getCurrentPosition(p=>{setLat(p.coords.latitude);setLng(p.coords.longitude)},()=>{})
@@ -68,10 +69,10 @@ export default function MapPage() {
 
   const loadArtisans=async()=>{
     setLoading(true)
-    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,profiles(full_name,avatar_url)').limit(30)
+    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat)q=q.eq('category',cat)
     const{data}=await q
-    const real:Art[]=(data||[]).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:Math.round(Math.random()*80+5)/10,is_available:a.is_available,total_missions:a.total_missions||0}))
+    const real:Art[]=(data||[]).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(lat,lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0}))
     const demo=cat?DEMO.filter(d=>d.category===cat):DEMO
     const ids=new Set(real.map(a=>a.full_name))
     setArtisans([...real,...demo.filter(d=>!ids.has(d.full_name))])
@@ -80,9 +81,10 @@ export default function MapPage() {
 
   const contact=async(a:Art,ty:'message'|'call')=>{
     if(!user){router.push('/auth/login');return}
-    const{data:b}=await supabase.from('bookings').insert({client_id:user.id,artisan_id:a.id,title:`Demande ${a.category}`,description:ty==='call'?'Appel':'Message',address:'',status:'pending',price_agreed:a.hourly_rate}).select('id').single()
-    await supabase.from('notifications').insert({user_id:a.id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'})
-    if(ty==='message'&&b)router.push(`/chat/${b.id}`);else setSent(true)
+    const{error}=await supabase.from('bookings').insert({client_id:user.id,artisan_id:a.id,title:`Demande ${a.category}`,description:ty==='call'?'Appel':'Message',address:'',status:'pending',price_agreed:a.hourly_rate})
+    if(error){setSent(true);return}
+    supabase.from('notifications').insert({user_id:a.id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'}).then(()=>{})
+    if(ty==='message'){const{data:b}=await supabase.from('bookings').select('id').eq('client_id',user.id).eq('artisan_id',a.id).order('created_at',{ascending:false}).limit(1).single();if(b?.id)router.push(`/chat/${b.id}`);else setSent(true)}else{setSent(true)}
   }
 
   const cc=(id:string)=>CATS.find(c=>c.id===id)?.color||'#6366f1'
@@ -90,13 +92,10 @@ export default function MapPage() {
   const filtered=search?artisans.filter(a=>a.full_name.toLowerCase().includes(search.toLowerCase())||a.category.includes(search.toLowerCase())):artisans
   const visibleInSheet=sheetFull?filtered:filtered.slice(0,3)
 
-  const bg=dark?'#0b0b12':'#f5f5f7'
-  const bg2=dark?'#13131e':'#ffffff'
-  const tx=dark?'#e0dfe5':'#111827'
-  const tx2=dark?'#8585a0':'#6b7280'
-  const tx3=dark?'#4a4a65':'#9ca3af'
-  const brd=dark?'#1c1c30':'#e5e7eb'
-  const glass=dark?'rgba(11,11,18,0.92)':'rgba(255,255,255,0.95)'
+  const bg='var(--bg)';const bg2='var(--bg2)'
+  const tx='var(--tx)';const tx2='var(--tx2)';const tx3='var(--tx3)'
+  const brd='var(--border)'
+  const glass='var(--glass-bg)'
 
   return(
     <>
@@ -108,7 +107,7 @@ export default function MapPage() {
         @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.3)}70%{box-shadow:0 0 0 10px rgba(99,102,241,0)}}
         .pill{padding:8px 16px;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer;font-family:Nexa,sans-serif;border:none;transition:all 0.25s;white-space:nowrap;display:flex;align-items:center;gap:5px}
         .arow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;cursor:pointer;transition:all 0.2s;border:1px solid transparent}
-        .arow:hover{background:${dark?'#1c1c30':'#f0f0f3'};border-color:${brd}}
+        .arow:hover{background:var(--bg3);border-color:var(--border)}
       `}</style>
 
       <div style={{position:'fixed',inset:0,overflow:'hidden'}}>
@@ -120,10 +119,10 @@ export default function MapPage() {
 
         {/* ═══ FLOATING SEARCH BAR ═══ */}
         <div style={{position:'absolute',top:60,left:16,right:16,zIndex:10,animation:'fadeUp 0.4s ease'}}>
-          <div style={{background:glass,backdropFilter:'blur(20px)',borderRadius:16,padding:'12px 16px',display:'flex',alignItems:'center',gap:10,boxShadow:dark?'0 4px 24px rgba(0,0,0,0.4)':'0 4px 24px rgba(0,0,0,0.08)',border:`0.5px solid ${brd}`}}>
+          <div style={{background:glass,backdropFilter:'blur(20px)',borderRadius:16,padding:'12px 16px',display:'flex',alignItems:'center',gap:10,boxShadow:'var(--card-shadow)',border:`0.5px solid ${brd}`}}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={tx3} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input type="text" value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder={isAr?'بحث عن حرفي...':'Rechercher un artisan, un métier...'}
+              placeholder={t('map.searchPlaceholder')}
               style={{flex:1,background:'transparent',border:'none',outline:'none',color:tx,fontSize:14,fontFamily:'Nexa,sans-serif',fontWeight:300}}/>
             {search&&<button onClick={()=>setSearch('')} style={{background:'transparent',border:'none',color:tx3,fontSize:16,cursor:'pointer'}}>✕</button>}
           </div>
@@ -135,7 +134,7 @@ export default function MapPage() {
             {CATS.map(c=>(
               <button key={c.id} onClick={()=>setCat(c.id)} className="pill"
                 style={{background:cat===c.id?c.color:glass,color:cat===c.id?'#fff':tx2,backdropFilter:cat===c.id?'none':'blur(12px)',border:`0.5px solid ${cat===c.id?'transparent':brd}`,boxShadow:cat===c.id?`0 2px 12px ${c.color}44`:'none'}}>
-                <span style={{fontSize:13}}>{c.icon}</span>{c.label}
+                {c.id ? <CategoryIcon id={c.id} size={14}/> : <LayoutGrid size={14}/>}{c.label}
               </button>
             ))}
           </div>
@@ -143,16 +142,16 @@ export default function MapPage() {
 
         {/* ═══ LOCATE ME button ═══ */}
         <button onClick={()=>{navigator.geolocation?.getCurrentPosition(p=>{setLat(p.coords.latitude);setLng(p.coords.longitude)})}}
-          style={{position:'absolute',right:16,bottom:sheetOpen?(sheetFull?'65%':'260px'):'80px',zIndex:10,width:44,height:44,borderRadius:'50%',background:glass,backdropFilter:'blur(12px)',border:`0.5px solid ${brd}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:dark?'0 2px 12px rgba(0,0,0,0.3)':'0 2px 12px rgba(0,0,0,0.08)',transition:'bottom 0.3s ease'}}>
+          style={{position:'absolute',right:16,bottom:sheetOpen?(sheetFull?'65%':'260px'):'80px',zIndex:10,width:44,height:44,borderRadius:'50%',background:glass,backdropFilter:'blur(12px)',border:`0.5px solid ${brd}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'var(--card-shadow)',transition:'bottom 0.3s ease'}}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={tx} strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
         </button>
 
         {/* ═══ BOTTOM SHEET ═══ */}
-        <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:20,maxHeight:sheetFull?'70vh':'260px',background:glass,backdropFilter:'blur(24px)',borderRadius:'20px 20px 0 0',boxShadow:dark?'0 -4px 32px rgba(0,0,0,0.5)':'0 -4px 32px rgba(0,0,0,0.1)',border:`0.5px solid ${brd}`,borderBottom:'none',transition:'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',overflowY:'auto',animation:'slideUp 0.4s ease 0.2s both'}}>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:20,maxHeight:sheetFull?'70vh':'260px',background:glass,backdropFilter:'blur(24px)',borderRadius:'20px 20px 0 0',boxShadow:'var(--card-shadow)',border:`0.5px solid ${brd}`,borderBottom:'none',transition:'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',overflowY:'auto',animation:'slideUp 0.4s ease 0.2s both'}}>
 
           {/* Handle */}
           <div onClick={()=>setSheetFull(!sheetFull)} style={{padding:'10px 0 6px',cursor:'pointer',display:'flex',justifyContent:'center'}}>
-            <div style={{width:36,height:4,borderRadius:2,background:dark?'#2a2a44':'#d1d5db'}}/>
+            <div style={{width:36,height:4,borderRadius:2,background:'var(--border2)'}}/>
           </div>
 
           {/* Sheet header */}
@@ -162,7 +161,7 @@ export default function MapPage() {
               <div style={{fontSize:12,color:tx3,fontWeight:300}}>à proximité</div>
             </div>
             <button onClick={()=>setSheetOpen(!sheetOpen)}
-              style={{padding:'6px 14px',borderRadius:10,background:dark?'#1c1c30':'#e5e7eb',border:'none',color:tx2,fontSize:11,cursor:'pointer',fontFamily:'Nexa,sans-serif',fontWeight:300}}>
+              style={{padding:'6px 14px',borderRadius:10,background:'var(--border)',border:'none',color:tx2,fontSize:11,cursor:'pointer',fontFamily:'Nexa,sans-serif',fontWeight:300}}>
               {sheetOpen?'Masquer':'Afficher'}
             </button>
           </div>
@@ -182,7 +181,7 @@ export default function MapPage() {
                     const isSelected=selected?.id===a.id
                     return(
                       <div key={a.id} className="arow" onClick={()=>setSelected(isSelected?null:a)}
-                        style={{borderColor:isSelected?c+'44':'transparent',background:isSelected?(dark?c+'0d':'#f8f8ff'):'transparent',marginBottom:4}}>
+                        style={{borderColor:isSelected?c+'44':'transparent',background:isSelected?`${c}12`:'transparent',marginBottom:4}}>
 
                         {/* Avatar */}
                         {a.avatar_url?(
@@ -202,7 +201,7 @@ export default function MapPage() {
                               <Stars r={a.rating_avg} s={10}/>{a.rating_avg.toFixed(1)}
                             </span>
                             <span>·</span>
-                            <span>{a.distance_km.toFixed(1)} km</span>
+                            <span>{a.distance_km!=null?`${a.distance_km.toFixed(1)} km`:'—'}</span>
                             <span>·</span>
                             <span>{a.total_missions} missions</span>
                           </div>
@@ -223,7 +222,7 @@ export default function MapPage() {
                   {/* Show more */}
                   {!sheetFull&&filtered.length>3&&(
                     <button onClick={()=>setSheetFull(true)}
-                      style={{width:'100%',padding:'12px',borderRadius:12,background:dark?'#1c1c30':'#f0f0f3',border:`0.5px solid ${brd}`,color:tx2,fontSize:12,cursor:'pointer',fontFamily:'Nexa,sans-serif',fontWeight:300,marginTop:4}}>
+                      style={{width:'100%',padding:'12px',borderRadius:12,background:'var(--bg3)',border:`0.5px solid ${brd}`,color:tx2,fontSize:12,cursor:'pointer',fontFamily:'Nexa,sans-serif',fontWeight:300,marginTop:4}}>
                       Voir les {filtered.length-3} autres artisans
                     </button>
                   )}
@@ -236,7 +235,7 @@ export default function MapPage() {
         {/* ═══ SELECTED ARTISAN CARD (floating) ═══ */}
         {selected&&(
           <div style={{position:'absolute',bottom:sheetOpen?(sheetFull?'72%':'268px'):'8px',left:16,right:16,zIndex:25,animation:'fadeUp 0.3s ease'}}>
-            <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:18,padding:'18px 20px',boxShadow:dark?'0 8px 32px rgba(0,0,0,0.5)':'0 8px 32px rgba(0,0,0,0.1)'}}>
+            <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:18,padding:'18px 20px',boxShadow:'var(--card-shadow)'}}>
               <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:14}}>
                 {selected.avatar_url?(
                   <img src={selected.avatar_url} alt="" style={{width:52,height:52,borderRadius:14,objectFit:'cover',border:`2px solid ${cc(selected.category)}33`}}/>
@@ -262,11 +261,11 @@ export default function MapPage() {
               {/* Quick stats */}
               <div style={{display:'flex',gap:8,marginBottom:14}}>
                 {[
-                  {v:`${selected.distance_km.toFixed(1)} km`,c:'#10b981'},
+                  {v:selected.distance_km!=null?`${selected.distance_km.toFixed(1)} km`:'—',c:'#10b981'},
                   {v:`${selected.total_missions} missions`,c:tx2},
                   {v:`${selected.hourly_rate.toLocaleString('fr-DZ')} DA`,c:'#6366f1'},
                 ].map(s=>(
-                  <div key={s.v} style={{flex:1,padding:'8px',borderRadius:10,background:dark?'#0e0e18':'#f0f0f3',border:`0.5px solid ${brd}`,textAlign:'center',fontSize:12,color:s.c,fontWeight:500}}>{s.v}</div>
+                  <div key={s.v} style={{flex:1,padding:'8px',borderRadius:10,background:'var(--bg3)',border:`0.5px solid ${brd}`,textAlign:'center',fontSize:12,color:s.c,fontWeight:500}}>{s.v}</div>
                 ))}
               </div>
 

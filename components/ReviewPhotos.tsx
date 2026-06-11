@@ -6,6 +6,7 @@
 
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Camera } from 'lucide-react'
 
 // ================================================================
 // 1. UPLOAD PHOTOS DANS L'AVIS (côté client après mission)
@@ -48,6 +49,8 @@ export function ReviewPhotoUpload({
       if (!error) {
         const { data: { publicUrl } } = supabase.storage.from('beti-photos').getPublicUrl(path)
         newPhotos.push({ url: publicUrl, preview })
+      } else {
+        alert('Upload échoué : ' + error.message)
       }
     }
 
@@ -76,7 +79,7 @@ export function ReviewPhotoUpload({
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
         {/* Photos preview */}
         {photos.map((photo, i) => (
-          <div key={i} style={{ position: 'relative', width: 80, height: 80, borderRadius: 10, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
+          <div key={i} style={{ position: 'relative', width: 80, height: 80, borderRadius: 10, overflow: 'hidden', border: '0.5px solid var(--border)' }}>
             <img src={photo.preview || photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
             <button
               onClick={() => removePhoto(i)}
@@ -98,7 +101,7 @@ export function ReviewPhotoUpload({
             disabled={uploading}
             style={{
               width: 80, height: 80, borderRadius: 10,
-              background: '#0b0b12', border: '1px dashed #1c1c30',
+              background: 'var(--bg)', border: '1px dashed var(--border)',
               color: uploading ? '#444' : '#6366f1', fontSize: 24,
               cursor: uploading ? 'wait' : 'pointer',
               display: 'flex', flexDirection: 'column',
@@ -110,7 +113,7 @@ export function ReviewPhotoUpload({
               <div style={{ fontSize: 11, fontWeight: 300 }}>...</div>
             ) : (
               <>
-                <span>📷</span>
+                <Camera size={20}/>
                 <span style={{ fontSize: 9, fontWeight: 300 }}>{photos.length}/5</span>
               </>
             )}
@@ -151,7 +154,7 @@ export function WorkGallery({
   if (photos.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '40px 20px', color: '#333' }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>📷</div>
+        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: '#555' }}><Camera size={38}/></div>
         <div style={{ fontSize: 14, fontWeight: 800, color: '#555', marginBottom: 6 }}>Aucune photo pour l'instant</div>
         <div style={{ fontSize: 12, color: '#444', fontWeight: 300 }}>
           Les photos sont ajoutées par les clients après chaque mission terminée.
@@ -170,7 +173,7 @@ export function WorkGallery({
             style={{
               position: 'relative', borderRadius: 12, overflow: 'hidden',
               cursor: 'pointer', aspectRatio: '1',
-              border: '0.5px solid #1c1c30', transition: 'all 0.2s',
+              border: '0.5px solid var(--border)', transition: 'all 0.2s',
             }}
           >
             <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
@@ -225,7 +228,7 @@ export function WorkGallery({
             <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 {photos[selectedPhoto].client_name && (
-                  <div style={{ fontSize: 13, color: '#e0dfe5', fontWeight: 300 }}>
+                  <div style={{ fontSize: 13, color: 'var(--tx)', fontWeight: 300 }}>
                     Photo par <span style={{ fontWeight: 800 }}>{photos[selectedPhoto].client_name}</span>
                   </div>
                 )}
@@ -242,20 +245,20 @@ export function WorkGallery({
             {selectedPhoto > 0 && (
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedPhoto(selectedPhoto - 1) }}
-                style={{ position: 'absolute', left: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: '#13131e', border: '0.5px solid #1c1c30', color: '#e0dfe5', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ position: 'absolute', left: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >‹</button>
             )}
             {selectedPhoto < photos.length - 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedPhoto(selectedPhoto + 1) }}
-                style={{ position: 'absolute', right: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: '#13131e', border: '0.5px solid #1c1c30', color: '#e0dfe5', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ position: 'absolute', right: -50, top: '50%', transform: 'translateY(-50%)', width: 40, height: 40, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >›</button>
             )}
 
             {/* Close */}
             <button
               onClick={() => setSelectedPhoto(null)}
-              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: '#13131e', border: '0.5px solid #1c1c30', color: '#e0dfe5', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >✕</button>
           </div>
         </div>
@@ -298,24 +301,36 @@ export function ArtisanAvatar({
     if (!file.type.startsWith('image/')) { alert('Fichier invalide'); return }
 
     setLoading(true)
+    const oldPreview = preview
     setPreview(URL.createObjectURL(file))
 
     const ext = file.name.split('.').pop()
     const path = `avatars/${userId}/profile.${ext}`
 
-    // Supprimer l'ancien si existe
-    await supabase.storage.from('beti-photos').remove([path]).catch(() => {})
-
     const { error } = await supabase.storage
       .from('beti-photos')
       .upload(path, file, { contentType: file.type, upsert: true })
 
-    if (!error) {
-      const { data: { publicUrl } } = supabase.storage.from('beti-photos').getPublicUrl(path)
-      // Mettre à jour le profil
-      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId)
-      onUpload?.(publicUrl)
+    if (error) {
+      setPreview(oldPreview)
+      alert(error.message.includes('security policy')
+        ? 'Upload refusé par le serveur — les policies Storage doivent être installées (supabase/storage_policies.sql)'
+        : 'Upload échoué : ' + error.message)
+      setLoading(false)
+      return
     }
+
+    const { data: { publicUrl } } = supabase.storage.from('beti-photos').getPublicUrl(path)
+    const url = publicUrl + '?t=' + Date.now()
+    const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId)
+    if (dbErr) {
+      setPreview(oldPreview)
+      alert('Photo uploadée mais enregistrement du profil échoué : ' + dbErr.message)
+      setLoading(false)
+      return
+    }
+    setPreview(url)
+    onUpload?.(url)
     setLoading(false)
   }
 
@@ -349,12 +364,12 @@ export function ArtisanAvatar({
             style={{
               position: 'absolute', bottom: -2, right: -2,
               width: 28, height: 28, borderRadius: '50%',
-              background: '#6366f1', border: '2px solid #0b0b12',
-              color: '#0b0b12', fontSize: 12, cursor: 'pointer',
+              background: '#6366f1', border: '2px solid #fff',
+              color: '#fff', fontSize: 12, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            {loading ? '...' : '📷'}
+            {loading ? '...' : <Camera size={14}/>}
           </button>
           <input
             ref={inputRef}

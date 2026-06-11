@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Metadata } from 'next'
+import { CategoryIcon } from '@/components/icons'
 
 import { notFound } from 'next/navigation'
 
@@ -100,7 +101,7 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
 
-      <div style={{ minHeight: '100vh', background: '#0D0D12', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 40px' }}>
           {/* Fil d'ariane */}
           <div style={{ fontSize: 12, color: '#555', marginBottom: 16, display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -109,10 +110,10 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
             <span style={{ color: '#C9A84C' }}>{c.label}</span>
           </div>
 
-          <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
-            {c.icon} {c.labelPlural.toUpperCase()}
+          <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <CategoryIcon id={params.category} size={14} color="#C9A84C"/> {c.labelPlural.toUpperCase()}
           </div>
-          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: '#F0EDE8', marginBottom: 16, lineHeight: 1.1 }}>
+          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
             {c.label} à {w.name}
           </h1>
           <p style={{ fontSize: 15, color: '#555', maxWidth: 600, lineHeight: 1.7, fontWeight: 300, marginBottom: 32 }}>
@@ -121,7 +122,7 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
           </p>
 
           <a href={`/?wilaya=${params.wilaya}&category=${params.category}`}>
-            <button style={{ padding: '12px 28px', borderRadius: 10, background: '#C9A84C', border: 'none', color: '#0D0D12', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+            <button style={{ padding: '12px 28px', borderRadius: 10, background: '#C9A84C', border: 'none', color: '#111118', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
               Trouver un {c.label.toLowerCase()} maintenant
             </button>
           </a>
@@ -130,14 +131,14 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
         {/* Artisans */}
         {artisans && artisans.length > 0 && (
           <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 48px' }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#F0EDE8', marginBottom: 20 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>
               {c.labelPlural} disponibles à {w.name}
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
               {artisans.map((a: any) => (
                 <a key={a.id} href={`/artisan/${a.id}`} style={{ textDecoration: 'none' }}>
-                  <div style={{ background: '#161620', border: '0.5px solid #2a2a3a', borderRadius: 14, padding: '18px' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#F0EDE8', marginBottom: 4 }}>{a.profiles?.full_name}</div>
+                  <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px' }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{a.profiles?.full_name}</div>
                     <div style={{ fontSize: 11, color: '#C9A84C', fontWeight: 800, marginBottom: 10 }}>{c.label} certifié BETI</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 12, color: '#4ade80' }}>● Disponible</span>
@@ -151,12 +152,12 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
         )}
 
         {/* Autres catégories dans cette wilaya */}
-        <section style={{ background: '#09090f', borderTop: '0.5px solid #1e1e2a', padding: '40px' }}>
+        <section style={{ background: 'var(--bg)', borderTop: '0.5px solid var(--border)', padding: '40px' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 16, fontWeight: 800, color: '#F0EDE8', marginBottom: 16 }}>Autres services à {w.name}</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)', marginBottom: 16 }}>Autres services à {w.name}</h2>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {Object.entries(CATEGORIES).filter(([id]) => id !== params.category).map(([id, cat]) => (
-                <a key={id} href={`/artisans/${params.wilaya}/${id}`} style={{ fontSize: 12, color: '#444', textDecoration: 'none', padding: '4px 12px', borderRadius: 20, border: '0.5px solid #1e1e2a' }}>
+                <a key={id} href={`/artisans/${params.wilaya}/${id}`} style={{ fontSize: 12, color: '#444', textDecoration: 'none', padding: '4px 12px', borderRadius: 20, border: '0.5px solid var(--border)' }}>
                   {cat.label} {w.name}
                 </a>
               ))}

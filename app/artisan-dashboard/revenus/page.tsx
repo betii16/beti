@@ -1,171 +1,108 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-type Mission = {
-  id: string
-  title: string
-  price_agreed: number | null
-  completed_at: string | null
-  created_at: string
-  profiles: { full_name: string } | null
-}
+export default function RevenusPage(){
+  const router=useRouter()
+  const [user,setUser]=useState<any>(null)
+  const [bookings,setBookings]=useState<any[]>([])
+  const [loading,setLoading]=useState(true)
+  const [period,setPeriod]=useState<'week'|'month'|'all'>('month')
 
-const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc']
+  useEffect(()=>{load()},[])
+  const load=async()=>{
+    const{data:{user:u}}=await supabase.auth.getUser()
+    if(!u){router.push('/auth/login');return};setUser(u)
+    const{data}=await supabase.from('bookings').select('id,title,status,price_agreed,created_at,profiles!bookings_client_id_fkey(full_name)').eq('artisan_id',u.id).order('created_at',{ascending:false}).limit(100)
+    if(data)setBookings(data);setLoading(false)
+  }
 
-export default function Revenus() {
-  const router = useRouter()
-  const [missions, setMissions] = useState<Mission[]>([])
-  const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState<'month' | 'year' | 'all'>('month')
-
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-
-      const { data } = await supabase
-        .from('bookings')
-        .select('*, profiles!bookings_client_id_fkey(full_name)')
-        .eq('artisan_id', user.id)
-        .eq('status', 'completed')
-        .order('completed_at', { ascending: false })
-
-      if (data) setMissions(data)
-      setLoading(false)
-    }
-    init()
-  }, [])
-
-  const now = new Date()
-
-  const filtered = missions.filter(m => {
-    const d = new Date(m.completed_at || m.created_at)
-    if (period === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-    if (period === 'year')  return d.getFullYear() === now.getFullYear()
-    return true
+  const now=Date.now()
+  const filtered=bookings.filter(b=>{
+    if(period==='all')return true
+    const d=now-new Date(b.created_at).getTime()
+    return period==='week'?d<7*86400000:d<30*86400000
   })
+  const completed=filtered.filter(b=>b.status==='completed')
+  const totalRev=completed.reduce((s:number,b:any)=>s+(b.price_agreed||0),0)
+  const avgRev=completed.length>0?Math.round(totalRev/completed.length):0
 
-  const total = filtered.reduce((sum, m) => sum + (m.price_agreed || 0), 0)
-  const totalAll = missions.reduce((sum, m) => sum + (m.price_agreed || 0), 0)
-  const avgPerMission = filtered.length > 0 ? Math.round(total / filtered.length) : 0
-
-  // Données par mois pour le graphe (12 derniers mois)
-  const barData = Array.from({ length: 6 }).map((_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1)
-    const monthMissions = missions.filter(m => {
-      const md = new Date(m.completed_at || m.created_at)
-      return md.getMonth() === d.getMonth() && md.getFullYear() === d.getFullYear()
-    })
-    return {
-      label: MONTHS_FR[d.getMonth()],
-      value: monthMissions.reduce((sum, m) => sum + (m.price_agreed || 0), 0),
-      count: monthMissions.length,
-    }
+  // Weekly chart data (last 8 weeks)
+  const weekData=Array.from({length:8},(_,i)=>{
+    const weekStart=now-(7-i)*7*86400000
+    const weekEnd=weekStart+7*86400000
+    const rev=bookings.filter(b=>b.status==='completed'&&new Date(b.created_at).getTime()>=weekStart&&new Date(b.created_at).getTime()<weekEnd).reduce((s:number,b:any)=>s+(b.price_agreed||0),0)
+    return{label:`S${i+1}`,value:rev}
   })
-  const maxBar = Math.max(...barData.map(b => b.value), 1)
+  const maxWeek=Math.max(...weekData.map(w=>w.value),1)
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?"Aujourd'hui":x===1?'Hier':x<7?`${x}j`:x<30?`${Math.floor(x/7)} sem.`:`${Math.floor(x/30)} mois`}
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: '#4a4a65', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
-    </div>
-  )
+  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><p style={{color:'var(--tx3)'}}>Chargement...</p></div>
 
-  return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: '#0b0b12', fontFamily: 'Nexa, sans-serif' }}>
-
-      {/* Header */}
-      <div style={{ background: '#0b0b12', borderBottom: '0.5px solid #1c1c30', padding: '32px 40px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON DASHBOARD</div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#e0dfe5', marginBottom: 4 }}>Mes revenus</h1>
-            <p style={{ fontSize: 13, color: '#4a4a65', fontWeight: 300 }}>{missions.length} mission{missions.length !== 1 ? 's' : ''} complétée{missions.length !== 1 ? 's' : ''} au total</p>
-          </div>
-          {/* Sélecteur période */}
-          <div style={{ display: 'flex', gap: 6, background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 10, padding: 4 }}>
-            {([['month', 'Ce mois'], ['year', 'Cette année'], ['all', 'Tout']] as const).map(([id, label]) => (
-              <button key={id} onClick={() => setPeriod(id)}
-                style={{ padding: '7px 14px', background: period === id ? '#6366f1' : 'transparent', border: 'none', borderRadius: 8, color: period === id ? '#0b0b12' : '#4a4a65', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s' }}>
-                {label}
+  return(
+    <div style={{minHeight:'100vh',background:'var(--bg)',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
+      <div style={{maxWidth:900,margin:'0 auto',padding:24}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:12}}>
+          <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>Revenus & Historique</h1><p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>Suivez votre activité</p></div>
+          <div style={{display:'flex',gap:4}}>
+            {(['week','month','all'] as const).map(p=>(
+              <button key={p} onClick={()=>setPeriod(p)} style={{padding:'8px 16px',borderRadius:10,border:'1px solid var(--border)',background:period===p?'#6366f112':'transparent',color:period===p?'#6366f1':'var(--tx3)',fontSize:12,fontWeight:period===p?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>
+                {p==='week'?'7 jours':p==='month'?'30 jours':'Tout'}
               </button>
             ))}
           </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 40px' }}>
-
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 28 }}>
-          {[
-            { value: `${total.toLocaleString()} DA`, label: 'Revenus sur la période', color: '#4ade80', bg: '#10b98112' },
-            { value: filtered.length, label: 'Missions complétées', color: '#60a5fa', bg: '#0d1a2a' },
-            { value: `${avgPerMission.toLocaleString()} DA`, label: 'Revenu moyen / mission', color: '#6366f1', bg: '#6366f10d' },
-          ].map(s => (
-            <div key={s.label} style={{ background: s.bg, border: '0.5px solid #1c1c30', borderRadius: 14, padding: '20px 22px' }}>
-              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, marginBottom: 6 }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{s.label}</div>
-            </div>
-          ))}
+        {/* KPI row */}
+        <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:24}}>
+          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+            <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>REVENUS TOTAL</div>
+            <div style={{fontSize:28,fontWeight:800,color:'#10b981'}}>{totalRev.toLocaleString('fr-DZ')} DA</div>
+          </div>
+          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+            <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>MISSIONS</div>
+            <div style={{fontSize:28,fontWeight:800,color:'#6366f1'}}>{completed.length}</div>
+          </div>
+          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+            <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>PANIER MOYEN</div>
+            <div style={{fontSize:28,fontWeight:800,color:'var(--tx)'}}>{avgRev.toLocaleString('fr-DZ')} DA</div>
+          </div>
         </div>
 
-        {/* Graphe barres 6 mois */}
-        <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 16, padding: '24px', marginBottom: 28 }}>
-          <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 20 }}>ÉVOLUTION SUR 6 MOIS</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 140 }}>
-            {barData.map(b => (
-              <div key={b.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
-                <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>
-                  {b.value > 0 ? `${(b.value/1000).toFixed(0)}k` : ''}
-                </div>
-                <div
-                  style={{ width: '100%', borderRadius: '6px 6px 0 0', background: b.label === MONTHS_FR[now.getMonth()] ? '#6366f1' : '#1c1c30', transition: 'height 0.5s', height: `${(b.value / maxBar) * 100}%`, minHeight: b.value > 0 ? 4 : 0 }}
-                />
-                <div style={{ fontSize: 11, color: b.label === MONTHS_FR[now.getMonth()] ? '#6366f1' : '#4a4a65', fontWeight: b.label === MONTHS_FR[now.getMonth()] ? 800 : 300 }}>{b.label}</div>
+        {/* Chart */}
+        <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:16,padding:'24px',marginBottom:24,boxShadow:'var(--card-shadow)'}}>
+          <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:20}}>Revenus par semaine</div>
+          <div style={{display:'flex',alignItems:'flex-end',gap:8,height:140}}>
+            {weekData.map((w,i)=>(
+              <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+                <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300}}>{w.value>0?`${(w.value/1000).toFixed(0)}k`:''}</div>
+                <div style={{width:'100%',background:`linear-gradient(180deg,#6366f1,#8b5cf6)`,borderRadius:'6px 6px 0 0',height:`${Math.max((w.value/maxWeek)*100,4)}%`,minHeight:4,transition:'height 0.5s ease',opacity:w.value>0?1:0.2}}/>
+                <div style={{fontSize:10,color:'var(--tx3)'}}>{w.label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Historique missions */}
+        {/* Mission history */}
         <div>
-          <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>
-            DÉTAIL DES MISSIONS ({filtered.length})
-          </div>
-
-          {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 0', color: '#333' }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>💶</div>
-              <div style={{ fontSize: 14, fontWeight: 300 }}>Aucune mission complétée sur cette période</div>
-            </div>
-          ) : (
-            <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 16, overflow: 'hidden' }}>
-              {filtered.map((m, i) => (
-                <div key={m.id} style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: i < filtered.length - 1 ? '0.5px solid #1c1c30' : 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade8066', flexShrink: 0 }}/>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#e0dfe5', marginBottom: 2 }}>{m.title}</div>
-                      <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>
-                        {m.profiles?.full_name || 'Client'} · {fmt(m.completed_at || m.created_at)}
-                      </div>
-                    </div>
+          <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>Historique des missions ({filtered.length})</h2>
+          {filtered.length===0?(
+            <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'40px',textAlign:'center'}}><p style={{color:'var(--tx3)',fontSize:14}}>Aucune mission sur cette période</p></div>
+          ):(
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {filtered.map(b=>(
+                <div key={b.id} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',gap:14,boxShadow:'var(--card-shadow)'}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':b.status==='pending'?'#f59e0b':'#ef4444',flexShrink:0}}/>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||'Client'}</div>
+                    <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||'Mission'} · {timeAgo(b.created_at)}</div>
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: '#4ade80' }}>
-                    +{(m.price_agreed || 0).toLocaleString()} DA
-                  </div>
+                  <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#6366f112':b.status==='pending'?'#f59e0b12':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':b.status==='pending'?'#f59e0b':'#ef4444'}}>{b.status==='completed'?'Terminé':b.status==='confirmed'?'Confirmé':b.status==='pending'?'En attente':'Annulé'}</span>
                 </div>
               ))}
-              {/* Total */}
-              <div style={{ padding: '14px 20px', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#8585a0' }}>TOTAL</span>
-                <span style={{ fontSize: 18, fontWeight: 800, color: '#4ade80' }}>{total.toLocaleString()} DA</span>
-              </div>
             </div>
           )}
         </div>
@@ -173,5 +110,3 @@ export default function Revenus() {
     </div>
   )
 }
-
-

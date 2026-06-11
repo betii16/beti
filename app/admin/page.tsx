@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock } from 'lucide-react'
 
 type Tab = 'overview' | 'artisans' | 'bookings' | 'users' | 'reviews'
 
@@ -70,10 +71,10 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
   pending:     { label: 'En attente',  bg: '#6366f118', color: '#6366f1', border: '#3a3010' },
   suspended:   { label: 'Suspendu',    bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
   completed:   { label: 'Terminé',     bg: '#10b98112', color: '#10b981', border: '#10b98122' },
-  accepted:    { label: 'Accepté',     bg: '#0d1a2a', color: '#60a5fa', border: '#1a2a3a' },
-  in_progress: { label: 'En cours',    bg: '#1a0a2a', color: '#a78bfa', border: '#2a1a3a' },
+  confirmed:   { label: 'Confirmé',    bg: 'rgba(96,165,250,0.08)',  color: '#60a5fa', border: 'rgba(96,165,250,0.2)'  },
+  in_progress: { label: 'En cours',    bg: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: 'rgba(167,139,250,0.2)' },
   refused:     { label: 'Refusé',      bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
-  cancelled:   { label: 'Annulé',      bg: '#1a1a1a', color: '#8585a0',    border: '#2a2a2a' },
+  cancelled:   { label: 'Annulé',      bg: 'var(--bg3)', color: 'var(--tx2)', border: 'var(--border)' },
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -254,10 +255,10 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0b0b12', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0b0b12', margin: '0 auto 16px' }}>B</div>
-          <div style={{ fontSize: 14, color: '#4a4a65' }}>Chargement du dashboard...</div>
+          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#fff', margin: '0 auto 16px' }}>B</div>
+          <div style={{ fontSize: 14, color: 'var(--tx3)' }}>Chargement du dashboard...</div>
         </div>
       </div>
     )
@@ -267,35 +268,35 @@ export default function AdminDashboard() {
     <>
       <style suppressHydrationWarning>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0b0b12; font-family: 'Nexa', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: var(--bg); font-family: 'Nexa', sans-serif; -webkit-font-smoothing: antialiased; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #1c1c30; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
         table { border-collapse: collapse; width: 100%; }
-        th { font-size: 11px; font-weight: 800; color: #4a4a65; letter-spacing: 0.06em; padding: 12px 16px; text-align: left; border-bottom: 0.5px solid #1c1c30; font-family: Nexa, sans-serif; }
-        td { font-size: 13px; color: #e0dfe5; padding: 14px 16px; border-bottom: 0.5px solid #1c1c30; font-family: Nexa, sans-serif; font-weight: 300; }
-        tr:hover td { background: #1a1a24; }
+        th { font-size: 11px; font-weight: 800; color: var(--tx3); letter-spacing: 0.06em; padding: 12px 16px; text-align: left; border-bottom: 0.5px solid var(--border); font-family: Nexa, sans-serif; }
+        td { font-size: 13px; color: var(--tx); padding: 14px 16px; border-bottom: 0.5px solid var(--border); font-family: Nexa, sans-serif; font-weight: 300; }
+        tr:hover td { background: var(--bg3); }
       `}</style>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#0b0b12' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
 
         {/* ── Sidebar ── */}
-        <aside style={{ width: 220, background: '#0b0b12', borderRight: '0.5px solid #1c1c30', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', flexShrink: 0 }}>
-          <div style={{ padding: '24px 20px', borderBottom: '0.5px solid #1c1c30', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0b0b12' }}>B</div>
+        <aside style={{ width: 220, background: 'var(--bg)', borderRight: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', flexShrink: 0 }}>
+          <div style={{ padding: '24px 20px', borderBottom: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff' }}>B</div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5', letterSpacing: '0.06em' }}>BETI</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.06em' }}>BETI</div>
               <div style={{ fontSize: 9, color: '#6366f1', letterSpacing: '0.08em', fontWeight: 800 }}>ADMIN</div>
             </div>
           </div>
 
           <nav style={{ padding: '16px 12px', flex: 1 }}>
             {([
-              { id: 'overview', icon: '◈', label: 'Vue d\'ensemble' },
-              { id: 'artisans', icon: '👷', label: 'Artisans', badge: stats.pendingArtisans },
-              { id: 'bookings', icon: '📋', label: 'Réservations', badge: stats.pendingBookings },
-              { id: 'users',    icon: '👤', label: 'Utilisateurs' },
-              { id: 'reviews',  icon: '⭐', label: 'Avis' },
+              { id: 'overview', Icon: LayoutDashboard, label: 'Vue d\'ensemble' },
+              { id: 'artisans', Icon: HardHat, label: 'Artisans', badge: stats.pendingArtisans },
+              { id: 'bookings', Icon: ClipboardList, label: 'Réservations', badge: stats.pendingBookings },
+              { id: 'users',    Icon: User, label: 'Utilisateurs' },
+              { id: 'reviews',  Icon: Star, label: 'Avis' },
             ] as const).map(item => (
               <button key={item.id} onClick={() => setTab(item.id as Tab)}
                 style={{
@@ -303,15 +304,15 @@ export default function AdminDashboard() {
                   background: tab === item.id ? '#6366f10d' : 'transparent',
                   border: tab === item.id ? '0.5px solid #6366f118' : '0.5px solid transparent',
                   borderRadius: 8, cursor: 'pointer', marginBottom: 4,
-                  color: tab === item.id ? '#6366f1' : '#4a4a65',
+                  color: tab === item.id ? '#6366f1' : 'var(--tx3)',
                   fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: tab === item.id ? 800 : 300,
                   transition: 'all 0.15s',
                 }}
               >
-                <span style={{ fontSize: 14 }}>{item.icon}</span>
+                <item.Icon size={15}/>
                 <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
                 {'badge' in item && (item as any).badge > 0 && (
-                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#0b0b12', fontSize: 10, fontWeight: 800 }}>
+                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', fontSize: 10, fontWeight: 800 }}>
                     {(item as any).badge}
                   </span>
                 )}
@@ -319,8 +320,8 @@ export default function AdminDashboard() {
             ))}
           </nav>
 
-          <div style={{ padding: '16px 20px', borderTop: '0.5px solid #1c1c30' }}>
-            <a href="/" style={{ fontSize: 12, color: '#4a4a65', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+          <div style={{ padding: '16px 20px', borderTop: '0.5px solid var(--border)' }}>
+            <a href="/" style={{ fontSize: 12, color: 'var(--tx3)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
               ← Retour au site
             </a>
           </div>
@@ -329,19 +330,19 @@ export default function AdminDashboard() {
         {/* ── Contenu principal ── */}
         <main style={{ flex: 1, overflow: 'auto' }}>
           {/* Header */}
-          <div style={{ padding: '24px 32px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b0b12', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div style={{ padding: '24px 32px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
             <div>
-              <div style={{ fontSize: 10, color: '#4a4a65', letterSpacing: '0.08em', marginBottom: 4, fontWeight: 800 }}>TABLEAU DE BORD</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#e0dfe5', fontFamily: 'Nexa, sans-serif' }}>
+              <div style={{ fontSize: 10, color: 'var(--tx3)', letterSpacing: '0.08em', marginBottom: 4, fontWeight: 800 }}>TABLEAU DE BORD</div>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', fontFamily: 'Nexa, sans-serif' }}>
                 {{ overview: 'Vue d\'ensemble', artisans: 'Gestion des artisans', bookings: 'Réservations', users: 'Utilisateurs', reviews: 'Avis & Modération' }[tab]}
               </h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button onClick={() => { setLoading(true); loadAll().then(() => setLoading(false)) }}
-                style={{ padding: '6px 14px', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 8, color: '#8585a0', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                style={{ padding: '6px 14px', background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 8, color: 'var(--tx2)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
                 ↻ Actualiser
               </button>
-              <div style={{ fontSize: 12, color: '#4a4a65', padding: '6px 12px', background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 8, fontWeight: 300 }}>
+              <div style={{ fontSize: 12, color: 'var(--tx3)', padding: '6px 12px', background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 8, fontWeight: 300 }}>
                 {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
             </div>
@@ -355,34 +356,34 @@ export default function AdminDashboard() {
                 {/* Stats */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
                   {[
-                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, icon: '💰', color: '#6366f1' },
-                    { label: 'Réservations', value: stats.totalBookings.toString(), icon: '📋', color: '#60a5fa', sub: `${stats.completedBookings} terminées` },
-                    { label: 'Utilisateurs', value: stats.totalUsers.toString(), icon: '👤', color: '#a78bfa' },
-                    { label: 'Artisans', value: stats.totalArtisans.toString(), icon: '👷', color: '#10b981', sub: `${stats.activeArtisans} actifs` },
-                    { label: 'Avis', value: stats.totalReviews.toString(), icon: '⭐', color: '#f59e0b' },
-                    { label: 'En attente', value: stats.pendingBookings.toString(), icon: '⏳', color: '#ef4444' },
+                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, Icon: Wallet, color: '#6366f1' },
+                    { label: 'Réservations', value: stats.totalBookings.toString(), Icon: ClipboardList, color: '#60a5fa', sub: `${stats.completedBookings} terminées` },
+                    { label: 'Utilisateurs', value: stats.totalUsers.toString(), Icon: User, color: '#a78bfa' },
+                    { label: 'Artisans', value: stats.totalArtisans.toString(), Icon: HardHat, color: '#10b981', sub: `${stats.activeArtisans} actifs` },
+                    { label: 'Avis', value: stats.totalReviews.toString(), Icon: Star, color: '#f59e0b' },
+                    { label: 'En attente', value: stats.pendingBookings.toString(), Icon: Clock, color: '#ef4444' },
                   ].map(s => (
-                    <div key={s.label} style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, padding: '20px 22px' }}>
+                    <div key={s.label} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '20px 22px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <span style={{ fontSize: 12, color: '#4a4a65', fontWeight: 300 }}>{s.label}</span>
-                        <span style={{ fontSize: 18 }}>{s.icon}</span>
+                        <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{s.label}</span>
+                        <s.Icon size={18} color={s.color}/>
                       </div>
                       <div style={{ fontSize: 32, fontWeight: 800, color: s.color, fontFamily: 'Nexa, sans-serif', lineHeight: 1 }}>{s.value}</div>
-                      {s.sub && <div style={{ fontSize: 11, color: '#4a4a65', marginTop: 6, fontWeight: 300 }}>{s.sub}</div>}
+                      {s.sub && <div style={{ fontSize: 11, color: 'var(--tx3)', marginTop: 6, fontWeight: 300 }}>{s.sub}</div>}
                     </div>
                   ))}
                 </div>
 
                 {/* Réservations en attente */}
-                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Réservations en attente</span>
+                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Réservations en attente</span>
                     <span style={{ padding: '3px 10px', borderRadius: 20, background: '#6366f118', color: '#6366f1', border: '0.5px solid #3a3010', fontSize: 11, fontWeight: 800 }}>
                       {bookings.filter(b => b.status === 'pending').length}
                     </span>
                   </div>
                   {bookings.filter(b => b.status === 'pending').length === 0 ? (
-                    <div style={{ padding: '32px', textAlign: 'center', color: '#4a4a65', fontSize: 13, fontWeight: 300 }}>Aucune réservation en attente ✓</div>
+                    <div style={{ padding: '32px', textAlign: 'center', color: 'var(--tx3)', fontSize: 13, fontWeight: 300 }}>Aucune réservation en attente ✓</div>
                   ) : (
                     <table>
                       <thead><tr><th>CLIENT</th><th>ARTISAN</th><th>SERVICE</th><th>MONTANT</th><th>DATE</th><th>ACTIONS</th></tr></thead>
@@ -393,10 +394,10 @@ export default function AdminDashboard() {
                             <td>{b.artisan?.full_name || '—'}</td>
                             <td>{b.title}</td>
                             <td style={{ color: '#6366f1', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
-                            <td style={{ color: '#4a4a65' }}>{formatDate(b.scheduled_at)}</td>
+                            <td style={{ color: 'var(--tx3)' }}>{formatDate(b.scheduled_at)}</td>
                             <td>
                               <div style={{ display: 'flex', gap: 6 }}>
-                                <button onClick={() => updateBookingStatus(b.id, 'accepted')}
+                                <button onClick={() => updateBookingStatus(b.id, 'confirmed')}
                                   style={{ padding: '4px 12px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
                                   Accepter
                                 </button>
@@ -414,9 +415,9 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Dernières inscriptions artisans */}
-                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Derniers artisans inscrits</span>
+                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Derniers artisans inscrits</span>
                   </div>
                   <table>
                     <thead><tr><th>ARTISAN</th><th>CATÉGORIE</th><th>VILLE</th><th>NOTE</th><th>STATUT</th></tr></thead>
@@ -433,11 +434,11 @@ export default function AdminDashboard() {
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#6366f1' : '#4a4a65' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)}` : '—'}</td>
+                          <td style={{ color: a.rating_avg > 0 ? '#6366f1' : 'var(--tx3)' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)}` : '—'}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'pending'}/></td>
                         </tr>
                       ))}
-                      {artisans.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: '#4a4a65', padding: 32 }}>Aucun artisan inscrit</td></tr>}
+                      {artisans.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32 }}>Aucun artisan inscrit</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -447,13 +448,13 @@ export default function AdminDashboard() {
             {/* ═══ ARTISANS ═══ */}
             {tab === 'artisans' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Tous les artisans ({filteredArtisans.length})</span>
+                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Tous les artisans ({filteredArtisans.length})</span>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {([['all', 'Tous'], ['active', 'Actifs'], ['pending', 'En attente'], ['suspended', 'Inactifs']] as const).map(([id, label]) => (
                         <button key={id} onClick={() => setArtisanFilter(id)}
-                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: artisanFilter === id ? '#6366f118' : 'transparent', border: `0.5px solid ${artisanFilter === id ? '#3a3010' : '#1c1c30'}`, color: artisanFilter === id ? '#6366f1' : '#4a4a65', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: artisanFilter === id ? 800 : 300 }}>
+                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: artisanFilter === id ? '#6366f118' : 'transparent', border: `0.5px solid ${artisanFilter === id ? '#3a3010' : 'var(--border)'}`, color: artisanFilter === id ? '#6366f1' : 'var(--tx3)', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: artisanFilter === id ? 800 : 300 }}>
                           {label}
                         </button>
                       ))}
@@ -471,14 +472,14 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <div style={{ fontWeight: 800 }}>{a.profiles?.full_name || '—'}</div>
-                                <div style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{a.profiles?.phone || ''}</div>
+                                <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{a.profiles?.phone || ''}</div>
                               </div>
                             </div>
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
                           <td style={{ color: '#6366f1', fontWeight: 800 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#6366f1' : '#4a4a65' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)} (${a.rating_count})` : '—'}</td>
+                          <td style={{ color: a.rating_avg > 0 ? '#6366f1' : 'var(--tx3)' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)} (${a.rating_count})` : '—'}</td>
                           <td>{a.total_missions || 0}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'suspended'}/></td>
                           <td>
@@ -494,14 +495,14 @@ export default function AdminDashboard() {
                                   Désactiver
                                 </button>
                               )}
-                              <a href={`/artisan/${a.id}`} style={{ padding: '4px 10px', borderRadius: 6, background: '#13131e', border: '0.5px solid #1c1c30', color: '#8585a0', fontSize: 11, textDecoration: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                              <a href={`/artisan/${a.id}`} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx2)', fontSize: 11, textDecoration: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
                                 Voir
                               </a>
                             </div>
                           </td>
                         </tr>
                       ))}
-                      {filteredArtisans.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: '#4a4a65', padding: 32, fontWeight: 300 }}>Aucun artisan trouvé</td></tr>}
+                      {filteredArtisans.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32, fontWeight: 300 }}>Aucun artisan trouvé</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -511,13 +512,13 @@ export default function AdminDashboard() {
             {/* ═══ RÉSERVATIONS ═══ */}
             {tab === 'bookings' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Réservations ({filteredBookings.length})</span>
+                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Réservations ({filteredBookings.length})</span>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {([['all', 'Toutes'], ['pending', 'En attente'], ['completed', 'Terminées'], ['cancelled', 'Annulées']] as const).map(([id, label]) => (
                         <button key={id} onClick={() => setBookingFilter(id)}
-                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: bookingFilter === id ? '#6366f118' : 'transparent', border: `0.5px solid ${bookingFilter === id ? '#3a3010' : '#1c1c30'}`, color: bookingFilter === id ? '#6366f1' : '#4a4a65', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: bookingFilter === id ? 800 : 300 }}>
+                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: bookingFilter === id ? '#6366f118' : 'transparent', border: `0.5px solid ${bookingFilter === id ? '#3a3010' : 'var(--border)'}`, color: bookingFilter === id ? '#6366f1' : 'var(--tx3)', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: bookingFilter === id ? 800 : 300 }}>
                           {label}
                         </button>
                       ))}
@@ -532,24 +533,24 @@ export default function AdminDashboard() {
                           <td>{b.artisan?.full_name || '—'}</td>
                           <td>{b.title}</td>
                           <td style={{ color: '#6366f1', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: '#4a4a65' }}>{formatDate(b.scheduled_at)}</td>
+                          <td style={{ color: 'var(--tx3)' }}>{formatDate(b.scheduled_at)}</td>
                           <td><StatusBadge status={b.status}/></td>
                           <td>
                             <div style={{ display: 'flex', gap: 6 }}>
                               {b.status === 'pending' && (
                                 <>
-                                  <button onClick={() => updateBookingStatus(b.id, 'accepted')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Accepter</button>
+                                  <button onClick={() => updateBookingStatus(b.id, 'confirmed')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Accepter</button>
                                   <button onClick={() => updateBookingStatus(b.id, 'cancelled')} style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Annuler</button>
                                 </>
                               )}
-                              {b.status === 'accepted' && (
+                              {b.status === 'confirmed' && (
                                 <button onClick={() => updateBookingStatus(b.id, 'completed')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Terminer</button>
                               )}
                             </div>
                           </td>
                         </tr>
                       ))}
-                      {filteredBookings.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: '#4a4a65', padding: 32, fontWeight: 300 }}>Aucune réservation</td></tr>}
+                      {filteredBookings.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32, fontWeight: 300 }}>Aucune réservation</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -559,9 +560,9 @@ export default function AdminDashboard() {
             {/* ═══ UTILISATEURS ═══ */}
             {tab === 'users' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Utilisateurs ({users.length})</span>
+                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Utilisateurs ({users.length})</span>
                   </div>
                   <table>
                     <thead><tr><th>NOM</th><th>TÉLÉPHONE</th><th>RÔLE</th><th>INSCRIT LE</th></tr></thead>
@@ -573,7 +574,7 @@ export default function AdminDashboard() {
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}/>
                               ) : (
-                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1c1c30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#8585a0', fontWeight: 800 }}>
+                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--tx2)', fontWeight: 800 }}>
                                   {(u.full_name || 'U')[0].toUpperCase()}
                                 </div>
                               )}
@@ -584,17 +585,17 @@ export default function AdminDashboard() {
                           <td>
                             <span style={{
                               padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800,
-                              background: u.role === 'artisan' ? '#6366f10d' : u.role === 'admin' ? '#1a0a2a' : '#13131e',
-                              color: u.role === 'artisan' ? '#6366f1' : u.role === 'admin' ? '#a78bfa' : '#8585a0',
-                              border: `0.5px solid ${u.role === 'artisan' ? '#6366f118' : u.role === 'admin' ? '#2a1a3a' : '#1c1c30'}`,
+                              background: u.role === 'artisan' ? 'rgba(99,102,241,0.08)' : u.role === 'admin' ? 'rgba(167,139,250,0.08)' : 'var(--bg3)',
+                              color: u.role === 'artisan' ? '#6366f1' : u.role === 'admin' ? '#a78bfa' : 'var(--tx2)',
+                              border: `0.5px solid ${u.role === 'artisan' ? 'rgba(99,102,241,0.15)' : u.role === 'admin' ? 'rgba(167,139,250,0.15)' : 'var(--border)'}`,
                             }}>
                               {u.role === 'artisan' ? 'Artisan' : u.role === 'admin' ? 'Admin' : 'Client'}
                             </span>
                           </td>
-                          <td style={{ color: '#4a4a65' }}>{formatDate(u.created_at)}</td>
+                          <td style={{ color: 'var(--tx3)' }}>{formatDate(u.created_at)}</td>
                         </tr>
                       ))}
-                      {users.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: '#4a4a65', padding: 32, fontWeight: 300 }}>Aucun utilisateur</td></tr>}
+                      {users.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32, fontWeight: 300 }}>Aucun utilisateur</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -604,28 +605,28 @@ export default function AdminDashboard() {
             {/* ═══ AVIS & MODÉRATION ═══ */}
             {tab === 'reviews' && (
               <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: '#13131e', border: '0.5px solid #1c1c30', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid #1c1c30' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#e0dfe5' }}>Tous les avis ({reviews.length})</span>
+                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Tous les avis ({reviews.length})</span>
                   </div>
                   {reviews.length === 0 ? (
-                    <div style={{ padding: '48px', textAlign: 'center', color: '#4a4a65', fontSize: 13, fontWeight: 300 }}>Aucun avis pour l'instant</div>
+                    <div style={{ padding: '48px', textAlign: 'center', color: 'var(--tx3)', fontSize: 13, fontWeight: 300 }}>Aucun avis pour l'instant</div>
                   ) : (
                     <div style={{ padding: '16px' }}>
                       {reviews.map(r => (
-                        <div key={r.id} style={{ background: '#0b0b12', border: '0.5px solid #1c1c30', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
+                        <div key={r.id} style={{ background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                                 <div style={{ display: 'flex', gap: 2 }}>
-                                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: 12, color: i <= r.rating ? '#6366f1' : '#1c1c30' }}>★</span>)}
+                                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: 12, color: i <= r.rating ? '#6366f1' : 'var(--border)' }}>★</span>)}
                                 </div>
-                                <span style={{ fontSize: 12, color: '#8585a0', fontWeight: 300 }}>
+                                <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 300 }}>
                                   {r.client?.full_name || 'Client'} → {r.artisan_profile?.full_name || 'Artisan'}
                                 </span>
-                                <span style={{ fontSize: 11, color: '#4a4a65', fontWeight: 300 }}>{timeAgo(r.created_at)}</span>
+                                <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{timeAgo(r.created_at)}</span>
                               </div>
-                              {r.comment && <p style={{ fontSize: 13, color: '#8585a0', lineHeight: 1.6, fontWeight: 300 }}>{r.comment}</p>}
+                              {r.comment && <p style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.6, fontWeight: 300 }}>{r.comment}</p>}
                             </div>
                             <button onClick={() => deleteReview(r.id)}
                               style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800, flexShrink: 0, marginLeft: 12 }}>

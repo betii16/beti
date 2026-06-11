@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabase'
 import { useState, useRef, useEffect } from 'react'
+import { Check } from 'lucide-react'
 
 // ================================================================
 // BETI — Catégorie "Autre" avec système d'AJOUT de mots-clés
@@ -107,7 +108,7 @@ export function OtherCategorySearch({
         onClick={() => inputRef.current?.focus()}
         style={{
           minHeight: 48, padding: '8px 12px',
-          background: '#13131e', border: '0.5px solid #6366f133',
+          background: 'var(--bg2)', border: '0.5px solid #6366f133',
           borderRadius: 12, cursor: 'text', display: 'flex',
           flexWrap: 'wrap', gap: 6, alignItems: 'center',
         }}
@@ -146,7 +147,7 @@ export function OtherCategorySearch({
             style={{
               padding: '5px 16px', borderRadius: 20,
               background: '#6366f1', border: 'none',
-              color: '#0b0b12', fontSize: 12, fontWeight: 800,
+              color: '#fff', fontSize: 12, fontWeight: 800,
               cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
             }}
           >
@@ -183,13 +184,13 @@ export function OtherCategorySearch({
                 onClick={() => addTag(s)}
                 style={{
                   padding: '5px 14px', borderRadius: 20,
-                  background: 'transparent', border: '0.5px solid #1c1c30',
+                  background: 'transparent', border: '0.5px solid var(--border)',
                   color: '#555', fontSize: 12, cursor: 'pointer',
                   fontFamily: 'Nexa, sans-serif', fontWeight: 300,
                   transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4,
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#1c1c30'; e.currentTarget.style.color = '#555' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx3)' }}
               >
                 <span style={{ fontSize: 11 }}>+</span> {s}
               </button>
@@ -279,7 +280,7 @@ export function ArtisanTagsInput({
         onClick={() => inputRef.current?.focus()}
         style={{
           minHeight: 52, padding: '8px 12px',
-          background: '#0b0b12', border: '0.5px solid #1c1c30',
+          background: 'var(--bg)', border: '0.5px solid var(--border)',
           borderRadius: 12, cursor: 'text', display: 'flex',
           flexWrap: 'wrap', gap: 6, alignItems: 'center',
         }}
@@ -316,7 +317,7 @@ export function ArtisanTagsInput({
             style={{
               padding: '4px 14px', borderRadius: 20,
               background: '#6366f1', border: 'none',
-              color: '#0b0b12', fontSize: 11, fontWeight: 800,
+              color: '#fff', fontSize: 11, fontWeight: 800,
               cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
             }}
           >
@@ -331,7 +332,7 @@ export function ArtisanTagsInput({
         <p style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{tags.length}/15 mots-clés</p>
         <div style={{ display: 'flex', gap: 4 }}>
           {Array.from({ length: 15 }).map((_, i) => (
-            <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < tags.length ? '#6366f1' : '#1c1c30', transition: 'background 0.2s' }}/>
+            <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < tags.length ? '#6366f1' : 'var(--border)', transition: 'background 0.2s' }}/>
           ))}
         </div>
       </div>
@@ -346,12 +347,12 @@ export function ArtisanTagsInput({
                 onClick={() => addTag(t)}
                 style={{
                   padding: '4px 12px', borderRadius: 20,
-                  background: 'transparent', border: '0.5px solid #1c1c30',
+                  background: 'transparent', border: '0.5px solid var(--border)',
                   color: '#555', fontSize: 12, cursor: 'pointer',
                   fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'all 0.15s',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#1c1c30'; e.currentTarget.style.color = '#555' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx3)' }}
               >
                 + {t}
               </button>
@@ -368,13 +369,13 @@ export function ArtisanTagsInput({
           background: saved ? '#0a2010' : tags.length === 0 ? '#1a1a2a' : '#6366f1',
           border: saved ? '0.5px solid #4ade8044' : 'none',
           borderRadius: 10,
-          color: saved ? '#4ade80' : tags.length === 0 ? '#444' : '#0b0b12',
+          color: saved ? '#4ade80' : tags.length === 0 ? 'var(--tx3)' : '#fff',
           fontSize: 13, fontWeight: 800,
           cursor: tags.length === 0 ? 'not-allowed' : 'pointer',
           fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',
         }}
       >
-        {saving ? 'Sauvegarde...' : saved ? '✅ Mots-clés sauvegardés !' : 'Sauvegarder mes mots-clés'}
+        {saving ? 'Sauvegarde...' : saved ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Check size={15}/>Mots-clés sauvegardés !</span> : 'Sauvegarder mes mots-clés'}
       </button>
     </div>
   )

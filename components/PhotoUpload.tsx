@@ -1,374 +1,182 @@
 'use client'
-
-// components/PhotoUpload.tsx
-// Système de photos complet BETI
-
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-// ================================================================
-// 1. UPLOAD PHOTO DE PROFIL
-// ================================================================
 
-export function AvatarUpload({
-  userId,
-  currentUrl,
-  initials,
-  onUpload,
-}: {
-  userId: string
-  currentUrl: string | null
-  initials: string
-  onUpload: (url: string) => void
-}) {
+export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userId:string; currentUrl:string|null; initials:string; onUpload:(url:string)=>void }) {
   const [loading, setLoading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(currentUrl)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [preview, setPreview] = useState<string|null>(currentUrl)
+  const [err, setErr] = useState('')
+  const ref = useRef<HTMLInputElement>(null)
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > 5*1024*1024) { setErr('Max 5MB'); return }
+    if (!file.type.startsWith('image/')) { setErr('Image uniquement'); return }
+    setLoading(true); setErr('')
+    const oldPreview = preview
 
-    // Vérifications
-    if (file.size > 5 * 1024 * 1024) { alert('Photo trop lourde (max 5MB)'); return }
-    if (!file.type.startsWith('image/')) { alert('Fichier invalide'); return }
-
-    setLoading(true)
-
-    // Preview immédiat
+    // Preview optimiste pendant l'upload
     const reader = new FileReader()
-    reader.onload = (e) => setPreview(e.target?.result as string)
+    reader.onload = ev => setPreview(ev.target?.result as string)
     reader.readAsDataURL(file)
 
-    // Upload Supabase Storage
     const ext = file.name.split('.').pop()
-    const path = `avatars/${userId}.${ext}`
+    const path = `avatars/${userId}_${Date.now()}.${ext}`
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true })
+    const { error: upErr } = await supabase.storage.from('beti-photos').upload(path, file, { upsert: true })
+    if (upErr) {
+      setPreview(oldPreview)
+      setErr(upErr.message.includes('security policy') ? 'Upload refusé — policies Storage manquantes (voir supabase/storage_policies.sql)' : 'Upload échoué : ' + upErr.message)
+      setLoading(false); return
+    }
 
-    if (uploadError) { alert('Erreur upload'); setLoading(false); return }
+    const { data } = supabase.storage.from('beti-photos').getPublicUrl(path)
+    const finalUrl = data.publicUrl + '?t=' + Date.now()
 
-    const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-    const url = data.publicUrl + '?t=' + Date.now()
+    const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: finalUrl }).eq('id', userId)
+    if (dbErr) {
+      setPreview(oldPreview)
+      setErr('Enregistrement échoué : ' + dbErr.message)
+      setLoading(false); return
+    }
 
-    // Mettre à jour le profil
-    await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId)
-
-    onUpload(url)
+    onUpload(finalUrl)
     setLoading(false)
   }
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
-      {/* Avatar */}
-      <div style={{
-        width: 88, height: 88, borderRadius: '50%',
-        background: preview ? 'transparent' : '#6366f122',
-        border: '2px solid #6366f1',
-        overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 28, fontWeight: 800, color: '#6366f1',
-        cursor: 'pointer', position: 'relative',
-      }} onClick={() => inputRef.current?.click()}>
-        {preview
-          ? <img src={preview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-          : initials
-        }
-        {/* Overlay hover */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          opacity: 0, transition: 'opacity 0.2s',
-          fontSize: 20,
-        }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-          onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
-        >
-          {loading ? '⏳' : '📷'}
+    <div style={{ position:'relative', display:'inline-block' }}>
+      <div style={{ width:88, height:88, borderRadius:16, background:preview?'transparent':'#6366f115', border:'2px solid #6366f133', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, fontWeight:800, color:'#6366f1', cursor:'pointer', position:'relative' }} onClick={()=>ref.current?.click()}>
+        {preview ? <img src={preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : initials}
+        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', opacity:0, transition:'opacity 0.2s', fontSize:13, color:'#fff', fontWeight:300 }}
+          onMouseEnter={e=>(e.currentTarget.style.opacity='1')} onMouseLeave={e=>(e.currentTarget.style.opacity='0')}>
+          {loading ? '...' : 'Modifier'}
         </div>
       </div>
-
-      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }}/>
-
-      {/* Badge modifier */}
-      <div
-        onClick={() => inputRef.current?.click()}
-        style={{
-          position: 'absolute', bottom: 0, right: 0,
-          width: 26, height: 26, borderRadius: '50%',
-          background: '#6366f1', border: '2px solid #0b0b12',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 12,
-        }}
-      >
-        ✏️
-      </div>
+      <div onClick={()=>ref.current?.click()} style={{ position:'absolute', bottom:-2, right:-2, width:26, height:26, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'2px solid var(--bg,#0b0b12)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:11, color:'#fff' }}>+</div>
+      <input ref={ref} type="file" accept="image/*" onChange={handleFile} style={{ display:'none' }}/>
+      {err && <div style={{ position:'absolute', top:'100%', left:0, right:0, marginTop:6, padding:'6px 10px', borderRadius:8, background:'#ef444418', border:'1px solid #ef444433', fontSize:10, color:'#ef4444', whiteSpace:'nowrap' }}>{err}</div>}
     </div>
   )
 }
 
-// ================================================================
-// 2. UPLOAD PHOTOS DU PROBLÈME (réservation)
-// ================================================================
-
-export function ProblemPhotosUpload({
-  bookingId,
-  onUpload,
-}: {
-  bookingId: string
-  onUpload: (urls: string[]) => void
-}) {
+export function ProblemPhotosUpload({ bookingId, onUpload }: { bookingId:string; onUpload:(urls:string[])=>void }) {
   const [photos, setPhotos] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [err, setErr] = useState('')
+  const ref = useRef<HTMLInputElement>(null)
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length + photos.length > 5) { alert('Maximum 5 photos'); return }
-
-    setLoading(true)
-    const newUrls: string[] = []
-
+    const files = Array.from(e.target.files||[])
+    if (files.length+photos.length>5) { alert('Max 5 photos'); return }
+    setLoading(true); setErr('')
+    const urls:string[] = []
+    let lastErr = ''
     for (const file of files) {
-      if (file.size > 10 * 1024 * 1024) { alert(`${file.name} trop lourd (max 10MB)`); continue }
-
-      const ext = file.name.split('.').pop()
-      const path = `intervention-photos/${bookingId}/${Date.now()}.${ext}`
-
-      const { error } = await supabase.storage
-        .from('intervention-photos')
-        .upload(path, file)
-
-      if (!error) {
-        const { data } = supabase.storage.from('intervention-photos').getPublicUrl(path)
-        newUrls.push(data.publicUrl)
-      }
+      if (file.size>10*1024*1024) { lastErr = 'Fichier > 10MB ignoré'; continue }
+      const path = `problems/${bookingId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`
+      const { error } = await supabase.storage.from('beti-photos').upload(path, file)
+      if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); urls.push(data.publicUrl) }
+      else lastErr = 'Upload échoué : ' + error.message
     }
-
-    const allUrls = [...photos, ...newUrls]
-    setPhotos(allUrls)
-    onUpload(allUrls)
-    setLoading(false)
-  }
-
-  const removePhoto = (url: string) => {
-    const updated = photos.filter(p => p !== url)
-    setPhotos(updated)
-    onUpload(updated)
+    if (lastErr) setErr(lastErr)
+    const all = [...photos,...urls]; setPhotos(all); onUpload(all); setLoading(false)
   }
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-        {/* Photos existantes */}
+      <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:10 }}>
         {photos.map(url => (
-          <div key={url} style={{ position: 'relative', width: 80, height: 80 }}>
-            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, border: '0.5px solid #1c1c30' }}/>
-            <button
-              onClick={() => removePhoto(url)}
-              style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#f87171', border: 'none', color: 'white', cursor: 'pointer', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >✕</button>
+          <div key={url} style={{ position:'relative', width:80, height:80 }}>
+            <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:8, border:'1px solid var(--border)' }}/>
+            <button onClick={()=>{const u=photos.filter(p=>p!==url);setPhotos(u);onUpload(u)}} style={{ position:'absolute', top:-6, right:-6, width:20, height:20, borderRadius:'50%', background:'#ef4444', border:'none', color:'#fff', cursor:'pointer', fontSize:10, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
           </div>
         ))}
-
-        {/* Bouton ajouter */}
-        {photos.length < 5 && (
-          <button
-            onClick={() => inputRef.current?.click()}
-            disabled={loading}
-            style={{
-              width: 80, height: 80, borderRadius: 8,
-              background: '#0b0b12', border: '0.5px dashed #1c1c30',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: '#555', fontSize: 11, gap: 4, fontFamily: 'Nexa, sans-serif', fontWeight: 300,
-            }}
-          >
-            <span style={{ fontSize: 20 }}>{loading ? '⏳' : '+'}</span>
-            Photo
+        {photos.length<5 && (
+          <button onClick={()=>ref.current?.click()} disabled={loading} style={{ width:80, height:80, borderRadius:8, background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--tx3)', fontSize:11, gap:4 }}>
+            <span style={{ fontSize:20 }}>{loading?'...':'+'}</span>Photo
           </button>
         )}
       </div>
-
-      <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }}/>
-
-      <p style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>
-        {photos.length}/5 photos · Max 10MB par photo
-      </p>
+      <input ref={ref} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display:'none' }}/>
+      <p style={{ fontSize:11, color:'var(--tx3)' }}>{photos.length}/5 photos</p>
+      {err && <p style={{ fontSize:11, color:'#ef4444', marginTop:4 }}>{err}</p>}
     </div>
   )
 }
 
-// ================================================================
-// 3. PORTFOLIO ARTISAN
-// ================================================================
-
-export function PortfolioUpload({
-  artisanId,
-  existingPhotos,
-}: {
-  artisanId: string
-  existingPhotos: string[]
-}) {
+export function PortfolioUpload({ artisanId, existingPhotos }: { artisanId:string; existingPhotos:string[] }) {
   const [photos, setPhotos] = useState<string[]>(existingPhotos)
   const [loading, setLoading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [err, setErr] = useState('')
+  const ref = useRef<HTMLInputElement>(null)
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length + photos.length > 12) { alert('Maximum 12 photos'); return }
-
-    setLoading(true)
-    const newUrls: string[] = []
-
+    const files = Array.from(e.target.files||[])
+    if (files.length+photos.length>12) { alert('Max 12'); return }
+    setLoading(true); setErr('')
+    const urls:string[] = []
+    let lastErr = ''
     for (const file of files) {
       const path = `portfolio/${artisanId}/${Date.now()}_${file.name}`
-      const { error } = await supabase.storage.from('portfolio').upload(path, file)
-      if (!error) {
-        const { data } = supabase.storage.from('portfolio').getPublicUrl(path)
-        newUrls.push(data.publicUrl)
-      }
+      const { error } = await supabase.storage.from('beti-photos').upload(path, file)
+      if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); urls.push(data.publicUrl) }
+      else lastErr = 'Upload échoué : ' + error.message
     }
-
-    const all = [...photos, ...newUrls]
-    setPhotos(all)
-
-    // Sauvegarder dans la BDD (colonne portfolio_urls)
-    await supabase.from('artisans').update({ subcategories: all }).eq('id', artisanId)
-
-    setLoading(false)
+    if (lastErr) setErr(lastErr)
+    const all=[...photos,...urls];setPhotos(all);setLoading(false)
   }
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10, marginBottom: 12 }}>
-        {photos.map((url, i) => (
-          <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, overflow: 'hidden', border: '0.5px solid #1c1c30' }}>
-            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-            <button
-              onClick={async () => {
-                const updated = photos.filter(p => p !== url)
-                setPhotos(updated)
-                await supabase.from('artisans').update({ subcategories: updated }).eq('id', artisanId)
-              }}
-              style={{ position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: 'white', cursor: 'pointer', fontSize: 10 }}
-            >✕</button>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(100px,1fr))', gap:10, marginBottom:12 }}>
+        {photos.map((url,i) => (
+          <div key={i} style={{ position:'relative', aspectRatio:'1', borderRadius:10, overflow:'hidden', border:'1px solid var(--border)' }}>
+            <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+            <button onClick={async()=>{const u=photos.filter(p=>p!==url);setPhotos(u)}} style={{ position:'absolute', top:4, right:4, width:20, height:20, borderRadius:'50%', background:'rgba(0,0,0,0.7)', border:'none', color:'#fff', cursor:'pointer', fontSize:10 }}>✕</button>
           </div>
         ))}
-
-        {photos.length < 12 && (
-          <button
-            onClick={() => inputRef.current?.click()}
-            style={{
-              aspectRatio: '1', borderRadius: 10,
-              background: '#0b0b12', border: '0.5px dashed #1c1c30',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: '#555', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300, fontSize: 12,
-            }}
-          >
-            <span style={{ fontSize: 24 }}>{loading ? '⏳' : '+'}</span>
-            Ajouter
+        {photos.length<12 && (
+          <button onClick={()=>ref.current?.click()} style={{ aspectRatio:'1', borderRadius:10, background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--tx3)', fontSize:12, gap:6 }}>
+            <span style={{ fontSize:24 }}>{loading?'...':'+'}</span>Ajouter
           </button>
         )}
       </div>
-
-      <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }}/>
-      <p style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{photos.length}/12 photos de portfolio</p>
+      <input ref={ref} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display:'none' }}/>
+      <p style={{ fontSize:11, color:'var(--tx3)' }}>{photos.length}/12 portfolio</p>
+      {err && <p style={{ fontSize:11, color:'#ef4444', marginTop:4 }}>{err}</p>}
     </div>
   )
 }
 
-// ================================================================
-// 4. PHOTOS AVANT / APRÈS INTERVENTION
-// ================================================================
+export function BeforeAfterUpload({ bookingId, artisanId }: { bookingId:string; artisanId:string }) {
+  const [before, setBefore] = useState<string|null>(null)
+  const [after, setAfter] = useState<string|null>(null)
+  const [loading, setLoading] = useState<'before'|'after'|null>(null)
+  const bRef = useRef<HTMLInputElement>(null)
+  const aRef = useRef<HTMLInputElement>(null)
 
-export function BeforeAfterUpload({
-  bookingId,
-  artisanId,
-}: {
-  bookingId: string
-  artisanId: string
-}) {
-  const [before, setBefore] = useState<string | null>(null)
-  const [after, setAfter] = useState<string | null>(null)
-  const [loading, setLoading] = useState<'before' | 'after' | null>(null)
-  const beforeRef = useRef<HTMLInputElement>(null)
-  const afterRef = useRef<HTMLInputElement>(null)
-
-  const upload = async (file: File, type: 'before' | 'after') => {
+  const upload = async (file:File, type:'before'|'after') => {
     setLoading(type)
-    const path = `intervention-photos/${bookingId}/${type}_${Date.now()}.${file.name.split('.').pop()}`
-    const { error } = await supabase.storage.from('intervention-photos').upload(path, file, { upsert: true })
-    if (!error) {
-      const { data } = supabase.storage.from('intervention-photos').getPublicUrl(path)
-      if (type === 'before') setBefore(data.publicUrl)
-      else setAfter(data.publicUrl)
-    }
+    const path = `interventions/${bookingId}/${type}_${Date.now()}.${file.name.split('.').pop()}`
+    const { error } = await supabase.storage.from('beti-photos').upload(path, file, { upsert:true })
+    if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); if(type==='before')setBefore(data.publicUrl);else setAfter(data.publicUrl) }
+    else alert('Upload échoué : ' + error.message)
     setLoading(null)
   }
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        {/* Avant */}
-        <div>
-          <div style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 10 }}>AVANT</div>
-          <div
-            onClick={() => beforeRef.current?.click()}
-            style={{
-              aspectRatio: '4/3', borderRadius: 12, overflow: 'hidden',
-              background: '#0b0b12', border: `0.5px dashed ${before ? '#1c1c30' : '#f97316'}`,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', position: 'relative',
-            }}
-          >
-            {before
-              ? <img src={before} alt="Avant" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-              : <>
-                <span style={{ fontSize: 32, marginBottom: 8 }}>{loading === 'before' ? '⏳' : '📷'}</span>
-                <span style={{ fontSize: 12, color: '#f97316', fontWeight: 300 }}>Photo avant</span>
-              </>
-            }
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+      {[{type:'before' as const,label:'AVANT',val:before,ref:bRef,color:'#f59e0b'},{type:'after' as const,label:'APRÈS',val:after,ref:aRef,color:'#10b981'}].map(s=>(
+        <div key={s.type}>
+          <div style={{ fontSize:11, color:'var(--tx3)', fontWeight:700, marginBottom:8 }}>{s.label}</div>
+          <div onClick={()=>s.ref.current?.click()} style={{ aspectRatio:'4/3', borderRadius:12, overflow:'hidden', background:'var(--bg)', border:`1px dashed ${s.val?'var(--border)':s.color}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+            {s.val ? <img src={s.val} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : <span style={{ fontSize:12, color:s.color }}>{loading===s.type?'...':'+ Photo'}</span>}
           </div>
-          <input ref={beforeRef} type="file" accept="image/*" style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f, 'before') }}
-          />
+          <input ref={s.ref} type="file" accept="image/*" style={{ display:'none' }} onChange={e=>{const f=e.target.files?.[0];if(f)upload(f,s.type)}}/>
         </div>
-
-        {/* Après */}
-        <div>
-          <div style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 10 }}>APRÈS</div>
-          <div
-            onClick={() => afterRef.current?.click()}
-            style={{
-              aspectRatio: '4/3', borderRadius: 12, overflow: 'hidden',
-              background: '#0b0b12', border: `0.5px dashed ${after ? '#1c1c30' : '#4ade80'}`,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', position: 'relative',
-            }}
-          >
-            {after
-              ? <img src={after} alt="Après" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-              : <>
-                <span style={{ fontSize: 32, marginBottom: 8 }}>{loading === 'after' ? '⏳' : '📷'}</span>
-                <span style={{ fontSize: 12, color: '#4ade80', fontWeight: 300 }}>Photo après</span>
-              </>
-            }
-          </div>
-          <input ref={afterRef} type="file" accept="image/*" style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f, 'after') }}
-          />
-        </div>
-      </div>
-
-      {before && after && (
-        <div style={{ marginTop: 12, padding: '10px 14px', background: '#0a2010', border: '0.5px solid #4ade8044', borderRadius: 8 }}>
-          <p style={{ fontSize: 12, color: '#4ade80', fontWeight: 300 }}>✅ Photos avant/après enregistrées !</p>
-        </div>
-      )}
+      ))}
     </div>
   )
 }
-
-
