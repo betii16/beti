@@ -7,8 +7,13 @@
 export const COMMISSION_RATE = 0.10
 
 // Lancement + 3 mois gratuits : aucune commission n'est prélevée avant cette
-// date. ⚠️ Mets la VRAIE date de lancement ici le jour J.
-export const LAUNCH_DATE = new Date('2026-06-12T00:00:00Z')
+// date. Configurable SANS toucher au code via la variable d'environnement
+// NEXT_PUBLIC_LAUNCH_DATE (format ISO, ex. « 2026-07-01 »). À défaut, on
+// retombe sur la date ci-dessous. ⚠️ Mets la VRAIE date de lancement le jour J.
+const LAUNCH_FALLBACK = '2026-06-12T00:00:00Z'
+const launchRaw = process.env.NEXT_PUBLIC_LAUNCH_DATE || LAUNCH_FALLBACK
+const launchParsed = new Date(launchRaw)
+export const LAUNCH_DATE = isNaN(launchParsed.getTime()) ? new Date(LAUNCH_FALLBACK) : launchParsed
 export const FREE_UNTIL = new Date(LAUNCH_DATE)
 FREE_UNTIL.setMonth(FREE_UNTIL.getMonth() + 3)
 
