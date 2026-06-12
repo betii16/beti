@@ -559,6 +559,36 @@ export const translations = {
     chatError:    { fr: "Impossible d'ouvrir la conversation, réessaie.", ar: 'تعذر فتح المحادثة، حاول مجدداً.' },
   },
 
+  // ── Flux de réservation guidé (BookingFlow) ──────────────────
+  bflow: {
+    step1Title:   { fr: 'Quel est votre besoin ?',        ar: 'ما هي حاجتك؟'                       },
+    step1Sub:     { fr: "Décrivez le problème en quelques mots, l'artisan saura quoi apporter.", ar: 'صف المشكلة في كلمات قليلة، سيعرف الحرفي ما يجب إحضاره.' },
+    step1Ph:      { fr: 'Ex : fuite sous l’évier de la cuisine, l’eau coule en continu…', ar: 'مثال: تسرب تحت حوض المطبخ، الماء يسيل باستمرار…' },
+    continue:     { fr: 'Continuer',                      ar: 'متابعة'                              },
+    whenTitle:    { fr: 'Pour quand ?',                   ar: 'متى تحتاجه؟'                         },
+    asap:         { fr: 'Dès que possible',               ar: 'في أقرب وقت'                         },
+    asapSub:      { fr: "L'artisan intervient au plus vite", ar: 'يتدخل الحرفي في أسرع وقت'         },
+    today:        { fr: "Aujourd'hui",                    ar: 'اليوم'                               },
+    todaySub:     { fr: 'Choisissez une heure dans la journée', ar: 'اختر ساعة خلال اليوم'          },
+    tomorrow:     { fr: 'Demain',                         ar: 'غداً'                                },
+    tomorrowSub:  { fr: 'Planifiez pour demain',          ar: 'خطط ليوم غد'                         },
+    timeLabel:    { fr: 'HEURE SOUHAITÉE',                ar: 'الساعة المطلوبة'                     },
+    whereTitle:   { fr: 'Où intervenir ?',                ar: 'أين يكون التدخل؟'                    },
+    addressLabel: { fr: 'ADRESSE',                        ar: 'العنوان'                             },
+    addressPh:    { fr: 'Quartier, rue, ville…',          ar: 'الحي، الشارع، المدينة…'              },
+    recap:        { fr: 'Récapitulatif',                  ar: 'ملخص الطلب'                          },
+    need:         { fr: 'Besoin',                         ar: 'الحاجة'                              },
+    when:         { fr: 'Quand',                          ar: 'متى'                                 },
+    rate:         { fr: 'Tarif indicatif',                ar: 'السعر التقريبي'                      },
+    rateTbd:      { fr: 'À convenir',                     ar: 'حسب الاتفاق'                         },
+    submit:       { fr: 'Envoyer la demande',             ar: 'إرسال الطلب'                         },
+    sending:      { fr: 'Envoi en cours…',                ar: 'جارٍ الإرسال…'                       },
+    trust:        { fr: 'Sans engagement — vous discutez d’abord avec l’artisan.', ar: 'بدون التزام — تتحدث مع الحرفي أولاً.' },
+    msgWhen:      { fr: 'Quand',                          ar: 'متى'                                 },
+    msgAddress:   { fr: 'Adresse',                        ar: 'العنوان'                             },
+    errGeneric:   { fr: "L'envoi a échoué, réessaie.",    ar: 'فشل الإرسال، حاول مجدداً.'           },
+  },
+
   // ── Commun ───────────────────────────────────────────────────
   common: {
     loading:      { fr: 'Chargement...',         ar: 'جارٍ التحميل...'   },

@@ -1,0 +1,40 @@
+// lib/payment-config.ts
+// Règles de commission BETI — partagées client ET serveur (aucun secret ici).
+// Le SERVEUR recalcule toujours ces montants à partir du prix en base ; les
+// valeurs côté client ne servent qu'à l'affichage.
+
+// Taux de commission sur les paiements par CARTE uniquement (le cash = 0%).
+export const COMMISSION_RATE = 0.10
+
+// Lancement + 3 mois gratuits : aucune commission n'est prélevée avant cette
+// date. ⚠️ Mets la VRAIE date de lancement ici le jour J.
+export const LAUNCH_DATE = new Date('2026-06-12T00:00:00Z')
+export const FREE_UNTIL = new Date(LAUNCH_DATE)
+FREE_UNTIL.setMonth(FREE_UNTIL.getMonth() + 3)
+
+// Qui supporte la commission ?
+//   false (défaut) → déduite de la part artisan. Le client paie le prix affiché,
+//                     donc la carte ne coûte PAS plus cher que le cash.
+//   true           → ajoutée au montant du client (il paie prix + commission).
+// Recommandé : false, pour ne pas pénaliser le paiement carte vs cash.
+export const COMMISSION_ON_TOP = false
+
+/** Commission BETI en DZD pour un montant donné (0 pendant la période gratuite). */
+export function commissionFor(amountDA: number, now: Date = new Date()): number {
+  if (now < FREE_UNTIL) return 0
+  return Math.round(amountDA * COMMISSION_RATE)
+}
+
+/** Montant réellement facturé au client (selon COMMISSION_ON_TOP). */
+export function clientCharge(amountDA: number, now: Date = new Date()): number {
+  return COMMISSION_ON_TOP ? amountDA + commissionFor(amountDA, now) : amountDA
+}
+
+/** Montant reversé à l'artisan. */
+export function artisanPayout(amountDA: number, now: Date = new Date()): number {
+  return COMMISSION_ON_TOP ? amountDA : amountDA - commissionFor(amountDA, now)
+}
+
+export function isFreePeriod(now: Date = new Date()): boolean {
+  return now < FREE_UNTIL
+}

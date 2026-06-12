@@ -7,6 +7,9 @@ import { supabase } from './supabase'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+// Les profils de démonstration (id d1…d12) n'existent pas en base.
+export const isDemoArtisan = (id: string) => !UUID_RE.test(id)
+
 export type ContactResult =
   | { ok: true; bookingId: string }
   | { ok: false; reason: 'demo' | 'error'; message: string }

@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { haversineKm } from '@/lib/distance'
-import { contactArtisan } from '@/lib/contactArtisan'
+import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
+import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
@@ -99,12 +100,16 @@ export default function Home(){
     const d=cat?DEMO.filter(x=>x.category===cat):DEMO;setArtisans(d);setLoading(false)
   }
   const openA=async(a:Artisan)=>{setSel(a);setLoadR(true);setSent(false);const{data}=await supabase.from('reviews').select('id,rating,comment,created_at,photos,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',a.artisan_id).order('created_at',{ascending:false}).limit(20);setRevs((data||[])as any);setLoadR(false)}
-  const [contactErr,setContactErr]=useState(""); const contact=async(ty:"message"|"call")=>{
+  const [contactErr,setContactErr]=useState("")
+  const [booking,setBooking]=useState(false)
+  const contact=async(ty:"message"|"call")=>{
     if(!user||!sel){router.push("/auth/login");return}
     setContactErr("");setSent(false)
+    if(isDemoArtisan(sel.artisan_id)){setContactErr(t('contact.demoProfile'));return}
+    if(ty==='message'){setBooking(true);return}
     const res=await contactArtisan({clientId:user.id,artisanId:sel.artisan_id,category:sel.category,address:addr,hourlyRate:sel.hourly_rate,type:ty})
-    if(!res.ok){setContactErr(res.reason==='demo'?t('contact.demoProfile'):res.message);return}
-    if(ty==="message")router.push("/chat/"+res.bookingId);else setSent(true)
+    if(!res.ok){setContactErr(res.message);return}
+    setSent(true)
   }
 
   useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!sa.current){sa.current=true;const t={a:12000,b:98,c:30,d:50};const s=Date.now();const tick=()=>{const p=Math.min((Date.now()-s)/1800,1);const e=1-Math.pow(1-p,3);setCnt({a:Math.floor(e*t.a),b:Math.floor(e*t.b),c:Math.floor(e*t.c),d:Math.floor(e*t.d)});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:0.3});if(sr.current)o.observe(sr.current);return()=>o.disconnect()},[])
@@ -475,6 +480,15 @@ export default function Home(){
           <div style={{padding:'14px 24px 32px'}}><button onClick={()=>router.push(`/artisan/${sel.artisan_id}`)} className="btn-ghost" style={{width:'100%'}}>{t('home.fullProfile')}</button></div>
         </div>
       </div>)}
+
+      {booking&&user&&sel&&(
+        <BookingFlow
+          artisan={{id:sel.artisan_id,name:sel.full_name,category:sel.category,hourlyRate:sel.hourly_rate||0,color:cc(sel.category)}}
+          clientId={user.id}
+          defaultAddress={addr}
+          onClose={()=>setBooking(false)}
+        />
+      )}
     </>
   )
 }

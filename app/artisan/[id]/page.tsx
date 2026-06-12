@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PortfolioFeed } from '@/components/Portfolio'
-import { contactArtisan } from '@/lib/contactArtisan'
+import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
+import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 
 function Stars({r,s=14}:{r:number;s?:number}){return<div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border,#2a2a3a)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
@@ -49,12 +50,15 @@ export default function ArtisanPage(){
   }
 
   const [contactErr,setContactErr]=useState("")
+  const [booking,setBooking]=useState(false)
   const contact=async(ty:"message"|"call")=>{
     setContactErr("")
     if(!uid){router.push('/auth/login');return}
+    if(isDemoArtisan(id)){setContactErr(t('contact.demoProfile'));return}
+    if(ty==='message'){setBooking(true);return}
     const res=await contactArtisan({clientId:uid,artisanId:id,category:a?.category,hourlyRate:a?.hourly_rate,type:ty})
     if(!res.ok){setContactErr(res.message);return}
-    if(ty==='message')router.push(`/chat/${res.bookingId}`);else setSent(true)
+    setSent(true)
   }
 
   if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>{t('common.loading')}</div></div>
@@ -273,6 +277,14 @@ export default function ArtisanPage(){
 
         <div style={{height:80}}/>
       </div>
+
+      {booking&&uid&&(
+        <BookingFlow
+          artisan={{id,name:prof.full_name||'Artisan',category:art.category,hourlyRate:art.hourly_rate||0,color:c}}
+          clientId={uid}
+          onClose={()=>setBooking(false)}
+        />
+      )}
     </>
   )
 }

@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
-import { contactArtisan } from '@/lib/contactArtisan'
+import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
+import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
 import { CategoryIcon } from '@/components/icons'
@@ -83,12 +84,15 @@ export default function MapPage() {
   }
 
   const [contactErr,setContactErr]=useState('')
+  const [booking,setBooking]=useState(false)
   const contact=async(a:Art,ty:'message'|'call')=>{
     if(!user){router.push('/auth/login');return}
     setContactErr('')
+    if(isDemoArtisan(a.id)){setContactErr(t('contact.demoProfile'));return}
+    if(ty==='message'){setBooking(true);return}
     const res=await contactArtisan({clientId:user.id,artisanId:a.id,category:a.category,hourlyRate:a.hourly_rate,type:ty})
-    if(!res.ok){setContactErr(res.reason==='demo'?t('contact.demoProfile'):res.message);return}
-    if(ty==='message')router.push(`/chat/${res.bookingId}`);else setSent(true)
+    if(!res.ok){setContactErr(res.message);return}
+    setSent(true)
   }
 
   const cc=(id:string)=>CATS.find(c=>c.id===id)?.color||'#6366f1'
@@ -300,6 +304,14 @@ export default function MapPage() {
               )}
             </div>
           </div>
+        )}
+
+        {booking&&user&&selected&&(
+          <BookingFlow
+            artisan={{id:selected.id,name:selected.full_name,category:selected.category,hourlyRate:selected.hourly_rate||0,color:cc(selected.category)}}
+            clientId={user.id}
+            onClose={()=>setBooking(false)}
+          />
         )}
       </div>
     </>
