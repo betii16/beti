@@ -24,8 +24,22 @@ export default function ChatPage(){
   const [sendErr,setSendErr]=useState('')
   const endRef=useRef<HTMLDivElement>(null)
 
+  // Fusionne sans doublon (dédup par id) et garde l'ordre chronologique.
+  const mergeMsgs=(incoming:Msg[])=>setMsgs(prev=>{
+    const map=new Map(prev.map(m=>[m.id,m]))
+    for(const m of incoming)map.set(m.id,m)
+    return Array.from(map.values()).sort((a,b)=>a.created_at.localeCompare(b.created_at))
+  })
+
   useEffect(()=>{
     if(!bookingId)return
+    let alive=true
+    const fetchMsgs=async()=>{
+      const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
+      if(!alive)return
+      if(error){setLoadErr('Impossible de charger les messages : '+error.message);return}
+      if(data)mergeMsgs(data as any)
+    }
     const init=async()=>{
       const{data:{user:u}}=await supabase.auth.getUser()
       if(!u){router.push('/auth/login');return};setUser(u)
@@ -38,31 +52,40 @@ export default function ChatPage(){
         const{data:op}=await supabase.from('profiles').select('full_name').eq('id',otherId).single()
         if(op)setOtherName(op.full_name)
       }
-      const{data:m,error:mErr}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
-      if(mErr){setLoadErr('Impossible de charger les messages : '+mErr.message);return}
-      if(m)setMsgs(m as any)
+      await fetchMsgs()
     };init()
 
+    // Realtime (idéal) + dédup de l'écho.
     const ch=supabase.channel(`chat-${bookingId}`)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`booking_id=eq.${bookingId}`},(payload:any)=>{
-        setMsgs(prev=>[...prev,payload.new as Msg])
+        mergeMsgs([payload.new as Msg])
       }).subscribe()
-    return()=>{supabase.removeChannel(ch)}
+
+    // Filet de sécurité : si le WebSocket Realtime est bloqué (WebView mobile,
+    // réseau d'entreprise…), on rafraîchit quand même toutes les 4 s.
+    const poll=setInterval(fetchMsgs,4000)
+
+    return()=>{alive=false;supabase.removeChannel(ch);clearInterval(poll)}
   },[bookingId])
 
   useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'})},[msgs])
 
   const send=async()=>{
     if(!input.trim()||!user||!profile||sending)return
+    const content=input.trim()
     setSending(true);setSendErr('')
-    const{error}=await supabase.from('messages').insert({
+    // .select() pour récupérer la ligne insérée et l'afficher tout de suite,
+    // sans dépendre du Realtime (qui peut être bloqué). La dédup par id évite
+    // le doublon quand l'écho Realtime arrive ensuite.
+    const{data,error}=await supabase.from('messages').insert({
       booking_id:bookingId,sender_id:user.id,
       sender_name:profile.full_name||'Moi',
       sender_role:profile.role||'client',
-      content:input.trim()
-    })
-    if(error)setSendErr(error.message)
-    else setInput('')
+      content
+    }).select().single()
+    if(error){setSendErr(error.message);setSending(false);return}
+    if(data)mergeMsgs([data as any])
+    setInput('')
     setSending(false)
   }
 

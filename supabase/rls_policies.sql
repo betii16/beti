@@ -117,6 +117,11 @@ create policy messages_insert on public.messages
   );
 
 -- ── NOTIFICATIONS ───────────────────────────────────────────────────────────
+-- Le code app ET les triggers insèrent une colonne `message`. Si la table a été
+-- créée avec `body`, l'insert (et donc le trigger après-booking) échoue et
+-- ANNULE la transaction du booking. On garantit la présence de `message`.
+alter table public.notifications add column if not exists message text;
+
 -- Lecture/maj/suppression : uniquement ses propres notifications.
 drop policy if exists notifications_select on public.notifications;
 create policy notifications_select on public.notifications

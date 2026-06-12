@@ -40,27 +40,21 @@ export async function contactArtisan(opts: {
   let bookingId = existing?.id as string | undefined
 
   if (!bookingId) {
-    const { error: insErr } = await supabase.from('bookings').insert({
+    // .select() pour récupérer directement l'id créé (la policy bookings_select
+    // autorise le client à relire son propre booking). Évite une relecture
+    // séparée qui pouvait échouer.
+    const { data: created, error: insErr } = await supabase.from('bookings').insert({
       client_id: clientId,
       artisan_id: artisanId,
       category: category || 'autre',
       title: `Demande ${category || 'service'}`,
       description: type === 'call' ? 'Appel' : 'Message',
       address: address || '',
+      scheduled_at: new Date().toISOString(),
       status: 'pending',
       price_agreed: hourlyRate || 0,
-    })
+    }).select('id').single()
     if (insErr) return { ok: false, reason: 'error', message: 'Erreur : ' + insErr.message }
-
-    // Insert sans .select() (RLS) → on relit la réservation créée.
-    const { data: created } = await supabase
-      .from('bookings')
-      .select('id')
-      .eq('client_id', clientId)
-      .eq('artisan_id', artisanId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
     bookingId = created?.id
   }
 
