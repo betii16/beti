@@ -340,13 +340,10 @@ button, a {
     user-select: none;
   }
 
-  /* Header mobile : plus compact, et passe sous l'encoche iPhone (PWA plein écran).
-     En flex (les liens centraux sont masqués) : logo à gauche, contrôles à droite. */
+  /* La navbar « site » est remplacée par MobileHeader sur mobile.
+     (spécificité nav.beti-nav > .desktop-only, d'où cette règle dédiée) */
   nav.beti-nav {
-    height: calc(56px + env(safe-area-inset-top)) !important;
-    padding: env(safe-area-inset-top) 14px 0 !important;
-    display: flex !important;
-    justify-content: space-between !important;
+    display: none !important;
   }
 
   /* Les ancres tiennent compte du header mobile plus fin */
@@ -417,6 +414,15 @@ button, a {
 /* Carte : l'UI flottante passe sous l'encoche iPhone (PWA) */
 .map-search { top: calc(60px + env(safe-area-inset-top)) !important; }
 .map-pills  { top: calc(120px + env(safe-area-inset-top)) !important; }
+
+@media (max-width: 767px) {
+  /* Carte immersive : pas de header mobile sur /map → l'UI remonte en haut */
+  .map-search { top: calc(12px + env(safe-area-inset-top)) !important; }
+  .map-pills  { top: calc(72px + env(safe-area-inset-top)) !important; }
+
+  /* Chat : pas de header global sur /chat → on retire le bandeau fantôme */
+  .chat-screen { padding-top: calc(env(safe-area-inset-top) + 4px) !important; }
+}
 
 /* Écrans tactiles : pas d'effets de survol (ils « collent » au doigt) */
 @media (hover: none) {

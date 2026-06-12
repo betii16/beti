@@ -472,7 +472,7 @@ export default function Home(){
                 </div>
               ))}</div>}
           </div>
-          <div style={{padding:'14px 24px 32px'}}><a href={`/artisan/${sel.artisan_id}`} style={{textDecoration:'none'}}><button className="btn-ghost" style={{width:'100%'}}>{t('home.fullProfile')}</button></a></div>
+          <div style={{padding:'14px 24px 32px'}}><button onClick={()=>router.push(`/artisan/${sel.artisan_id}`)} className="btn-ghost" style={{width:'100%'}}>{t('home.fullProfile')}</button></div>
         </div>
       </div>)}
     </>

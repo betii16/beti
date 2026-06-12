@@ -113,7 +113,7 @@ export default function ChatPage(){
   )
 
   return(
-    <div style={{height:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column',paddingTop:52,overflow:'hidden',direction:isAr?'rtl':'ltr'}}>
+    <div className="chat-screen" style={{height:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column',paddingTop:52,overflow:'hidden',direction:isAr?'rtl':'ltr'}}>
       {/* Header */}
       <div style={{background:'var(--bg2)',borderBottom:'1px solid var(--border)',padding:'14px 24px',display:'flex',alignItems:'center',gap:14}}>
         <button onClick={()=>router.back()} style={{background:'transparent',border:'none',color:'var(--tx2)',fontSize:20,cursor:'pointer'}}>←</button>

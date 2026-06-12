@@ -45,6 +45,12 @@ export default function BottomTabBar() {
 
   if (HIDDEN_PREFIXES.some(p => pathname?.startsWith(p))) return null
 
+  // Retour haptique léger au changement d'onglet (Android WebView)
+  const go = (href: string) => {
+    try { navigator.vibrate?.(8) } catch {}
+    router.push(href)
+  }
+
   const profileHref = !logged ? '/auth/login'
     : role === 'artisan' ? '/artisan-dashboard'
     : role === 'admin' ? '/admin'
@@ -86,7 +92,7 @@ export default function BottomTabBar() {
           if (center) {
             return (
               <div key={label} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-                <button onClick={() => router.push(href)} aria-label={label} style={{
+                <button onClick={() => go(href)} aria-label={label} style={{
                   width: 56, height: 56, borderRadius: '50%',
                   background: 'var(--gradient)',
                   border: '4px solid var(--bg)',
@@ -107,7 +113,7 @@ export default function BottomTabBar() {
 
           // ── Onglets standards : pilule animée derrière l'icône ──
           return (
-            <button key={label} onClick={() => router.push(href)} style={{
+            <button key={label} onClick={() => go(href)} style={{
               flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
               background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
               color: active ? 'var(--accent)' : 'var(--tx3)',

@@ -600,6 +600,8 @@ export const translations = {
     promoSub:        { fr: 'Vérifiés, notés, géolocalisés autour de vous.', ar: 'موثّقون، مقيّمون، بالقرب منك.' },
     promoCta:        { fr: 'Explorer la carte',                    ar: 'استكشف الخريطة'                      },
     noResults:       { fr: 'Aucun résultat pour cette recherche',  ar: 'لا توجد نتائج لهذا البحث'            },
+    notifTitle:      { fr: 'Notifications',                        ar: 'الإشعارات'                           },
+    dashboard:       { fr: 'Tableau de bord',                      ar: 'لوحة التحكم'                         },
     becomeTitle:     { fr: 'Vous êtes artisan ?',                  ar: 'هل أنت حرفي؟'                        },
     becomeSub:       { fr: 'Recevez des clients près de chez vous.', ar: 'استقبل زبائن بالقرب منك.'          },
     becomeCta:       { fr: 'Rejoindre',                            ar: 'انضم'                                },

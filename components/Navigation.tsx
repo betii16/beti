@@ -87,7 +87,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav className="beti-nav" style={{
+      <nav className="beti-nav desktop-only" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         height: 52, padding: '0 32px',
         display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
