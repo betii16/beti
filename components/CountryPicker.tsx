@@ -9,11 +9,27 @@ interface Props {
 }
 
 export function FlagImg({ iso, size = 22 }: { iso: string; size?: number }) {
+  const [err, setErr] = useState(false)
+  const h = Math.round(size * 0.67)
+
+  // Repli si flagcdn est injoignable (réseau restreint, WebView) : badge ISO.
+  if (err) return (
+    <span style={{
+      width: size, height: h, borderRadius: 3, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg3)', border: '0.5px solid var(--border)',
+      fontSize: Math.round(size * 0.42), fontWeight: 700, color: 'var(--tx3)',
+      fontFamily: 'Nexa,sans-serif',
+    }}>{iso.toUpperCase()}</span>
+  )
+
   return (
     <img
-      src={`https://flagcdn.com/w${size * 2}/${iso}.png`}
+      // flagcdn ne sert que des largeurs fixes (w20/w40/w80/...). w80 = net en petit.
+      src={`https://flagcdn.com/w80/${iso}.png`}
       width={size}
-      height={Math.round(size * 0.67)}
+      height={h}
+      onError={() => setErr(true)}
       style={{ borderRadius: 3, objectFit: 'cover', display: 'block', flexShrink: 0 }}
       alt={iso.toUpperCase()}
       loading="lazy"
