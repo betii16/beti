@@ -30,12 +30,16 @@ export default function BetiMap({
   clientLng = 3.0588,
   showAllArtisans = true,
   categoryFilter = '',
+  focusOffsetY = 0,
 }: {
   trackingArtisanId?: string
   clientLat?: number
   clientLng?: number
   showAllArtisans?: boolean
   categoryFilter?: string
+  // Remonte le point de localisation de N pixels pour qu'il ne soit pas caché
+  // derrière une bottom sheet (cas de la page carte).
+  focusOffsetY?: number
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<any>(null)
@@ -191,7 +195,7 @@ export default function BetiMap({
         // de l'init → Leaflet ne charge alors les tuiles que sur une fine bande.
         // invalidateSize() force le recalcul une fois la mise en page établie.
         setTimeout(() => { try { map.invalidateSize() } catch {} }, 0)
-        setTimeout(() => { try { map.invalidateSize() } catch {} }, 250)
+        setTimeout(() => { try { map.invalidateSize(); if (focusOffsetY) map.panBy([0, focusOffsetY], { animate: false }) } catch {} }, 250)
       })
     }
 
@@ -211,10 +215,11 @@ export default function BetiMap({
   useEffect(() => {
     if (!mapInstance.current || !mapReady) return
     mapInstance.current.setView([clientLat, clientLng], mapInstance.current.getZoom())
+    if (focusOffsetY) { try { mapInstance.current.panBy([0, focusOffsetY], { animate: false }) } catch {} }
     if (clientMarkerRef.current) {
       clientMarkerRef.current.setLatLng([clientLat, clientLng])
     }
-  }, [clientLat, clientLng, mapReady])
+  }, [clientLat, clientLng, mapReady, focusOffsetY])
 
   // ── Ajouter les marqueurs artisans ──
   const addMarkers = useCallback(() => {

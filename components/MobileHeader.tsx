@@ -11,7 +11,9 @@ import { ChevronLeft, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 
-const HIDDEN = ['/auth', '/chat', '/onboarding', '/map']
+// '/artisan/' (avec slash) cible la fiche artisan SANS toucher /artisan-dashboard.
+// La fiche dessine son propre header app (retour + nom de l'artisan).
+const HIDDEN = ['/auth', '/chat', '/onboarding', '/map', '/artisan/']
 const ROOTS = ['/', '/recherche', '/mon-espace', '/mon-espace/reservations', '/artisan-dashboard', '/artisan-dashboard/planning', '/admin']
 
 export default function MobileHeader() {

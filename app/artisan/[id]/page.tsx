@@ -84,10 +84,18 @@ export default function ArtisanPage(){
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
       `}</style>
 
+      {/* ── APP BAR MOBILE : retour + nom artisan (remplace le header générique) ── */}
+      <div className="mobile-only" style={{position:'fixed',top:0,left:0,right:0,zIndex:50,height:'calc(54px + env(safe-area-inset-top))',paddingTop:'env(safe-area-inset-top)',paddingLeft:12,paddingRight:12,alignItems:'center',gap:10,background:'var(--nav-bg)',backdropFilter:'blur(20px) saturate(180%)',WebkitBackdropFilter:'blur(20px) saturate(180%)',borderBottom:'0.5px solid var(--border)',direction:isAr?'rtl':'ltr'}}>
+        <button onClick={()=>router.back()} aria-label={t('common.back')} style={{width:34,height:34,borderRadius:12,background:'var(--bg2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,padding:0}}>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--tx)" strokeWidth="2.2" style={{transform:isAr?'rotate(180deg)':'none'}}><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <span style={{flex:1,minWidth:0,fontSize:16,fontWeight:800,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{prof.full_name}</span>
+      </div>
+
       <div style={{minHeight:'100vh',background:bg,paddingTop:52,direction:isAr?'rtl':'ltr'}}>
 
         {/* ── HERO BANNER ── */}
-        <div style={{position:'relative',height:220,background:`linear-gradient(160deg, ${c}25, ${bg} 70%)`,overflow:'hidden'}}>
+        <div style={{position:'relative',height:190,background:`linear-gradient(160deg, ${c}25, ${bg} 70%)`,overflow:'hidden'}}>
           <div style={{position:'absolute',inset:0,background:`radial-gradient(circle at 40% 50%, ${c}12, transparent 60%)`}}/>
           <div style={{position:'absolute',inset:0,backgroundImage:`radial-gradient(circle at 2px 2px, ${c}08 1px, transparent 0)`,backgroundSize:'24px 24px'}}/>
           <div style={{position:'absolute',bottom:0,left:0,right:0,height:80,background:`linear-gradient(transparent,${bg})`}}/>
@@ -141,8 +149,8 @@ export default function ArtisanPage(){
                 ))}
               </div>
 
-              {/* Action buttons */}
-              <div style={{display:'flex',gap:10,maxWidth:400,margin:'0 auto'}}>
+              {/* Action buttons — desktop seulement (mobile = barre collée en bas) */}
+              <div className="desktop-only" style={{display:'flex',gap:10,maxWidth:400,margin:'0 auto'}}>
                 {sent?(
                   <div style={{flex:1,padding:14,borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
                     <span style={{fontSize:14,color:'#10b981',fontWeight:700}}>{t('profile.requestSent')}</span>
@@ -154,7 +162,7 @@ export default function ArtisanPage(){
                   </>
                 )}
               </div>
-              {contactErr&&<div style={{textAlign:'center',marginTop:10,fontSize:12,color:'#f87171',fontWeight:500}}>{contactErr}</div>}
+              {contactErr&&<div className="desktop-only" style={{display:'block',textAlign:'center',marginTop:10,fontSize:12,color:'#f87171',fontWeight:500}}>{contactErr}</div>}
             </div>
 
             {/* Tags */}
@@ -276,6 +284,25 @@ export default function ArtisanPage(){
         </div>
 
         <div style={{height:80}}/>
+        {/* Dégagement supplémentaire pour la barre d'action collée (mobile) */}
+        <div className="mobile-only" style={{height:96}}/>
+      </div>
+
+      {/* ── BARRE D'ACTION COLLÉE EN BAS (mobile) — au-dessus du dock ── */}
+      <div className="mobile-only above-tabbar" style={{position:'fixed',left:0,right:0,bottom:0,zIndex:50,flexDirection:'column',gap:8,padding:'12px 16px 14px',background:'var(--nav-bg)',backdropFilter:'blur(20px) saturate(180%)',WebkitBackdropFilter:'blur(20px) saturate(180%)',borderTop:'0.5px solid var(--border)',direction:isAr?'rtl':'ltr'}}>
+        {contactErr&&<div style={{fontSize:12,color:'#f87171',fontWeight:500,textAlign:'center'}}>{contactErr}</div>}
+        {sent?(
+          <div style={{padding:14,borderRadius:13,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
+            <span style={{fontSize:14,color:'#10b981',fontWeight:700}}>{t('profile.requestSent')}</span>
+          </div>
+        ):(
+          <div style={{display:'flex',gap:10,width:'100%'}}>
+            <button onClick={()=>contact('message')} style={{flex:1,padding:'15px 24px',borderRadius:13,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:'Nexa,sans-serif',boxShadow:'0 6px 20px #6366f140'}}>{t('home.sendMessage')}</button>
+            <button onClick={()=>contact('call')} aria-label={t('home.call')} style={{padding:'15px 18px',borderRadius:13,background:'var(--bg2)',border:'1px solid #10b98144',color:'#10b981',fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:'Nexa,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {booking&&uid&&(

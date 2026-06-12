@@ -122,7 +122,7 @@ export default function MapPage() {
 
         {/* ═══ MAP — full screen ═══ */}
         <div style={{position:'absolute',inset:0,zIndex:1}}>
-          <BetiMap clientLat={lat} clientLng={lng} showAllArtisans={true} categoryFilter={cat}/>
+          <BetiMap clientLat={lat} clientLng={lng} showAllArtisans={true} categoryFilter={cat} focusOffsetY={80}/>
         </div>
 
         {/* ═══ FLOATING SEARCH BAR ═══ */}
