@@ -21,6 +21,7 @@ export function AlgerianPayment({
   bookingId,
   onSuccess,
   onClose,
+  lockCard = false,
 }: {
   amount: number
   artisanName: string
@@ -28,6 +29,9 @@ export function AlgerianPayment({
   bookingId: string
   onSuccess: () => void
   onClose: () => void
+  // Quand le mode de paiement est déjà fixé à la réservation (séquestre carte),
+  // on masque le sélecteur cash/carte pour ne pas contourner le séquestre.
+  lockCard?: boolean
 }) {
   const [method, setMethod] = useState<PayMethod>('card')
   const [loading, setLoading] = useState(false)
@@ -134,7 +138,8 @@ export function AlgerianPayment({
           )}
         </div>
 
-        {/* Sélecteur de méthode */}
+        {/* Sélecteur de méthode (masqué si le mode est verrouillé sur la carte) */}
+        {!lockCard && <>
         <div style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 10 }}>MODE DE PAIEMENT</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
           {([
@@ -155,6 +160,17 @@ export function AlgerianPayment({
             </button>
           ))}
         </div>
+        </>}
+
+        {/* Séquestre : rappel que l'argent est protégé jusqu'à la prestation */}
+        {lockCard && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', borderRadius: 10, background: 'rgba(16,185,129,0.06)', border: '0.5px solid rgba(16,185,129,0.2)' }}>
+            <Shield size={15} color="#10b981" />
+            <span style={{ fontSize: 11.5, color: 'var(--tx2)', fontWeight: 300, lineHeight: 1.5 }}>
+              Argent protégé par BETI : versé à {artisanName} uniquement après votre confirmation de la prestation.
+            </span>
+          </div>
+        )}
 
         {/* Explication selon la méthode */}
         {method === 'card' ? (

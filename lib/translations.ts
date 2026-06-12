@@ -587,6 +587,42 @@ export const translations = {
     msgWhen:      { fr: 'Quand',                          ar: 'متى'                                 },
     msgAddress:   { fr: 'Adresse',                        ar: 'العنوان'                             },
     errGeneric:   { fr: "L'envoi a échoué, réessaie.",    ar: 'فشل الإرسال، حاول مجدداً.'           },
+    payTitle:     { fr: 'Comment souhaitez-vous payer ?', ar: 'كيف تريد الدفع؟'                     },
+    payCard:      { fr: 'Carte (CIB / Edahabia)',         ar: 'بطاقة (CIB / الذهبية)'               },
+    payCardDesc:  { fr: 'Paiement sécurisé. L’artisan vous enverra son prix dans le chat ; vous payez quand vous êtes d’accord. L’argent est protégé par BETI et n’est versé qu’une fois la prestation faite — remboursé si elle n’a pas lieu. Commission 10 %.', ar: 'دفع آمن. سيرسل لك الحرفي سعره في المحادثة؛ تدفع عند الاتفاق. المبلغ محمي من BETI ولا يُحوّل إلا بعد إنجاز الخدمة — ويُسترجع إن لم تتم. عمولة 10٪.' },
+    payCash:      { fr: 'Cash',                           ar: 'نقداً'                               },
+    payCashDesc:  { fr: 'Vous payez l’artisan en main propre après la prestation. 0 % de commission, mais aucune protection BETI.', ar: 'تدفع للحرفي مباشرةً بعد الخدمة. بدون عمولة، لكن بدون حماية من BETI.' },
+    paySecure:    { fr: 'Protégé par BETI',               ar: 'محمي من BETI'                        },
+  },
+
+  // ── Offres / négociation (chat) ──────────────────────────────
+  offer: {
+    propose:      { fr: 'Proposer un prix',               ar: 'اقترح سعراً'                         },
+    counter:      { fr: 'Contre-offre',                   ar: 'عرض مضاد'                            },
+    accept:       { fr: 'Accepter',                       ar: 'قبول'                                },
+    acceptPay:    { fr: 'Accepter & Payer',               ar: 'قبول والدفع'                         },
+    decline:      { fr: 'Refuser',                        ar: 'رفض'                                 },
+    amountPh:     { fr: 'Montant en DA',                  ar: 'المبلغ بالدينار'                     },
+    send:         { fr: 'Envoyer l’offre',                ar: 'إرسال العرض'                         },
+    cancel:       { fr: 'Annuler',                        ar: 'إلغاء'                               },
+    offerLabel:   { fr: 'Offre',                          ar: 'عرض'                                 },
+    statusPending:  { fr: 'En attente',                   ar: 'في الانتظار'                         },
+    statusAccepted: { fr: 'Acceptée',                     ar: 'مقبول'                               },
+    statusDeclined: { fr: 'Refusée',                      ar: 'مرفوض'                               },
+    statusSuperseded:{ fr: 'Remplacée',                   ar: 'مُستبدل'                             },
+    fromYou:      { fr: 'Votre offre',                    ar: 'عرضك'                                },
+    cashHint:     { fr: 'Paiement en cash à la prestation — convenez du prix dans le chat.', ar: 'الدفع نقداً عند الخدمة — اتفقوا على السعر في المحادثة.' },
+    title:        { fr: 'Proposer un prix',               ar: 'اقترح سعراً'                         },
+  },
+
+  // ── Séquestre (paiement protégé) ─────────────────────────────
+  escrow: {
+    held:         { fr: 'Argent protégé par BETI',        ar: 'المبلغ محمي من BETI'                 },
+    heldDesc:     { fr: 'Votre paiement est bloqué et ne sera versé à l’artisan qu’une fois la prestation confirmée.', ar: 'دفعتك محجوزة ولن تُحوّل للحرفي إلا بعد تأكيد إنجاز الخدمة.' },
+    confirmDone:  { fr: 'Confirmer la prestation terminée', ar: 'تأكيد إنجاز الخدمة'                 },
+    released:     { fr: 'Prestation confirmée — versement libéré.', ar: 'تم تأكيد الخدمة — حُرّر الدفع.' },
+    report:       { fr: 'Signaler un problème',           ar: 'الإبلاغ عن مشكلة'                    },
+    reportSent:   { fr: 'Problème signalé — notre équipe va vous contacter.', ar: 'تم الإبلاغ — سيتواصل معك فريقنا.' },
   },
 
   // ── Commun ───────────────────────────────────────────────────

@@ -42,10 +42,12 @@ export async function GET(req: NextRequest) {
     await admin.from('payments').update({
       status: 'paid', paid_at: new Date().toISOString(), error: null,
     }).eq('id', pay.id)
-    // Paiement encaissé → la réservation passe « terminée » (déverrouille l'avis
-    // client, comme le reste de l'app). Le reversement à l'artisan reste
-    // payout_status='pending' jusqu'à virement.
-    await admin.from('bookings').update({ status: 'completed' }).eq('id', pay.booking_id)
+    // Paiement encaissé → SÉQUESTRE : l'argent est bloqué chez BETI. La
+    // réservation passe « in_progress » (argent protégé) et NON « completed ».
+    // C'est le client qui libère le versement en confirmant la prestation dans
+    // le chat (→ status 'completed', ce qui déverrouille l'avis + la facture).
+    // Le reversement à l'artisan reste payout_status='pending' jusqu'à virement.
+    await admin.from('bookings').update({ status: 'in_progress' }).eq('id', pay.booking_id)
     return result('ok', pay.booking_id)
   }
 
