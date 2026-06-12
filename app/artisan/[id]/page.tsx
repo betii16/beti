@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PortfolioFeed } from '@/components/Portfolio'
+import { contactArtisan } from '@/lib/contactArtisan'
+import { useLang } from '@/lib/LangContext'
 
 function Stars({r,s=14}:{r:number;s?:number}){return<div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border,#2a2a3a)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
@@ -10,6 +12,7 @@ const COLORS:Record<string,string>={plomberie:'#3b82f6',electricite:'#f59e0b',me
 
 export default function ArtisanPage(){
   const params=useParams();const id=params?.id as string;const router=useRouter()
+  const { t, isAr } = useLang()
   const [a,setA]=useState<any>(null)
   const [p,setP]=useState<any>(null)
   const [revs,setRevs]=useState<any[]>([])
@@ -21,6 +24,15 @@ export default function ArtisanPage(){
   const bg='var(--bg)';const bg2='var(--bg2)';const bg3='var(--bg3)'
   const tx='var(--tx)';const tx2='var(--tx2)';const tx3='var(--tx3)'
   const brd='var(--border)'
+
+  const timeAgo=(d:string)=>{
+    const x=Math.floor((Date.now()-new Date(d).getTime())/86400000)
+    if(x===0)return t('common.today')
+    if(x===1)return t('common.yesterday')
+    if(x<7)return`${x} ${t('common.daysShort')}`
+    if(x<30)return`${Math.floor(x/7)} ${t('common.weeksShort')}`
+    return`${Math.floor(x/30)} ${t('common.monthsShort')}`
+  }
 
   useEffect(()=>{load()},[id])
   const load=async()=>{
@@ -36,28 +48,29 @@ export default function ArtisanPage(){
     setLoading(false)
   }
 
-  const [contactErr,setContactErr]=useState("");const contact=async(ty:"message"|"call")=>{setContactErr("");
+  const [contactErr,setContactErr]=useState("")
+  const contact=async(ty:"message"|"call")=>{
+    setContactErr("")
     if(!uid){router.push('/auth/login');return}
-    // Insert sans .select() pour éviter le problème RLS SELECT-after-INSERT
-    await supabase.from('bookings').insert({client_id:uid,artisan_id:id,title:`Demande ${a?.category||'service'}`,description:ty==='call'?'Appel':'Message',address:'',status:'pending',price_agreed:a?.hourly_rate||0})
-    // Notification (fire & forget)
-    supabase.from('notifications').insert({user_id:id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'})
-    if(ty==='message'){
-      // Récupérer la réservation la plus récente entre ce client et cet artisan
-      const{data:b}=await supabase.from('bookings').select('id').eq('client_id',uid).eq('artisan_id',id).order('created_at',{ascending:false}).limit(1).single()
-      if(b?.id)router.push(`/chat/${b.id}`);else setContactErr('Impossible d\'ouvrir le chat, réessaie.')
-    }else{setSent(true)}
+    const res=await contactArtisan({clientId:uid,artisanId:id,category:a?.category,hourlyRate:a?.hourly_rate,type:ty})
+    if(!res.ok){setContactErr(res.message);return}
+    if(ty==='message')router.push(`/chat/${res.bookingId}`);else setSent(true)
   }
 
-  const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?"Aujourd'hui":x===1?'Hier':x<7?`${x}j`:x<30?`${Math.floor(x/7)} sem.`:`${Math.floor(x/30)} mois`}
-
-  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>Chargement...</div></div>
+  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>{t('common.loading')}</div></div>
 
   const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}
   const c=COLORS[art.category]||'#6366f1'
   const init=prof.full_name?.split(' ').map((n:string)=>n[0]).join('').toUpperCase().slice(0,2)||'A'
   const avgR=revs.length>0?revs.reduce((s:number,r:any)=>s+r.rating,0)/revs.length:art.rating_avg||0
+
+  const TABS=[
+    {id:'about'    as const,label:t('profile.about')},
+    {id:'portfolio'as const,label:t('profile.portfolio')},
+    {id:'reviews'  as const,label:`${t('profile.reviews')} (${revs.length})`},
+    {id:'rates'    as const,label:t('profile.rates')},
+  ]
 
   return(
     <>
@@ -67,7 +80,7 @@ export default function ArtisanPage(){
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
       `}</style>
 
-      <div style={{minHeight:'100vh',background:bg,paddingTop:52}}>
+      <div style={{minHeight:'100vh',background:bg,paddingTop:52,direction:isAr?'rtl':'ltr'}}>
 
         {/* ── HERO BANNER ── */}
         <div style={{position:'relative',height:220,background:`linear-gradient(160deg, ${c}25, ${bg} 70%)`,overflow:'hidden'}}>
@@ -79,10 +92,9 @@ export default function ArtisanPage(){
         {/* ── PROFILE CARD overlapping banner ── */}
         <div style={{maxWidth:800,margin:'-100px auto 0',padding:'0 24px',position:'relative',zIndex:2}}>
           <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:24,boxShadow:'var(--card-shadow)',overflow:'hidden',animation:'fadeUp 0.6s ease'}}>
-            
+
             {/* Avatar + Name section */}
             <div style={{padding:'32px 32px 24px',textAlign:'center'}}>
-              {/* Large avatar */}
               {prof.avatar_url?(
                 <img src={prof.avatar_url} alt="" style={{width:96,height:96,borderRadius:24,objectFit:'cover',border:`4px solid ${bg2}`,boxShadow:`0 8px 32px ${c}22`,margin:'0 auto 16px',display:'block'}}/>
               ):(
@@ -95,27 +107,28 @@ export default function ArtisanPage(){
               </div>
 
               <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:12}}>
-                <span style={{padding:'4px 14px',borderRadius:20,background:`${c}12`,border:`1px solid ${c}22`,fontSize:12,color:c,fontWeight:700}}>{(art.category||'').charAt(0).toUpperCase()+(art.category||'').slice(1)}</span>
+                <span style={{padding:'4px 14px',borderRadius:20,background:`${c}12`,border:`1px solid ${c}22`,fontSize:12,color:c,fontWeight:700}}>{t(`categories.${art.category}`)}</span>
                 <span style={{fontSize:13,color:tx3}}>{art.location_city||'Algérie'}</span>
                 {art.is_available&&(
                   <span style={{display:'flex',alignItems:'center',gap:5,padding:'4px 12px',borderRadius:20,background:'#10b98110',border:'1px solid #10b98120',fontSize:12,color:'#10b981',fontWeight:600}}>
-                    <div style={{width:5,height:5,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 8px #10b98155'}}/>En ligne
+                    <div style={{width:5,height:5,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 8px #10b98155'}}/>{t('common.online')}
                   </span>
                 )}
               </div>
 
               {/* Rating */}
               <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:20}}>
-                <Stars r={avgR} s={16}/><span style={{fontSize:16,fontWeight:800,color:'#f59e0b'}}>{avgR.toFixed(1)}</span><span style={{fontSize:13,color:tx3}}>({art.rating_count||revs.length} avis)</span>
+                <Stars r={avgR} s={16}/><span style={{fontSize:16,fontWeight:800,color:'#f59e0b'}}>{avgR.toFixed(1)}</span>
+                <span style={{fontSize:13,color:tx3}}>({art.rating_count||revs.length} {t('common.reviews')})</span>
               </div>
 
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:24}}>
                 {[
-                  {v:(art.hourly_rate||0).toLocaleString('fr-DZ'),u:'DA',l:'Tarif'},
-                  {v:art.total_missions||0,u:'',l:'Missions'},
-                  {v:`${art.years_experience||0}`,u:'ans',l:'Expérience'},
-                  {v:`${art.intervention_radius_km||20}`,u:'km',l:'Rayon'},
+                  {v:(art.hourly_rate||0).toLocaleString('fr-DZ'),u:t('common.da'),       l:t('profile.rates')     },
+                  {v:art.total_missions||0,                        u:'',                   l:t('profile.missions')  },
+                  {v:`${art.years_experience||0}`,                 u:t('common.years'),    l:t('profile.experience')},
+                  {v:`${art.intervention_radius_km||20}`,          u:t('common.km'),       l:t('profile.radius')    },
                 ].map(s=>(
                   <div key={s.l} style={{padding:'14px 8px',borderRadius:14,background:bg3,border:`1px solid ${brd}`,textAlign:'center'}}>
                     <div style={{fontSize:20,fontWeight:800,color:tx}}>{s.v} <span style={{fontSize:11,fontWeight:300,color:tx3}}>{s.u}</span></div>
@@ -128,12 +141,12 @@ export default function ArtisanPage(){
               <div style={{display:'flex',gap:10,maxWidth:400,margin:'0 auto'}}>
                 {sent?(
                   <div style={{flex:1,padding:14,borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
-                    <span style={{fontSize:14,color:'#10b981',fontWeight:700}}>Demande envoyée</span>
+                    <span style={{fontSize:14,color:'#10b981',fontWeight:700}}>{t('profile.requestSent')}</span>
                   </div>
                 ):(
                   <>
-                    <button onClick={()=>contact('message')} style={{flex:1,padding:'14px 24px',borderRadius:12,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',boxShadow:'0 4px 16px #6366f133',transition:'all 0.2s'}}>Envoyer un message</button>
-                    <button onClick={()=>contact('call')} style={{padding:'14px 20px',borderRadius:12,background:'transparent',border:`1px solid #10b98144`,color:'#10b981',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>Appeler</button>
+                    <button onClick={()=>contact('message')} style={{flex:1,padding:'14px 24px',borderRadius:12,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',boxShadow:'0 4px 16px #6366f133',transition:'all 0.2s'}}>{t('home.sendMessage')}</button>
+                    <button onClick={()=>contact('call')} style={{padding:'14px 20px',borderRadius:12,background:'transparent',border:`1px solid #10b98144`,color:'#10b981',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{t('home.call')}</button>
                   </>
                 )}
               </div>
@@ -143,19 +156,14 @@ export default function ArtisanPage(){
             {/* Tags */}
             {art.tags&&art.tags.length>0&&(
               <div style={{padding:'0 32px 20px',display:'flex',gap:6,flexWrap:'wrap',justifyContent:'center'}}>
-                {art.tags.map((t:string)=><span key={t} style={{padding:'4px 12px',borderRadius:20,background:bg3,border:`1px solid ${brd}`,fontSize:11,color:tx2}}>{t}</span>)}
+                {art.tags.map((tag:string)=><span key={tag} style={{padding:'4px 12px',borderRadius:20,background:bg3,border:`1px solid ${brd}`,fontSize:11,color:tx2}}>{tag}</span>)}
               </div>
             )}
 
             {/* ── TABS ── */}
             <div style={{borderTop:`1px solid ${brd}`,display:'flex'}}>
-              {([
-                {id:'about',label:'À propos'},
-                {id:'portfolio',label:'Réalisations'},
-                {id:'reviews',label:`Avis (${revs.length})`},
-                {id:'rates',label:'Tarifs'},
-              ] as const).map(t=>(
-                <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:'16px',background:'transparent',border:'none',borderBottom:tab===t.id?'2px solid #6366f1':'2px solid transparent',color:tab===t.id?'#6366f1':tx3,fontSize:13,fontWeight:tab===t.id?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{t.label}</button>
+              {TABS.map(item=>(
+                <button key={item.id} onClick={()=>setTab(item.id)} style={{flex:1,padding:'16px',background:'transparent',border:'none',borderBottom:tab===item.id?'2px solid #6366f1':'2px solid transparent',color:tab===item.id?'#6366f1':tx3,fontSize:13,fontWeight:tab===item.id?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{item.label}</button>
               ))}
             </div>
 
@@ -165,14 +173,14 @@ export default function ArtisanPage(){
               {/* About */}
               {tab==='about'&&(
                 <div style={{animation:'fadeUp 0.3s ease'}}>
-                  <h3 style={{fontSize:16,fontWeight:800,color:tx,marginBottom:10}}>Description</h3>
-                  <p style={{fontSize:14,color:tx2,lineHeight:1.8,fontWeight:300,marginBottom:28}}>{art.bio||'Artisan professionnel certifié BETI, disponible pour vos interventions à domicile.'}</p>
-                  <h3 style={{fontSize:16,fontWeight:800,color:tx,marginBottom:10}}>Zone d'intervention</h3>
-                  <p style={{fontSize:14,color:tx2,fontWeight:300}}>{art.location_city||'Algérie'} — Rayon de {art.intervention_radius_km||20} km</p>
+                  <h3 style={{fontSize:16,fontWeight:800,color:tx,marginBottom:10}}>{t('profile.description')}</h3>
+                  <p style={{fontSize:14,color:tx2,lineHeight:1.8,fontWeight:300,marginBottom:28}}>{art.bio||t('profile.defaultBio')}</p>
+                  <h3 style={{fontSize:16,fontWeight:800,color:tx,marginBottom:10}}>{t('profile.zone')}</h3>
+                  <p style={{fontSize:14,color:tx2,fontWeight:300}}>{art.location_city||'Algérie'} — {t('profile.radiusOf')} {art.intervention_radius_km||20} {t('common.km')}</p>
                 </div>
               )}
 
-              {/* Portfolio / Réalisations */}
+              {/* Portfolio */}
               {tab==='portfolio'&&(
                 <div style={{animation:'fadeUp 0.3s ease'}}>
                   <PortfolioFeed artisanId={id}/>
@@ -182,13 +190,12 @@ export default function ArtisanPage(){
               {/* Reviews */}
               {tab==='reviews'&&(
                 <div style={{animation:'fadeUp 0.3s ease'}}>
-                  {/* Rating summary */}
                   {revs.length>0&&(
                     <div style={{display:'flex',gap:24,alignItems:'center',padding:24,background:bg3,border:`1px solid ${brd}`,borderRadius:16,marginBottom:24,flexWrap:'wrap'}}>
                       <div style={{textAlign:'center',minWidth:80}}>
                         <div style={{fontSize:44,fontWeight:800,color:'#f59e0b',lineHeight:1}}>{avgR.toFixed(1)}</div>
                         <Stars r={avgR} s={14}/>
-                        <div style={{fontSize:12,color:tx3,marginTop:4}}>{revs.length} avis</div>
+                        <div style={{fontSize:12,color:tx3,marginTop:4}}>{revs.length} {t('common.reviews')}</div>
                       </div>
                       <div style={{flex:1,minWidth:180}}>
                         {[5,4,3,2,1].map(star=>{
@@ -208,9 +215,8 @@ export default function ArtisanPage(){
                     </div>
                   )}
 
-                  {/* Reviews list */}
                   {revs.length===0?(
-                    <div style={{textAlign:'center',padding:48,color:tx3,fontSize:14,fontWeight:300}}>Aucun avis pour l'instant</div>
+                    <div style={{textAlign:'center',padding:48,color:tx3,fontSize:14,fontWeight:300}}>{t('profile.noReviewsYet')}</div>
                   ):(
                     <div style={{display:'flex',flexDirection:'column',gap:12}}>
                       {revs.map((r:any)=>(
@@ -219,7 +225,7 @@ export default function ArtisanPage(){
                             <div style={{display:'flex',alignItems:'center',gap:10}}>
                               <div style={{width:36,height:36,borderRadius:10,background:brd,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:800,color:tx2}}>{(r.profiles?.full_name||'C')[0]}</div>
                               <div>
-                                <div style={{fontSize:14,fontWeight:700,color:tx}}>{r.profiles?.full_name||'Client vérifié'}</div>
+                                <div style={{fontSize:14,fontWeight:700,color:tx}}>{r.profiles?.full_name||t('profile.verifiedClient')}</div>
                                 <div style={{fontSize:11,color:tx3}}>{timeAgo(r.created_at)}</div>
                               </div>
                             </div>
@@ -244,8 +250,8 @@ export default function ArtisanPage(){
                   <div style={{background:bg3,border:`1px solid ${brd}`,borderRadius:16,padding:24}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
                       <div>
-                        <div style={{fontSize:11,color:tx3,fontWeight:700,letterSpacing:'0.06em',marginBottom:4}}>TARIF</div>
-                        <div style={{fontSize:32,fontWeight:800,color:tx}}>{(art.hourly_rate||0).toLocaleString('fr-DZ')} <span style={{fontSize:14,color:tx3,fontWeight:300}}>DA</span></div>
+                        <div style={{fontSize:11,color:tx3,fontWeight:700,letterSpacing:'0.06em',marginBottom:4}}>{t('profile.rateLabel')}</div>
+                        <div style={{fontSize:32,fontWeight:800,color:tx}}>{(art.hourly_rate||0).toLocaleString('fr-DZ')} <span style={{fontSize:14,color:tx3,fontWeight:300}}>{t('common.da')}</span></div>
                       </div>
                       <div style={{display:'flex',flexDirection:'column',gap:4}}>
                         {(['CIB','Edahabia','Cash'] as const).map(m=>(
@@ -257,7 +263,7 @@ export default function ArtisanPage(){
                       </div>
                     </div>
                     <div style={{height:1,background:brd,marginBottom:16}}/>
-                    <p style={{fontSize:13,color:tx2,fontWeight:300,lineHeight:1.7}}>Le tarif est indicatif et peut varier selon la complexité de l'intervention. Un devis précis vous sera communiqué par l'artisan avant le début des travaux.</p>
+                    <p style={{fontSize:13,color:tx2,fontWeight:300,lineHeight:1.7}}>{t('profile.rateNote')}</p>
                   </div>
                 </div>
               )}
@@ -265,7 +271,6 @@ export default function ArtisanPage(){
           </div>
         </div>
 
-        {/* Spacer */}
         <div style={{height:80}}/>
       </div>
     </>

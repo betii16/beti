@@ -87,7 +87,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav style={{
+      <nav className="beti-nav" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
         height: 52, padding: '0 32px',
         display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
@@ -105,8 +105,8 @@ export default function Navigation() {
           <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.1em', fontFamily: 'Nexa, sans-serif' }}>BETI</span>
         </a>
 
-        {/* Liens */}
-        <div style={{ display: 'flex', gap: 30, alignItems: 'center', justifySelf: 'center' }}>
+        {/* Liens — desktop uniquement (sur mobile : barre d'onglets en bas) */}
+        <div className="desktop-only" style={{ display: 'flex', gap: 30, alignItems: 'center', justifySelf: 'center' }}>
           {LINKS.map(l => {
             const active = l.href === pathname
             const base = l.gold ? 'var(--accent, #6366f1)' : 'var(--tx2)'
@@ -149,7 +149,7 @@ export default function Navigation() {
                 </div>
               </a>
 
-              <div style={{ position: 'relative' }}>
+              <div className="desktop-only" style={{ position: 'relative' }}>
                 <button onClick={() => setMenuOpen(!menuOpen)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px 4px 4px', borderRadius: 40, background: 'var(--border)', border: '0.5px solid var(--border2)', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'border-color 0.2s' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent, #6366f1)22', border: '1.5px solid var(--accent, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--accent, #6366f1)' }}>{(user.email || 'U')[0].toUpperCase()}</div>
                   <span style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 300 }}>{role || 'Client'}</span>
@@ -220,7 +220,7 @@ export default function Navigation() {
             </>
           ) : (
             <>
-              <a href="/auth/login">
+              <a className="desktop-only" href="/auth/login">
                 <button style={{ padding: '6px 14px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent, #6366f1)'; e.currentTarget.style.color = 'var(--accent, #6366f1)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx2)' }}

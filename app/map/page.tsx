@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
+import { contactArtisan } from '@/lib/contactArtisan'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
 import { CategoryIcon } from '@/components/icons'
@@ -79,12 +80,13 @@ export default function MapPage() {
     setLoading(false)
   }
 
+  const [contactErr,setContactErr]=useState('')
   const contact=async(a:Art,ty:'message'|'call')=>{
     if(!user){router.push('/auth/login');return}
-    const{error}=await supabase.from('bookings').insert({client_id:user.id,artisan_id:a.id,title:`Demande ${a.category}`,description:ty==='call'?'Appel':'Message',address:'',status:'pending',price_agreed:a.hourly_rate})
-    if(error){setSent(true);return}
-    supabase.from('notifications').insert({user_id:a.id,type:ty==='call'?'call_request':'new_message',title:ty==='call'?'Demande d\'appel':'Nouveau message',message:'Un client souhaite vous contacter.'}).then(()=>{})
-    if(ty==='message'){const{data:b}=await supabase.from('bookings').select('id').eq('client_id',user.id).eq('artisan_id',a.id).order('created_at',{ascending:false}).limit(1).single();if(b?.id)router.push(`/chat/${b.id}`);else setSent(true)}else{setSent(true)}
+    setContactErr('')
+    const res=await contactArtisan({clientId:user.id,artisanId:a.id,category:a.category,hourlyRate:a.hourly_rate,type:ty})
+    if(!res.ok){setContactErr(res.reason==='demo'?t('contact.demoProfile'):res.message);return}
+    if(ty==='message')router.push(`/chat/${res.bookingId}`);else setSent(true)
   }
 
   const cc=(id:string)=>CATS.find(c=>c.id===id)?.color||'#6366f1'
@@ -110,7 +112,7 @@ export default function MapPage() {
         .arow:hover{background:var(--bg3);border-color:var(--border)}
       `}</style>
 
-      <div style={{position:'fixed',inset:0,overflow:'hidden'}}>
+      <div className="map-screen" style={{position:'fixed',inset:0,overflow:'hidden'}}>
 
         {/* ═══ MAP — full screen ═══ */}
         <div style={{position:'absolute',inset:0,zIndex:1}}>
@@ -118,7 +120,7 @@ export default function MapPage() {
         </div>
 
         {/* ═══ FLOATING SEARCH BAR ═══ */}
-        <div style={{position:'absolute',top:60,left:16,right:16,zIndex:10,animation:'fadeUp 0.4s ease'}}>
+        <div className="map-search" style={{position:'absolute',top:60,left:16,right:16,zIndex:10,animation:'fadeUp 0.4s ease'}}>
           <div style={{background:glass,backdropFilter:'blur(20px)',borderRadius:16,padding:'12px 16px',display:'flex',alignItems:'center',gap:10,boxShadow:'var(--card-shadow)',border:`0.5px solid ${brd}`}}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={tx3} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input type="text" value={search} onChange={e=>setSearch(e.target.value)}
@@ -129,7 +131,7 @@ export default function MapPage() {
         </div>
 
         {/* ═══ FLOATING CATEGORY PILLS ═══ */}
-        <div style={{position:'absolute',top:120,left:0,right:0,zIndex:10,padding:'0 16px',animation:'fadeUp 0.4s ease 0.1s both'}}>
+        <div className="map-pills" style={{position:'absolute',top:120,left:0,right:0,zIndex:10,padding:'0 16px',animation:'fadeUp 0.4s ease 0.1s both'}}>
           <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,msOverflowStyle:'none',scrollbarWidth:'none'}}>
             {CATS.map(c=>(
               <button key={c.id} onClick={()=>setCat(c.id)} className="pill"
@@ -270,6 +272,9 @@ export default function MapPage() {
               </div>
 
               {/* Action buttons */}
+              {contactErr&&(
+                <div style={{padding:'10px 14px',borderRadius:10,marginBottom:8,background:'#ef444412',border:'1px solid #ef444422',fontSize:12,color:'#ef4444'}}>{contactErr}</div>
+              )}
               {sent?(
                 <div style={{padding:'12px',borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
                   <span style={{fontSize:13,color:'#10b981',fontWeight:700}}>Demande envoyée</span>

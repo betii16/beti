@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package, MapPin, Calendar, Banknote } from 'lucide-react'
+import { useLang } from '@/lib/LangContext'
 
 type Booking = {
   id: string
@@ -17,26 +18,28 @@ type Booking = {
   artisans: { full_name: string; category: string; rating_avg: number } | null
 }
 
-const STATUS: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  pending:     { label: 'En attente',  bg: 'rgba(99,102,241,0.08)',  color: '#6366f1', border: 'rgba(99,102,241,0.2)' },
-  confirmed:   { label: 'Confirmé',    bg: 'rgba(96,165,250,0.08)',  color: '#60a5fa', border: 'rgba(96,165,250,0.2)' },
-  in_progress: { label: 'En cours',    bg: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: 'rgba(167,139,250,0.2)' },
-  completed:   { label: 'Terminé',     bg: 'rgba(16,185,129,0.07)',  color: '#10b981', border: 'rgba(16,185,129,0.2)' },
-  refused:     { label: 'Refusé',      bg: 'rgba(239,68,68,0.06)',   color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
-  cancelled:   { label: 'Annulé',      bg: 'var(--bg3)',             color: 'var(--tx2)', border: 'var(--border)' },
+const STATUS: Record<string, { bg: string; color: string; border: string }> = {
+  pending:     { bg: 'rgba(99,102,241,0.08)',  color: '#6366f1', border: 'rgba(99,102,241,0.2)' },
+  confirmed:   { bg: 'rgba(96,165,250,0.08)',  color: '#60a5fa', border: 'rgba(96,165,250,0.2)' },
+  in_progress: { bg: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: 'rgba(167,139,250,0.2)' },
+  completed:   { bg: 'rgba(16,185,129,0.07)',  color: '#10b981', border: 'rgba(16,185,129,0.2)' },
+  refused:     { bg: 'rgba(239,68,68,0.06)',   color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
+  cancelled:   { bg: 'var(--bg3)',             color: 'var(--tx2)', border: 'var(--border)' },
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useLang()
   const s = STATUS[status] || STATUS.pending
   return (
     <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: s.bg, color: s.color, border: `0.5px solid ${s.border}` }}>
-      {s.label}
+      {t(`status.${STATUS[status] ? status : 'pending'}`)}
     </span>
   )
 }
 
 export default function MesReservations() {
   const router = useRouter()
+  const { t, isAr } = useLang()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all')
@@ -58,7 +61,7 @@ export default function MesReservations() {
     init()
   }, [])
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  const fmt = (d: string) => new Date(d).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
   const filtered = bookings.filter(b => {
     if (activeTab === 'active') return ['pending', 'confirmed', 'in_progress'].includes(b.status)
@@ -73,19 +76,19 @@ export default function MesReservations() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
+      <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('common.loading')}</div>
     </div>
   )
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
 
       {/* Header */}
       <div style={{ background: 'var(--bg)', borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON ESPACE</div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>Mes réservations</h1>
-          <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{bookings.length} réservation{bookings.length !== 1 ? 's' : ''} au total</p>
+          <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('mySpace.title')}</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('nav.myBookings')}</h1>
+          <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{bookings.length} {t('mySpace.totalCount')}</p>
         </div>
       </div>
 
@@ -94,9 +97,9 @@ export default function MesReservations() {
         {/* Onglets */}
         <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)', marginBottom: 28 }}>
           {[
-            { id: 'all',       label: 'Toutes',    count: bookings.length },
-            { id: 'active',    label: 'En cours',  count: bookings.filter(b => ['pending','accepted','in_progress'].includes(b.status)).length },
-            { id: 'completed', label: 'Terminées', count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
+            { id: 'all',       label: t('mySpace.tabAll'),    count: bookings.length },
+            { id: 'active',    label: t('mySpace.tabActive'), count: bookings.filter(b => ['pending','accepted','in_progress'].includes(b.status)).length },
+            { id: 'completed', label: t('mySpace.tabDone'),   count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
               style={{ padding: '12px 20px', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? '#6366f1' : 'transparent'}`, color: activeTab === tab.id ? '#6366f1' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -112,9 +115,9 @@ export default function MesReservations() {
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--tx3)' }}><Package size={40}/></div>
-            <div style={{ fontSize: 14, fontWeight: 300 }}>Aucune réservation ici</div>
+            <div style={{ fontSize: 14, fontWeight: 300 }}>{t('mySpace.emptyHere')}</div>
             <a href="/#services" style={{ display: 'inline-block', marginTop: 20, padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
-              Trouver un artisan
+              {t('mySpace.findArtisan')}
             </a>
           </div>
         ) : (
@@ -128,7 +131,7 @@ export default function MesReservations() {
                       <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{b.title}</div>
                       {b.artisans && (
                         <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>
-                          {b.artisans.category} · ⭐ {b.artisans.rating_avg?.toFixed(1) || 'N/A'}
+                          {t(`categories.${b.artisans.category}`)} · ⭐ {b.artisans.rating_avg?.toFixed(1) || 'N/A'}
                         </div>
                       )}
                     </div>
@@ -139,7 +142,7 @@ export default function MesReservations() {
                     {[
                       { Icon: MapPin,   text: b.address },
                       { Icon: Calendar, text: fmt(b.scheduled_at) },
-                      { Icon: Banknote, text: b.price_agreed ? `${b.price_agreed} DA/h` : 'Tarif à définir' },
+                      { Icon: Banknote, text: b.price_agreed ? `${b.price_agreed} ${t('common.da')}${t('common.perHour')}` : t('mySpace.priceTbd') },
                     ].map((item, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>
                         <item.Icon size={13}/>{item.text}
@@ -150,14 +153,14 @@ export default function MesReservations() {
                   {b.status === 'pending' && (
                     <button onClick={() => cancelBooking(b.id)}
                       style={{ padding: '8px 18px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 8, color: '#ef4444', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
-                      Annuler la demande
+                      {t('mySpace.cancelRequest')}
                     </button>
                   )}
 
                   {b.status === 'completed' && (
                     <a href={`/mon-espace/avis?booking=${b.id}`} style={{ textDecoration: 'none' }}>
                       <button style={{ padding: '8px 18px', background: 'transparent', border: '0.5px solid #6366f144', borderRadius: 8, color: '#6366f1', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
-                        ⭐ Laisser un avis
+                        ⭐ {t('mySpace.leaveReview')}
                       </button>
                     </a>
                   )}

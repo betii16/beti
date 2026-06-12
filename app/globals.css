@@ -305,3 +305,84 @@ select:focus {
     text-wrap: balance;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   APP LAYER — comportement « application mobile » (style Yassir/Uber)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Visibilité responsive : la barre d'onglets et le header mobile
+   utilisent ces classes ; tout style inline reste intact. */
+.mobile-only  { display: none !important; }
+@media (max-width: 767px) {
+  .mobile-only  { display: flex !important; }
+  .desktop-only { display: none !important; }
+}
+
+html, body {
+  /* Pas de rebond élastique ni de pull-to-refresh accidentel */
+  overscroll-behavior-y: none;
+}
+
+* {
+  /* Pas de flash gris/bleu au tap (iOS + Android) */
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a {
+  /* Supprime le délai de 300 ms et le double-tap zoom sur les contrôles */
+  touch-action: manipulation;
+}
+
+@media (max-width: 767px) {
+  /* L'UI ne se sélectionne pas comme du texte (sauf champs de saisie) */
+  button, nav, label {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Header mobile : plus compact, et passe sous l'encoche iPhone (PWA plein écran).
+     En flex (les liens centraux sont masqués) : logo à gauche, contrôles à droite. */
+  nav.beti-nav {
+    height: calc(56px + env(safe-area-inset-top)) !important;
+    padding: env(safe-area-inset-top) 14px 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+
+  /* Les ancres tiennent compte du header mobile plus fin */
+  [id] { scroll-margin-top: 70px; }
+
+  /* PWA plein écran : le contenu descend sous la barre de statut iPhone */
+  body { padding-top: env(safe-area-inset-top); }
+
+  /* Stats de l'accueil : 2×2 au lieu de 4 colonnes écrasées */
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; row-gap: 24px; }
+  .stats-grid > div:nth-child(2) { border-right: none !important; }
+
+  /* Carte : l'écran s'arrête au-dessus de la barre d'onglets */
+  .map-screen { bottom: calc(62px + env(safe-area-inset-bottom)) !important; }
+
+  /* Éléments fixés en bas de page : remontent au-dessus de la barre d'onglets */
+  .above-tabbar { bottom: calc(62px + env(safe-area-inset-bottom)) !important; }
+}
+
+/* Carte : l'UI flottante passe sous l'encoche iPhone (PWA) */
+.map-search { top: calc(60px + env(safe-area-inset-top)) !important; }
+.map-pills  { top: calc(120px + env(safe-area-inset-top)) !important; }
+
+/* Écrans tactiles : pas d'effets de survol (ils « collent » au doigt) */
+@media (hover: none) {
+  :where(div[style*="--card-shadow"]:hover) {
+    transform: none;
+    box-shadow: var(--card-shadow);
+  }
+  :where(button:not(:disabled):hover) {
+    filter: none;
+  }
+  .nav-link:hover::after {
+    transform: scaleX(0);
+  }
+  .nav-link-active::after {
+    transform: scaleX(1);
+  }
+}
