@@ -8,6 +8,7 @@ import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
 import { LayoutGrid } from 'lucide-react'
+import MobileHome from '@/components/MobileHome'
 
 type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string;phone?:string }
 type Review = { id:string;rating:number;comment:string|null;created_at:string;photos?:string[];profiles?:{full_name:string}|null }
@@ -153,6 +154,17 @@ export default function Home(){
           title={dark?t('home.themeLight'):t('home.themeDark')}>
           {dark?'☀':'☾'}
         </button>
+
+        {/* ── ACCUEIL MOBILE (app native, < 768px) ── */}
+        <MobileHome
+          artisans={artisans} loading={loading}
+          cat={cat} setCat={setCat} tags={tags} setTags={setTags}
+          addr={addr} locating={locating} openA={openA}
+          userName={user?.user_metadata?.full_name||null}
+        />
+
+        {/* ── ACCUEIL DESKTOP ── */}
+        <div className="desktop-only" style={{display:'block'}}>
 
         {/* ── HERO ── */}
         <section style={{position:'relative',padding:'88px 24px 56px',overflow:'hidden'}}>
@@ -421,12 +433,14 @@ export default function Home(){
             </div>
           </div>
         </footer>
+
+        </div>{/* /desktop-only */}
       </div>
 
       {/* ── PANEL ── */}
       {sel&&(<div style={{position:'fixed',inset:0,zIndex:300,display:'flex'}}>
         <div onClick={()=>setSel(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(4px)'}}/>
-        <div style={{position:'absolute',right:0,top:0,bottom:0,width:'100%',maxWidth:440,background:'var(--bg)',borderLeft:'1px solid var(--border)',overflowY:'auto',animation:'slideIn 0.35s cubic-bezier(0.4,0,0.2,1)'}}>
+        <div className="detail-sheet" style={{position:'absolute',right:0,top:0,bottom:0,width:'100%',maxWidth:440,background:'var(--bg)',borderLeft:'1px solid var(--border)',overflowY:'auto',animation:'slideIn 0.35s cubic-bezier(0.4,0,0.2,1)'}}>
           <div style={{padding:24,borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:14}}>
             {sel.avatar_url?<img src={sel.avatar_url} alt="" style={{width:52,height:52,borderRadius:'50%',objectFit:'cover',border:`2px solid ${cc(sel.category)}33`}}/>:<div style={{width:52,height:52,borderRadius:'50%',background:`${cc(sel.category)}12`,border:`2px solid ${cc(sel.category)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:cc(sel.category)}}>{sel.full_name?.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>}
             <div style={{flex:1}}><div style={{fontSize:17,fontWeight:800}}>{sel.full_name}</div><div style={{fontSize:11,color:cc(sel.category),fontWeight:700,marginBottom:3}}>{cl(sel.category)}</div><div style={{display:'flex',alignItems:'center',gap:5}}><Stars r={sel.rating_avg} s={12}/><span style={{fontSize:12,fontWeight:800,color:'#f59e0b'}}>{sel.rating_avg?.toFixed(1)}</span><span style={{fontSize:10,color:'var(--tx3)'}}>({sel.rating_count})</span></div></div>

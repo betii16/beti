@@ -1,8 +1,9 @@
 'use client'
 
 // components/BottomTabBar.tsx
-// Barre d'onglets mobile fixe (style Yassir/Uber) — visible < 768px uniquement.
-// La nav du haut garde le desktop ; sur mobile c'est ici que tout se passe.
+// Dock flottant mobile (< 768px) — style app premium : barre en verre arrondie
+// détachée du bord, bouton Carte central surélevé en dégradé, pilule animée
+// derrière l'onglet actif, badge de notifications.
 
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
@@ -56,29 +57,55 @@ export default function BottomTabBar() {
   const TABS = [
     { href: '/',           label: t('nav.tabHome'),     Icon: Home,         match: (p: string) => p === '/' },
     { href: '/recherche',  label: t('nav.tabSearch'),   Icon: Search,       match: (p: string) => p.startsWith('/recherche') || p.startsWith('/artisans') || p.startsWith('/artisan/') },
-    { href: '/map',        label: t('nav.tabMap'),      Icon: Map,          match: (p: string) => p.startsWith('/map') },
+    { href: '/map',        label: t('nav.tabMap'),      Icon: Map,          match: (p: string) => p.startsWith('/map'), center: true },
     { href: bookingsHref,  label: t('nav.tabBookings'), Icon: CalendarDays, match: (p: string) => p.startsWith('/mon-espace/reservations') || p.startsWith('/artisan-dashboard/planning') },
     { href: profileHref,   label: t('nav.tabProfile'),  Icon: User,         match: (p: string) => p === '/mon-espace' || p === '/artisan-dashboard' || p.startsWith('/admin') || p.startsWith('/compte') || p.startsWith('/parametres'), badge: notifCount },
-  ]
+  ] as Array<{ href: string; label: string; Icon: any; match: (p: string) => boolean; center?: boolean; badge?: number }>
 
   return (
     <>
       {/* Espace réservé dans le flux pour ne pas masquer le bas des pages */}
-      <div className="mobile-only" style={{ height: 'calc(62px + env(safe-area-inset-bottom))' }}/>
+      <div className="mobile-only" style={{ height: 'calc(92px + env(safe-area-inset-bottom))' }}/>
 
       <nav className="mobile-only" style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 250,
+        position: 'fixed', left: 12, right: 12,
+        bottom: 'calc(12px + env(safe-area-inset-bottom))',
+        zIndex: 250, height: 64, borderRadius: 32,
         display: 'flex', alignItems: 'stretch',
-        height: 'calc(62px + env(safe-area-inset-bottom))',
-        paddingBottom: 'env(safe-area-inset-bottom)',
         background: 'var(--glass-bg)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderTop: '0.5px solid var(--border)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--hover-shadow-lg)',
         direction: isAr ? 'rtl' : 'ltr',
       }}>
-        {TABS.map(({ href, label, Icon, match, badge }) => {
+        {TABS.map(({ href, label, Icon, match, center, badge }) => {
           const active = match(pathname || '')
+
+          // ── Bouton central (Carte) : cercle dégradé surélevé ──
+          if (center) {
+            return (
+              <div key={label} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+                <button onClick={() => router.push(href)} aria-label={label} style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  background: 'var(--gradient)',
+                  border: '4px solid var(--bg)',
+                  transform: 'translateY(-20px)',
+                  boxShadow: active
+                    ? '0 10px 30px rgba(99,102,241,0.55), 0 0 0 2px rgba(99,102,241,0.35)'
+                    : '0 10px 26px rgba(99,102,241,0.4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', padding: 0, flexShrink: 0,
+                  WebkitTapHighlightColor: 'transparent',
+                  transition: 'box-shadow 0.25s ease, transform 0.15s ease',
+                }}>
+                  <Icon size={24} color="#fff" strokeWidth={2}/>
+                </button>
+              </div>
+            )
+          }
+
+          // ── Onglets standards : pilule animée derrière l'icône ──
           return (
             <button key={label} onClick={() => router.push(href)} style={{
               flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
@@ -86,15 +113,21 @@ export default function BottomTabBar() {
               color: active ? 'var(--accent)' : 'var(--tx3)',
               WebkitTapHighlightColor: 'transparent',
             }}>
-              <div style={{ position: 'relative', display: 'flex' }}>
-                <Icon size={22} strokeWidth={active ? 2.4 : 1.8}/>
+              <div style={{
+                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 42, height: 27, borderRadius: 14,
+                background: active ? 'rgba(99,102,241,0.14)' : 'transparent',
+                transform: active ? 'scale(1)' : 'scale(0.92)',
+                transition: 'background 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+              }}>
+                <Icon size={21} strokeWidth={active ? 2.4 : 1.8}/>
                 {!!badge && badge > 0 && (
-                  <div style={{ position: 'absolute', top: -4, right: -7, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>
+                  <div style={{ position: 'absolute', top: -4, insetInlineEnd: 0, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff', boxShadow: '0 2px 6px rgba(239,68,68,0.5)' }}>
                     {badge > 9 ? '9+' : badge}
                   </div>
                 )}
               </div>
-              <span style={{ fontSize: 10, fontWeight: active ? 800 : 300, fontFamily: 'Nexa, sans-serif', letterSpacing: '0.02em' }}>{label}</span>
+              <span style={{ fontSize: 9.5, fontWeight: active ? 800 : 300, fontFamily: 'Nexa, sans-serif', letterSpacing: '0.02em' }}>{label}</span>
             </button>
           )
         })}

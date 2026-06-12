@@ -587,6 +587,24 @@ export const translations = {
     reviews:      { fr: 'avis',                  ar: 'تقييم'              },
   },
 
+  // ── Accueil mobile (app) ─────────────────────────────────────────
+  mhome: {
+    greetingDay:     { fr: 'Bonjour',                              ar: 'صباح الخير'                          },
+    greetingEvening: { fr: 'Bonsoir',                              ar: 'مساء الخير'                          },
+    searchPh:        { fr: 'Plombier, électricien, ménage…',       ar: 'سبّاك، كهربائي، تنظيف…'              },
+    categories:      { fr: 'Catégories',                           ar: 'الفئات'                              },
+    all:             { fr: 'Tous',                                 ar: 'الكل'                                },
+    other:           { fr: 'Autre',                                ar: 'أخرى'                                },
+    nearYou:         { fr: 'Près de chez vous',                    ar: 'بالقرب منك'                          },
+    promoTitle:      { fr: 'Un artisan en 30 min',                 ar: 'حرفي في 30 دقيقة'                    },
+    promoSub:        { fr: 'Vérifiés, notés, géolocalisés autour de vous.', ar: 'موثّقون، مقيّمون، بالقرب منك.' },
+    promoCta:        { fr: 'Explorer la carte',                    ar: 'استكشف الخريطة'                      },
+    noResults:       { fr: 'Aucun résultat pour cette recherche',  ar: 'لا توجد نتائج لهذا البحث'            },
+    becomeTitle:     { fr: 'Vous êtes artisan ?',                  ar: 'هل أنت حرفي؟'                        },
+    becomeSub:       { fr: 'Recevez des clients près de chez vous.', ar: 'استقبل زبائن بالقرب منك.'          },
+    becomeCta:       { fr: 'Rejoindre',                            ar: 'انضم'                                },
+  },
+
 } as const
 
 // ── Helper pour récupérer une traduction ──────────────────────────
