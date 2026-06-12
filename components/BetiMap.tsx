@@ -187,13 +187,23 @@ export default function BetiMap({
       // Attendre que Leaflet soit VRAIMENT prêt
       map.whenReady(() => {
         if (!cancelled) setMapReady(true)
+        // Le conteneur (plein écran) peut ne pas avoir sa taille finale au moment
+        // de l'init → Leaflet ne charge alors les tuiles que sur une fine bande.
+        // invalidateSize() force le recalcul une fois la mise en page établie.
+        setTimeout(() => { try { map.invalidateSize() } catch {} }, 0)
+        setTimeout(() => { try { map.invalidateSize() } catch {} }, 250)
       })
     }
 
     init()
 
+    // Recalcule la taille de la carte si la fenêtre change.
+    const onResize = () => { try { mapInstance.current?.invalidateSize() } catch {} }
+    window.addEventListener('resize', onResize)
+
     return () => {
       cancelled = true
+      window.removeEventListener('resize', onResize)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -339,8 +349,8 @@ export default function BetiMap({
   }, [trackingArtisanId, mapReady, artisans, clientLat, clientLng])
 
   return (
-    <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', border: '0.5px solid #2a2a3a' }}>
-      <div ref={mapRef} style={{ width: '100%', height: 520, background: '#1a2030' }} />
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+      <div ref={mapRef} style={{ width: '100%', height: '100%', background: '#1a2030' }} />
 
       {/* Loading state */}
       {!mapReady && (

@@ -17,11 +17,21 @@ export default function ClientDashboard(){
   const load=async()=>{
     const{data:{user:u}}=await supabase.auth.getUser()
     if(!u){router.push('/auth/login');return};setUser(u)
-    const[{data:p},{data:b}]=await Promise.all([
+    const[{data:p},{data:bk}]=await Promise.all([
       supabase.from('profiles').select('*').eq('id',u.id).single(),
-      supabase.from('bookings').select('*,artisans!bookings_artisan_id_fkey(category,profiles!inner(full_name,avatar_url))').eq('client_id',u.id).order('created_at',{ascending:false}).limit(20),
+      supabase.from('bookings').select('*').eq('client_id',u.id).order('created_at',{ascending:false}).limit(20),
     ])
-    if(p)setProfile(p);if(b)setBookings(b);setLoading(false)
+    if(p)setProfile(p)
+    // Nom de l'artisan via profiles (l'embed par FK pointait vers la mauvaise table).
+    const list=bk||[]
+    const ids=Array.from(new Set(list.map((x:any)=>x.artisan_id).filter(Boolean)))
+    const nameById:Record<string,string>={}
+    if(ids.length){
+      const{data:profs}=await supabase.from('profiles').select('id,full_name').in('id',ids)
+      for(const pr of (profs||[]) as any[])nameById[pr.id]=pr.full_name
+    }
+    setBookings(list.map((x:any)=>({...x,artisans:{profiles:{full_name:nameById[x.artisan_id]||'Artisan'}}})))
+    setLoading(false)
   }
 
   const pending=bookings.filter(b=>b.status==='pending')

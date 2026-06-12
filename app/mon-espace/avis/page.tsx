@@ -14,6 +14,24 @@ type Review = {
   artisans: { full_name: string; category: string } | null
 }
 
+// L'artisan d'un avis : nom sur `profiles`, catégorie sur `artisans` (même id).
+// On enrichit en 2 requêtes au lieu d'un embed par nom de FK (fragile/erroné).
+async function withArtisanInfo(reviews: any[]): Promise<any[]> {
+  const list = reviews || []
+  const ids = Array.from(new Set(list.map(r => r.artisan_id).filter(Boolean)))
+  if (!ids.length) return list
+  const [{ data: profs }, { data: arts }] = await Promise.all([
+    supabase.from('profiles').select('id, full_name').in('id', ids),
+    supabase.from('artisans').select('id, category').in('id', ids),
+  ])
+  const pMap = new Map((profs || []).map((p: any) => [p.id, p.full_name]))
+  const aMap = new Map((arts || []).map((a: any) => [a.id, a.category]))
+  return list.map(r => ({
+    ...r,
+    artisans: { full_name: pMap.get(r.artisan_id) || 'Artisan', category: aMap.get(r.artisan_id) || '' },
+  }))
+}
+
 function Stars({ rating, interactive = false, onRate }: { rating: number; interactive?: boolean; onRate?: (n: number) => void }) {
   const [hover, setHover] = useState(0)
   return (
@@ -64,10 +82,10 @@ function MesAvisContent() {
       }
       const { data } = await supabase
         .from('reviews')
-        .select('*, artisans!reviews_artisan_id_fkey(full_name, category)')
+        .select('*')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
-      if (data) setReviews(data)
+      if (data) setReviews(await withArtisanInfo(data) as any)
       setLoading(false)
     }
     init()
@@ -92,10 +110,10 @@ function MesAvisContent() {
       }
       const { data } = await supabase
         .from('reviews')
-        .select('*, artisans!reviews_artisan_id_fkey(full_name, category)')
+        .select('*')
         .eq('client_id', userId)
         .order('created_at', { ascending: false })
-      if (data) setReviews(data)
+      if (data) setReviews(await withArtisanInfo(data) as any)
     }
     setSubmitting(false); setSubmitted(true); setShowForm(false); setRating(0); setComment(''); setPhotos([])
   }

@@ -15,6 +15,12 @@ create table if not exists public.messages (
   created_at  timestamptz not null default now()
 );
 
+-- Si la table existait déjà avec un autre schéma, `create table if not exists`
+-- ne l'aurait PAS modifiée. On garantit donc les colonnes attendues par le code.
+alter table public.messages add column if not exists sender_name text not null default '';
+alter table public.messages add column if not exists sender_role text not null default 'client';
+alter table public.messages add column if not exists content     text;
+
 -- Index pour les requêtes par booking (chargement de la conversation)
 create index if not exists messages_booking_id_idx on public.messages(booking_id, created_at);
 

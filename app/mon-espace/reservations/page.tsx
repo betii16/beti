@@ -49,13 +49,33 @@ export default function MesReservations() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
 
-      const { data } = await supabase
+      // Réservations du client (sans embed fragile par nom de FK).
+      const { data: bk } = await supabase
         .from('bookings')
-        .select('*, artisans!bookings_artisan_id_fkey(full_name, category, rating_avg)')
+        .select('*')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (data) setBookings(data)
+      const list = bk || []
+      // L'artisan : nom sur `profiles`, catégorie/note sur `artisans` (même id).
+      const ids = Array.from(new Set(list.map((b: any) => b.artisan_id).filter(Boolean)))
+      const info: Record<string, { full_name: string; category: string; rating_avg: number }> = {}
+      if (ids.length) {
+        const [{ data: profs }, { data: arts }] = await Promise.all([
+          supabase.from('profiles').select('id, full_name').in('id', ids),
+          supabase.from('artisans').select('id, category, rating_avg').in('id', ids),
+        ])
+        const pMap = new Map((profs || []).map((p: any) => [p.id, p.full_name]))
+        const aMap = new Map((arts || []).map((a: any) => [a.id, a]))
+        for (const id of ids) {
+          info[id] = {
+            full_name: pMap.get(id) || 'Artisan',
+            category: aMap.get(id)?.category || '',
+            rating_avg: aMap.get(id)?.rating_avg || 0,
+          }
+        }
+      }
+      setBookings(list.map((b: any) => ({ ...b, artisans: info[b.artisan_id] || null })))
       setLoading(false)
     }
     init()
@@ -98,7 +118,7 @@ export default function MesReservations() {
         <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)', marginBottom: 28 }}>
           {[
             { id: 'all',       label: t('mySpace.tabAll'),    count: bookings.length },
-            { id: 'active',    label: t('mySpace.tabActive'), count: bookings.filter(b => ['pending','accepted','in_progress'].includes(b.status)).length },
+            { id: 'active',    label: t('mySpace.tabActive'), count: bookings.filter(b => ['pending','confirmed','in_progress'].includes(b.status)).length },
             { id: 'completed', label: t('mySpace.tabDone'),   count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}

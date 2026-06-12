@@ -61,7 +61,9 @@ export default function OnboardingPage() {
     if (!user) return
     setSaving(true)
     if (step === 1) {
-      await supabase.from('profiles').update({ bio, phone }).eq('id', user.id)
+      // phone → profiles ; bio → artisans (c'est là que tout le reste la lit)
+      await supabase.from('profiles').update({ phone }).eq('id', user.id)
+      await supabase.from('artisans').update({ bio }).eq('id', user.id)
     } else if (step === 2) {
       await supabase.from('artisans').update({ category }).eq('id', user.id)
     } else if (step === 3) {

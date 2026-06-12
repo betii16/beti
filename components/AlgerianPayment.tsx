@@ -58,12 +58,16 @@ export function AlgerianPayment({
     setRefNum(ref)
     // Update booking status to confirmed
     await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', bookingId)
-    await supabase.from('notifications').insert({
-      user_id: bookingId, // artisan gets notified via booking
-      type: 'booking_confirmed',
-      title: 'Paiement reçu',
-      message: `Paiement de ${total.toLocaleString('fr-DZ')} DA confirmé — ${serviceTitle}`,
-    }).maybeSingle()
+    // Notifier l'ARTISAN (user_id = son id, pas l'id de la réservation).
+    const { data: bk } = await supabase.from('bookings').select('artisan_id').eq('id', bookingId).single()
+    if (bk?.artisan_id) {
+      await supabase.from('notifications').insert({
+        user_id: bk.artisan_id,
+        type: 'booking_confirmed',
+        title: 'Paiement reçu',
+        message: `Paiement de ${total.toLocaleString('fr-DZ')} DA confirmé — ${serviceTitle}`,
+      })
+    }
     setLoading(false)
     setDone(true)
     setTimeout(onSuccess, 2200)

@@ -74,9 +74,11 @@ export default function MapPage() {
     if(cat)q=q.eq('category',cat)
     const{data}=await q
     const real:Art[]=(data||[]).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(lat,lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0}))
+    // Démo en SECOURS uniquement : s'il existe de vrais artisans, on n'affiche
+    // qu'eux (pas de faux profils mélangés en production).
+    if(real.length>0){setArtisans(real);setLoading(false);return}
     const demo=cat?DEMO.filter(d=>d.category===cat):DEMO
-    const ids=new Set(real.map(a=>a.full_name))
-    setArtisans([...real,...demo.filter(d=>!ids.has(d.full_name))])
+    setArtisans(demo)
     setLoading(false)
   }
 
