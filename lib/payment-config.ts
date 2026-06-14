@@ -6,6 +6,12 @@
 // Taux de commission sur les paiements par CARTE uniquement (le cash = 0%).
 export const COMMISSION_RATE = 0.10
 
+// Paiement carte (SATIM) activé ? Tant que le compte marchand SATIM n'est pas
+// en place, on lance en CASH-ONLY : l'option carte est masquée et le cash est
+// le mode par défaut. Le jour où SATIM est prêt, mettre NEXT_PUBLIC_CARD_ENABLED
+// = 'true' dans Vercel (Production) — aucun changement de code nécessaire.
+export const CARD_ENABLED = process.env.NEXT_PUBLIC_CARD_ENABLED === 'true'
+
 // Lancement + 3 mois gratuits : aucune commission n'est prélevée avant cette
 // date. Configurable SANS toucher au code via la variable d'environnement
 // NEXT_PUBLIC_LAUNCH_DATE (format ISO, ex. « 2026-07-01 »). À défaut, on

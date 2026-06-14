@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { X, Zap, CalendarDays, CalendarClock, MapPin, ChevronLeft, BadgeCheck, CreditCard, Banknote, ShieldCheck } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
+import { CARD_ENABLED } from '@/lib/payment-config'
 
 export type BookingFlowArtisan = {
   id: string
@@ -42,7 +43,7 @@ export default function BookingFlow({
   const [when, setWhen] = useState<When>('asap')
   const [time, setTime] = useState('')
   const [address, setAddress] = useState(defaultAddress)
-  const [payMethod, setPayMethod] = useState<'card' | 'cash'>('card')
+  const [payMethod, setPayMethod] = useState<'card' | 'cash'>(CARD_ENABLED ? 'card' : 'cash')
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState('')
 
@@ -253,7 +254,7 @@ export default function BookingFlow({
                 {/* Mode de paiement */}
                 <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', display: 'block', marginBottom: 9 }}>{t('bflow.payTitle')}</label>
                 {([
-                  { id: 'card' as const, Icon: CreditCard, label: t('bflow.payCard'), desc: t('bflow.payCardDesc'), secure: true },
+                  ...(CARD_ENABLED ? [{ id: 'card' as const, Icon: CreditCard, label: t('bflow.payCard'), desc: t('bflow.payCardDesc'), secure: true }] : []),
                   { id: 'cash' as const, Icon: Banknote,   label: t('bflow.payCash'), desc: t('bflow.payCashDesc'), secure: false },
                 ]).map(o => (
                   <div key={o.id} onClick={() => setPayMethod(o.id)} className="press" style={{
