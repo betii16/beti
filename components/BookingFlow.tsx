@@ -12,8 +12,9 @@
 import { useState, useEffect, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { X, Zap, CalendarDays, CalendarClock, MapPin, ChevronLeft, BadgeCheck, CreditCard, Banknote, ShieldCheck } from 'lucide-react'
+import { X, Zap, CalendarDays, CalendarClock, ChevronLeft, BadgeCheck, CreditCard, Banknote, ShieldCheck } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
+import { AddressPicker } from '@/components/AddressPicker'
 
 export type BookingFlowArtisan = {
   id: string
@@ -42,6 +43,7 @@ export default function BookingFlow({
   const [when, setWhen] = useState<When>('asap')
   const [time, setTime] = useState('')
   const [address, setAddress] = useState(defaultAddress)
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [payMethod, setPayMethod] = useState<'card' | 'cash'>('card')
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState('')
@@ -93,6 +95,8 @@ export default function BookingFlow({
       title: need.trim().slice(0, 60) || `Demande ${artisan.category || 'service'}`,
       description: need.trim(),
       address: address.trim(),
+      lat: coords?.lat ?? null,
+      lng: coords?.lng ?? null,
       scheduled_at: scheduledAt(),
       status: 'pending',
       price_agreed: artisan.hourlyRate || 0,
@@ -244,10 +248,13 @@ export default function BookingFlow({
                 <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.01em', marginBottom: 16 }}>{t('bflow.whereTitle')}</div>
 
                 <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', display: 'block', marginBottom: 7 }}>{t('bflow.addressLabel')}</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 15px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 13, marginBottom: 18 }}>
-                  <MapPin size={15} color="var(--accent)" style={{ flexShrink: 0 }}/>
-                  <input value={address} onChange={e => setAddress(e.target.value)} placeholder={t('bflow.addressPh')}
-                    style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--tx)', fontSize: 13.5, fontFamily: 'Nexa,sans-serif', fontWeight: 300, minWidth: 0 }}/>
+                <div style={{ marginBottom: 18 }}>
+                  <AddressPicker
+                    hideConfirm
+                    height={190}
+                    defaultAddress={address}
+                    onChange={loc => { setAddress(loc.address); setCoords({ lat: loc.lat, lng: loc.lng }) }}
+                  />
                 </div>
 
                 {/* Mode de paiement */}

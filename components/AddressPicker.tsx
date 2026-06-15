@@ -14,17 +14,25 @@ type Location = {
 
 export function AddressPicker({
   onConfirm,
+  onChange,
   defaultLat = 36.7538,
   defaultLng = 3.0588,
+  defaultAddress = '',
+  hideConfirm = false,
+  height = 280,
 }: {
-  onConfirm: (location: Location) => void
+  onConfirm?: (location: Location) => void
+  onChange?: (location: Location) => void
   defaultLat?: number
   defaultLng?: number
+  defaultAddress?: string
+  hideConfirm?: boolean
+  height?: number
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<any>(null)
   const markerRef = useRef<any>(null)
-  const [address, setAddress] = useState('')
+  const [address, setAddress] = useState(defaultAddress)
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [mapLoaded, setMapLoaded] = useState(false)
@@ -130,6 +138,10 @@ export function AddressPicker({
 
     mapInstance.current = map
     markerRef.current = marker
+
+    // Intégré dans un bottom-sheet/modal animé : la carte peut s'initialiser
+    // avant que le conteneur ait sa taille finale → on recalcule après l'anim.
+    setTimeout(() => map.invalidateSize(), 250)
   }, [mapLoaded])
 
   // Reverse geocoding — adresse depuis coordonnées
@@ -217,8 +229,14 @@ export function AddressPicker({
   const handleConfirm = () => {
     if (!address) return
     setConfirmed(true)
-    onConfirm({ lat: currentLat, lng: currentLng, address })
+    onConfirm?.({ lat: currentLat, lng: currentLng, address })
   }
+
+  // Remonte la position/adresse en continu (drag, clic, GPS, suggestion) —
+  // pratique quand le composant est intégré dans un flux qui a déjà son bouton.
+  useEffect(() => {
+    if (onChange && address) onChange({ lat: currentLat, lng: currentLng, address })
+  }, [address, currentLat, currentLng]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 14, overflow: 'hidden', border: '0.5px solid var(--border)' }}>
@@ -297,7 +315,7 @@ export function AddressPicker({
 
       {/* Carte */}
       <div style={{ position: 'relative' }}>
-        <div ref={mapRef} style={{ width: '100%', height: 280 }}/>
+        <div ref={mapRef} style={{ width: '100%', height }}/>
 
         {/* Instruction */}
         <div style={{
@@ -320,24 +338,26 @@ export function AddressPicker({
       </div>
 
       {/* Bouton confirmer */}
-      <div style={{ background: 'var(--bg2)', padding: '12px', borderTop: '0.5px solid var(--border)' }}>
-        <button
-          onClick={handleConfirm}
-          disabled={!address}
-          style={{
-            width: '100%', padding: '13px',
-            background: confirmed ? 'rgba(74,222,128,0.08)' : address ? '#6366f1' : 'var(--bg3)',
-            border: confirmed ? '0.5px solid rgba(74,222,128,0.3)' : 'none',
-            borderRadius: 10,
-            color: confirmed ? '#4ade80' : address ? '#fff' : 'var(--tx3)',
-            fontSize: 14, fontWeight: 800,
-            cursor: address ? 'pointer' : 'not-allowed',
-            fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',
-          }}
-        >
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{confirmed ? <><Check size={15}/>Adresse confirmée</> : <><MapPin size={15}/>Confirmer cette adresse</>}</span>
-        </button>
-      </div>
+      {!hideConfirm && (
+        <div style={{ background: 'var(--bg2)', padding: '12px', borderTop: '0.5px solid var(--border)' }}>
+          <button
+            onClick={handleConfirm}
+            disabled={!address}
+            style={{
+              width: '100%', padding: '13px',
+              background: confirmed ? 'rgba(74,222,128,0.08)' : address ? '#6366f1' : 'var(--bg3)',
+              border: confirmed ? '0.5px solid rgba(74,222,128,0.3)' : 'none',
+              borderRadius: 10,
+              color: confirmed ? '#4ade80' : address ? '#fff' : 'var(--tx3)',
+              fontSize: 14, fontWeight: 800,
+              cursor: address ? 'pointer' : 'not-allowed',
+              fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{confirmed ? <><Check size={15}/>Adresse confirmée</> : <><MapPin size={15}/>Confirmer cette adresse</>}</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }
