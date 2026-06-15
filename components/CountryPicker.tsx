@@ -75,7 +75,7 @@ export function CountryPicker({ value, onChange, rounded = 'left' }: Props) {
     if (open) setTimeout(() => searchRef.current?.focus(), 50)
   }, [open])
 
-  const br = rounded === 'left' ? '10px 0 0 10px' : 10
+  const br = rounded === 'left' ? '16px 0 0 16px' : 16
 
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
@@ -85,7 +85,7 @@ export function CountryPicker({ value, onChange, rounded = 'left' }: Props) {
         onClick={() => setOpen(v => !v)}
         style={{
           display: 'flex', alignItems: 'center', gap: 7,
-          padding: '13px 12px',
+          padding: '15px 14px',
           background: 'var(--bg3)',
           border: '1px solid var(--border)',
           borderRight: rounded === 'left' ? 'none' : '1px solid var(--border)',
@@ -108,7 +108,7 @@ export function CountryPicker({ value, onChange, rounded = 'left' }: Props) {
         <div style={{
           position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 999,
           background: 'var(--bg2)', border: '1px solid var(--border)',
-          borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+          borderRadius: 18, boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
           width: 300, overflow: 'hidden',
         }}>
           {/* Recherche */}

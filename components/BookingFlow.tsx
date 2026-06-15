@@ -14,7 +14,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { X, Zap, CalendarDays, CalendarClock, MapPin, ChevronLeft, BadgeCheck, CreditCard, Banknote, ShieldCheck } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
-import { CARD_ENABLED } from '@/lib/payment-config'
 
 export type BookingFlowArtisan = {
   id: string
@@ -43,7 +42,7 @@ export default function BookingFlow({
   const [when, setWhen] = useState<When>('asap')
   const [time, setTime] = useState('')
   const [address, setAddress] = useState(defaultAddress)
-  const [payMethod, setPayMethod] = useState<'card' | 'cash'>(CARD_ENABLED ? 'card' : 'cash')
+  const [payMethod, setPayMethod] = useState<'card' | 'cash'>('card')
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState('')
 
@@ -254,7 +253,7 @@ export default function BookingFlow({
                 {/* Mode de paiement */}
                 <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', display: 'block', marginBottom: 9 }}>{t('bflow.payTitle')}</label>
                 {([
-                  ...(CARD_ENABLED ? [{ id: 'card' as const, Icon: CreditCard, label: t('bflow.payCard'), desc: t('bflow.payCardDesc'), secure: true }] : []),
+                  { id: 'card' as const, Icon: CreditCard, label: t('bflow.payCard'), desc: t('bflow.payCardDesc'), secure: true },
                   { id: 'cash' as const, Icon: Banknote,   label: t('bflow.payCash'), desc: t('bflow.payCashDesc'), secure: false },
                 ]).map(o => (
                   <div key={o.id} onClick={() => setPayMethod(o.id)} className="press" style={{
@@ -270,7 +269,7 @@ export default function BookingFlow({
                         <span style={{ fontSize: 13.5, fontWeight: 800, color: payMethod === o.id ? 'var(--accent)' : 'var(--tx)' }}>{o.label}</span>
                         {o.secure && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '1px 7px', borderRadius: 20, background: '#10b98114', fontSize: 9.5, color: '#10b981', fontWeight: 800 }}><ShieldCheck size={10} /> {t('bflow.paySecure')}</span>}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.55 }}>{o.desc}</div>
+                      <div style={{ fontSize: 11.5, color: 'var(--tx2)', fontWeight: 400, lineHeight: 1.55 }}>{o.desc}</div>
                     </div>
                     <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${payMethod === o.id ? 'var(--accent)' : 'var(--border2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                       {payMethod === o.id && <div style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--accent)' }} />}
