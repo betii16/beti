@@ -59,7 +59,7 @@ export default function ParametresPage() {
 
         {activeTab === 'profil' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+            <div className="card" style={{ padding: '24px' }}>
               <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 16 }}>{t('settings.avatar')}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800, color: 'var(--accent)' }}>
@@ -72,7 +72,7 @@ export default function ParametresPage() {
               </div>
             </div>
 
-            <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+            <div className="card" style={{ padding: '24px' }}>
               <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 20 }}>{t('settings.personalInfo')}</div>
               {[
                 { label: t('settings.fullName'), value: fullName, setter: setFullName, placeholder: 'Karim Benali', type: 'text' },
@@ -80,27 +80,25 @@ export default function ParametresPage() {
               ].map(f => (
                 <div key={f.label} style={{ marginBottom: 16 }}>
                   <label style={{ fontSize: 11, color: 'var(--tx3)', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>{f.label}</label>
-                  <input type={f.type} value={f.value} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder}
-                    style={{ width: '100%', padding: '12px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                  <input type={f.type} value={f.value} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} className="field"/>
                 </div>
               ))}
               <div style={{ marginBottom: 20 }}>
                 <label style={{ fontSize: 11, color: 'var(--tx3)', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>{t('settings.email')}</label>
-                <input type="email" value={email} disabled style={{ width: '100%', padding: '12px 16px', background: 'var(--bg3)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx3)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, cursor: 'not-allowed' }}/>
+                <input type="email" value={email} disabled className="field" style={{ color: 'var(--tx3)', cursor: 'not-allowed' }}/>
               </div>
-              <button onClick={saveProfile} disabled={saving}
-                style={{ width: '100%', padding: '13px', background: saved ? '#10b98112' : 'var(--gradient)', border: saved ? '0.5px solid #10b98144' : 'none', borderRadius: 10, color: saved ? '#10b981' : '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s' }}>
+              <button onClick={saveProfile} disabled={saving} className={saved ? 'btn-success btn-block' : 'btn-primary btn-block'}>
                 {saving ? t('settings.saving') : saved ? t('settings.saved') : t('settings.save')}
               </button>
             </div>
 
-            <div style={{ background: '#1a0505', border: '0.5px solid #ef444420', borderRadius: 16, padding: '24px' }}>
+            <div className="card" style={{ borderColor: '#ef444433', padding: '24px' }}>
               <div style={{ fontSize: 11, color: '#ef4444', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 12 }}>{t('settings.dangerZone')}</div>
               <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 16, lineHeight: 1.6 }}>
                 {t('settings.deleteAccDesc')}
               </p>
               <button onClick={async () => { if (confirm(t('settings.deleteAccConfirm'))) { await supabase.auth.signOut(); router.push('/') } }}
-                style={{ padding: '10px 20px', background: 'transparent', border: '0.5px solid #ef4444', borderRadius: 10, color: '#ef4444', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                className="btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef4444' }}>
                 {t('settings.deleteAcc')}
               </button>
             </div>
@@ -108,20 +106,20 @@ export default function ParametresPage() {
         )}
 
         {activeTab === 'securite' && (
-          <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+          <div className="card" style={{ padding: '24px' }}>
             <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 20 }}>{t('settings.changePass')}</div>
             <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 20, lineHeight: 1.6 }}>
               {t('settings.passwordResetSub')} <strong style={{ color: 'var(--tx)' }}>{email}</strong>
             </p>
             <button onClick={async () => { await supabase.auth.resetPasswordForEmail(email); alert(t('settings.resetSent')) }}
-              style={{ padding: '12px 24px', background: 'var(--gradient)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+              className="btn-primary btn-sm">
               {t('settings.changePass')}
             </button>
           </div>
         )}
 
         {activeTab === 'notifications' && (
-          <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+          <div className="card" style={{ padding: '24px' }}>
             <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 20 }}>
               {t('settings.notifTitle')}
             </div>

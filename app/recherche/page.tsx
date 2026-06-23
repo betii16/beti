@@ -144,12 +144,12 @@ export default function RecherchePage() {
                     value={keywordInput}
                     onChange={e => setKeywordInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && addKeyword()}
-                    style={{ flex: 1, padding: '10px 12px', background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 9, color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+                    className="field" style={{ flex: 1 }}
                   />
                   <button
                     onClick={addKeyword}
                     disabled={!keywordInput.trim()}
-                    style={{ padding: '10px 14px', background: keywordInput.trim() ? '#6366f1' : 'var(--bg3)', border: 'none', borderRadius: 9, color: keywordInput.trim() ? '#fff' : 'var(--tx3)', fontSize: 12, fontWeight: 800, cursor: keywordInput.trim() ? 'pointer' : 'not-allowed', fontFamily: 'Nexa, sans-serif', whiteSpace: 'nowrap' }}
+                    className="btn-primary btn-sm"
                   >+ Ajouter</button>
                 </div>
                 {/* Tags ajoutés */}
@@ -235,11 +235,7 @@ export default function RecherchePage() {
               </div>
 
               {/* Bouton rechercher */}
-              <button onClick={search} disabled={loading}
-                style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s' }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg,#7c7ef5,#a78bfa)'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)'}
-              >
+              <button onClick={search} disabled={loading} className="btn-primary btn-block">
                 {loading ? 'Recherche...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Search size={15}/>Rechercher</span>}
               </button>
             </div>
@@ -259,8 +255,7 @@ export default function RecherchePage() {
                     { id: 'price_asc',  label: '↑ Prix' },
                     { id: 'price_desc', label: '↓ Prix' },
                   ].map(s => (
-                    <button key={s.id} onClick={() => setSortBy(s.id as any)}
-                      style={{ padding: '6px 12px', borderRadius: 8, border: `0.5px solid ${sortBy === s.id ? '#6366f1' : 'var(--border)'}`, background: sortBy === s.id ? '#6366f10d' : 'var(--bg2)', color: sortBy === s.id ? '#6366f1' : 'var(--tx2)', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: sortBy === s.id ? 800 : 300 }}
+                    <button key={s.id} onClick={() => setSortBy(s.id as any)} className={sortBy === s.id ? 'chip chip-active' : 'chip'} style={{ padding: '6px 12px', fontSize: 11 }}
                     >{s.label}</button>
                   ))}
                 </div>
@@ -278,7 +273,7 @@ export default function RecherchePage() {
             {loading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[1,2,3,4].map(i => (
-                  <div key={i} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '20px', display: 'flex', gap: 16 }}>
+                  <div key={i} className="card" style={{ padding: '20px', display: 'flex', gap: 16 }}>
                     <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--border)', animation: 'pulse 1.5s infinite', flexShrink: 0 }}/>
                     <div style={{ flex: 1 }}>
                       <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: 8, width: '40%', animation: 'pulse 1.5s infinite' }}/>
@@ -302,11 +297,9 @@ export default function RecherchePage() {
                 const col = CATEGORIES.find(c => a.category?.toLowerCase().includes(c.id.slice(0, 5)))?.color || '#6366f1'
                 const initials = a.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'A'
                 return (
-                  <div key={a.artisan_id}
-                    style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '20px', display: 'flex', gap: 16, alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s', animation: `fadeIn 0.3s ease ${idx * 0.05}s both` }}
+                  <div key={a.artisan_id} className="acard"
+                    style={{ padding: '20px', display: 'flex', gap: 16, alignItems: 'center', animation: `fadeIn 0.3s ease ${idx * 0.05}s both` }}
                     onClick={() => router.push(`/artisan/${a.artisan_id}`)}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = col + '55'; (e.currentTarget as HTMLElement).style.background = 'var(--bg3)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg2)' }}
                   >
                     <div style={{ width: 60, height: 60, borderRadius: '50%', background: col + '22', border: `2px solid ${col}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: col, flexShrink: 0 }}>
                       {a.avatar_url ? <img src={a.avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}/> : initials}

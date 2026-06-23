@@ -113,7 +113,7 @@ export default function Parametres() {
   return (
     <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
 
-      <div style={{ background: 'var(--bg)', borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ fontSize: 10, color: 'var(--accent)', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('settings.myAccount')}</div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)' }}>{t('settings.title')}</h1>
@@ -142,7 +142,7 @@ export default function Parametres() {
           </button>
         </div>
 
-        <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '28px' }}>
+        <div className="card" style={{ padding: '28px' }}>
 
           {activeSection === 'profil' && (
             <div>
@@ -161,11 +161,11 @@ export default function Parametres() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
                 <div>
                   <label style={labelStyle}>{t('settings.fullName')}</label>
-                  <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t('settings.fullNamePh')} style={inputStyle}/>
+                  <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t('settings.fullNamePh')} className="field"/>
                 </div>
                 <div>
                   <label style={labelStyle}>{t('settings.phone')}</label>
-                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('settings.phonePh')} style={inputStyle}/>
+                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('settings.phonePh')} className="field"/>
                 </div>
               </div>
 
@@ -174,7 +174,7 @@ export default function Parametres() {
               )}
 
               <button onClick={saveProfil} disabled={savingProfil}
-                style={{ padding: '11px 28px', background: 'var(--gradient)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                className="btn-primary">
                 {savingProfil ? t('settings.saving') : t('settings.save')}
               </button>
             </div>
@@ -187,16 +187,16 @@ export default function Parametres() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
                 <div>
                   <label style={labelStyle}>{t('settings.emailAddress')}</label>
-                  <input value={newEmail} onChange={e => setNewEmail(e.target.value)} type="email" style={inputStyle}/>
+                  <input value={newEmail} onChange={e => setNewEmail(e.target.value)} type="email" className="field"/>
                 </div>
                 <div style={{ height: '0.5px', background: 'var(--border)' }}/>
                 <div>
                   <label style={labelStyle}>{t('settings.newPassword')}</label>
-                  <input value={newPassword} onChange={e => setNewPassword(e.target.value)} type="password" placeholder={t('settings.newPasswordPh')} style={inputStyle}/>
+                  <input value={newPassword} onChange={e => setNewPassword(e.target.value)} type="password" placeholder={t('settings.newPasswordPh')} className="field"/>
                 </div>
                 <div>
                   <label style={labelStyle}>{t('settings.confirmPassword')}</label>
-                  <input value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} type="password" placeholder={t('settings.confirmPasswordPh')} style={inputStyle}/>
+                  <input value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} type="password" placeholder={t('settings.confirmPasswordPh')} className="field"/>
                 </div>
               </div>
 
@@ -208,7 +208,7 @@ export default function Parametres() {
               )}
 
               <button onClick={saveSecurite} disabled={savingSecurite}
-                style={{ padding: '11px 28px', background: 'var(--gradient)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                className="btn-primary">
                 {savingSecurite ? t('settings.updating') : t('settings.update')}
               </button>
             </div>
