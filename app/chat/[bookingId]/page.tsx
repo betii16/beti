@@ -165,7 +165,7 @@ export default function ChatPage(){
   let lastDate=''
 
   if(loadErr)return(
-    <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',padding:24,paddingTop:80}}>
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,paddingTop:80}}>
       <div style={{maxWidth:400,textAlign:'center'}}>
         <div style={{fontSize:32,marginBottom:16}}>⚠</div>
         <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:10}}>Erreur de chargement</div>

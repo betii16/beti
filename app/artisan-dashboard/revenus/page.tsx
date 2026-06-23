@@ -39,10 +39,10 @@ export default function RevenusPage(){
 
   const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?"Aujourd'hui":x===1?'Hier':x<7?`${x}j`:x<30?`${Math.floor(x/7)} sem.`:`${Math.floor(x/30)} mois`}
 
-  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><p style={{color:'var(--tx3)'}}>Chargement...</p></div>
+  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><p style={{color:'var(--tx3)'}}>Chargement...</p></div>
 
   return(
-    <div style={{minHeight:'100vh',background:'var(--bg)',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
       <div style={{maxWidth:900,margin:'0 auto',padding:24}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:12}}>
           <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>Revenus & Historique</h1><p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>Suivez votre activité</p></div>

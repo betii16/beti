@@ -61,7 +61,7 @@ export default function ArtisanPage(){
     setSent(true)
   }
 
-  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>{t('common.loading')}</div></div>
+  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>{t('common.loading')}</div></div>
 
   const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}
@@ -79,7 +79,7 @@ export default function ArtisanPage(){
   return(
     <>
       <style suppressHydrationWarning>{`
-        *{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);font-family:Nexa,system-ui,sans-serif}
+        *{box-sizing:border-box;margin:0;padding:0}body{font-family:Nexa,system-ui,sans-serif}
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
       `}</style>

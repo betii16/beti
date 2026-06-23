@@ -122,7 +122,7 @@ export default function RecherchePage() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         *{box-sizing:border-box;margin:0;padding:0}
-        body{background:var(--bg);font-family:Nexa,sans-serif}
+        body{font-family:Nexa,sans-serif}
       `}</style>
       <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif', paddingTop: 84 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>

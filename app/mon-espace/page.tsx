@@ -39,10 +39,10 @@ export default function ClientDashboard(){
   const completed=bookings.filter(b=>b.status==='completed')
   const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/60000);return x<1?t('common.justNow'):x<60?`${x} ${t('common.minShort')}`:x<1440?`${Math.floor(x/60)}${t('common.hourShort')}`:`${Math.floor(x/1440)}${t('common.daysShort')}`}
 
-  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
+  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
 
   return(
-    <div style={{minHeight:'100vh',background:'var(--bg)',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif',direction:isAr?'rtl':'ltr'}}>
+    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif',direction:isAr?'rtl':'ltr'}}>
       <div style={{maxWidth:900,margin:'0 auto',padding:24}}>
         <div style={{marginBottom:28}}>
           <h1 style={{fontSize:28,fontWeight:800,color:'var(--tx)',marginBottom:4}}>{t('mySpace.hello')} {profile?.full_name?.split(' ')[0]||'!'}</h1>

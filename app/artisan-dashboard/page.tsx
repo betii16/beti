@@ -83,10 +83,10 @@ export default function ArtisanDashboard(){
   const pendingBookings=bookings.filter(b=>b.status==='pending')
   const recentBookings=bookings.filter(b=>b.status!=='pending').slice(0,5)
 
-  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
+  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
 
   return(
-    <div style={{minHeight:'100vh',background:'var(--bg)',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
       <div style={{maxWidth:1000,margin:'0 auto',padding:'24px'}}>
 
         {/* Header */}
@@ -101,13 +101,13 @@ export default function ArtisanDashboard(){
               <div style={{width:8,height:8,borderRadius:'50%',background:isAvailable?'#10b981':'var(--tx3)',boxShadow:isAvailable?'0 0 8px #10b98155':'none',transition:'all 0.3s'}}/>
               <span style={{fontSize:13,fontWeight:700,color:isAvailable?'#10b981':'var(--tx3)'}}>{isAvailable?'En ligne':'Hors ligne'}</span>
             </button>
-            <a href="/artisan-dashboard/profil"><button style={{padding:'10px 20px',borderRadius:12,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Mon profil</button></a>
+            <a href="/artisan-dashboard/profil"><button className="btn-primary btn-sm">Mon profil</button></a>
           </div>
         </div>
 
         {/* Complétion profil */}
         {completion<100&&(
-          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:16,padding:'20px 24px',marginBottom:20,boxShadow:'var(--card-shadow)'}}>
+          <div className="card" style={{padding:'20px 24px',marginBottom:20}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
               <span style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>Profil complété à {completion}%</span>
               <a href="/artisan-dashboard/profil" style={{fontSize:12,color:'#6366f1',textDecoration:'none',fontWeight:700}}>Compléter</a>
@@ -129,7 +129,7 @@ export default function ArtisanDashboard(){
             {label:'En attente',value:stats.pending,Icon:Clock,color:'#f59e0b',sub:'Demandes à traiter'},
             {label:'Note',value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'#f59e0b',sub:`${stats.ratingCount} avis`},
           ].map(k=>(
-            <div key={k.label} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:16,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+            <div key={k.label} className="card" style={{padding:'20px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
                 <span style={{fontSize:11,color:'var(--tx3)',fontWeight:700,letterSpacing:'0.06em'}}>{k.label.toUpperCase()}</span>
                 <k.Icon size={18} color={k.color}/>
@@ -146,7 +146,7 @@ export default function ArtisanDashboard(){
             <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>Demandes en attente ({pendingBookings.length})</h2>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {pendingBookings.map(b=>(
-                <div key={b.id} style={{background:'var(--bg2)',border:'1px solid #f59e0b33',borderRadius:14,padding:'18px 20px',boxShadow:'var(--card-shadow)',display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+                <div key={b.id} className="card" style={{borderColor:'#f59e0b55',padding:'18px 20px',display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
                   <div style={{width:40,height:40,borderRadius:10,background:'#f59e0b15',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Clock size={18} color="#f59e0b"/></div>
                   <div style={{flex:1,minWidth:180}}>
                     <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{b.profiles?.full_name||'Client'}</div>
@@ -155,9 +155,9 @@ export default function ArtisanDashboard(){
                   </div>
                   <div style={{fontSize:16,fontWeight:800,color:'var(--tx)',marginRight:8}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
                   <div style={{display:'flex',gap:8}}>
-                    <button onClick={()=>respond(b.id,true)} style={{padding:'10px 20px',borderRadius:10,background:'linear-gradient(135deg,#10b981,#059669)',border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Accepter</button>
-                    <button onClick={()=>respond(b.id,false)} style={{padding:'10px 16px',borderRadius:10,background:'transparent',border:'1px solid #ef444444',color:'#ef4444',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Refuser</button>
-                    <a href={`/chat/${b.id}`}><button style={{padding:'10px 16px',borderRadius:10,background:'transparent',border:'1px solid var(--border)',color:'var(--tx2)',fontSize:12,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Message</button></a>
+                    <button onClick={()=>respond(b.id,true)} className="btn-success btn-sm">Accepter</button>
+                    <button onClick={()=>respond(b.id,false)} className="btn-ghost btn-sm" style={{color:'#ef4444',borderColor:'#ef444455'}}>Refuser</button>
+                    <a href={`/chat/${b.id}`}><button className="btn-ghost btn-sm">Message</button></a>
                   </div>
                 </div>
               ))}
@@ -172,14 +172,14 @@ export default function ArtisanDashboard(){
             <a href="/artisan-dashboard/revenus" style={{fontSize:12,color:'#6366f1',textDecoration:'none',fontWeight:700}}>Voir tout</a>
           </div>
           {recentBookings.length===0?(
-            <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'40px',textAlign:'center',boxShadow:'var(--card-shadow)'}}>
+            <div className="card" style={{padding:'40px',textAlign:'center'}}>
               <p style={{fontSize:14,color:'var(--tx3)',fontWeight:300}}>Aucune mission pour l'instant</p>
               <p style={{fontSize:12,color:'var(--tx3)',marginTop:8}}>Activez votre disponibilité pour recevoir des demandes</p>
             </div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {recentBookings.map(b=>(
-                <div key={b.id} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',gap:14,boxShadow:'var(--card-shadow)'}}>
+                <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
                   <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':'#ef4444',flexShrink:0}}/>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||'Client'}</div>
@@ -202,9 +202,7 @@ export default function ArtisanDashboard(){
             {label:'Carte',href:'/map',Icon:Map,desc:'Voir les clients proches'},
           ].map(l=>(
             <a key={l.label} href={l.href} style={{textDecoration:'none'}}>
-              <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'18px',cursor:'pointer',transition:'all 0.2s',boxShadow:'var(--card-shadow)'}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor='#6366f133';e.currentTarget.style.transform='translateY(-2px)'}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.transform='none'}}>
+              <div className="acard" style={{padding:'18px'}}>
                 <div style={{marginBottom:10}}><l.Icon size={22} color="var(--accent)"/></div>
                 <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{l.label}</div>
                 <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>{l.desc}</div>

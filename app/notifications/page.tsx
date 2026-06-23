@@ -31,10 +31,10 @@ export default function NotificationsPage(){
   const clear=async()=>{const{data:{user}}=await supabase.auth.getUser();if(user)await supabase.from('notifications').delete().eq('user_id',user.id);setNotifs([])}
   const unread=notifs.filter(n=>!n.is_read).length
 
-  if(loading)return<div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
+  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
 
   return(
-    <div style={{minHeight:'100vh',background:'var(--bg)',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
       <div style={{maxWidth:640,margin:'0 auto',padding:24}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
           <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>Notifications</h1>

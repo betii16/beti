@@ -135,19 +135,10 @@ export default function Home(){
         @keyframes glow{0%,100%{box-shadow:0 0 8px #6366f133}50%{box-shadow:0 0 20px #6366f155}}
         *{box-sizing:border-box;margin:0;padding:0}
         html{scroll-behavior:smooth}
-        body{background:var(--bg);color:var(--tx);font-family:Nexa,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background 0.4s,color 0.4s}
         #services,#artisans,#comment{scroll-margin-top:100px}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--accent)22;border-radius:4px}
-        /* Le verre des cartes (.card / .acard / .glassb) vit désormais dans globals.css (composant global). */
-        .btn-primary{background:var(--gradient);color:#fff;border:none;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.3s;box-shadow:0 4px 16px #6366f133}
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px #6366f155}
-        .btn-ghost{background:transparent;color:var(--tx2);border:1px solid var(--border);padding:10px 22px;border-radius:12px;font-size:13px;font-weight:400;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.25s}
-        .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-        .chip{padding:6px 16px;border-radius:10px;background:var(--bg);border:1px solid var(--border);color:var(--tx2);font-size:12px;font-weight:400;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.25s;display:flex;align-items:center;gap:6px}
-        .chip:hover{border-color:var(--accent)66;color:var(--accent)}
-        .chip-active{background:var(--accent)12;border-color:var(--accent);color:var(--accent);font-weight:700}
+        /* Boutons/chips/labels/cartes vivent dans globals.css (système global unique). */
         .badge{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.04em}
-        .section-label{font-size:11px;letter-spacing:0.14em;font-weight:800;background:var(--gradient-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
         .tag{padding:4px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--border);font-size:10px;color:var(--tx3);font-weight:400}
       `}</style>
 

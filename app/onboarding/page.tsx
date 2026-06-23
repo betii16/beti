@@ -92,7 +92,7 @@ export default function OnboardingPage() {
         @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes checkIn{0%{transform:scale(0) rotate(-45deg)}80%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
         *{box-sizing:border-box;margin:0;padding:0}
-        body{background:var(--bg);font-family:Nexa,sans-serif}
+        body{font-family:Nexa,sans-serif}
       `}</style>
 
       <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'Nexa, sans-serif' }}>

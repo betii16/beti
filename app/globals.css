@@ -47,6 +47,12 @@
   --glass-edge: rgba(255,255,255,0.14);
   --glass-highlight: rgba(255,255,255,0.22);
   --glass-blur: 18px;
+  /* Rayons canoniques — une seule échelle pour tout le site */
+  --r-chip: 12px;
+  --r-btn: 14px;
+  --r-field: 14px;
+  --r-card: 18px;
+  --r-pill: 999px;
 }
 
 /* ═══ LIGHT THEME ═══ */
@@ -97,7 +103,6 @@ html {
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
   color: var(--tx);
   font-family: 'Nexa', system-ui, -apple-system, sans-serif;
   font-weight: 300;
@@ -105,10 +110,13 @@ html, body {
   -webkit-font-smoothing: antialiased;
   transition: background 0.3s ease, color 0.3s ease;
 }
+/* html = couleur de socle (s'adapte au thème via --bg) ;
+   body TRANSPARENT pour que le BackgroundMesh (z-index:-1) reste visible. */
+html { background: var(--bg); }
+body { background: transparent; }
 
 /* ═══ LIGHT THEME — base overrides ═══ */
 [data-theme="light"] body {
-  background: var(--bg);
   color: var(--tx);
 }
 
@@ -157,7 +165,7 @@ html, body {
 .acard::before, .card.is-clickable::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   opacity: 0; transition: opacity .4s ease; z-index: 3;
-  background: radial-gradient(300px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.20), rgba(139,124,246,0.15) 30%, transparent 58%);
+  background: radial-gradient(180px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.14), rgba(139,124,246,0.10) 26%, transparent 50%);
 }
 .acard:hover::before, .card.is-clickable:hover::before { opacity: 1; }
 /* Bulle iOS : verre + rim lumineux + reflet en haut à gauche */
@@ -169,6 +177,99 @@ html, body {
 .glassb::after {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: radial-gradient(72% 56% at 30% 20%, rgba(255,255,255,0.32), transparent 60%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SYSTÈME DE COMPOSANTS — boutons, chips, champs, labels
+   Utiliser ces classes PARTOUT (au lieu de styles inline) pour un
+   rendu cohérent et moderne sur tout le site. Les overrides inline
+   (padding, flex, fontSize) restent possibles et prioritaires.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Boutons : base commune ── */
+.btn, .btn-primary, .btn-ghost, .btn-danger, .btn-success, .btn-soft {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: inherit; font-weight: 700; font-size: 14px; line-height: 1;
+  padding: 12px 22px; border-radius: var(--r-btn);
+  border: 1px solid transparent; cursor: pointer; white-space: nowrap; user-select: none;
+  text-decoration: none; position: relative; overflow: hidden;
+  transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .25s ease,
+              filter .2s ease, background .25s ease, border-color .25s ease, color .2s ease;
+}
+.btn:active, .btn-primary:active, .btn-ghost:active,
+.btn-danger:active, .btn-success:active, .btn-soft:active { transform: translateY(0) scale(.97); }
+.btn:disabled, .btn-primary:disabled, .btn-ghost:disabled,
+.btn-danger:disabled, .btn-success:disabled, .btn-soft:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* Plein dégradé (action principale) */
+.btn-primary {
+  color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 6px 18px -7px var(--accent), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 11px 26px -7px var(--accent), inset 0 1px 0 rgba(255,255,255,.34); }
+
+/* Verre (action secondaire) */
+.btn-ghost {
+  color: var(--tx); background: var(--glass-surface); border-color: var(--glass-edge);
+  -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%);
+}
+.btn-ghost:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+
+/* Teinté discret (sur fond carte) */
+.btn-soft {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.btn-soft:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--accent) 20%, transparent); }
+
+/* Danger / succès */
+.btn-danger  { color:#fff; background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 6px 18px -7px #ef4444; }
+.btn-danger:hover  { transform: translateY(-1px); box-shadow: 0 11px 26px -7px #ef4444; }
+.btn-success { color:#fff; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 18px -7px #10b981; }
+.btn-success:hover { transform: translateY(-1px); box-shadow: 0 11px 26px -7px #10b981; }
+
+/* Tailles */
+.btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 11px; }
+.btn-lg { padding: 16px 32px; font-size: 15px; border-radius: 16px; }
+.btn-block { display: flex; width: 100%; }
+.btn-icon { padding: 0; width: 42px; height: 42px; border-radius: 12px; }
+
+/* ── Chips (filtres, tags) ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 15px; border-radius: var(--r-chip); font-size: 13px; font-weight: 600;
+  color: var(--tx2); background: var(--glass-surface); border: 1px solid var(--glass-edge);
+  cursor: pointer; white-space: nowrap; text-decoration: none;
+  transition: transform .18s cubic-bezier(.22,1,.36,1), border-color .2s ease, color .2s ease, background .2s ease;
+}
+.chip:hover { transform: translateY(-1px); color: var(--tx); border-color: var(--accent); }
+.chip-active {
+  color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent; box-shadow: 0 5px 14px -6px var(--accent);
+}
+.chip-active:hover { color: #fff; }
+
+/* ── Champs de saisie unifiés ── */
+.field {
+  width: 100%; padding: 13px 16px; border-radius: var(--r-field);
+  font-family: inherit; font-size: 14px; font-weight: 300; color: var(--tx);
+  background: var(--glass-surface); border: 1px solid var(--glass-edge);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: border-color .2s ease, box-shadow .25s ease, background .2s ease;
+}
+.field::placeholder { color: var(--tx3); }
+.field:focus {
+  outline: none; border-color: var(--accent); background: var(--glass-surface-2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
+
+/* ── Étiquette de section ── */
+.section-label {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
 }
 
 /* Halos du fond (BackgroundMesh) */
