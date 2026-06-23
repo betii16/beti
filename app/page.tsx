@@ -417,7 +417,7 @@ export default function Home(){
               </div>
             </div>
             <a href="/auth/signup" style={{position:'relative',display:'inline-flex',alignItems:'center',justifyContent:'center'}}>
-              <span aria-hidden style={{position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%)',fontSize:200,fontWeight:800,color:'var(--accent)',opacity:0.05,pointerEvents:'none',whiteSpace:'nowrap',letterSpacing:'0.05em',zIndex:0,lineHeight:1}}>BETI</span>
+              <span aria-hidden style={{position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%)',fontSize:104,fontWeight:800,color:'var(--accent)',opacity:0.06,pointerEvents:'none',whiteSpace:'nowrap',letterSpacing:'0.05em',zIndex:0,lineHeight:1}}>BETI</span>
               <button className="btn-primary" style={{padding:'16px 40px',fontSize:15,position:'relative',zIndex:1}}>{t('home.ctaBtn')}</button>
             </a>
           </div>
