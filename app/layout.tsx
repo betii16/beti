@@ -3,6 +3,8 @@ import './globals.css'
 import Navigation from '@/components/Navigation'
 import BottomTabBar from '@/components/BottomTabBar'
 import MobileHeader from '@/components/MobileHeader'
+import BackgroundMesh from '@/components/BackgroundMesh'
+import GlassHover from '@/components/GlassHover'
 import { LangProvider } from '@/lib/LangContext'
 
 // Viewport « application » : pas de zoom pinch, couvre l'encoche iPhone
@@ -72,6 +74,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         })}}/>
       </head>
       <body>
+        <BackgroundMesh/>
+        <GlassHover/>
         <LangProvider>
           <Navigation/>
           <MobileHeader/>

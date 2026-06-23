@@ -8,7 +8,7 @@ import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
-import { LayoutGrid } from 'lucide-react'
+import { LayoutGrid, Users, Heart, Clock, MapPinned, Search, CalendarCheck, CheckCircle2 } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
 
 type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string;phone?:string }
@@ -112,6 +112,9 @@ export default function Home(){
     setSent(true)
   }
 
+  // (Le halo « verre liquide » qui suit le curseur est géré globalement par
+  //  components/GlassHover, monté dans le layout → actif sur toutes les pages.)
+
   useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!sa.current){sa.current=true;const t={a:12000,b:98,c:30,d:50};const s=Date.now();const tick=()=>{const p=Math.min((Date.now()-s)/1800,1);const e=1-Math.pow(1-p,3);setCnt({a:Math.floor(e*t.a),b:Math.floor(e*t.b),c:Math.floor(e*t.c),d:Math.floor(e*t.d)});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:0.3});if(sr.current)o.observe(sr.current);return()=>o.disconnect()},[])
 
   const cc=(id:string)=>SVC.find(c=>c.id===id)?.color||'#6366f1'
@@ -135,11 +138,7 @@ export default function Home(){
         body{background:var(--bg);color:var(--tx);font-family:Nexa,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background 0.4s,color 0.4s}
         #services,#artisans,#comment{scroll-margin-top:100px}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--accent)22;border-radius:4px}
-        .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
-        .card:hover{transform:translateY(-4px);box-shadow:var(--hover-shadow);border-color:var(--accent)33}
-        .acard{transition:all 0.35s cubic-bezier(0.4,0,0.2,1)}
-        .acard:hover{transform:translateY(-6px) scale(1.01);box-shadow:var(--hover-shadow-lg);border-color:var(--accent)44}
-        .acard:hover::after{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,var(--accent)44,transparent 50%,transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+        /* Le verre des cartes (.card / .acard / .glassb) vit désormais dans globals.css (composant global). */
         .btn-primary{background:var(--gradient);color:#fff;border:none;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.3s;box-shadow:0 4px 16px #6366f133}
         .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px #6366f155}
         .btn-ghost{background:transparent;color:var(--tx2);border:1px solid var(--border);padding:10px 22px;border-radius:12px;font-size:13px;font-weight:400;cursor:pointer;font-family:Nexa,sans-serif;transition:all 0.25s}
@@ -230,20 +229,20 @@ export default function Home(){
         <section id="services" style={{maxWidth:1100,margin:'0 auto',padding:'40px 24px 28px'}}>
           <div style={{marginBottom:24}}><div className="section-label">{t('home.servicesTag')}</div><h2 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.servicesTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
-            <div onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card" style={{padding:18,cursor:'pointer',borderColor:!cat?'var(--accent)':'var(--border)'}}>
+            <div onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card is-clickable" style={{padding:18,borderColor:!cat?'var(--accent)':'var(--border)'}}>
               <div style={{fontSize:20,marginBottom:10,opacity:0.6}}>✳</div>
               <div style={{fontSize:14,fontWeight:700,color:!cat?'var(--accent)':'var(--tx)',marginBottom:4}}>{t('home.allServices')}</div>
               <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{t('home.allServicesSub')}</div>
             </div>
             {SVC.map(s=>(
-              <div key={s.id} onClick={()=>{setCat(s.id);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card" style={{padding:18,cursor:'pointer',position:'relative',borderColor:cat===s.id?s.color:'var(--border)'}}>
+              <div key={s.id} onClick={()=>{setCat(s.id);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card is-clickable" style={{padding:18,position:'relative',borderColor:cat===s.id?s.color:'var(--border)'}}>
                 {s.u&&<div className="badge" style={{position:'absolute',top:10,right:isAr?'auto':10,left:isAr?10:'auto',background:'#ef444412',color:'#ef4444'}}>{t('home.urgent')}</div>}
                 <div style={{marginBottom:10}}><CategoryIcon id={s.id} size={22} color={cat===s.id?s.color:'var(--tx2)'} strokeWidth={1.75}/></div>
                 <div style={{fontSize:14,fontWeight:700,color:cat===s.id?s.color:'var(--tx)',marginBottom:4,transition:'color 0.2s'}}>{cl(s.id)}</div>
                 <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{svcDesc(s.id)}</div>
               </div>
             ))}
-            <div onClick={()=>{setCat('autre');setTags([])}} className="card" style={{padding:18,cursor:'pointer',borderColor:cat==='autre'?'#a78bfa':'var(--border)'}}>
+            <div onClick={()=>{setCat('autre');setTags([])}} className="card is-clickable" style={{padding:18,borderColor:cat==='autre'?'#a78bfa':'var(--border)'}}>
               <div style={{marginBottom:10}}><LayoutGrid size={22} color={cat==='autre'?'#a78bfa':'var(--tx2)'} strokeWidth={1.75}/></div>
               <div style={{fontSize:14,fontWeight:700,color:cat==='autre'?'#a78bfa':'var(--tx)',marginBottom:4}}>{t('home.otherService')}</div>
               <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{t('home.otherServiceSub')}</div>
@@ -281,7 +280,7 @@ export default function Home(){
                 {vis.map((a,i)=>{const c=cc(a.category);const init=a.full_name?.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'A';const rt=Math.floor(Math.random()*20+5)
                   return(
                     <div key={a.artisan_id} onClick={()=>openA(a)} className="acard"
-                      style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:20,cursor:'pointer',overflow:'hidden',opacity:a.is_available?1:0.4,position:'relative',animation:`fadeUp 0.5s ease ${i*0.06}s both`}}>
+                      style={{borderRadius:20,cursor:'pointer',overflow:'hidden',opacity:a.is_available?1:0.4,position:'relative',animation:`fadeUp 0.5s ease ${i*0.06}s both`}}>
                       
                       {/* Banner gradient + centered avatar */}
                       <div style={{position:'relative',height:130,background:`linear-gradient(160deg, ${c}28, var(--bg2) 65%)`,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -333,50 +332,70 @@ export default function Home(){
         </section>
 
         {/* ── STATS ── */}
-        <div ref={sr} style={{background:'var(--bg3)',borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)',padding:'56px 40px'}}>
-          <div className="stats-grid" style={{maxWidth:860,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(4,1fr)'}}>
-            {[{v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA')},{v:cnt.b,x:'%',l:t('home.statsB')},{v:cnt.c,p:'<',x:'min',l:t('home.statsC')},{v:cnt.d,x:'+',l:t('home.statsD')}].map((s:any,i)=>(
-              <div key={i} style={{textAlign:'center',padding:16,borderRight:i<3?'1px solid var(--border)':'none'}}>
-                <div style={{fontSize:'clamp(1.8rem,3vw,2.6rem)',fontWeight:800,lineHeight:1,marginBottom:8,display:'flex',alignItems:'baseline',justifyContent:'center',gap:2}}>
-                  {s.p&&<span style={{fontSize:'0.5em',fontWeight:300,color:'var(--accent)'}}>{s.p}</span>}
-                  <span style={{background:'var(--gradient-text)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{s.v}</span>
-                  <span style={{fontSize:'0.4em',fontWeight:300,color:'var(--tx3)'}}>{s.x}</span>
+        <div ref={sr} style={{padding:'56px 24px 44px'}}>
+          {/* Un seul bandeau de verre : les 4 chiffres se lisent comme une unité,
+              séparés par de simples filets — fini les 4 rectangles flottants. */}
+          <div className="card" style={{maxWidth:980,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(4,1fr)',padding:'6px 0'}}>
+            {[
+              {v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA'),Icon:Users,c:'#6366f1'},
+              {v:cnt.b,x:'%',l:t('home.statsB'),Icon:Heart,c:'#10b981'},
+              {v:cnt.c,p:'<',x:'min',l:t('home.statsC'),Icon:Clock,c:'#3b82f6'},
+              {v:cnt.d,x:'+',l:t('home.statsD'),Icon:MapPinned,c:'#8b5cf6'},
+            ].map((s:any,i)=>(
+              <div key={i} style={{padding:'26px 18px',textAlign:'center',borderInlineStart:i>0?'1px solid var(--border)':'none'}}>
+                <div style={{display:'inline-flex',width:40,height:40,borderRadius:12,marginBottom:12,alignItems:'center',justifyContent:'center',background:`${s.c}1a`,color:s.c}}>
+                  <s.Icon size={20} strokeWidth={2}/>
                 </div>
-                <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{s.l}</div>
+                <div style={{fontSize:'clamp(1.7rem,2.6vw,2.3rem)',fontWeight:800,lineHeight:1,marginBottom:6,display:'flex',alignItems:'baseline',justifyContent:'center',gap:2}}>
+                  {s.p&&<span style={{fontSize:'0.5em',fontWeight:300,color:s.c}}>{s.p}</span>}
+                  <span style={{background:'var(--gradient-text)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{s.v}</span>
+                  <span style={{fontSize:'0.42em',fontWeight:300,color:'var(--tx3)'}}>{s.x}</span>
+                </div>
+                <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>{s.l}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* ── COMMENT ÇA MARCHE ── */}
-        <section id="comment" style={{padding:'72px 24px',maxWidth:1100,margin:'0 auto'}}>
-          <div style={{textAlign:'center',marginBottom:48}}><div className="section-label">{t('home.howTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.howTitle')}</h2></div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:16}}>
-            {[{n:'01',k:'step1',c:'#3b82f6'},{n:'02',k:'step2',c:'#6366f1'},{n:'03',k:'step3',c:'#10b981'}].map(s=>(
-              <div key={s.n} className="card" style={{padding:'28px 24px'}}>
-                <div style={{fontSize:48,fontWeight:800,background:`${s.c}15`,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',lineHeight:1,marginBottom:16}}>{s.n}</div>
-                <div style={{width:20,height:3,background:s.c,marginBottom:14,borderRadius:2}}/>
-                <div style={{fontSize:16,fontWeight:800,marginBottom:8}}>{t(`home.${s.k}t`)}</div>
-                <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.7,fontWeight:300}}>{t(`home.${s.k}d`)}</div>
+        <section id="comment" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
+          <div style={{textAlign:'center',marginBottom:44}}><div className="section-label">{t('home.howTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.howTitle')}</h2></div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'28px 18px'}}>
+            {[{n:'01',k:'step1',c:'#3b82f6',Icon:Search},{n:'02',k:'step2',c:'#6366f1',Icon:CalendarCheck},{n:'03',k:'step3',c:'#10b981',Icon:CheckCircle2}].map((s,i)=>(
+              <div key={s.n} style={{position:'relative',padding:'0 8px'}}>
+                {/* Trait de liaison vers l'étape suivante (desktop) */}
+                {i<2&&<div aria-hidden className="desktop-only" style={{position:'absolute',top:27,insetInlineStart:70,insetInlineEnd:-18,height:2,background:`linear-gradient(90deg,${s.c}66,transparent)`,pointerEvents:'none'}}/>}
+                <div style={{position:'relative',width:54,height:54,borderRadius:17,display:'flex',alignItems:'center',justifyContent:'center',background:`linear-gradient(135deg,${s.c},${s.c}99)`,boxShadow:`0 10px 24px ${s.c}40`,marginBottom:20,zIndex:1}}>
+                  <s.Icon size={25} color="#fff" strokeWidth={2}/>
+                  <span style={{position:'absolute',top:-8,insetInlineEnd:-8,minWidth:22,height:22,padding:'0 5px',borderRadius:11,background:'var(--bg)',border:`1px solid ${s.c}66`,color:s.c,fontSize:10,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'}}>{s.n}</span>
+                </div>
+                <div style={{fontSize:17,fontWeight:800,marginBottom:9}}>{t(`home.${s.k}t`)}</div>
+                <div style={{fontSize:13.5,color:'var(--tx2)',lineHeight:1.75,fontWeight:300}}>{t(`home.${s.k}d`)}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* ── POURQUOI BETI ── */}
-        <section style={{padding:'64px 24px',background:'var(--bg3)',borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)'}}>
+        <section style={{padding:'64px 24px',borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)'}}>
           <div style={{maxWidth:1100,margin:'0 auto'}}>
             <div style={{textAlign:'center',marginBottom:40}}>
               <div className="section-label">{t('home.whyTag')}</div>
               <h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.whyTitle')}</h2>
               <p style={{fontSize:14,color:'var(--tx2)',fontWeight:300,maxWidth:460,margin:'12px auto 0',lineHeight:1.7}}>{t('home.whySub')}</p>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12}}>
+            {/* Liste de bénéfices à filets — volontairement « plate » pour trancher
+                avec le verre des sections interactives. */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:'0 40px'}}>
               {[{k:'why1',c:'#6366f1'},{k:'why2',c:'#10b981'},{k:'why3',c:'#3b82f6'},{k:'why4',c:'#f59e0b'},{k:'why5',c:'#8b5cf6'},{k:'why6',c:'#ef4444'}].map(f=>(
-                <div key={f.k} className="card" style={{padding:22}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:f.c,marginBottom:14,boxShadow:`0 0 12px ${f.c}33`}}/>
-                  <div style={{fontSize:14,fontWeight:800,marginBottom:6}}>{t(`home.${f.k}t`)}</div>
-                  <div style={{fontSize:12,color:'var(--tx2)',lineHeight:1.7,fontWeight:300}}>{t(`home.${f.k}d`)}</div>
+                <div key={f.k} style={{display:'flex',gap:14,padding:'20px 2px',borderTop:'1px solid var(--border)'}}>
+                  <div style={{flexShrink:0,width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`${f.c}14`,border:`1px solid ${f.c}30`}}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:f.c,boxShadow:`0 0 12px ${f.c}55`}}/>
+                  </div>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:800,marginBottom:5}}>{t(`home.${f.k}t`)}</div>
+                    <div style={{fontSize:12.5,color:'var(--tx2)',lineHeight:1.7,fontWeight:300}}>{t(`home.${f.k}d`)}</div>
+                  </div>
                 </div>
               ))}
             </div>

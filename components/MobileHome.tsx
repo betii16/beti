@@ -80,7 +80,7 @@ export default function MobileHome({
   ]
 
   return (
-    <div className="mobile-only" style={{ flexDirection: 'column', direction: isAr ? 'rtl' : 'ltr', paddingTop: 10, paddingBottom: 8, overflowX: 'hidden' }}>
+    <div className="mobile-only" style={{ position: 'relative', flexDirection: 'column', direction: isAr ? 'rtl' : 'ltr', paddingTop: 10, paddingBottom: 8, overflowX: 'hidden' }}>
 
       {/* ═══ Salutation + localisation ═══ */}
       <div className="anim-fade-up" style={{ padding: '16px 20px 0' }}>
@@ -124,7 +124,7 @@ export default function MobileHome({
         <div className="no-scrollbar" style={{ display: 'flex', gap: 14, overflowX: 'auto', padding: '2px 20px 6px', scrollSnapType: 'x proximity' }}>
           {/* Tous */}
           <button onClick={() => { setCat(''); setTags([]) }} className="press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, scrollSnapAlign: 'start', flexShrink: 0 }}>
-            <div style={{
+            <div className="glassb" style={{
               width: 56, height: 56, borderRadius: 19, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: cat === '' ? 'var(--gradient)' : 'var(--bg2)',
               border: `1px solid ${cat === '' ? 'transparent' : 'var(--border)'}`,
@@ -140,7 +140,7 @@ export default function MobileHome({
             const active = cat === c.id
             return (
               <button key={c.id} onClick={() => { setCat(active ? '' : c.id); setTags([]) }} className="press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, scrollSnapAlign: 'start', flexShrink: 0 }}>
-                <div style={{
+                <div className="glassb" style={{
                   width: 56, height: 56, borderRadius: 19, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: active ? c.color : `${c.color}14`,
                   border: `1px solid ${active ? c.color : c.color + '26'}`,
@@ -156,7 +156,7 @@ export default function MobileHome({
 
           {/* Autre */}
           <button onClick={() => { setCat('autre'); setTags([]) }} className="press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, scrollSnapAlign: 'start', flexShrink: 0, paddingRight: isAr ? 0 : 6, paddingLeft: isAr ? 6 : 0 }}>
-            <div style={{
+            <div className="glassb" style={{
               width: 56, height: 56, borderRadius: 19, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: cat === 'autre' ? '#a78bfa' : '#a78bfa14',
               border: `1px solid ${cat === 'autre' ? '#a78bfa' : '#a78bfa26'}`,
