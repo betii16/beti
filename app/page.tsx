@@ -163,11 +163,6 @@ export default function Home(){
 
         {/* ── HERO ── */}
         <section style={{position:'relative',padding:'88px 24px 56px',overflow:'hidden'}}>
-          <div style={{position:'absolute',inset:0,pointerEvents:'none'}}>
-            <div style={{position:'absolute',width:700,height:700,background:'radial-gradient(circle,#6366f108 0%,transparent 60%)',top:-300,left:'50%',transform:'translateX(-50%)'}}/>
-            <div style={{position:'absolute',width:400,height:400,background:'radial-gradient(circle,#8b5cf608 0%,transparent 60%)',bottom:-200,right:-100}}/>
-          </div>
-
           <div style={{maxWidth:680,margin:'0 auto',textAlign:'center',position:'relative',zIndex:2}}>
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 18px',borderRadius:24,background:'var(--bg2)',border:'1px solid var(--border)',boxShadow:'var(--card-shadow)',fontSize:11,letterSpacing:'.1em',fontWeight:700,marginBottom:28,animation:'fadeUp 0.6s ease'}}>
               <div style={{width:6,height:6,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 8px #10b98155'}}/>
