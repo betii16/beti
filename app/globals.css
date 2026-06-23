@@ -53,6 +53,10 @@
   --r-field: 14px;
   --r-card: 18px;
   --r-pill: 999px;
+  /* Fond « plan d'atelier » — grille technique + lueur neutre */
+  --grid-line: rgba(255,255,255,0.035);
+  --grid-line-major: rgba(255,255,255,0.055);
+  --grid-glow: rgba(130,150,190,0.05);
 }
 
 /* ═══ LIGHT THEME ═══ */
@@ -84,6 +88,10 @@
   --glass-edge: rgba(255,255,255,0.85);
   --glass-highlight: rgba(255,255,255,0.9);
   --glass-blur: 18px;
+  /* Fond « plan d'atelier » — grille sombre sur fond clair */
+  --grid-line: rgba(30,35,60,0.05);
+  --grid-line-major: rgba(30,35,60,0.08);
+  --grid-glow: rgba(99,102,241,0.05);
 }
 
 html {
@@ -272,10 +280,6 @@ textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
   color: var(--accent); margin-bottom: 8px;
 }
 
-/* Halos du fond (BackgroundMesh) */
-@keyframes auroraA { 0%,100% { transform: translate(0,0) scale(1) } 33% { transform: translate(9vw,7vh) scale(1.2) } 66% { transform: translate(-7vw,5vh) scale(0.9) } }
-@keyframes auroraB { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(-10vw,-6vh) scale(1.25) } }
-@keyframes auroraC { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(8vw,-7vh) scale(1.15) } }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
