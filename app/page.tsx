@@ -408,7 +408,7 @@ export default function Home(){
         {/* ── CTA ARTISAN ── */}
         <section style={{padding:'0 24px 80px',maxWidth:1100,margin:'0 auto'}}>
           <div className="card" style={{padding:'56px 48px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:40,flexWrap:'wrap',position:'relative',overflow:'hidden',border:'1px solid var(--accent)22'}}>
-            <div style={{position:'absolute',right:-30,top:'50%',transform:'translateY(-50%)',fontSize:200,fontWeight:800,color:'var(--accent)',opacity:0.03,pointerEvents:'none'}}>BETI</div>
+            <div style={{position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%)',fontSize:200,fontWeight:800,color:'var(--accent)',opacity:0.03,pointerEvents:'none',whiteSpace:'nowrap',letterSpacing:'0.05em'}}>BETI</div>
             <div style={{position:'relative',maxWidth:480}}>
               <div className="section-label">{t('home.ctaTag')}</div>
               <h2 style={{fontSize:30,fontWeight:800,marginBottom:14,lineHeight:1.2,letterSpacing:'-0.02em'}}>{t('home.ctaTitle')}</h2>
