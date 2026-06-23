@@ -92,7 +92,7 @@ export default function ArtisanPage(){
         <span style={{flex:1,minWidth:0,fontSize:16,fontWeight:800,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{prof.full_name}</span>
       </div>
 
-      <div style={{minHeight:'100vh',background:bg,paddingTop:52,direction:isAr?'rtl':'ltr'}}>
+      <div style={{minHeight:'100vh',paddingTop:52,direction:isAr?'rtl':'ltr'}}>
 
         {/* ── HERO BANNER ── */}
         <div style={{position:'relative',height:190,background:`linear-gradient(160deg, ${c}25, ${bg} 70%)`,overflow:'hidden'}}>
@@ -157,8 +157,8 @@ export default function ArtisanPage(){
                   </div>
                 ):(
                   <>
-                    <button onClick={()=>contact('message')} style={{flex:1,padding:'14px 24px',borderRadius:12,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',boxShadow:'0 4px 16px #6366f133',transition:'all 0.2s'}}>{t('home.sendMessage')}</button>
-                    <button onClick={()=>contact('call')} style={{padding:'14px 20px',borderRadius:12,background:'transparent',border:`1px solid #10b98144`,color:'#10b981',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{t('home.call')}</button>
+                    <button onClick={()=>contact('message')} className="btn-primary" style={{flex:1}}>{t('home.sendMessage')}</button>
+                    <button onClick={()=>contact('call')} className="btn-ghost" style={{color:'#10b981',borderColor:'#10b98155'}}>{t('home.call')}</button>
                   </>
                 )}
               </div>
@@ -297,8 +297,8 @@ export default function ArtisanPage(){
           </div>
         ):(
           <div style={{display:'flex',gap:10,width:'100%'}}>
-            <button onClick={()=>contact('message')} style={{flex:1,padding:'15px 24px',borderRadius:13,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:'Nexa,sans-serif',boxShadow:'0 6px 20px #6366f140'}}>{t('home.sendMessage')}</button>
-            <button onClick={()=>contact('call')} aria-label={t('home.call')} style={{padding:'15px 18px',borderRadius:13,background:'var(--bg2)',border:'1px solid #10b98144',color:'#10b981',fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:'Nexa,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <button onClick={()=>contact('message')} className="btn-primary btn-lg" style={{flex:1}}>{t('home.sendMessage')}</button>
+            <button onClick={()=>contact('call')} aria-label={t('home.call')} className="btn-ghost btn-lg" style={{color:'#10b981',borderColor:'#10b98155',flexShrink:0}}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             </button>
           </div>

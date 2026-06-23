@@ -133,7 +133,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* Card */}
-          <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '36px', animation: 'slideUp 0.3s ease' }}>
+          <div className="card" style={{ padding: '36px', animation: 'slideUp 0.3s ease' }}>
 
             {/* ÉTAPE 1 — Profil */}
             {step === 1 && (
@@ -143,14 +143,12 @@ export default function OnboardingPage() {
                 <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>Ces informations seront visibles par les clients sur votre profil.</p>
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>TÉLÉPHONE</label>
-                  <input type="tel" placeholder="0555 12 34 56" value={phone} onChange={e => setPhone(e.target.value)}
-                    style={{ width: '100%', padding: '13px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+                  <input type="tel" placeholder="0555 12 34 56" value={phone} onChange={e => setPhone(e.target.value)} className="field"
                   />
                 </div>
                 <div style={{ marginBottom: 28 }}>
                   <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>BIO (optionnel)</label>
-                  <textarea placeholder="Ex: Plombier professionnel avec 10 ans d'expérience à Alger. Intervention rapide et soignée..." value={bio} onChange={e => setBio(e.target.value)} rows={4}
-                    style={{ width: '100%', padding: '13px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', lineHeight: 1.6 }}
+                  <textarea placeholder="Ex: Plombier professionnel avec 10 ans d'expérience à Alger. Intervention rapide et soignée..." value={bio} onChange={e => setBio(e.target.value)} rows={4} className="field" style={{ resize: 'none' }}
                   />
                 </div>
               </>
@@ -272,12 +270,10 @@ export default function OnboardingPage() {
             {/* Boutons navigation */}
             <div style={{ display: 'flex', gap: 10, marginTop: step === 4 ? 20 : 0 }}>
               {step > 1 && step < 5 && (
-                <button onClick={() => setStep(s => s - 1)}
-                  style={{ flex: 1, padding: '13px', background: 'transparent', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx2)', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
+                <button onClick={() => setStep(s => s - 1)} className="btn-ghost" style={{ flex: 1 }}
                 >← Retour</button>
               )}
-              <button onClick={saveStep} disabled={saving || (step === 2 && !category)}
-                style={{ flex: 2, padding: '13px', background: saving ? '#a08030' : '#6366f1', border: 'none', borderRadius: 10, color: 'var(--bg)', fontSize: 14, fontWeight: 800, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s' }}
+              <button onClick={saveStep} disabled={saving || (step === 2 && !category)} className="btn-primary" style={{ flex: 2 }}
               >
                 {saving ? 'Sauvegarde...' : step === 5 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Rocket size={15}/>Accéder au dashboard</span> : step === 4 ? 'Terminer' : 'Continuer →'}
               </button>

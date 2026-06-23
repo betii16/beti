@@ -43,8 +43,8 @@ export default function AidePage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 48 }}>
           {contactCards.map(c => (
-            <div key={c.title}
-              style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '20px', cursor: c.href ? 'pointer' : 'default' }}
+            <div key={c.title} className={c.href ? 'acard' : 'card'}
+              style={{ padding: '20px' }}
               onClick={() => c.href && router.push(c.href)}>
               <div style={{ marginBottom: 10, color: '#6366f1' }}><c.Icon size={24}/></div>
               <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{c.title}</div>
@@ -57,7 +57,7 @@ export default function AidePage() {
         <div style={{ fontSize: 10, color: '#C9A84C', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 20 }}>{t('help.faq')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 56 }}>
           {FAQ.map((item, i) => (
-            <div key={i} style={{ background: 'var(--bg2)', border: `0.5px solid ${open === i ? '#C9A84C44' : 'var(--border)'}`, borderRadius: 12, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+            <div key={i} className="card" style={{ borderColor: open === i ? '#C9A84C66' : undefined, padding: 0 }}>
               <div onClick={() => setOpen(open === i ? null : i)} style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{item.q}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" strokeWidth="2" style={{ transform: open === i ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0, marginInlineStart: 12 }}>
@@ -73,7 +73,7 @@ export default function AidePage() {
           ))}
         </div>
 
-        <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '32px' }}>
+        <div className="card" style={{ padding: '32px' }}>
           <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 8 }}>{t('help.contact')}</div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--tx)', marginBottom: 24 }}>{t('help.sendMessage')}</h2>
           {sent ? (
@@ -91,18 +91,15 @@ export default function AidePage() {
                 ].map(f => (
                   <div key={f.label}>
                     <label style={{ fontSize: 11, color: 'var(--tx3)', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>{f.label}</label>
-                    <input type="text" value={f.value} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder}
-                      style={{ width: '100%', padding: '12px 14px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                    <input type="text" value={f.value} onChange={e => f.setter(e.target.value)} placeholder={f.placeholder} className="field"/>
                   </div>
                 ))}
               </div>
               <div style={{ marginBottom: 20 }}>
                 <label style={{ fontSize: 11, color: 'var(--tx3)', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>{t('help.message')}</label>
-                <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={t('help.messagePh')} rows={5}
-                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'vertical' }}/>
+                <textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={t('help.messagePh')} rows={5} className="field"/>
               </div>
-              <button onClick={() => { if (name && email && message) setSent(true) }}
-                style={{ width: '100%', padding: '13px', background: name && email && message ? '#C9A84C' : 'var(--bg3)', border: 'none', borderRadius: 10, color: name && email && message ? '#fff' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: name && email && message ? 'pointer' : 'not-allowed', fontFamily: 'Nexa, sans-serif' }}>
+              <button onClick={() => { if (name && email && message) setSent(true) }} disabled={!(name && email && message)} className="btn-primary btn-block">
                 {t('help.send')}
               </button>
             </>
