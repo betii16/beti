@@ -16,7 +16,7 @@ function Result() {
   const booking = sp.get('booking') || ''
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingTop: 80 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingTop: 80 }}>
       <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 20, padding: '44px 32px', maxWidth: 400, width: '100%', textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
           <div style={{ width: 64, height: 64, borderRadius: '50%', background: ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${ok ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -43,7 +43,7 @@ function Result() {
 
 export default function PaymentReturnPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg)' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
       <Result />
     </Suspense>
   )

@@ -124,7 +124,7 @@ export default function RecherchePage() {
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:Nexa,sans-serif}
       `}</style>
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif', paddingTop: 84 }}>
+      <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 84 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
 
           {/* ── SIDEBAR FILTRES ── */}

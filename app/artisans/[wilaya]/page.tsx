@@ -65,7 +65,7 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
         .cta-btn:hover { background: #d4b55a !important; }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
+      <div style={{ minHeight: '100vh', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
 
         {/* Hero SEO */}
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 32px' }}>

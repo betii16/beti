@@ -55,13 +55,13 @@ export default function FacturePage() {
   const handlePrint = () => window.print()
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif' }}>
       <div style={{ fontSize: 14, color: 'var(--tx3)' }}>Chargement de la facture...</div>
     </div>
   )
 
   if (error) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'center', color: '#ef4444' }}><AlertTriangle size={40}/></div>
       <div style={{ fontSize: 16, color: '#ef4444', fontWeight: 800 }}>{error}</div>
       <button onClick={() => router.back()} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Retour</button>

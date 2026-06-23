@@ -101,7 +101,7 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
 
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
+      <div style={{ minHeight: '100vh', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 40px' }}>
           {/* Fil d'ariane */}
           <div style={{ fontSize: 12, color: '#555', marginBottom: 16, display: 'flex', gap: 6, alignItems: 'center' }}>

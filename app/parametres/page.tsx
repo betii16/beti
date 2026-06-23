@@ -42,7 +42,7 @@ export default function ParametresPage() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif', paddingTop: 72, direction: isAr ? 'rtl' : 'ltr' }}>
+    <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 72, direction: isAr ? 'rtl' : 'ltr' }}>
       <style suppressHydrationWarning>{`* { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: #6366f144; border-radius: 2px; }`}</style>
       <div style={{ maxWidth: 700, margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ marginBottom: 8, fontSize: 10, color: 'var(--accent)', letterSpacing: '0.12em', fontWeight: 800 }}>{t('settings.myAccount')}</div>

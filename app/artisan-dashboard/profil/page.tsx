@@ -298,7 +298,7 @@ export default function ArtisanProfileConfig() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontSize: 14, color: 'var(--tx3)' }}>{t('common.loading')}</div>
       </div>
     )
@@ -308,13 +308,13 @@ export default function ArtisanProfileConfig() {
     <>
       <style suppressHydrationWarning>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); font-family: 'Nexa', sans-serif; }
+        body { font-family: 'Nexa', sans-serif; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         input[type=range] { accent-color: #6366f1; cursor: pointer; }
         textarea:focus, input:focus { border-color: #6366f166 !important; }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 64, fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
+      <div style={{ minHeight: '100vh', paddingTop: 64, fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px' }}>
 
           {/* Header */}
@@ -380,7 +380,7 @@ export default function ArtisanProfileConfig() {
                 const catLabel = t(`categories.${service.category}`)
                 const PtIcon = PRICE_TYPE_ICONS[service.price_type] || Clock
                 return (
-                  <div key={i} style={{ background: 'var(--bg2)', border: `0.5px solid ${cat?.color || 'var(--border)'}33`, borderRadius: 16, padding: '24px', marginBottom: 16 }}>
+                  <div key={i} className="card" style={{ borderColor: cat?.color ? cat.color + '55' : undefined, padding: '24px', marginBottom: 16 }}>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -406,12 +406,8 @@ export default function ArtisanProfileConfig() {
                         placeholder={`${t('artisanProfile.bioPh')} ${catLabel.toLowerCase()}...`}
                         rows={3}
                         maxLength={300}
-                        style={{
-                          width: '100%', padding: '12px 14px', background: 'var(--bg)',
-                          border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)',
-                          fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif',
-                          fontWeight: 300, resize: 'none', lineHeight: 1.6,
-                        }}
+                        className="field"
+                        style={{ resize: 'none' }}
                       />
                       <div style={{ fontSize: 10, color: 'var(--tx3)', textAlign: 'right', marginTop: 4 }}>{service.description.length}/300</div>
                     </div>
@@ -492,7 +488,7 @@ export default function ArtisanProfileConfig() {
                   {t('artisanProfile.addService')} {services.length === 0 && t('artisanProfile.addRequired')}
                 </button>
               ) : (
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid #6366f133', borderRadius: 16, padding: '24px' }}>
+                <div className="card" style={{ borderColor: '#6366f155', padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pickService')}</div>
                     <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', fontSize: 16 }}>✕</button>
@@ -533,13 +529,12 @@ export default function ArtisanProfileConfig() {
           {/* ═══ SECTION : INFORMATIONS ═══ */}
           {activeSection === 'info' && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+              <div className="card" style={{ padding: '24px' }}>
 
                 {/* Nom */}
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>{t('artisanProfile.fullName')}</label>
-                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                    style={{ width: '100%', padding: '13px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="field"/>
                 </div>
 
                 {/* Téléphone */}
@@ -554,7 +549,7 @@ export default function ArtisanProfileConfig() {
                     <input type="tel" value={phone} placeholder="0555 12 34 56"
                       onChange={e => { setPhone(e.target.value); setPhoneError('') }}
                       onBlur={() => checkPhone(phone)}
-                      style={{ flex: 1, padding: '13px 16px', background: 'var(--bg)', border: `0.5px solid ${phoneError ? '#ef4444' : 'var(--border)'}`, borderRadius: 10, color: 'var(--tx)', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}/>
+                      className="field" style={{ flex: 1, borderColor: phoneError ? '#ef4444' : undefined }}/>
                   </div>
                   {phoneError && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 6, fontWeight: 300 }}>{phoneError}</p>}
                   <p style={{ fontSize: 11, color: 'var(--tx3)', marginTop: 6, fontWeight: 300 }}>
@@ -568,7 +563,7 @@ export default function ArtisanProfileConfig() {
                   <textarea value={bio} onChange={e => setBio(e.target.value)}
                     placeholder={t('artisanProfile.bioPh')}
                     rows={4} maxLength={500}
-                    style={{ width: '100%', padding: '12px 14px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', lineHeight: 1.6 }}/>
+                    className="field" style={{ resize: 'none' }}/>
                   <div style={{ fontSize: 10, color: 'var(--tx3)', textAlign: 'right', marginTop: 4 }}>{bio.length}/500</div>
                 </div>
 
@@ -600,7 +595,7 @@ export default function ArtisanProfileConfig() {
                       onChange={e => { setArtisanAddress(e.target.value); setAddressError('') }}
                       onBlur={() => geocodeAddress(artisanAddress)}
                       placeholder="Ex: 12 Rue Didouche Mourad, Alger"
-                      style={{ flex: 1, padding: '13px 16px', background: 'var(--bg)', border: `0.5px solid ${addressError ? '#ef4444' : 'var(--border)'}`, borderRadius: 10, color: 'var(--tx)', fontSize: 14, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+                      className="field" style={{ flex: 1, borderColor: addressError ? '#ef4444' : undefined }}
                     />
                     <button onClick={detectPosition} disabled={detectingAddr}
                       style={{ padding: '13px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx2)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, flexShrink: 0, transition: 'all 0.2s' }}
@@ -661,7 +656,7 @@ export default function ArtisanProfileConfig() {
           {/* ═══ SECTION : MOTS-CLÉS ═══ */}
           {activeSection === 'tags' && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+              <div className="card" style={{ padding: '24px' }}>
 
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{t('artisanProfile.tagTitle')}</div>
@@ -727,17 +722,7 @@ export default function ArtisanProfileConfig() {
                 <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 10, background: '#ef444410', border: '0.5px solid #ef444420', fontSize: 12, color: '#ef4444', fontWeight: 300 }}>{saveError}</div>
               )}
               <button onClick={handleSave} disabled={saving}
-                style={{
-                  width: '100%', padding: '16px',
-                  background: saved ? '#10b98112' : saving ? '#a08030' : '#6366f1',
-                  border: saved ? '0.5px solid #10b98144' : 'none',
-                  borderRadius: 14,
-                  color: saved ? '#10b981' : 'var(--bg)',
-                  fontSize: 15, fontWeight: 800,
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                  fontFamily: 'Nexa, sans-serif', transition: 'all 0.3s',
-                  boxShadow: saved ? 'none' : '0 4px 20px #6366f144',
-                }}
+                className={saved ? 'btn-success btn-block btn-lg' : 'btn-primary btn-block btn-lg'}
               >
                 {saving ? t('artisanProfile.saving') : saved ? t('artisanProfile.savedMsg') : isNewProfile ? t('artisanProfile.createBtn') : t('artisanProfile.saveBtn')}
               </button>
