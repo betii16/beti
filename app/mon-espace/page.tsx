@@ -57,7 +57,7 @@ export default function ClientDashboard(){
             {label:t('mySpace.completed'),value:completed.length,color:'#10b981',Icon:Star},
             {label:'Total',value:bookings.length,color:'var(--tx)',Icon:Layers},
           ].map(k=>(
-            <div key={k.label} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'18px',boxShadow:'var(--card-shadow)'}}>
+            <div key={k.label} className="card" style={{padding:'18px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                 <span style={{fontSize:11,color:'var(--tx3)',fontWeight:700}}>{k.label.toUpperCase()}</span>
                 <k.Icon size={16} color={k.color}/>
@@ -75,13 +75,13 @@ export default function ClientDashboard(){
               {pending.map(b=>{
                 const art=b.artisans;const name=art?.profiles?.full_name||'Artisan'
                 return(
-                  <div key={b.id} style={{background:'var(--bg2)',border:'1px solid #f59e0b33',borderRadius:14,padding:'16px 20px',display:'flex',alignItems:'center',gap:14,boxShadow:'var(--card-shadow)',flexWrap:'wrap'}}>
+                  <div key={b.id} className="card" style={{borderColor:'#f59e0b55',padding:'16px 20px',display:'flex',alignItems:'center',gap:14,flexWrap:'wrap'}}>
                     <div style={{width:40,height:40,borderRadius:10,background:'#f59e0b15',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Clock size={18} color="#f59e0b"/></div>
                     <div style={{flex:1,minWidth:160}}>
                       <div style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{name}</div>
                       <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{b.title||t('mySpace.request')} · {timeAgo(b.created_at)}</div>
                     </div>
-                    <a href={`/chat/${b.id}`}><button style={{padding:'8px 18px',borderRadius:10,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>{t('mySpace.message')}</button></a>
+                    <a href={`/chat/${b.id}`}><button className="btn-primary btn-sm">{t('mySpace.message')}</button></a>
                   </div>
                 )
               })}
@@ -96,9 +96,9 @@ export default function ClientDashboard(){
             <a href="/mon-espace/reservations" style={{fontSize:12,color:'#6366f1',textDecoration:'none',fontWeight:700}}>{t('mySpace.seeAll')}</a>
           </div>
           {bookings.length===0?(
-            <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'48px',textAlign:'center',boxShadow:'var(--card-shadow)'}}>
+            <div className="card" style={{padding:'48px',textAlign:'center'}}>
               <p style={{fontSize:14,color:'var(--tx3)',marginBottom:12}}>{t('mySpace.noBookingYet')}</p>
-              <a href="/"><button style={{padding:'10px 24px',borderRadius:10,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>{t('mySpace.findArtisan')}</button></a>
+              <a href="/"><button className="btn-primary btn-sm">{t('mySpace.findArtisan')}</button></a>
             </div>
           ):(
             <div className="stagger" style={{display:'flex',flexDirection:'column',gap:8}}>
@@ -107,7 +107,7 @@ export default function ClientDashboard(){
                 const sc=b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':b.status==='pending'?'#f59e0b':'#ef4444'
                 const sl=t(`status.${b.status}`)
                 return(
-                  <div key={b.id} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',gap:14,boxShadow:'var(--card-shadow)',cursor:'pointer'}} onClick={()=>router.push(`/chat/${b.id}`)}>
+                  <div key={b.id} className="card is-clickable" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}} onClick={()=>router.push(`/chat/${b.id}`)}>
                     <div style={{width:8,height:8,borderRadius:'50%',background:sc,flexShrink:0}}/>
                     <div style={{flex:1}}>
                       <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{name}</div>
@@ -126,7 +126,7 @@ export default function ClientDashboard(){
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10}}>
           {[{label:t('mySpace.findArtisan'),href:'/',Icon:Search,desc:t('mySpace.quickSearchDesc')},{label:t('nav.myBookings'),href:'/mon-espace/reservations',Icon:ClipboardList,desc:t('mySpace.fullHistory')},{label:t('mySpace.myReviews'),href:'/mon-espace/avis',Icon:Star,desc:t('mySpace.myReviewsDesc')},{label:t('nav.map'),href:'/map',Icon:Map,desc:t('mySpace.aroundMe')}].map(l=>(
             <a key={l.label} href={l.href} style={{textDecoration:'none'}}>
-              <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'18px',cursor:'pointer',transition:'all 0.2s',boxShadow:'var(--card-shadow)'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='#6366f133';e.currentTarget.style.transform='translateY(-2px)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.transform='none'}}>
+              <div className="acard" style={{padding:'18px'}}>
                 <div style={{marginBottom:10}}><l.Icon size={22} color="var(--accent)"/></div>
                 <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{l.label}</div>
                 <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>{l.desc}</div>

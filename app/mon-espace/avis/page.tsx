@@ -121,14 +121,14 @@ function MesAvisContent() {
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
     </div>
   )
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif' }}>
-      <div style={{ background: 'var(--bg)', borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif' }}>
+      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON ESPACE</div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>Mes avis</h1>
@@ -145,8 +145,8 @@ function MesAvisContent() {
         )}
 
         {showForm && bookingId && bookingOk === true && (
-          <div style={{ background: 'var(--bg2)', border: '0.5px solid #6366f144', borderRadius: 16, padding: '28px', marginBottom: 28 }}>
-            <div style={{ height: 2, background: 'linear-gradient(90deg, #6366f1, #f59e0b)', borderRadius: 1, marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
+          <div className="card" style={{ borderColor: '#6366f155', padding: '28px', marginBottom: 28 }}>
+            <div style={{ height: 2, background: 'linear-gradient(90deg, #6366f1, #f59e0b)', marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
             <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>LAISSER UN AVIS</div>
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>Votre note</div>
@@ -154,21 +154,17 @@ function MesAvisContent() {
             </div>
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>Commentaire <span style={{ color: 'var(--tx3)' }}>(optionnel)</span></div>
-              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Décrivez votre expérience..." rows={4}
-                style={{ width: '100%', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '12px 14px', color: 'var(--tx)', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', outline: 'none' }}
-              />
+              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Décrivez votre expérience..." rows={4} className="field" style={{ resize: 'none' }} />
             </div>
             <div style={{ marginBottom: 20 }}>
               <ReviewPhotoUpload bookingId={bookingId} onPhotosChange={setPhotos} />
             </div>
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setShowForm(false)}
-                style={{ flex: 1, padding: '11px', background: 'transparent', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx3)', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+              <button onClick={() => setShowForm(false)} className="btn-ghost" style={{ flex: 1 }}>
                 Annuler
               </button>
-              <button onClick={submitReview} disabled={!rating || submitting}
-                style={{ flex: 2, padding: '11px', background: rating ? '#6366f1' : 'var(--border)', border: 'none', borderRadius: 10, color: rating ? '#fff' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: rating ? 'pointer' : 'not-allowed', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s' }}>
+              <button onClick={submitReview} disabled={!rating || submitting} className="btn-primary" style={{ flex: 2 }}>
                 {submitting ? 'Envoi...' : '✓ Publier l\'avis'}
               </button>
             </div>
@@ -186,14 +182,14 @@ function MesAvisContent() {
           <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>⭐</div>
             <div style={{ fontSize: 14, fontWeight: 300 }}>Vous n'avez pas encore laissé d'avis</div>
-            <a href="/mon-espace/reservations" style={{ display: 'inline-block', marginTop: 20, padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+            <a href="/mon-espace/reservations" className="btn-primary btn-sm" style={{ marginTop: 20 }}>
               Voir mes réservations
             </a>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {reviews.map(r => (
-              <div key={r.id} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px 20px' }}>
+              <div key={r.id} className="card" style={{ padding: '18px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 3 }}>{r.artisans?.full_name || 'Artisan'}</div>
@@ -221,7 +217,7 @@ function MesAvisContent() {
 export default function MesAvis() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
       </div>
     }>

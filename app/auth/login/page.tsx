@@ -88,7 +88,7 @@ export default function LoginPage() {
   const BTN = (active: boolean): React.CSSProperties => ({ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: active ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'var(--border)', color: active ? '#fff' : 'var(--tx3)', fontSize: 15, fontWeight: 700, cursor: active && !loading ? 'pointer' : 'not-allowed', fontFamily: 'Nexa,sans-serif', marginTop: 4, boxShadow: active ? '0 8px 24px rgba(99,102,241,0.32)' : 'none', transition: 'box-shadow 0.2s, transform 0.1s' })
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, direction: isAr ? 'rtl' : 'ltr' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, direction: isAr ? 'rtl' : 'ltr' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
@@ -99,7 +99,7 @@ export default function LoginPage() {
 
         {/* zIndex > overlay (40) : l'animation transform crée un stacking context qui
             piégerait sinon le dropdown pays sous l'overlay de fermeture */}
-        <div className="anim-scale-in" style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 26, padding: '40px 34px', boxShadow: 'var(--card-shadow)', position: 'relative', zIndex: 41 }}>
+        <div className="anim-scale-in card" style={{ borderRadius: 26, padding: '40px 34px', position: 'relative', zIndex: 41 }}>
 
           {/* ── Repli email ── */}
           {emailMode ? (

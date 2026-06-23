@@ -95,16 +95,16 @@ export default function MesReservations() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('common.loading')}</div>
     </div>
   )
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
 
       {/* Header */}
-      <div style={{ background: 'var(--bg)', borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('mySpace.title')}</div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('nav.myBookings')}</h1>
@@ -136,14 +136,14 @@ export default function MesReservations() {
           <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--tx3)' }}><Package size={40}/></div>
             <div style={{ fontSize: 14, fontWeight: 300 }}>{t('mySpace.emptyHere')}</div>
-            <a href="/#services" style={{ display: 'inline-block', marginTop: 20, padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+            <a href="/#services" className="btn-primary btn-sm" style={{ marginTop: 20 }}>
               {t('mySpace.findArtisan')}
             </a>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {filtered.map(b => (
-              <div key={b.id} style={{ background: 'var(--bg2)', border: `0.5px solid ${b.status === 'pending' ? '#6366f133' : 'var(--border)'}`, borderRadius: 14, overflow: 'hidden' }}>
+              <div key={b.id} className="card" style={{ borderColor: b.status === 'pending' ? '#6366f155' : undefined, padding: 0 }}>
                 {b.status === 'pending' && <div style={{ height: 2, background: 'linear-gradient(90deg, #6366f1, #f59e0b)' }}/>}
                 <div style={{ padding: '18px 20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
@@ -171,15 +171,14 @@ export default function MesReservations() {
                   </div>
 
                   {b.status === 'pending' && (
-                    <button onClick={() => cancelBooking(b.id)}
-                      style={{ padding: '8px 18px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 8, color: '#ef4444', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                    <button onClick={() => cancelBooking(b.id)} className="btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef444455' }}>
                       {t('mySpace.cancelRequest')}
                     </button>
                   )}
 
                   {b.status === 'completed' && (
                     <a href={`/mon-espace/avis?booking=${b.id}`} style={{ textDecoration: 'none' }}>
-                      <button style={{ padding: '8px 18px', background: 'transparent', border: '0.5px solid #6366f144', borderRadius: 8, color: '#6366f1', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                      <button className="btn-soft btn-sm">
                         ⭐ {t('mySpace.leaveReview')}
                       </button>
                     </a>

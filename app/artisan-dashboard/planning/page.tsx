@@ -98,16 +98,16 @@ export default function Planning() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
     </div>
   )
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)', fontFamily: 'Nexa, sans-serif' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif' }}>
 
       {/* Header */}
-      <div style={{ background: 'var(--bg)', borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON DASHBOARD</div>
@@ -116,8 +116,7 @@ export default function Planning() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             {(['month', 'list'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)}
-                style={{ padding: '8px 16px', background: view === v ? '#6366f1' : 'transparent', border: '0.5px solid var(--border)', borderRadius: 8, color: view === v ? '#fff' : 'var(--tx3)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+              <button key={v} onClick={() => setView(v)} className={view === v ? 'chip chip-active' : 'chip'}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{v === 'month' ? <><Calendar size={13}/>Calendrier</> : <><ClipboardList size={13}/>Liste</>}</span>
               </button>
             ))}
@@ -131,7 +130,7 @@ export default function Planning() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
 
             {/* Calendrier */}
-            <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '24px' }}>
+            <div className="card" style={{ padding: '24px' }}>
               {/* Nav mois */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <button onClick={prevMonth} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', fontSize: 20, cursor: 'pointer', padding: '4px 8px' }}>‹</button>
@@ -191,7 +190,7 @@ export default function Planning() {
               </div>
 
               {selectedDay && selectedMissions.length === 0 && (
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '32px', textAlign: 'center', color: '#333' }}>
+                <div className="card" style={{ padding: '32px', textAlign: 'center', color: '#333' }}>
                   <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><Inbox size={30}/></div>
                   <div style={{ fontSize: 13, fontWeight: 300 }}>Aucune mission ce jour</div>
                 </div>
@@ -199,7 +198,7 @@ export default function Planning() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {selectedMissions.map(m => (
-                  <div key={m.id} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '16px', borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#6366f1'}` }}>
+                  <div key={m.id} className="card" style={{ padding: '16px', borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#6366f1'}` }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{m.title}</div>
                     <div style={{ fontSize: 12, color: '#4ade80', fontWeight: 800, marginBottom: 8 }}><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{fmtTime(m.scheduled_at)}</div>
                     <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 4 }}><User size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.profiles?.full_name || 'Client'}</div>
@@ -225,7 +224,7 @@ export default function Planning() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {upcoming.map(m => (
-                  <div key={m.id} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20, borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#6366f1'}` }}>
+                  <div key={m.id} className="card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20, borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#6366f1'}` }}>
                     <div style={{ textAlign: 'center', minWidth: 50 }}>
                       <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--tx)' }}>{new Date(m.scheduled_at).getDate()}</div>
                       <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{MONTHS_FR[new Date(m.scheduled_at).getMonth()].slice(0,3)}</div>

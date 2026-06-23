@@ -48,7 +48,7 @@ export default function RevenusPage(){
           <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>Revenus & Historique</h1><p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>Suivez votre activité</p></div>
           <div style={{display:'flex',gap:4}}>
             {(['week','month','all'] as const).map(p=>(
-              <button key={p} onClick={()=>setPeriod(p)} style={{padding:'8px 16px',borderRadius:10,border:'1px solid var(--border)',background:period===p?'#6366f112':'transparent',color:period===p?'#6366f1':'var(--tx3)',fontSize:12,fontWeight:period===p?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>
+              <button key={p} onClick={()=>setPeriod(p)} className={period===p?'chip chip-active':'chip'}>
                 {p==='week'?'7 jours':p==='month'?'30 jours':'Tout'}
               </button>
             ))}
@@ -57,22 +57,22 @@ export default function RevenusPage(){
 
         {/* KPI row */}
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:24}}>
-          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+          <div className="card" style={{padding:'20px'}}>
             <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>REVENUS TOTAL</div>
             <div style={{fontSize:28,fontWeight:800,color:'#10b981'}}>{totalRev.toLocaleString('fr-DZ')} DA</div>
           </div>
-          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+          <div className="card" style={{padding:'20px'}}>
             <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>MISSIONS</div>
             <div style={{fontSize:28,fontWeight:800,color:'#6366f1'}}>{completed.length}</div>
           </div>
-          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'20px',boxShadow:'var(--card-shadow)'}}>
+          <div className="card" style={{padding:'20px'}}>
             <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>PANIER MOYEN</div>
             <div style={{fontSize:28,fontWeight:800,color:'var(--tx)'}}>{avgRev.toLocaleString('fr-DZ')} DA</div>
           </div>
         </div>
 
         {/* Chart */}
-        <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:16,padding:'24px',marginBottom:24,boxShadow:'var(--card-shadow)'}}>
+        <div className="card" style={{padding:'24px',marginBottom:24}}>
           <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:20}}>Revenus par semaine</div>
           <div style={{display:'flex',alignItems:'flex-end',gap:8,height:140}}>
             {weekData.map((w,i)=>(
@@ -89,11 +89,11 @@ export default function RevenusPage(){
         <div>
           <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>Historique des missions ({filtered.length})</h2>
           {filtered.length===0?(
-            <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:14,padding:'40px',textAlign:'center'}}><p style={{color:'var(--tx3)',fontSize:14}}>Aucune mission sur cette période</p></div>
+            <div className="card" style={{padding:'40px',textAlign:'center'}}><p style={{color:'var(--tx3)',fontSize:14}}>Aucune mission sur cette période</p></div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {filtered.map(b=>(
-                <div key={b.id} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'center',gap:14,boxShadow:'var(--card-shadow)'}}>
+                <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
                   <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':b.status==='pending'?'#f59e0b':'#ef4444',flexShrink:0}}/>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||'Client'}</div>

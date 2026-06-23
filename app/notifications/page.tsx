@@ -39,11 +39,11 @@ export default function NotificationsPage(){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
           <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>Notifications</h1>
           {unread>0&&<p style={{fontSize:13,color:'#6366f1',fontWeight:300}}>{unread} non lue{unread>1?'s':''}</p>}</div>
-          {notifs.length>0&&<button onClick={clear} style={{padding:'8px 16px',borderRadius:10,background:'transparent',border:'1px solid var(--border)',color:'var(--tx3)',fontSize:12,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>Tout effacer</button>}
+          {notifs.length>0&&<button onClick={clear} className="btn-ghost btn-sm">Tout effacer</button>}
         </div>
 
         {notifs.length===0?(
-          <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:16,padding:'64px',textAlign:'center',boxShadow:'var(--card-shadow)'}}>
+          <div className="card" style={{padding:'64px',textAlign:'center'}}>
             <div style={{fontSize:14,color:'var(--tx3)'}}>Aucune notification</div>
           </div>
         ):(
@@ -51,7 +51,7 @@ export default function NotificationsPage(){
             {notifs.map(n=>{
               const cfg=ICONS[n.type]||ICONS.default
               return(
-                <div key={n.id} style={{background:'var(--bg2)',border:`1px solid ${n.is_read?'var(--border)':cfg.color+'33'}`,borderRadius:12,padding:'14px 18px',display:'flex',alignItems:'flex-start',gap:12,boxShadow:'var(--card-shadow)',transition:'all 0.2s',opacity:n.is_read?0.7:1}}>
+                <div key={n.id} className="card" style={{borderColor:n.is_read?undefined:cfg.color+'55',padding:'14px 18px',display:'flex',alignItems:'flex-start',gap:12,opacity:n.is_read?0.7:1}}>
                   <div style={{width:32,height:32,borderRadius:8,background:cfg.color+'15',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><cfg.Icon size={15} color={cfg.color}/></div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{n.title}</div>
