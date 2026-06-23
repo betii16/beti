@@ -18,6 +18,19 @@ const config: CapacitorConfig = {
     backgroundColor: '#0b0b12',
     contentInset: 'automatic',
   },
+  plugins: {
+    SplashScreen: {
+      // Splash sombre BETI au lancement puis masqué automatiquement
+      // (coquille distante : aucun JS local pour appeler hide()).
+      launchShowDuration: 1500,
+      launchAutoHide: true,
+      backgroundColor: '#0b0b12',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+  },
 }
 
 export default config
