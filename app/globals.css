@@ -53,10 +53,10 @@
   --r-field: 14px;
   --r-card: 18px;
   --r-pill: 999px;
-  /* Fond « plan d'atelier » — grille technique + lueur neutre */
-  --grid-line: rgba(255,255,255,0.035);
-  --grid-line-major: rgba(255,255,255,0.055);
-  --grid-glow: rgba(130,150,190,0.05);
+  /* Fond sobre — dégradé + lueur neutre + vignette */
+  --bg-top: #11131c;
+  --bg-vignette: #07070c;
+  --grid-glow: rgba(130,150,190,0.045);
 }
 
 /* ═══ LIGHT THEME ═══ */
@@ -88,10 +88,10 @@
   --glass-edge: rgba(255,255,255,0.85);
   --glass-highlight: rgba(255,255,255,0.9);
   --glass-blur: 18px;
-  /* Fond « plan d'atelier » — grille sombre sur fond clair */
-  --grid-line: rgba(30,35,60,0.05);
-  --grid-line-major: rgba(30,35,60,0.08);
-  --grid-glow: rgba(99,102,241,0.05);
+  /* Fond sobre — dégradé clair + lueur neutre + vignette */
+  --bg-top: #F4F3F9;
+  --bg-vignette: #E4E2EC;
+  --grid-glow: rgba(99,102,241,0.04);
 }
 
 html {
