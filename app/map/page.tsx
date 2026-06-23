@@ -168,8 +168,7 @@ export default function MapPage() {
               <div style={{fontSize:16,fontWeight:800,color:tx}}>{filtered.length} artisan{filtered.length>1?'s':''} {cat?cl(cat).toLowerCase():''}</div>
               <div style={{fontSize:12,color:tx3,fontWeight:300}}>à proximité</div>
             </div>
-            <button onClick={()=>setSheetOpen(!sheetOpen)}
-              style={{padding:'6px 14px',borderRadius:10,background:'var(--border)',border:'none',color:tx2,fontSize:11,cursor:'pointer',fontFamily:'Nexa,sans-serif',fontWeight:300}}>
+            <button onClick={()=>setSheetOpen(!sheetOpen)} className="btn-ghost btn-sm">
               {sheetOpen?'Masquer':'Afficher'}
             </button>
           </div>
@@ -229,8 +228,7 @@ export default function MapPage() {
 
                   {/* Show more */}
                   {!sheetFull&&filtered.length>3&&(
-                    <button onClick={()=>setSheetFull(true)}
-                      style={{width:'100%',padding:'12px',borderRadius:12,background:'var(--bg3)',border:`0.5px solid ${brd}`,color:tx2,fontSize:12,cursor:'pointer',fontFamily:'Nexa,sans-serif',fontWeight:300,marginTop:4}}>
+                    <button onClick={()=>setSheetFull(true)} className="btn-ghost btn-block" style={{marginTop:4}}>
                       Voir les {filtered.length-3} autres artisans
                     </button>
                   )}
@@ -243,7 +241,7 @@ export default function MapPage() {
         {/* ═══ SELECTED ARTISAN CARD (floating) ═══ */}
         {selected&&(
           <div style={{position:'absolute',bottom:sheetOpen?(sheetFull?'72%':'268px'):'8px',left:16,right:16,zIndex:25,animation:'fadeUp 0.3s ease'}}>
-            <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:18,padding:'18px 20px',boxShadow:'var(--card-shadow)'}}>
+            <div className="card" style={{background:'var(--glass-bg)',padding:'18px 20px'}}>
               <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:14}}>
                 {selected.avatar_url?(
                   <img src={selected.avatar_url} alt="" style={{width:52,height:52,borderRadius:14,objectFit:'cover',border:`2px solid ${cc(selected.category)}33`}}/>
@@ -287,16 +285,14 @@ export default function MapPage() {
                 </div>
               ):(
                 <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>contact(selected,'message')}
-                    style={{flex:1,padding:'12px 20px',borderRadius:12,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',boxShadow:'0 4px 16px #6366f133'}}>
+                  <button onClick={()=>contact(selected,'message')} className="btn-primary" style={{flex:1}}>
                     Envoyer un message
                   </button>
-                  <button onClick={()=>contact(selected,'call')}
-                    style={{padding:'12px 16px',borderRadius:12,background:'transparent',border:'1px solid #10b98144',color:'#10b981',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>
+                  <button onClick={()=>contact(selected,'call')} className="btn-ghost" style={{color:'#10b981',borderColor:'#10b98155'}}>
                     Appeler
                   </button>
                   <a href={`/artisan/${selected.id}`} style={{textDecoration:'none'}}>
-                    <button style={{padding:'12px 14px',borderRadius:12,background:'transparent',border:`1px solid ${brd}`,color:tx2,fontSize:13,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>
+                    <button className="btn-ghost">
                       Profil
                     </button>
                   </a>
