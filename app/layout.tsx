@@ -5,6 +5,8 @@ import BottomTabBar from '@/components/BottomTabBar'
 import MobileHeader from '@/components/MobileHeader'
 import BackgroundMesh from '@/components/BackgroundMesh'
 import GlassHover from '@/components/GlassHover'
+import NativeBridge from '@/components/NativeBridge'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import { LangProvider } from '@/lib/LangContext'
 
 // Viewport « application » : pas de zoom pinch, couvre l'encoche iPhone
@@ -76,6 +78,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <BackgroundMesh/>
         <GlassHover/>
+        <NativeBridge/>
+        <ServiceWorkerRegister/>
         <LangProvider>
           <Navigation/>
           <MobileHeader/>
