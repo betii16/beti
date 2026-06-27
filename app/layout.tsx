@@ -36,7 +36,12 @@ export const metadata: Metadata = {
     siteName: 'BETI',
     title: 'BETI — Artisans certifiés à domicile en Algérie',
     description: 'Trouvez un artisan certifié près de chez vous. Paiement en cash.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    // L'image est générée par app/opengraph-image.tsx (convention App Router).
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BETI — Artisans certifiés à domicile en Algérie',
+    description: 'Trouvez un artisan certifié près de chez vous. Paiement en cash.',
   },
   verification: {
     google: 'WDYNC_syGCExgMflHe9Og6UkYB9yiS_CTn3U2vYRVqo',
