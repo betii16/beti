@@ -2,17 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Police de marque. NB : la famille s'appelle 'Nexa' pour des raisons
+   historiques (référencée dans tout le code via font-family:'Nexa'), mais les
+   fichiers Nexa étaient absents → tout le site retombait sur la police système.
+   On sert désormais Plus Jakarta Sans (géométrique, auto-hébergée, libre). Un
+   seul fichier woff2 VARIABLE couvre tous les poids 200→800 (d'où une seule
+   déclaration). Pour la rebaptiser un jour, renommer 'Nexa' partout. */
 @font-face {
   font-family: 'Nexa';
-  src: url('/fonts/Nexa-Heavy.ttf') format('truetype');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nexa';
-  src: url('/fonts/Nexa-ExtraLight.ttf') format('truetype');
-  font-weight: 300;
+  src: url('/fonts/plus-jakarta.woff2') format('woff2');
+  font-weight: 200 800;
   font-style: normal;
   font-display: swap;
 }
@@ -354,6 +353,22 @@ select:focus {
   0%, 100% { background-position: 0% 50%; }
   50%      { background-position: 100% 50%; }
 }
+/* Aurore de fond — dérive lente de deux nappes lumineuses (profondeur vivante) */
+@keyframes auroraA {
+  0%   { transform: translate3d(-6%, -3%, 0) scale(1);    opacity: .9; }
+  50%  { transform: translate3d(6%, 4%, 0)   scale(1.18); opacity: 1; }
+  100% { transform: translate3d(-6%, -3%, 0) scale(1);    opacity: .9; }
+}
+@keyframes auroraB {
+  0%   { transform: translate3d(5%, 2%, 0)  scale(1.1);  opacity: .8; }
+  50%  { transform: translate3d(-7%, -5%, 0) scale(1);   opacity: 1; }
+  100% { transform: translate3d(5%, 2%, 0)  scale(1.1);  opacity: .8; }
+}
+/* Reflet « sheen » qui balaie une surface (bannières premium) */
+@keyframes sheenSweep {
+  0%   { transform: translateX(-130%) skewX(-18deg); }
+  100% { transform: translateX(230%)  skewX(-18deg); }
+}
 
 /* Entrée de page : chaque racine de page monte en fondu.
    (la nav est un <nav>, elle n'est pas concernée) */
@@ -443,6 +458,28 @@ select:focus {
 .nav-link-active::after {
   transform: scaleX(1);
 }
+
+/* Révélation au scroll — piloté par un IntersectionObserver (voir useReveal).
+   L'élément monte en fondu la 1re fois qu'il entre dans le viewport. */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll { opacity: 1; transform: none; }
+}
+
+/* Transition de page (app/template.tsx) — fondu d'opacité PUR (aucun transform,
+   pour ne pas casser les enfants position:fixed plein écran comme la carte). */
+.route-fade { animation: routeFade 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes routeFade { from { opacity: 0; } to { opacity: 1; } }
 
 /* Spinner */
 @keyframes spinRing { to { transform: rotate(360deg); } }

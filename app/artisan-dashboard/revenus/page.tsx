@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SkeletonPage } from '@/components/Skeleton'
 
 export default function RevenusPage(){
   const router=useRouter()
@@ -39,7 +40,7 @@ export default function RevenusPage(){
 
   const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?"Aujourd'hui":x===1?'Hier':x<7?`${x}j`:x<30?`${Math.floor(x/7)} sem.`:`${Math.floor(x/30)} mois`}
 
-  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><p style={{color:'var(--tx3)'}}>Chargement...</p></div>
+  if(loading)return<SkeletonPage stats rows={5}/>
 
   return(
     <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>

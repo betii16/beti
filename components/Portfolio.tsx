@@ -6,7 +6,17 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Skeleton } from '@/components/Skeleton'
 import { Camera, Hammer } from 'lucide-react'
+
+/** Grille de vignettes shimmer pour le chargement du portfolio. */
+function PortfolioSkeleton() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
+      {[0, 1, 2, 3].map(i => <Skeleton key={i} h={150} r={14} />)}
+    </div>
+  )
+}
 
 export type PortfolioPost = {
   id: string
@@ -163,7 +173,7 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
 
       {/* Posts existants */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 32, color: 'var(--tx3)', fontSize: 13 }}>Chargement...</div>
+        <PortfolioSkeleton />
       ) : posts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--tx3)' }}>
           <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><Hammer size={32} /></div>
@@ -203,7 +213,7 @@ export function PortfolioFeed({ artisanId }: { artisanId: string }) {
       .then(({ data }) => { if (data) setPosts(data as PortfolioPost[]); setLoading(false) })
   }, [artisanId])
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 40, color: 'var(--tx3)', fontSize: 14, fontWeight: 300 }}>Chargement...</div>
+  if (loading) return <PortfolioSkeleton />
   if (posts.length === 0) return (
     <div style={{ textAlign: 'center', padding: 48, color: 'var(--tx3)' }}>
       <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><Hammer size={32}/></div>

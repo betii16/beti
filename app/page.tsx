@@ -85,6 +85,20 @@ export default function Home(){
 
   useEffect(()=>{loadA();setShow(6)},[loc,cat,tags])
 
+  // Révélation au scroll : chaque section .reveal-on-scroll monte en fondu la
+  // première fois qu'elle entre dans le viewport (rythme Linear/Stripe).
+  useEffect(()=>{
+    const els=document.querySelectorAll('.reveal-on-scroll')
+    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+      els.forEach(el=>el.classList.add('is-visible'));return
+    }
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}})
+    },{threshold:0.12,rootMargin:'0px 0px -8% 0px'})
+    els.forEach(el=>io.observe(el))
+    return()=>io.disconnect()
+  },[])
+
   const loadA=async()=>{
     if(cat==='autre'&&tags.length===0){setArtisans([]);setLoading(false);return}
     setLoading(true)
@@ -212,7 +226,7 @@ export default function Home(){
         </section>
 
         {/* ── SERVICES ── */}
-        <section id="services" style={{maxWidth:1100,margin:'0 auto',padding:'40px 24px 28px'}}>
+        <section id="services" className="reveal-on-scroll" style={{maxWidth:1100,margin:'0 auto',padding:'40px 24px 28px'}}>
           <div style={{marginBottom:24}}><div className="section-label">{t('home.servicesTag')}</div><h2 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.servicesTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
             <div onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card is-clickable" style={{padding:18,borderColor:!cat?'var(--accent)':'var(--border)'}}>
@@ -238,7 +252,7 @@ export default function Home(){
         </section>
 
         {/* ── ARTISANS ── */}
-        <section id="artisans" style={{maxWidth:1100,margin:'0 auto',padding:'20px 24px 56px'}}>
+        <section id="artisans" className="reveal-on-scroll" style={{maxWidth:1100,margin:'0 auto',padding:'20px 24px 56px'}}>
           <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12}}>
             <div><div className="section-label">{t('home.artisansTag')}</div><h2 style={{fontSize:20,fontWeight:800,letterSpacing:'-0.01em'}}>{loading?t('home.searching'):artisans.length===0&&cat==='autre'&&tags.length===0?t('home.addKeywords'):`${artisans.length} ${cat&&cat!=='autre'?cl(cat)+' — ':''}${artisans.length>1?t('home.artisansNear'):t('home.artisanNear')}`}</h2></div>
             <div style={{display:'flex',gap:4,alignItems:'center',flexWrap:'wrap'}}>
@@ -318,7 +332,7 @@ export default function Home(){
         </section>
 
         {/* ── STATS ── */}
-        <div ref={sr} style={{padding:'56px 24px 44px'}}>
+        <div ref={sr} className="reveal-on-scroll" style={{padding:'56px 24px 44px'}}>
           {/* Un seul bandeau de verre : les 4 chiffres se lisent comme une unité,
               séparés par de simples filets — fini les 4 rectangles flottants. */}
           <div className="card" style={{maxWidth:980,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(4,1fr)',padding:'6px 0'}}>
@@ -344,7 +358,7 @@ export default function Home(){
         </div>
 
         {/* ── COMMENT ÇA MARCHE ── */}
-        <section id="comment" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
+        <section id="comment" className="reveal-on-scroll" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:44}}><div className="section-label">{t('home.howTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.howTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'28px 18px'}}>
             {[{n:'01',k:'step1',c:'#3b82f6',Icon:Search},{n:'02',k:'step2',c:'#6366f1',Icon:CalendarCheck},{n:'03',k:'step3',c:'#10b981',Icon:CheckCircle2}].map((s,i)=>(
@@ -363,7 +377,7 @@ export default function Home(){
         </section>
 
         {/* ── POURQUOI BETI ── */}
-        <section style={{padding:'64px 24px',borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)'}}>
+        <section className="reveal-on-scroll" style={{padding:'64px 24px',borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)'}}>
           <div style={{maxWidth:1100,margin:'0 auto'}}>
             <div style={{textAlign:'center',marginBottom:40}}>
               <div className="section-label">{t('home.whyTag')}</div>
@@ -389,7 +403,7 @@ export default function Home(){
         </section>
 
         {/* ── TÉMOIGNAGES ── */}
-        <section style={{padding:'72px 24px',maxWidth:1100,margin:'0 auto'}}>
+        <section className="reveal-on-scroll" style={{padding:'72px 24px',maxWidth:1100,margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:40}}><div className="section-label">{t('home.testiTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.testiTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:14}}>
             {TESTI.map((x,i)=>(
@@ -406,7 +420,7 @@ export default function Home(){
         </section>
 
         {/* ── CTA ARTISAN ── */}
-        <section style={{padding:'0 24px 80px',maxWidth:1100,margin:'0 auto'}}>
+        <section className="reveal-on-scroll" style={{padding:'0 24px 80px',maxWidth:1100,margin:'0 auto'}}>
           <div className="card" style={{padding:'56px 48px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:40,flexWrap:'wrap',position:'relative',overflow:'hidden',border:'1px solid var(--accent)22'}}>
             <div style={{position:'absolute',right:-30,top:'50%',transform:'translateY(-50%)',fontSize:200,fontWeight:800,color:'var(--accent)',opacity:0.03,pointerEvents:'none'}}>BETI</div>
             <div style={{position:'relative',maxWidth:480}}>

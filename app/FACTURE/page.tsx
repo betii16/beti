@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SkeletonPage } from '@/components/Skeleton'
 import { AlertTriangle, Banknote } from 'lucide-react'
 function pad(n: number) { return String(n).padStart(2, '0') }
 
@@ -54,11 +55,7 @@ export default function FacturePage() {
 
   const handlePrint = () => window.print()
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif' }}>
-      <div style={{ fontSize: 14, color: 'var(--tx3)' }}>Chargement de la facture...</div>
-    </div>
-  )
+  if (loading) return <SkeletonPage rows={4} paddingTop={48} />
 
   if (error) return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>

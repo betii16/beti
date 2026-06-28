@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ReviewPhotoUpload } from '@/components/ReviewPhotos'
+import { SkeletonPage } from '@/components/Skeleton'
 import { CheckCircle2 } from 'lucide-react'
 
 type Review = {
@@ -120,11 +121,7 @@ function MesAvisContent() {
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
-    </div>
-  )
+  if (loading) return <SkeletonPage rows={5} />
 
   return (
     <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif' }}>
@@ -216,11 +213,7 @@ function MesAvisContent() {
 
 export default function MesAvis() {
   return (
-    <Suspense fallback={
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
-      </div>
-    }>
+    <Suspense fallback={<SkeletonPage rows={5} />}>
       <MesAvisContent />
     </Suspense>
   )

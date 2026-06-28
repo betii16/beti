@@ -85,7 +85,7 @@ export default function MobileHome({
       {/* ═══ Salutation + localisation ═══ */}
       <div className="anim-fade-up" style={{ padding: '16px 20px 0' }}>
         <div style={{ fontSize: 25, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
-          {greet}{firstName ? <span style={{ background: 'var(--gradient-text)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}> {firstName}</span> : ''}
+          {greet}{firstName ? <span className="gradient-text-animated"> {firstName}</span> : ''}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
           <MapPin size={12} color="var(--accent)" strokeWidth={2.2}/>
@@ -186,8 +186,10 @@ export default function MobileHome({
             padding: '20px 22px', boxShadow: '0 12px 32px rgba(99,102,241,0.32)',
           }}>
             {/* Décor */}
-            <div style={{ position: 'absolute', width: 170, height: 170, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', top: -70, right: -40, pointerEvents: 'none' }}/>
+            <div className="anim-float" style={{ position: 'absolute', width: 170, height: 170, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', top: -70, right: -40, pointerEvents: 'none' }}/>
             <div style={{ position: 'absolute', width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', bottom: -50, left: '38%', pointerEvents: 'none' }}/>
+            {/* Reflet « sheen » qui balaie la bannière en boucle lente */}
+            <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '45%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)', animation: 'sheenSweep 5.5s ease-in-out infinite', pointerEvents: 'none' }}/>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
               <div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', marginBottom: 5 }}>{t('mhome.promoTitle')}</div>

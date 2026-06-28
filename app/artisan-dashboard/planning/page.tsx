@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SkeletonPage } from '@/components/Skeleton'
 import { Calendar, ClipboardList, Inbox, Clock, User, Phone, MapPin, Banknote } from 'lucide-react'
 
 type Mission = {
@@ -97,11 +98,7 @@ export default function Planning() {
     setSelectedDay(null)
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Chargement...</div>
-    </div>
-  )
+  if (loading) return <SkeletonPage rows={6} />
 
   return (
     <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif' }}>

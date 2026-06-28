@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SkeletonPage } from '@/components/Skeleton'
 import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock } from 'lucide-react'
 
 type Tab = 'overview' | 'artisans' | 'bookings' | 'users' | 'reviews'
@@ -254,14 +255,7 @@ export default function AdminDashboard() {
   })
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#fff', margin: '0 auto 16px' }}>B</div>
-          <div style={{ fontSize: 14, color: 'var(--tx3)' }}>Chargement du dashboard...</div>
-        </div>
-      </div>
-    )
+    return <SkeletonPage stats rows={6} />
   }
 
   return (
