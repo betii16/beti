@@ -10,6 +10,7 @@ import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
 import { LayoutGrid, Users, Heart, Clock, MapPinned, Search, CalendarCheck, CheckCircle2 } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
+import { LogoMark } from '@/components/Logo'
 
 type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string;phone?:string }
 type Review = { id:string;rating:number;comment:string|null;created_at:string;photos?:string[];profiles?:{full_name:string}|null }
@@ -21,9 +22,9 @@ const SVC = [
   {id:'serrurerie',color:'#ef4444',u:true},
   {id:'menage',color:'#10b981'},
   {id:'peinture',color:'#f97316'},
-  {id:'demenagement',color:'#8b5cf6'},
+  {id:'demenagement',color:'#7C5CFF'},
   {id:'jardinage',color:'#22c55e'},
-  {id:'informatique',color:'#6366f1'},
+  {id:'informatique',color:'#5A3DF0'},
   {id:'coiffure',color:'#ec4899'},
 ]
 const NEED_KEYS = ['need1','need2','need3','need4','need5','need6','need7','need8']
@@ -131,7 +132,7 @@ export default function Home(){
 
   useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!sa.current){sa.current=true;const t={a:12000,b:98,c:30,d:50};const s=Date.now();const tick=()=>{const p=Math.min((Date.now()-s)/1800,1);const e=1-Math.pow(1-p,3);setCnt({a:Math.floor(e*t.a),b:Math.floor(e*t.b),c:Math.floor(e*t.c),d:Math.floor(e*t.d)});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:0.3});if(sr.current)o.observe(sr.current);return()=>o.disconnect()},[])
 
-  const cc=(id:string)=>SVC.find(c=>c.id===id)?.color||'#6366f1'
+  const cc=(id:string)=>SVC.find(c=>c.id===id)?.color||'#5A3DF0'
   const cl=(id:string)=>t(`categories.${id}`)
   const svcDesc=(id:string)=>t(`home.svc${id[0].toUpperCase()}${id.slice(1)}`)
   const ta=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?t('common.today'):x===1?t('common.yesterday'):x<7?`${x}${t('common.daysShort')}`:x<30?`${Math.floor(x/7)} ${t('common.weeksShort')}`:`${Math.floor(x/30)} ${t('common.monthsShort')}`}
@@ -146,7 +147,7 @@ export default function Home(){
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
         @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
         @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-6px)}}
-        @keyframes glow{0%,100%{box-shadow:0 0 8px #6366f133}50%{box-shadow:0 0 20px #6366f155}}
+        @keyframes glow{0%,100%{box-shadow:0 0 8px #5A3DF033}50%{box-shadow:0 0 20px #5A3DF055}}
         *{box-sizing:border-box;margin:0;padding:0}
         html{scroll-behavior:smooth}
         #services,#artisans,#comment{scroll-margin-top:100px}
@@ -185,7 +186,7 @@ export default function Home(){
 
             <h1 style={{fontSize:'clamp(2.4rem,5.5vw,3.8rem)',fontWeight:800,lineHeight:1.08,letterSpacing:'-0.03em',marginBottom:20,animation:'fadeUp 0.6s ease 0.1s both'}}>
               {t('home.title1')}<br/>
-              <span style={{background:'linear-gradient(135deg,#6366f1,#a78bfa,#6366f1)',backgroundSize:'200% auto',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',animation:'shimmer 3s linear infinite'}}>{t('home.title2')}</span>
+              <span style={{background:'linear-gradient(135deg,#5A3DF0,#a78bfa,#5A3DF0)',backgroundSize:'200% auto',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',animation:'shimmer 3s linear infinite'}}>{t('home.title2')}</span>
             </h1>
 
             <p style={{fontSize:16,color:'var(--tx2)',maxWidth:480,lineHeight:1.8,margin:'0 auto 36px',fontWeight:300,animation:'fadeUp 0.6s ease 0.2s both'}}>
@@ -337,10 +338,10 @@ export default function Home(){
               séparés par de simples filets — fini les 4 rectangles flottants. */}
           <div className="card" style={{maxWidth:980,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(4,1fr)',padding:'6px 0'}}>
             {[
-              {v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA'),Icon:Users,c:'#6366f1'},
-              {v:cnt.b,x:'%',l:t('home.statsB'),Icon:Heart,c:'#10b981'},
-              {v:cnt.c,p:'<',x:'min',l:t('home.statsC'),Icon:Clock,c:'#3b82f6'},
-              {v:cnt.d,x:'+',l:t('home.statsD'),Icon:MapPinned,c:'#8b5cf6'},
+              {v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA'),Icon:Users,c:'#5A3DF0'},
+              {v:cnt.b,x:'%',l:t('home.statsB'),Icon:Heart,c:'#5A3DF0'},
+              {v:cnt.c,p:'<',x:'min',l:t('home.statsC'),Icon:Clock,c:'#5A3DF0'},
+              {v:cnt.d,x:'+',l:t('home.statsD'),Icon:MapPinned,c:'#7C5CFF'},
             ].map((s:any,i)=>(
               <div key={i} style={{padding:'26px 18px',textAlign:'center',borderInlineStart:i>0?'1px solid var(--border)':'none'}}>
                 <div style={{display:'inline-flex',width:40,height:40,borderRadius:12,marginBottom:12,alignItems:'center',justifyContent:'center',background:`${s.c}1a`,color:s.c}}>
@@ -361,7 +362,7 @@ export default function Home(){
         <section id="comment" className="reveal-on-scroll" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:44}}><div className="section-label">{t('home.howTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.howTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'28px 18px'}}>
-            {[{n:'01',k:'step1',c:'#3b82f6',Icon:Search},{n:'02',k:'step2',c:'#6366f1',Icon:CalendarCheck},{n:'03',k:'step3',c:'#10b981',Icon:CheckCircle2}].map((s,i)=>(
+            {[{n:'01',k:'step1',c:'#5A3DF0',Icon:Search},{n:'02',k:'step2',c:'#5A3DF0',Icon:CalendarCheck},{n:'03',k:'step3',c:'#5A3DF0',Icon:CheckCircle2}].map((s,i)=>(
               <div key={s.n} style={{position:'relative',padding:'0 8px'}}>
                 {/* Trait de liaison vers l'étape suivante (desktop) */}
                 {i<2&&<div aria-hidden className="desktop-only" style={{position:'absolute',top:27,insetInlineStart:70,insetInlineEnd:-18,height:2,background:`linear-gradient(90deg,${s.c}66,transparent)`,pointerEvents:'none'}}/>}
@@ -387,7 +388,7 @@ export default function Home(){
             {/* Liste de bénéfices à filets — volontairement « plate » pour trancher
                 avec le verre des sections interactives. */}
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:'0 40px'}}>
-              {[{k:'why1',c:'#6366f1'},{k:'why2',c:'#10b981'},{k:'why3',c:'#3b82f6'},{k:'why4',c:'#f59e0b'},{k:'why5',c:'#8b5cf6'},{k:'why6',c:'#ef4444'}].map(f=>(
+              {[{k:'why1',c:'#5A3DF0'},{k:'why2',c:'#5A3DF0'},{k:'why3',c:'#5A3DF0'},{k:'why4',c:'#5A3DF0'},{k:'why5',c:'#5A3DF0'},{k:'why6',c:'#5A3DF0'}].map(f=>(
                 <div key={f.k} style={{display:'flex',gap:14,padding:'20px 2px',borderTop:'1px solid var(--border)'}}>
                   <div style={{flexShrink:0,width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`${f.c}14`,border:`1px solid ${f.c}30`}}>
                     <div style={{width:8,height:8,borderRadius:'50%',background:f.c,boxShadow:`0 0 12px ${f.c}55`}}/>
@@ -441,14 +442,14 @@ export default function Home(){
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:32,marginBottom:40}}>
               <div>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
-                  <div style={{width:26,height:26,background:'var(--gradient)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:800,color:'#fff'}}>B</div>
+                  <LogoMark size={24} />
                   <span style={{fontSize:14,fontWeight:800,letterSpacing:'0.12em'}}>BETI</span>
                 </div>
                 <p style={{fontSize:12,color:'var(--tx3)',fontWeight:300,lineHeight:1.7}}>{t('home.footerDesc')}</p>
               </div>
               <div><div style={{fontSize:10,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.08em',marginBottom:14}}>{t('home.footerServices')}</div>{['plomberie','electricite','serrurerie','menage','peinture','demenagement'].map(s=><a key={s} href="/#services" style={{display:'block',fontSize:12,color:'var(--tx3)',textDecoration:'none',fontWeight:300,marginBottom:8}}>{cl(s)}</a>)}</div>
               <div><div style={{fontSize:10,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.08em',marginBottom:14}}>{t('home.footerPlatform')}</div>{[{l:t('home.footerHow'),h:'/#comment'},{l:t('nav.map'),h:'/map'},{l:t('home.footerBecome'),h:'/auth/signup'},{l:t('nav.login'),h:'/auth/login'}].map(s=><a key={s.l} href={s.h} style={{display:'block',fontSize:12,color:'var(--tx3)',textDecoration:'none',fontWeight:300,marginBottom:8}}>{s.l}</a>)}</div>
-              <div><div style={{fontSize:10,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.08em',marginBottom:14}}>{t('home.footerSupport')}</div>{[{l:t('nav.help'),h:'/aide'},{l:t('nav.settings'),h:'/parametres'},{l:t('home.footerLegal'),h:'#'},{l:t('home.footerCgu'),h:'#'}].map(s=><a key={s.l} href={s.h} style={{display:'block',fontSize:12,color:'var(--tx3)',textDecoration:'none',fontWeight:300,marginBottom:8}}>{s.l}</a>)}</div>
+              <div><div style={{fontSize:10,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.08em',marginBottom:14}}>{t('home.footerSupport')}</div>{[{l:t('nav.help'),h:'/aide'},{l:t('nav.settings'),h:'/parametres'},{l:t('home.footerLegal'),h:'/mentions'},{l:t('home.footerCgu'),h:'/cgu'},{l:t('home.footerPrivacy'),h:'/confidentialite'}].map(s=><a key={s.l} href={s.h} style={{display:'block',fontSize:12,color:'var(--tx3)',textDecoration:'none',fontWeight:300,marginBottom:8}}>{s.l}</a>)}</div>
             </div>
             <div style={{height:1,background:'var(--border)',marginBottom:20}}/>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>

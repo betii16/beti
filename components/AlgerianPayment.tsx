@@ -10,7 +10,6 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { CheckCircle2, CreditCard, Banknote, X, Shield } from 'lucide-react'
-import { commissionFor, clientCharge, COMMISSION_ON_TOP } from '@/lib/payment-config'
 
 type PayMethod = 'card' | 'cash'
 
@@ -38,9 +37,6 @@ export function AlgerianPayment({
   const [done, setDone] = useState(false)
   const [refNum, setRefNum] = useState('')
   const [err, setErr] = useState('')
-
-  const commission = commissionFor(amount)
-  const total = clientCharge(amount)
 
   // ── CARTE : init serveur → redirection SATIM ──────────────────────────────
   const payCard = async () => {
@@ -86,7 +82,7 @@ export function AlgerianPayment({
         </div>
         <div style={{ padding: '10px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Référence :</span>
-          <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 800, letterSpacing: '0.04em' }}>{refNum}</span>
+          <span style={{ fontSize: 12, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.04em' }}>{refNum}</span>
         </div>
       </div>
     </div>
@@ -98,7 +94,7 @@ export function AlgerianPayment({
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Shield size={16} color="#fff" />
             </div>
             <div>
@@ -118,24 +114,8 @@ export function AlgerianPayment({
               <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', marginBottom: 2 }}>{serviceTitle}</div>
               <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>avec {artisanName}</div>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#6366f1' }}>{amount.toLocaleString('fr-DZ')} <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--tx3)' }}>DA</span></div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#5A3DF0' }}>{amount.toLocaleString('fr-DZ')} <span style={{ fontSize: 11, fontWeight: 300, color: 'var(--tx3)' }}>DA</span></div>
           </div>
-          {/* La commission n'est montrée au client QUE si elle est ajoutée à sa
-              note (COMMISSION_ON_TOP). En modèle « déduite de l'artisan » (défaut),
-              le client paie le prix affiché et ne voit aucune ligne commission. */}
-          {method === 'card' && COMMISSION_ON_TOP && commission > 0 && (
-            <>
-              <div style={{ height: '0.5px', background: 'var(--border)', margin: '10px 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Commission BETI (10%)</span>
-                <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{commission.toLocaleString('fr-DZ')} DA</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>Total à payer</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#6366f1' }}>{total.toLocaleString('fr-DZ')} DA</span>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Sélecteur de méthode (masqué si le mode est verrouillé sur la carte) */}
@@ -149,13 +129,13 @@ export function AlgerianPayment({
             <button key={m.id} onClick={() => { setMethod(m.id); setErr('') }}
               style={{
                 padding: '14px 8px', borderRadius: 12, cursor: 'pointer',
-                background: method === m.id ? 'rgba(99,102,241,0.08)' : 'var(--bg)',
-                border: `0.5px solid ${method === m.id ? '#6366f1' : 'var(--border)'}`,
+                background: method === m.id ? 'rgba(90, 61, 240,0.08)' : 'var(--bg)',
+                border: `0.5px solid ${method === m.id ? '#5A3DF0' : 'var(--border)'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                 transition: 'all 0.15s', fontFamily: 'Nexa, sans-serif',
               }}>
-              <m.Icon size={18} color={method === m.id ? '#6366f1' : 'var(--tx2)'} />
-              <div style={{ fontSize: 12, fontWeight: 800, color: method === m.id ? '#6366f1' : 'var(--tx)' }}>{m.label}</div>
+              <m.Icon size={18} color={method === m.id ? '#5A3DF0' : 'var(--tx2)'} />
+              <div style={{ fontSize: 12, fontWeight: 800, color: method === m.id ? '#5A3DF0' : 'var(--tx)' }}>{m.label}</div>
               <div style={{ fontSize: 10, color: 'var(--tx3)', fontWeight: 300 }}>{m.sub}</div>
             </button>
           ))}
@@ -174,7 +154,7 @@ export function AlgerianPayment({
 
         {/* Explication selon la méthode */}
         {method === 'card' ? (
-          <div style={{ background: 'rgba(99,102,241,0.06)', border: '0.5px solid rgba(99,102,241,0.2)', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ background: 'rgba(90, 61, 240,0.06)', border: '0.5px solid rgba(90, 61, 240,0.2)', borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
               Réseau SATIM · CIB / Edahabia
@@ -207,14 +187,14 @@ export function AlgerianPayment({
             disabled={loading}
             style={{
               flex: 2, padding: '13px',
-              background: loading ? 'var(--border)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+              background: loading ? 'var(--border)' : 'linear-gradient(135deg,#5A3DF0,#7C5CFF)',
               border: 'none', borderRadius: 10,
               color: loading ? 'var(--tx3)' : '#fff',
               fontSize: 13, fontWeight: 800,
               cursor: loading ? 'not-allowed' : 'pointer',
               fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s',
             }}>
-            {loading ? 'Traitement...' : method === 'cash' ? 'Confirmer la réservation' : `Payer ${total.toLocaleString('fr-DZ')} DA par carte`}
+            {loading ? 'Traitement...' : method === 'cash' ? 'Confirmer la réservation' : `Payer ${amount.toLocaleString('fr-DZ')} DA par carte`}
           </button>
         </div>
 

@@ -99,12 +99,12 @@ export function AddressPicker({
         <div style="position:relative;display:flex;flex-direction:column;align-items:center">
           <div style="
             width:44px;height:44px;border-radius:50% 50% 50% 0;
-            background:#6366f1;transform:rotate(-45deg);
+            background:#5A3DF0;transform:rotate(-45deg);
             border:3px solid #fff;
-            box-shadow:0 0 0 3px #6366f144, 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow:0 0 0 3px #5A3DF044, 0 4px 12px rgba(0,0,0,0.4);
           "></div>
           <div style="
-            width:2px;height:18px;background:#6366f1;
+            width:2px;height:18px;background:#5A3DF0;
             margin-top:-2px;opacity:0.7;
           "></div>
         </div>`,
@@ -245,7 +245,7 @@ export function AddressPicker({
       <div ref={dropRef} style={{ position: 'relative', background: 'var(--bg2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {/* Icône adresse */}
-          <div style={{ padding: '0 14px', color: '#6366f1', flexShrink: 0, display: 'flex', alignItems: 'center' }}><MapPin size={16}/></div>
+          <div style={{ padding: '0 14px', color: '#5A3DF0', flexShrink: 0, display: 'flex', alignItems: 'center' }}><MapPin size={16}/></div>
 
           {/* Input */}
           <input
@@ -267,7 +267,7 @@ export function AddressPicker({
             onClick={handleGPS}
             style={{
               padding: '14px 16px', background: 'transparent', border: 'none',
-              borderLeft: '0.5px solid var(--border)', color: loading ? '#555' : '#6366f1',
+              borderLeft: '0.5px solid var(--border)', color: loading ? '#555' : '#5A3DF0',
               cursor: 'pointer', fontSize: 16, flexShrink: 0,
               transition: 'color 0.2s',
             }}
@@ -298,7 +298,7 @@ export function AddressPicker({
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--border)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <span style={{ flexShrink: 0, display: 'inline-flex', color: '#6366f1' }}><MapPin size={14}/></span>
+                <span style={{ flexShrink: 0, display: 'inline-flex', color: '#5A3DF0' }}><MapPin size={14}/></span>
                 <div style={{ overflow: 'hidden' }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.address?.road || s.address?.suburb || s.name || s.display_name.split(',')[0]}
@@ -345,7 +345,7 @@ export function AddressPicker({
             disabled={!address}
             style={{
               width: '100%', padding: '13px',
-              background: confirmed ? 'rgba(74,222,128,0.08)' : address ? '#6366f1' : 'var(--bg3)',
+              background: confirmed ? 'rgba(74,222,128,0.08)' : address ? '#5A3DF0' : 'var(--bg3)',
               border: confirmed ? '0.5px solid rgba(74,222,128,0.3)' : 'none',
               borderRadius: 10,
               color: confirmed ? '#4ade80' : address ? '#fff' : 'var(--tx3)',

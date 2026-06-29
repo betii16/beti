@@ -1,8 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useLang } from '@/lib/LangContext'
 import { ReviewPhotoUpload } from '@/components/ReviewPhotos'
 import { SkeletonPage } from '@/components/Skeleton'
 import { CheckCircle2 } from 'lucide-react'
@@ -42,7 +43,7 @@ function Stars({ rating, interactive = false, onRate }: { rating: number; intera
           onClick={() => interactive && onRate?.(n)}
           onMouseEnter={() => interactive && setHover(n)}
           onMouseLeave={() => interactive && setHover(0)}
-          style={{ fontSize: interactive ? 28 : 16, cursor: interactive ? 'pointer' : 'default', color: n <= (hover || rating) ? '#6366f1' : 'var(--border)', transition: 'color 0.15s' }}>
+          style={{ fontSize: interactive ? 28 : 16, cursor: interactive ? 'pointer' : 'default', color: n <= (hover || rating) ? '#5A3DF0' : 'var(--border)', transition: 'color 0.15s' }}>
           ★
         </span>
       ))}
@@ -52,6 +53,7 @@ function Stars({ rating, interactive = false, onRate }: { rating: number; intera
 
 function MesAvisContent() {
   const router = useRouter()
+  const { t, isAr } = useLang()
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('booking')
 
@@ -76,9 +78,9 @@ function MesAvisContent() {
       if (bookingId) {
         const { data: bk } = await supabase.from('bookings').select('client_id, status').eq('id', bookingId).single()
         const { data: existing } = await supabase.from('reviews').select('id').eq('booking_id', bookingId).maybeSingle()
-        if (!bk || bk.client_id !== user.id) { setBookingOk(false); setCheckMsg('Cette réservation est introuvable ou ne vous appartient pas.') }
-        else if (bk.status !== 'completed') { setBookingOk(false); setCheckMsg('Vous pourrez laisser un avis une fois la prestation terminée par l\'artisan.') }
-        else if (existing) { setBookingOk(false); setCheckMsg('Vous avez déjà laissé un avis pour cette réservation.') }
+        if (!bk || bk.client_id !== user.id) { setBookingOk(false); setCheckMsg(t('avis.errNotFound')) }
+        else if (bk.status !== 'completed') { setBookingOk(false); setCheckMsg(t('avis.errNotDone')) }
+        else if (existing) { setBookingOk(false); setCheckMsg(t('avis.errAlready')) }
         else { setBookingOk(true) }
       }
       const { data } = await supabase
@@ -105,7 +107,7 @@ function MesAvisContent() {
       if (error) {
         setSubmitting(false)
         alert(error.message.includes('row-level security')
-          ? 'Avis refusé : seuls les clients ayant terminé cette prestation peuvent laisser un avis.'
+          ? t('avis.errDenied')
           : 'Erreur : ' + error.message)
         return
       }
@@ -124,12 +126,12 @@ function MesAvisContent() {
   if (loading) return <SkeletonPage rows={5} />
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
       <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>MON ESPACE</div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>Mes avis</h1>
-          <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{reviews.length} avis laissé{reviews.length !== 1 ? 's' : ''}</p>
+          <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('avis.eyebrow')}</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('avis.title')}</h1>
+          <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{reviews.length} {t('avis.subtitle')}</p>
         </div>
       </div>
 
@@ -142,16 +144,16 @@ function MesAvisContent() {
         )}
 
         {showForm && bookingId && bookingOk === true && (
-          <div className="card" style={{ borderColor: '#6366f155', padding: '28px', marginBottom: 28 }}>
-            <div style={{ height: 2, background: 'linear-gradient(90deg, #6366f1, #f59e0b)', marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
-            <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>LAISSER UN AVIS</div>
+          <div className="card" style={{ borderColor: '#5A3DF055', padding: '28px', marginBottom: 28 }}>
+            <div style={{ height: 2, background: 'linear-gradient(90deg, #5A3DF0, #f59e0b)', marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
+            <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>{t('avis.formTitle')}</div>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>Votre note</div>
+              <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>{t('avis.ratingLabel')}</div>
               <Stars rating={rating} interactive onRate={setRating}/>
             </div>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>Commentaire <span style={{ color: 'var(--tx3)' }}>(optionnel)</span></div>
-              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Décrivez votre expérience..." rows={4} className="field" style={{ resize: 'none' }} />
+              <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>{t('avis.commentLabel')} <span style={{ color: 'var(--tx3)' }}>{t('avis.optional')}</span></div>
+              <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder={t('avis.commentPh')} rows={4} className="field" style={{ resize: 'none' }} />
             </div>
             <div style={{ marginBottom: 20 }}>
               <ReviewPhotoUpload bookingId={bookingId} onPhotosChange={setPhotos} />
@@ -159,10 +161,10 @@ function MesAvisContent() {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowForm(false)} className="btn-ghost" style={{ flex: 1 }}>
-                Annuler
+                {t('avis.cancel')}
               </button>
               <button onClick={submitReview} disabled={!rating || submitting} className="btn-primary" style={{ flex: 2 }}>
-                {submitting ? 'Envoi...' : '✓ Publier l\'avis'}
+                {submitting ? t('avis.publishing') : t('avis.publish')}
               </button>
             </div>
           </div>
@@ -171,16 +173,16 @@ function MesAvisContent() {
         {submitted && (
           <div style={{ background: '#10b98112', border: '0.5px solid #10b98144', borderRadius: 12, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
             <CheckCircle2 size={18} color="#10b981"/>
-            <span style={{ fontSize: 13, color: '#10b981', fontWeight: 300 }}>Votre avis a été publié, merci !</span>
+            <span style={{ fontSize: 13, color: '#10b981', fontWeight: 300 }}>{t('avis.successMsg')}</span>
           </div>
         )}
 
         {reviews.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>⭐</div>
-            <div style={{ fontSize: 14, fontWeight: 300 }}>Vous n'avez pas encore laissé d'avis</div>
+            <div style={{ fontSize: 14, fontWeight: 300 }}>{t('avis.empty')}</div>
             <a href="/mon-espace/reservations" className="btn-primary btn-sm" style={{ marginTop: 20 }}>
-              Voir mes réservations
+              {t('avis.seeBookings')}
             </a>
           </div>
         ) : (
@@ -189,7 +191,7 @@ function MesAvisContent() {
               <div key={r.id} className="card" style={{ padding: '18px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 3 }}>{r.artisans?.full_name || 'Artisan'}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 3 }}>{r.artisans?.full_name || t('avis.artisanFallback')}</div>
                     <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{r.artisans?.category}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>

@@ -9,8 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        // Tokens « shadcn » mappés sur les variables de marque BETI, pour que les
+        // composants importés (ex. components/ui/mapcn-*) s'affichent correctement.
+        background: "var(--bg)",
+        foreground: "var(--tx)",
+        border: "var(--border)",
+        input: "var(--border)",
+        ring: "var(--accent)",
+        muted: "var(--bg3)",
+        "muted-foreground": "var(--tx2)",
+        popover: "var(--bg2-solid)",
+        "popover-foreground": "var(--tx)",
+        accent: "var(--bg3)",
+        "accent-foreground": "var(--tx)",
+        primary: "var(--accent)",
+        "primary-foreground": "#ffffff",
       },
     },
   },

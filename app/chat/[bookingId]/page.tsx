@@ -170,7 +170,7 @@ export default function ChatPage(){
         <div style={{fontSize:32,marginBottom:16}}>⚠</div>
         <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:10}}>Erreur de chargement</div>
         <div style={{fontSize:13,color:'#ef4444',background:'#ef444410',border:'1px solid #ef444420',borderRadius:10,padding:'12px 16px',marginBottom:20,textAlign:'left',wordBreak:'break-word'}}>{loadErr}</div>
-        <button onClick={()=>router.back()} style={{padding:'10px 24px',borderRadius:10,background:'#6366f1',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>← Retour</button>
+        <button onClick={()=>router.back()} style={{padding:'10px 24px',borderRadius:10,background:'#5A3DF0',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>← Retour</button>
       </div>
     </div>
   )
@@ -180,13 +180,13 @@ export default function ChatPage(){
       {/* Header */}
       <div style={{background:'var(--bg2)',borderBottom:'1px solid var(--border)',padding:'14px 24px',display:'flex',alignItems:'center',gap:14}}>
         <button onClick={()=>router.back()} style={{background:'transparent',border:'none',color:'var(--tx2)',fontSize:20,cursor:'pointer'}}>←</button>
-        <div style={{width:36,height:36,borderRadius:10,background:'#6366f115',border:'1px solid #6366f122',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:800,color:'#6366f1'}}>{(otherName||'?')[0]}</div>
+        <div style={{width:36,height:36,borderRadius:10,background:'#5A3DF015',border:'1px solid #5A3DF022',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:800,color:'#5A3DF0'}}>{(otherName||'?')[0]}</div>
         <div style={{flex:1}}>
           <div style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{otherName||t('common.loading')}</div>
           <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{booking?.title||t('chat.conversation')}</div>
         </div>
-        {booking&&<span style={{padding:'4px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:booking.status==='confirmed'?'#6366f112':booking.status==='completed'?'#10b98112':'#f59e0b12',color:booking.status==='confirmed'?'#6366f1':booking.status==='completed'?'#10b981':'#f59e0b'}}>{t(`status.${booking.status}`)}</span>}
-        {canPay&&<button onClick={()=>setShowPay(true)} style={{padding:'7px 16px',borderRadius:9,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',whiteSpace:'nowrap'}}>{t('chat.pay')} {(booking.price_agreed||0).toLocaleString('fr-DZ')} {t('common.da')}</button>}
+        {booking&&<span style={{padding:'4px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:booking.status==='confirmed'?'#5A3DF012':booking.status==='completed'?'#10b98112':'#f59e0b12',color:booking.status==='confirmed'?'#5A3DF0':booking.status==='completed'?'#10b981':'#f59e0b'}}>{t(`status.${booking.status}`)}</span>}
+        {canPay&&<button onClick={()=>setShowPay(true)} style={{padding:'7px 16px',borderRadius:9,background:'linear-gradient(135deg,#5A3DF0,#7C5CFF)',border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif',whiteSpace:'nowrap'}}>{t('chat.pay')} {(booking.price_agreed||0).toLocaleString('fr-DZ')} {t('common.da')}</button>}
       </div>
 
       {/* Messages */}
@@ -221,8 +221,8 @@ export default function ChatPage(){
             <div key={m.id}>
               {dateSep}
               <div style={{display:'flex',justifyContent:mine?'flex-end':'flex-start',marginBottom:6}}>
-                <div className="anim-msg-in" style={{maxWidth:'75%',padding:'10px 14px',borderRadius:mine?'14px 14px 4px 14px':'14px 14px 14px 4px',background:mine?'linear-gradient(135deg,#6366f1,#8b5cf6)':'var(--bg2)',border:mine?'none':'1px solid var(--border)',color:mine?'#fff':'var(--tx)'}}>
-                  {!mine&&<div style={{fontSize:10,color:'#6366f1',fontWeight:700,marginBottom:4}}>{m.sender_name}</div>}
+                <div className="anim-msg-in" style={{maxWidth:'75%',padding:'10px 14px',borderRadius:mine?'14px 14px 4px 14px':'14px 14px 14px 4px',background:mine?'linear-gradient(135deg,#5A3DF0,#7C5CFF)':'var(--bg2)',border:mine?'none':'1px solid var(--border)',color:mine?'#fff':'var(--tx)'}}>
+                  {!mine&&<div style={{fontSize:10,color:'#5A3DF0',fontWeight:700,marginBottom:4}}>{m.sender_name}</div>}
                   <div style={{fontSize:13,lineHeight:1.6,fontWeight:300}}>{m.content}</div>
                   <div style={{fontSize:9,marginTop:4,textAlign:'right',color:mine?'rgba(255,255,255,0.6)':'var(--tx3)'}}>{formatTime(m.created_at)}</div>
                 </div>
@@ -276,7 +276,7 @@ export default function ChatPage(){
             <input type="number" inputMode="numeric" value={offerAmount} onChange={e=>setOfferAmount(e.target.value.replace(/\D/g,''))} placeholder={t('offer.amountPh')} autoFocus
               style={{flex:1,padding:'12px 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:11,color:'var(--tx)',fontSize:15,outline:'none',fontFamily:'Nexa,sans-serif',fontWeight:700,minWidth:0}}/>
             <button onClick={()=>sendOffer(Number(offerAmount))} disabled={!offerAmount||Number(offerAmount)<=0}
-              style={{padding:'0 16px',borderRadius:11,background:offerAmount&&Number(offerAmount)>0?'linear-gradient(135deg,#6366f1,#8b5cf6)':'var(--border)',border:'none',color:offerAmount&&Number(offerAmount)>0?'#fff':'var(--tx3)',fontSize:13,fontWeight:800,cursor:offerAmount&&Number(offerAmount)>0?'pointer':'not-allowed',fontFamily:'Nexa,sans-serif',whiteSpace:'nowrap'}}>{t('offer.send')}</button>
+              style={{padding:'0 16px',borderRadius:11,background:offerAmount&&Number(offerAmount)>0?'linear-gradient(135deg,#5A3DF0,#7C5CFF)':'var(--border)',border:'none',color:offerAmount&&Number(offerAmount)>0?'#fff':'var(--tx3)',fontSize:13,fontWeight:800,cursor:offerAmount&&Number(offerAmount)>0?'pointer':'not-allowed',fontFamily:'Nexa,sans-serif',whiteSpace:'nowrap'}}>{t('offer.send')}</button>
             <button onClick={()=>{setShowOfferInput(false);setOfferAmount('');setOfferErr('')}} style={{padding:'0 13px',borderRadius:11,background:'transparent',border:'1px solid var(--border)',color:'var(--tx3)',fontSize:13,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>{t('offer.cancel')}</button>
           </div>
         </div>
@@ -294,7 +294,7 @@ export default function ChatPage(){
         <input value={input} onChange={e=>{setInput(e.target.value);setSendErr('')}} onKeyDown={e=>e.key==='Enter'&&send()}
           placeholder={t('chat.inputPh')} style={{flex:1,padding:'12px 16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:12,color:'var(--tx)',fontSize:14,outline:'none',fontFamily:'Nexa,sans-serif',fontWeight:300}}/>
         <button onClick={send} disabled={sending||!input.trim()}
-          style={{padding:'12px 20px',borderRadius:12,background:input.trim()?'linear-gradient(135deg,#6366f1,#8b5cf6)':'var(--border)',border:'none',color:input.trim()?'#fff':'var(--tx3)',fontSize:13,fontWeight:700,cursor:input.trim()?'pointer':'not-allowed',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>
+          style={{padding:'12px 20px',borderRadius:12,background:input.trim()?'linear-gradient(135deg,#5A3DF0,#7C5CFF)':'var(--border)',border:'none',color:input.trim()?'#fff':'var(--tx3)',fontSize:13,fontWeight:700,cursor:input.trim()?'pointer':'not-allowed',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>
           {sending?'...':t('chat.send')}
         </button>
       </div>

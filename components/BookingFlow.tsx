@@ -48,7 +48,7 @@ export default function BookingFlow({
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState('')
 
-  const c = artisan.color || '#6366f1'
+  const c = artisan.color || '#5A3DF0'
   const cl = (id: string) => t(`categories.${id}`)
 
   // Conversation active existante ? → on l'ouvre directement.
@@ -128,7 +128,7 @@ export default function BookingFlow({
     color: active ? '#fff' : 'var(--tx3)', fontSize: 14, fontWeight: 800,
     cursor: active && !sending ? 'pointer' : 'not-allowed',
     fontFamily: 'Nexa,sans-serif',
-    boxShadow: active ? '0 6px 20px rgba(99,102,241,0.35)' : 'none',
+    boxShadow: active ? '0 6px 20px rgba(90, 61, 240,0.35)' : 'none',
   })
 
   return (
@@ -208,7 +208,7 @@ export default function BookingFlow({
                 ]).map(o => (
                   <div key={o.id} onClick={() => setWhen(o.id)} className="press" style={{
                     display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderRadius: 15, cursor: 'pointer', marginBottom: 9,
-                    background: when === o.id ? 'rgba(99,102,241,0.08)' : 'var(--bg)',
+                    background: when === o.id ? 'rgba(90, 61, 240,0.08)' : 'var(--bg)',
                     border: `1.5px solid ${when === o.id ? 'var(--accent)' : 'var(--border)'}`,
                     transition: 'all 0.2s ease',
                   }}>
@@ -265,7 +265,7 @@ export default function BookingFlow({
                 ]).map(o => (
                   <div key={o.id} onClick={() => setPayMethod(o.id)} className="press" style={{
                     display: 'flex', alignItems: 'flex-start', gap: 12, padding: '13px 14px', borderRadius: 14, cursor: 'pointer', marginBottom: 9,
-                    background: payMethod === o.id ? 'rgba(99,102,241,0.08)' : 'var(--bg)',
+                    background: payMethod === o.id ? 'rgba(90, 61, 240,0.08)' : 'var(--bg)',
                     border: `1.5px solid ${payMethod === o.id ? 'var(--accent)' : 'var(--border)'}`, transition: 'all 0.2s ease',
                   }}>
                     <div style={{ width: 34, height: 34, borderRadius: 10, background: payMethod === o.id ? 'var(--gradient)' : 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>

@@ -1,18 +1,20 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useLang } from '@/lib/LangContext'
 import { CheckCircle2, XCircle, Star, Inbox, MessageSquare, Phone, Clock, Bell } from 'lucide-react'
 
 const ICONS:Record<string,{Icon:any;color:string}>={
   booking_confirmed:{Icon:CheckCircle2,color:'#10b981'},booking_cancelled:{Icon:XCircle,color:'#ef4444'},
-  booking_completed:{Icon:Star,color:'#6366f1'},new_booking:{Icon:Inbox,color:'#3b82f6'},
-  new_message:{Icon:MessageSquare,color:'#8b5cf6'},call_request:{Icon:Phone,color:'#f59e0b'},
-  reminder:{Icon:Clock,color:'#6366f1'},default:{Icon:Bell,color:'var(--tx3)'}
+  booking_completed:{Icon:Star,color:'#5A3DF0'},new_booking:{Icon:Inbox,color:'#3b82f6'},
+  new_message:{Icon:MessageSquare,color:'#7C5CFF'},call_request:{Icon:Phone,color:'#f59e0b'},
+  reminder:{Icon:Clock,color:'#5A3DF0'},default:{Icon:Bell,color:'var(--tx3)'}
 }
 
 export default function NotificationsPage(){
   const router=useRouter()
+  const { t } = useLang()
   const [notifs,setNotifs]=useState<any[]>([])
   const [loading,setLoading]=useState(true)
 
@@ -37,14 +39,14 @@ export default function NotificationsPage(){
     <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
       <div style={{maxWidth:640,margin:'0 auto',padding:24}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-          <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>Notifications</h1>
-          {unread>0&&<p style={{fontSize:13,color:'#6366f1',fontWeight:300}}>{unread} non lue{unread>1?'s':''}</p>}</div>
-          {notifs.length>0&&<button onClick={clear} className="btn-ghost btn-sm">Tout effacer</button>}
+          <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>{t('notifs.title')}</h1>
+          {unread>0&&<p style={{fontSize:13,color:'#5A3DF0',fontWeight:300}}>{unread} {t('notifs.unread')}</p>}</div>
+          {notifs.length>0&&<button onClick={clear} className="btn-ghost btn-sm">{t('notifs.clearAll')}</button>}
         </div>
 
         {notifs.length===0?(
           <div className="card" style={{padding:'64px',textAlign:'center'}}>
-            <div style={{fontSize:14,color:'var(--tx3)'}}>Aucune notification</div>
+            <div style={{fontSize:14,color:'var(--tx3)'}}>{t('notifs.empty')}</div>
           </div>
         ):(
           <div className="stagger" style={{display:'flex',flexDirection:'column',gap:6}}>

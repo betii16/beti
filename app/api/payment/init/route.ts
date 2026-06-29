@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getAdminClient } from '@/lib/supabaseAdmin'
 import { satimRegister, satimConfigured } from '@/lib/satim'
-import { clientCharge, commissionFor, artisanPayout } from '@/lib/payment-config'
+import { clientCharge, artisanPayout } from '@/lib/payment-config'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   }
 
   const charge     = clientCharge(amount)
-  const commission = commissionFor(amount)
+  const commission = 0 // BETI ne prélève aucune commission sur les prestations
   const payout     = artisanPayout(amount)
   const orderNumber = 'BTI' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)
 

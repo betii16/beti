@@ -10,10 +10,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import { ChevronLeft, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { LogoMark } from '@/components/Logo'
 
 // '/artisan/' (avec slash) cible la fiche artisan SANS toucher /artisan-dashboard.
 // La fiche dessine son propre header app (retour + nom de l'artisan).
-const HIDDEN = ['/auth', '/chat', '/onboarding', '/map', '/artisan/']
+const HIDDEN = ['/auth', '/chat', '/onboarding', '/map', '/artisan/', '/suivi']
 const ROOTS = ['/', '/recherche', '/mon-espace', '/mon-espace/reservations', '/artisan-dashboard', '/artisan-dashboard/planning', '/admin']
 
 export default function MobileHeader() {
@@ -97,7 +98,7 @@ export default function MobileHeader() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
         {isHome ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, background: 'var(--gradient)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff' }}>B</div>
+            <LogoMark size={26} />
             <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.1em', fontFamily: 'Nexa,sans-serif' }}>BETI</span>
           </div>
         ) : (

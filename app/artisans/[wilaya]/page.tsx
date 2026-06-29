@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound, useParams } from 'next/navigation'
+import PremiumBadge from '@/components/PremiumBadge'
+import { effectivePlan } from '@/lib/subscription'
 
 const WILAYAS: Record<string, { name: string; nameAr: string; lat: number; lng: number; num: number }> = {
   'alger':          { name: 'Alger',          nameAr: 'الجزائر',      lat: 36.7538, lng: 3.0588,  num: 16 },
@@ -48,10 +50,15 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
     if (!w) return
     supabase
       .from('artisans')
-      .select('id, category, hourly_rate, is_available, rating_avg, rating_count, profiles(full_name)')
+      .select('id, category, hourly_rate, is_available, rating_avg, rating_count, plan, plan_until, profiles(full_name)')
       .eq('is_available', true)
       .limit(12)
-      .then(({ data }) => setArtisans(data || []))
+      .then(({ data }) => {
+        const list = (data || []) as any[]
+        // Premium en tête (mise en avant promise dans la grille tarifaire).
+        list.sort((a, b) => (effectivePlan(b) === 'premium' ? 1 : 0) - (effectivePlan(a) === 'premium' ? 1 : 0))
+        setArtisans(list)
+      })
   }, [params.wilaya])
 
   if (!w) return notFound()
@@ -59,9 +66,9 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
   return (
     <>
       <style suppressHydrationWarning>{`
-        .cat-link:hover { border-color: #6366f1 !important; color: #6366f1 !important; }
-        .art-card:hover { border-color: #6366f144 !important; transform: translateY(-2px); }
-        .wilaya-link:hover { color: #6366f1 !important; }
+        .cat-link:hover { border-color: #5A3DF0 !important; color: #5A3DF0 !important; }
+        .art-card:hover { border-color: #5A3DF044 !important; transform: translateY(-2px); }
+        .wilaya-link:hover { color: #5A3DF0 !important; }
         .cta-btn:hover { background: #d4b55a !important; }
       `}</style>
 
@@ -69,7 +76,7 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
 
         {/* Hero SEO */}
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 32px' }}>
-          <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
             WILAYA {w.num} · {w.nameAr}
           </div>
           <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
@@ -79,7 +86,7 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
             Trouvez un artisan certifié BETI à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Disponibles maintenant, paiement en cash.
           </p>
           <a href={`/?wilaya=${params.wilaya}`}>
-            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
+            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
               Trouver un artisan à {w.name}
             </button>
           </a>
@@ -111,11 +118,14 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
               {artisans.map((a: any) => (
                 <a key={a.id} href={`/artisan/${a.id}`} style={{ textDecoration: 'none' }}>
                   <div className="art-card" style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px', transition: 'all 0.2s', cursor: 'pointer' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{a.profiles?.full_name || 'Artisan'}</div>
-                    <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{a.profiles?.full_name || 'Artisan'}</span>
+                      {effectivePlan(a) === 'premium' && <PremiumBadge size="sm" />}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 12, color: '#4ade80' }}>● Disponible</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#6366f1' }}>{a.hourly_rate} DA/h</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#5A3DF0' }}>{a.hourly_rate} DA/h</span>
                     </div>
                   </div>
                 </a>

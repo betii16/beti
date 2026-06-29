@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 // app/onboarding/page.tsx
 // Tunnel d'onboarding artisan — 5 étapes après inscription
@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useLang } from '@/lib/LangContext'
 import { ArtisanZonePicker } from '@/components/ArtisanZonePicker'
 import { CategoryIcon } from '@/components/icons'
 import { Check, User, Wrench, Wallet, MapPin, PartyPopper, CheckCircle2, Rocket } from 'lucide-react'
@@ -16,25 +17,18 @@ const CATEGORIES = [
   { id: 'plomberie',    icon: '⚙',  label: 'Plomberie',    color: '#3b82f6' },
   { id: 'electricite',  icon: '⚡',  label: 'Électricité',  color: '#f59e0b' },
   { id: 'menage',       icon: '✦',  label: 'Ménage',        color: '#10b981' },
-  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#8b5cf6' },
+  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#7C5CFF' },
   { id: 'jardinage',    icon: '❧',  label: 'Jardinage',     color: '#22c55e' },
   { id: 'peinture',     icon: '◉',  label: 'Peinture',      color: '#ef4444' },
   { id: 'serrurerie',   icon: '⌘',  label: 'Serrurerie',    color: '#f97316' },
-  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#6366f1' },
+  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#5A3DF0' },
   { id: 'coiffure',     icon: '✂',  label: 'Coiffure',      color: '#ec4899' },
   { id: 'autre',        icon: '✳',  label: 'Autre',         color: '#a78bfa' },
 ]
 
-const STEPS = [
-  { id: 1, label: 'Profil',      Icon: User },
-  { id: 2, label: 'Catégorie',   Icon: Wrench },
-  { id: 3, label: 'Tarif',       Icon: Wallet },
-  { id: 4, label: 'Zone',        Icon: MapPin },
-  { id: 5, label: 'Terminé',     Icon: PartyPopper },
-]
-
 export default function OnboardingPage() {
   const router = useRouter()
+  const { t, isAr } = useLang()
   const [step, setStep] = useState(1)
   const [user, setUser] = useState<any>(null)
   const [saving, setSaving] = useState(false)
@@ -83,6 +77,14 @@ export default function OnboardingPage() {
     else router.push('/artisan-dashboard')
   }
 
+  const STEPS = [
+    { id: 1, label: t('onboarding.stepProfile'),  Icon: User },
+    { id: 2, label: t('onboarding.stepCategory'), Icon: Wrench },
+    { id: 3, label: t('onboarding.stepRate'),      Icon: Wallet },
+    { id: 4, label: t('onboarding.stepZone'),      Icon: MapPin },
+    { id: 5, label: t('onboarding.stepDone'),      Icon: PartyPopper },
+  ]
+
   const progress = ((step - 1) / (STEPS.length - 1)) * 100
 
   return (
@@ -100,12 +102,12 @@ export default function OnboardingPage() {
         {/* Grille fond */}
         <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }}/>
 
-        <div style={{ width: '100%', maxWidth: 560, position: 'relative' }}>
+        <div style={{ width: '100%', maxWidth: 560, position: 'relative', direction: isAr ? 'rtl' : 'ltr' }}>
 
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'var(--bg)' }}>B</div>
+              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'var(--bg)' }}>B</div>
               <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)', letterSpacing: '.1em' }}>BETI</span>
             </div>
           </div>
@@ -117,16 +119,16 @@ export default function OnboardingPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, transition: 'all 0.3s',
-                    background: step > s.id ? '#6366f1' : step === s.id ? '#6366f10d' : 'var(--bg2)',
-                    border: step >= s.id ? '1.5px solid #6366f1' : '1.5px solid var(--border)',
-                    color: step > s.id ? 'var(--bg)' : step === s.id ? '#6366f1' : 'var(--tx3)',
+                    background: step > s.id ? '#5A3DF0' : step === s.id ? '#5A3DF00d' : 'var(--bg2)',
+                    border: step >= s.id ? '1.5px solid #5A3DF0' : '1.5px solid var(--border)',
+                    color: step > s.id ? 'var(--bg)' : step === s.id ? '#5A3DF0' : 'var(--tx3)',
                   }}>
                     {step > s.id ? <Check size={15}/> : <s.Icon size={15}/>}
                   </div>
-                  <span style={{ fontSize: 10, color: step >= s.id ? '#6366f1' : 'var(--tx3)', fontWeight: step === s.id ? 800 : 300 }}>{s.label}</span>
+                  <span style={{ fontSize: 10, color: step >= s.id ? '#5A3DF0' : 'var(--tx3)', fontWeight: step === s.id ? 800 : 300 }}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div style={{ flex: 1, height: 1.5, background: step > s.id ? '#6366f1' : 'var(--border)', margin: '0 4px', marginBottom: 20, transition: 'background 0.3s' }}/>
+                  <div style={{ flex: 1, height: 1.5, background: step > s.id ? '#5A3DF0' : 'var(--border)', margin: '0 4px', marginBottom: 20, transition: 'background 0.3s' }}/>
                 )}
               </div>
             ))}
@@ -138,17 +140,17 @@ export default function OnboardingPage() {
             {/* ÉTAPE 1 — Profil */}
             {step === 1 && (
               <>
-                <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>ÉTAPE 1 / 4</div>
-                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>Parlez de vous</h2>
-                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>Ces informations seront visibles par les clients sur votre profil.</p>
+                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step1Eyebrow')}</div>
+                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step1Title')}</h2>
+                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>{t('onboarding.step1Desc')}</p>
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>TÉLÉPHONE</label>
-                  <input type="tel" placeholder="0555 12 34 56" value={phone} onChange={e => setPhone(e.target.value)} className="field"
+                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>{t('onboarding.phoneLabel')}</label>
+                  <input type="tel" placeholder={t('onboarding.phonePh')} value={phone} onChange={e => setPhone(e.target.value)} className="field"
                   />
                 </div>
                 <div style={{ marginBottom: 28 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>BIO (optionnel)</label>
-                  <textarea placeholder="Ex: Plombier professionnel avec 10 ans d'expérience à Alger. Intervention rapide et soignée..." value={bio} onChange={e => setBio(e.target.value)} rows={4} className="field" style={{ resize: 'none' }}
+                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>{t('onboarding.bioLabel')}</label>
+                  <textarea placeholder={t('onboarding.bioPh')} value={bio} onChange={e => setBio(e.target.value)} rows={4} className="field" style={{ resize: 'none' }}
                   />
                 </div>
               </>
@@ -157,9 +159,9 @@ export default function OnboardingPage() {
             {/* ÉTAPE 2 — Catégorie */}
             {step === 2 && (
               <>
-                <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>ÉTAPE 2 / 4</div>
-                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>Votre métier</h2>
-                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 24, lineHeight: 1.6 }}>Choisissez votre spécialité principale. Vous pourrez en ajouter d'autres plus tard.</p>
+                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step2Eyebrow')}</div>
+                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step2Title')}</h2>
+                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 24, lineHeight: 1.6 }}>{t('onboarding.step2Desc')}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {CATEGORIES.map(cat => (
                     <div key={cat.id} onClick={() => setCategory(cat.id)}
@@ -177,28 +179,28 @@ export default function OnboardingPage() {
             {/* ÉTAPE 3 — Tarif */}
             {step === 3 && (
               <>
-                <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>ÉTAPE 3 / 4</div>
-                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>Votre tarif</h2>
-                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>Fixez votre tarif horaire. Vous pourrez le modifier à tout moment.</p>
+                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step3Eyebrow')}</div>
+                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step3Title')}</h2>
+                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>{t('onboarding.step3Desc')}</p>
 
                 {/* Slider tarif */}
                 <div style={{ marginBottom: 28 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>TARIF HORAIRE</label>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#6366f1' }}>{hourlyRate.toLocaleString('fr-DZ')} <span style={{ fontSize: 14, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
+                    <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>{t('onboarding.hourlyLabel')}</label>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#5A3DF0' }}>{hourlyRate.toLocaleString('fr-DZ')} <span style={{ fontSize: 14, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
                   </div>
                   <input type="range" min={500} max={15000} step={500} value={hourlyRate} onChange={e => setHourlyRate(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#6366f1', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: '#5A3DF0', cursor: 'pointer' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--tx3)' }}>500 DA</span>
-                    <span style={{ fontSize: 11, color: 'var(--tx3)' }}>15 000 DA</span>
+                    <span style={{ fontSize: 11, color: 'var(--tx3)' }}>{t('onboarding.priceMin')}</span>
+                    <span style={{ fontSize: 11, color: 'var(--tx3)' }}>{t('onboarding.priceMax')}</span>
                   </div>
                 </div>
 
                 {/* Référence prix marché */}
                 <div style={{ background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 24 }}>
-                  <div style={{ fontSize: 11, color: '#6366f1', fontWeight: 800, marginBottom: 10 }}>PRIX DU MARCHÉ EN ALGÉRIE</div>
+                  <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, marginBottom: 10 }}>{t('onboarding.marketPrices')}</div>
                   {[
                     { label: 'Plombier', range: '2 500 — 5 000 DA/h' },
                     { label: 'Électricien', range: '3 000 — 6 000 DA/h' },
@@ -213,12 +215,12 @@ export default function OnboardingPage() {
 
                 {/* Expérience */}
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 12 }}>ANNÉES D'EXPÉRIENCE</label>
+                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 12 }}>{t('onboarding.expLabel')}</label>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {[1, 2, 3, 5, 7, 10, 15, 20].map(y => (
                       <button key={y} onClick={() => setExperience(y)}
-                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#6366f1' : 'var(--border)'}`, background: experience === y ? '#6366f10d' : 'var(--bg)', color: experience === y ? '#6366f1' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
-                      >{y} an{y > 1 ? 's' : ''}</button>
+                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#5A3DF0' : 'var(--border)'}`, background: experience === y ? '#5A3DF00d' : 'var(--bg)', color: experience === y ? '#5A3DF0' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
+                      >{y} {t('onboarding.yearSuffix')}</button>
                     ))}
                   </div>
                 </div>
@@ -228,9 +230,9 @@ export default function OnboardingPage() {
             {/* ÉTAPE 4 — Zone */}
             {step === 4 && (
               <>
-                <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>ÉTAPE 4 / 4</div>
-                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>Votre zone</h2>
-                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 24, lineHeight: 1.6 }}>Définissez votre adresse et le rayon dans lequel vous intervenez.</p>
+                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step4Eyebrow')}</div>
+                <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step4Title')}</h2>
+                <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 24, lineHeight: 1.6 }}>{t('onboarding.step4Desc')}</p>
                 {user && (
                   <ArtisanZonePicker
                     artisanId={user.id}
@@ -245,18 +247,18 @@ export default function OnboardingPage() {
             {step === 5 && (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center', animation: 'checkIn 0.5s cubic-bezier(0.34,1.56,0.64,1)' }}><PartyPopper size={60} color="#10b981"/></div>
-                <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 12 }}>Profil complété !</h2>
+                <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 12 }}>{t('onboarding.successTitle')}</h2>
                 <p style={{ fontSize: 14, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.7, marginBottom: 28 }}>
-                  Bienvenue sur BETI ! Votre profil est maintenant visible par les clients dans votre zone.
+                  {t('onboarding.successDesc')}
                   <br/><br/>
-                  <strong style={{ color: '#6366f1' }}>Vous faites partie des 100 premiers artisans BETI — accès gratuit à vie !</strong>
+                  <strong style={{ color: '#5A3DF0' }}>{t('onboarding.earlyBadge')}</strong>
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
                   {[
-                    { Icon: CheckCircle2, label: 'Profil créé' },
-                    { Icon: MapPin,       label: 'Zone définie' },
-                    { Icon: Wallet,       label: 'Tarif fixé' },
-                    { Icon: Wrench,       label: 'Catégorie choisie' },
+                    { Icon: CheckCircle2, label: t('onboarding.recapProfile') },
+                    { Icon: MapPin,       label: t('onboarding.recapZone') },
+                    { Icon: Wallet,       label: t('onboarding.recapRate') },
+                    { Icon: Wrench,       label: t('onboarding.recapCategory') },
                   ].map(item => (
                     <div key={item.label} style={{ padding: '12px', borderRadius: 10, background: '#10b98112', border: '0.5px solid #10b98144', display: 'flex', alignItems: 'center', gap: 8 }}>
                       <item.Icon size={16} color="#10b981"/>
@@ -271,18 +273,18 @@ export default function OnboardingPage() {
             <div style={{ display: 'flex', gap: 10, marginTop: step === 4 ? 20 : 0 }}>
               {step > 1 && step < 5 && (
                 <button onClick={() => setStep(s => s - 1)} className="btn-ghost" style={{ flex: 1 }}
-                >← Retour</button>
+                >{t('onboarding.back')}</button>
               )}
               <button onClick={saveStep} disabled={saving || (step === 2 && !category)} className="btn-primary" style={{ flex: 2 }}
               >
-                {saving ? 'Sauvegarde...' : step === 5 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Rocket size={15}/>Accéder au dashboard</span> : step === 4 ? 'Terminer' : 'Continuer →'}
+                {saving ? t('onboarding.saving') : step === 5 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Rocket size={15}/>{t('onboarding.goDashboard')}</span> : step === 4 ? t('onboarding.finish') : t('onboarding.continue')}
               </button>
             </div>
 
             {step < 5 && (
               <button onClick={() => setStep(s => s + 1)}
                 style={{ width: '100%', marginTop: 10, background: 'transparent', border: 'none', color: 'var(--tx3)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
-              >Passer cette étape →</button>
+              >{t('onboarding.skip')}</button>
             )}
           </div>
         </div>

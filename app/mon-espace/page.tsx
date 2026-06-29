@@ -53,7 +53,7 @@ export default function ClientDashboard(){
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12,marginBottom:24}}>
           {[
             {label:t('mySpace.pending'),value:pending.length,color:'#f59e0b',Icon:Clock},
-            {label:t('mySpace.confirmed'),value:confirmed.length,color:'#6366f1',Icon:CheckCircle2},
+            {label:t('mySpace.confirmed'),value:confirmed.length,color:'#5A3DF0',Icon:CheckCircle2},
             {label:t('mySpace.completed'),value:completed.length,color:'#10b981',Icon:Star},
             {label:'Total',value:bookings.length,color:'var(--tx)',Icon:Layers},
           ].map(k=>(
@@ -93,7 +93,7 @@ export default function ClientDashboard(){
         <div style={{marginBottom:24}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
             <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)'}}>{t('nav.myBookings')}</h2>
-            <a href="/mon-espace/reservations" style={{fontSize:12,color:'#6366f1',textDecoration:'none',fontWeight:700}}>{t('mySpace.seeAll')}</a>
+            <a href="/mon-espace/reservations" style={{fontSize:12,color:'#5A3DF0',textDecoration:'none',fontWeight:700}}>{t('mySpace.seeAll')}</a>
           </div>
           {bookings.length===0?(
             <div className="card" style={{padding:'48px',textAlign:'center'}}>
@@ -104,7 +104,7 @@ export default function ClientDashboard(){
             <div className="stagger" style={{display:'flex',flexDirection:'column',gap:8}}>
               {bookings.slice(0,8).map(b=>{
                 const art=b.artisans;const name=art?.profiles?.full_name||'Artisan'
-                const sc=b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':b.status==='pending'?'#f59e0b':'#ef4444'
+                const sc=b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':b.status==='pending'?'#f59e0b':'#ef4444'
                 const sl=t(`status.${b.status}`)
                 return(
                   <div key={b.id} className="card is-clickable" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}} onClick={()=>router.push(`/chat/${b.id}`)}>

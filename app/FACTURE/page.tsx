@@ -61,7 +61,7 @@ export default function FacturePage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'center', color: '#ef4444' }}><AlertTriangle size={40}/></div>
       <div style={{ fontSize: 16, color: '#ef4444', fontWeight: 800 }}>{error}</div>
-      <button onClick={() => router.back()} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Retour</button>
+      <button onClick={() => router.back()} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Retour</button>
     </div>
   )
 
@@ -129,13 +129,13 @@ export default function FacturePage() {
           align-items: flex-start;
           margin-bottom: 10mm;
           padding-bottom: 8mm;
-          border-bottom: 2px solid #6366f1;
+          border-bottom: 2px solid #5A3DF0;
         }
 
         .inv-logo { display: flex; align-items: center; gap: 10px; }
         .inv-logo-box {
           width: 44px; height: 44px;
-          background: #6366f1;
+          background: #5A3DF0;
           border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
           font-size: 22px; font-weight: 700; color: #fff;
@@ -144,7 +144,7 @@ export default function FacturePage() {
         .inv-logo-sub { font-size: 11px; color: #8585a0; font-weight: 400; margin-top: 2px; }
 
         .inv-meta { text-align: right; }
-        .inv-title { font-size: 28px; font-weight: 700; color: #6366f1; letter-spacing: .05em; }
+        .inv-title { font-size: 28px; font-weight: 700; color: #5A3DF0; letter-spacing: .05em; }
         .inv-num { font-size: 13px; color: #8585a0; margin-top: 4px; font-weight: 400; }
         .inv-date { font-size: 12px; color: #8585a0; margin-top: 2px; }
 
@@ -159,7 +159,7 @@ export default function FacturePage() {
         .inv-party-label {
           font-size: 9px;
           font-weight: 600;
-          color: #6366f1;
+          color: #5A3DF0;
           letter-spacing: .12em;
           text-transform: uppercase;
           margin-bottom: 6px;
@@ -243,7 +243,7 @@ export default function FacturePage() {
           margin-top: 4px;
         }
 
-        .inv-total-final .amount { color: #6366f1; }
+        .inv-total-final .amount { color: #5A3DF0; }
 
         /* Paiement */
         .inv-payment {
@@ -271,7 +271,7 @@ export default function FacturePage() {
         }
 
         .inv-footer-left { font-size: 11px; color: #aaa; line-height: 1.6; }
-        .inv-footer-brand { font-size: 12px; font-weight: 600; color: #6366f1; }
+        .inv-footer-brand { font-size: 12px; font-weight: 600; color: #5A3DF0; }
 
         /* Filigrane */
         .inv-watermark {
@@ -281,7 +281,7 @@ export default function FacturePage() {
           transform: translate(-50%, -50%) rotate(-35deg);
           font-size: 120px;
           font-weight: 700;
-          color: #6366f1;
+          color: #5A3DF0;
           opacity: 0.03;
           pointer-events: none;
           letter-spacing: .2em;
@@ -312,13 +312,13 @@ export default function FacturePage() {
           <button onClick={() => router.back()}
             style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', fontSize: 18, padding: 4 }}>←</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff' }}>B</div>
+            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff' }}>B</div>
             <span style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5' }}>Facture {factureNum}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={handlePrint}
-            style={{ padding: '10px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}
+            style={{ padding: '10px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
             Imprimer / Télécharger PDF
@@ -452,8 +452,8 @@ export default function FacturePage() {
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>Certifié par</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                <div style={{ width: 24, height: 24, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>B</div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#6366f1' }}>BETI CERTIFIÉ</span>
+                <div style={{ width: 24, height: 24, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>B</div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#5A3DF0' }}>BETI CERTIFIÉ</span>
               </div>
             </div>
           </div>

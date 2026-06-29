@@ -153,7 +153,7 @@ export function CountryPicker({ value, onChange, rounded = 'left' }: Props) {
                 <span style={{ fontSize: 13, color: 'var(--tx)', flex: 1, fontFamily: 'Nexa,sans-serif' }}>{c.n}</span>
                 <span style={{ fontSize: 12, color: 'var(--tx3)', fontFamily: 'monospace', fontWeight: 600 }}>{c.c}</span>
                 {c.c === value && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A3DF0" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
                 )}
               </div>
             ))}

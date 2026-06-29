@@ -46,7 +46,7 @@ export default function AidePage() {
             <div key={c.title} className={c.href ? 'acard' : 'card'}
               style={{ padding: '20px' }}
               onClick={() => c.href && router.push(c.href)}>
-              <div style={{ marginBottom: 10, color: '#6366f1' }}><c.Icon size={24}/></div>
+              <div style={{ marginBottom: 10, color: '#5A3DF0' }}><c.Icon size={24}/></div>
               <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{c.title}</div>
               <div style={{ fontSize: 13, color: '#C9A84C', fontWeight: 300, marginBottom: 4 }}>{c.val}</div>
               <div style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 300 }}>{c.sub}</div>

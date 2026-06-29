@@ -19,7 +19,7 @@ type Booking = {
 }
 
 const STATUS: Record<string, { bg: string; color: string; border: string }> = {
-  pending:     { bg: 'rgba(99,102,241,0.08)',  color: '#6366f1', border: 'rgba(99,102,241,0.2)' },
+  pending:     { bg: 'rgba(90, 61, 240,0.08)',  color: '#5A3DF0', border: 'rgba(90, 61, 240,0.2)' },
   confirmed:   { bg: 'rgba(96,165,250,0.08)',  color: '#60a5fa', border: 'rgba(96,165,250,0.2)' },
   in_progress: { bg: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: 'rgba(167,139,250,0.2)' },
   completed:   { bg: 'rgba(16,185,129,0.07)',  color: '#10b981', border: 'rgba(16,185,129,0.2)' },
@@ -106,7 +106,7 @@ export default function MesReservations() {
       {/* Header */}
       <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('mySpace.title')}</div>
+          <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('mySpace.title')}</div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('nav.myBookings')}</h1>
           <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{bookings.length} {t('mySpace.totalCount')}</p>
         </div>
@@ -122,10 +122,10 @@ export default function MesReservations() {
             { id: 'completed', label: t('mySpace.tabDone'),   count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-              style={{ padding: '12px 20px', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? '#6366f1' : 'transparent'}`, color: activeTab === tab.id ? '#6366f1' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}>
+              style={{ padding: '12px 20px', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? '#5A3DF0' : 'transparent'}`, color: activeTab === tab.id ? '#5A3DF0' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}>
               {tab.label}
               {tab.count > 0 && (
-                <span style={{ background: activeTab === tab.id ? '#6366f1' : 'var(--border)', color: activeTab === tab.id ? '#fff' : 'var(--tx2)', fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 20 }}>{tab.count}</span>
+                <span style={{ background: activeTab === tab.id ? '#5A3DF0' : 'var(--border)', color: activeTab === tab.id ? '#fff' : 'var(--tx2)', fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 20 }}>{tab.count}</span>
               )}
             </button>
           ))}
@@ -143,8 +143,8 @@ export default function MesReservations() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {filtered.map(b => (
-              <div key={b.id} className="card" style={{ borderColor: b.status === 'pending' ? '#6366f155' : undefined, padding: 0 }}>
-                {b.status === 'pending' && <div style={{ height: 2, background: 'linear-gradient(90deg, #6366f1, #f59e0b)' }}/>}
+              <div key={b.id} className="card" style={{ borderColor: b.status === 'pending' ? '#5A3DF055' : undefined, padding: 0 }}>
+                {b.status === 'pending' && <div style={{ height: 2, background: 'linear-gradient(90deg, #5A3DF0, #f59e0b)' }}/>}
                 <div style={{ padding: '18px 20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                     <div>

@@ -33,7 +33,7 @@ function Result() {
         </div>
         <button
           onClick={() => router.push(booking ? `/chat/${booking}` : '/mon-espace/reservations')}
-          style={{ width: '100%', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa,sans-serif' }}>
+          style={{ width: '100%', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa,sans-serif' }}>
           {booking ? 'Revenir à la conversation' : 'Mes réservations'}
         </button>
       </div>

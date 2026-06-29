@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { toE164 } from '@/lib/countryCodes'
 import { CountryPicker } from '@/components/CountryPicker'
+import { LogoMark } from '@/components/Logo'
 
 const race = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
   Promise.race([Promise.resolve(p), new Promise<T>((_, r) => setTimeout(() => r(new Error('Délai dépassé')), ms))])
@@ -85,14 +86,14 @@ export default function LoginPage() {
   }
 
   const I: React.CSSProperties = { width: '100%', padding: '15px 18px', background: 'var(--bg3,#0e0e18)', border: '1px solid var(--border,#1c1c30)', borderRadius: 16, color: 'var(--tx,#e0dfe5)', fontSize: 15, outline: 'none', fontFamily: 'Nexa,sans-serif', fontWeight: 300 }
-  const BTN = (active: boolean): React.CSSProperties => ({ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: active ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'var(--border)', color: active ? '#fff' : 'var(--tx3)', fontSize: 15, fontWeight: 700, cursor: active && !loading ? 'pointer' : 'not-allowed', fontFamily: 'Nexa,sans-serif', marginTop: 4, boxShadow: active ? '0 8px 24px rgba(99,102,241,0.32)' : 'none', transition: 'box-shadow 0.2s, transform 0.1s' })
+  const BTN = (active: boolean): React.CSSProperties => ({ width: '100%', padding: 16, border: 'none', borderRadius: 16, background: active ? 'linear-gradient(135deg,#5A3DF0,#7C5CFF)' : 'var(--border)', color: active ? '#fff' : 'var(--tx3)', fontSize: 15, fontWeight: 700, cursor: active && !loading ? 'pointer' : 'not-allowed', fontFamily: 'Nexa,sans-serif', marginTop: 4, boxShadow: active ? '0 8px 24px rgba(90, 61, 240,0.32)' : 'none', transition: 'box-shadow 0.2s, transform 0.1s' })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, direction: isAr ? 'rtl' : 'ltr' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', boxShadow: '0 6px 20px rgba(99,102,241,0.35)' }}>B</div>
+            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', boxShadow: '0 6px 20px rgba(90, 61, 240,0.35)' }}><LogoMark size={20} variant="white" /></div>
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.08em' }}>BETI</span>
           </a>
         </div>
@@ -132,7 +133,7 @@ export default function LoginPage() {
               {err && <Err msg={err} />}
               <button onClick={sendCode} disabled={loading || phone.length < 6} style={BTN(phone.length >= 6)}>{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
 
-              <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.noAccount')} <a href="/auth/signup" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 700 }}>{t('auth.register')}</a></p>
+              <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.noAccount')} <a href="/auth/signup" style={{ color: '#5A3DF0', textDecoration: 'none', fontWeight: 700 }}>{t('auth.register')}</a></p>
               <button onClick={() => { setEmailMode(true); setErr('') }} style={{ ...LINK, marginTop: 4 }}>{t('auth.loginByEmail')}</button>
             </>
           ) : (
@@ -145,7 +146,7 @@ export default function LoginPage() {
               <button onClick={verifyCode} disabled={loading || code.length < 4} style={BTN(code.length >= 4)}>{loading ? t('auth.verifying') : t('auth.validate')}</button>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14 }}>
                 <button onClick={() => { setStep('phone'); setCode(''); setErr('') }} style={{ ...LINK, marginTop: 0, width: 'auto', textAlign: 'left' }}>{t('auth.changeNumber')}</button>
-                <button onClick={sendCode} disabled={loading} style={{ ...LINK, marginTop: 0, width: 'auto', textAlign: 'right', color: '#6366f1' }}>{t('auth.resend')}</button>
+                <button onClick={sendCode} disabled={loading} style={{ ...LINK, marginTop: 0, width: 'auto', textAlign: 'right', color: '#5A3DF0' }}>{t('auth.resend')}</button>
               </div>
             </>
           )}

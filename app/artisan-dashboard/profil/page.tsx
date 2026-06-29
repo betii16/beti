@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ArtisanAvatar } from '@/components/ReviewPhotos'
 import { PortfolioManager } from '@/components/Portfolio'
+import { effectivePlan } from '@/lib/subscription'
 import { CategoryIcon } from '@/components/icons'
 import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
@@ -24,11 +25,11 @@ const CATEGORIES = [
   { id: 'plomberie',    icon: '⚙',  color: '#3b82f6' },
   { id: 'electricite',  icon: '⚡',  color: '#f59e0b' },
   { id: 'menage',       icon: '✦',  color: '#10b981' },
-  { id: 'demenagement', icon: '◈',  color: '#8b5cf6' },
+  { id: 'demenagement', icon: '◈',  color: '#7C5CFF' },
   { id: 'jardinage',    icon: '❧',  color: '#22c55e' },
   { id: 'peinture',     icon: '◉',  color: '#ef4444' },
   { id: 'serrurerie',   icon: '⌘',  color: '#f97316' },
-  { id: 'informatique', icon: '⬡',  color: '#6366f1' },
+  { id: 'informatique', icon: '⬡',  color: '#5A3DF0' },
   { id: 'coiffure',     icon: '✂',  color: '#ec4899' },
 ]
 
@@ -46,6 +47,7 @@ export default function ArtisanProfileConfig() {
   const router = useRouter()
   const { t, isAr } = useLang()
   const [user, setUser] = useState<any>(null)
+  const [plan, setPlan] = useState<'free' | 'basic' | 'premium'>('free')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -132,6 +134,7 @@ export default function ArtisanProfileConfig() {
     }
 
     if (art) {
+      setPlan(effectivePlan(art) as 'free' | 'basic' | 'premium')
       setBio(art.bio || '')
       setExperience(art.years_experience || 1)
       setLocationCity(art.location_city || '')
@@ -310,8 +313,8 @@ export default function ArtisanProfileConfig() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Nexa', sans-serif; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        input[type=range] { accent-color: #6366f1; cursor: pointer; }
-        textarea:focus, input:focus { border-color: #6366f166 !important; }
+        input[type=range] { accent-color: #5A3DF0; cursor: pointer; }
+        textarea:focus, input:focus { border-color: #5A3DF066 !important; }
       `}</style>
 
       <div style={{ minHeight: '100vh', paddingTop: 64, fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
@@ -320,7 +323,7 @@ export default function ArtisanProfileConfig() {
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
             <div>
-              <div style={{ fontSize: 10, color: '#6366f1', letterSpacing: '.1em', fontWeight: 800, marginBottom: 6 }}>
+              <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 6 }}>
                 {isNewProfile ? t('artisanProfile.newConfig') : t('artisanProfile.editProfile')}
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pageTitle')}</h1>
@@ -350,8 +353,8 @@ export default function ArtisanProfileConfig() {
               <button key={tab.id} onClick={() => setActiveSection(tab.id)}
                 style={{
                   flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none',
-                  background: activeSection === tab.id ? '#6366f10d' : 'transparent',
-                  color: activeSection === tab.id ? '#6366f1' : 'var(--tx3)',
+                  background: activeSection === tab.id ? '#5A3DF00d' : 'transparent',
+                  color: activeSection === tab.id ? '#5A3DF0' : 'var(--tx3)',
                   fontSize: 13, fontWeight: activeSection === tab.id ? 800 : 300,
                   cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -360,7 +363,7 @@ export default function ArtisanProfileConfig() {
               >
                 <tab.Icon size={15}/> {tab.label}
                 {'badge' in tab && (tab as any).badge > 0 && (
-                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', fontSize: 10, fontWeight: 800 }}>{(tab as any).badge}</span>
+                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', color: '#fff', fontSize: 10, fontWeight: 800 }}>{(tab as any).badge}</span>
                 )}
               </button>
             ))}
@@ -368,7 +371,7 @@ export default function ArtisanProfileConfig() {
 
           {/* ═══ SECTION : RÉALISATIONS (PORTFOLIO) ═══ */}
           {activeSection === 'portfolio' && user && (
-            <PortfolioManager artisanId={user.id} />
+            <PortfolioManager artisanId={user.id} plan={plan} />
           )}
 
           {/* ═══ SECTION : MES MÉTIERS ═══ */}
@@ -384,7 +387,7 @@ export default function ArtisanProfileConfig() {
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 10, background: (cat?.color || '#6366f1') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={service.category} size={18} color={cat?.color || '#6366f1'}/></div>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: (cat?.color || '#5A3DF0') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={service.category} size={18} color={cat?.color || '#5A3DF0'}/></div>
                         <div>
                           <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{catLabel}</div>
                           <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{t('artisanProfile.serviceNum')} {i + 1}{i === 0 ? ` ${t('artisanProfile.servicePrimary')}` : ''}</div>
@@ -423,9 +426,9 @@ export default function ArtisanProfileConfig() {
                             <button key={ptId} onClick={() => updateService(i, { price_type: ptId as any })}
                               style={{
                                 padding: '10px 14px', borderRadius: 10,
-                                border: `0.5px solid ${service.price_type === ptId ? '#6366f1' : 'var(--border)'}`,
-                                background: service.price_type === ptId ? '#6366f10d' : 'var(--bg)',
-                                color: service.price_type === ptId ? '#6366f1' : 'var(--tx3)',
+                                border: `0.5px solid ${service.price_type === ptId ? '#5A3DF0' : 'var(--border)'}`,
+                                background: service.price_type === ptId ? '#5A3DF00d' : 'var(--bg)',
+                                color: service.price_type === ptId ? '#5A3DF0' : 'var(--tx3)',
                                 fontSize: 12, fontWeight: service.price_type === ptId ? 800 : 300,
                                 cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
                                 display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
@@ -444,7 +447,7 @@ export default function ArtisanProfileConfig() {
                           <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>
                             {service.price_type === 'hour' ? t('artisanProfile.tariffHour') : t('artisanProfile.tariffService')}
                           </label>
-                          <div style={{ fontSize: 22, fontWeight: 800, color: '#6366f1' }}>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: '#5A3DF0' }}>
                             {service.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{priceTypeSuffix(service.price_type)}</span>
                           </div>
                         </div>
@@ -478,8 +481,8 @@ export default function ArtisanProfileConfig() {
                 <button onClick={() => setAddingService(true)}
                   style={{
                     width: '100%', padding: '16px', borderRadius: 14,
-                    background: 'transparent', border: '1px dashed #6366f144',
-                    color: '#6366f1', fontSize: 14, fontWeight: 800,
+                    background: 'transparent', border: '1px dashed #5A3DF044',
+                    color: '#5A3DF0', fontSize: 14, fontWeight: 800,
                     cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     transition: 'all 0.2s',
@@ -488,7 +491,7 @@ export default function ArtisanProfileConfig() {
                   {t('artisanProfile.addService')} {services.length === 0 && t('artisanProfile.addRequired')}
                 </button>
               ) : (
-                <div className="card" style={{ borderColor: '#6366f155', padding: '24px' }}>
+                <div className="card" style={{ borderColor: '#5A3DF055', padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pickService')}</div>
                     <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', fontSize: 16 }}>✕</button>
@@ -573,7 +576,7 @@ export default function ArtisanProfileConfig() {
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {[1, 2, 3, 5, 7, 10, 15, 20].map(y => (
                       <button key={y} onClick={() => setExperience(y)}
-                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#6366f1' : 'var(--border)'}`, background: experience === y ? '#6366f10d' : 'var(--bg)', color: experience === y ? '#6366f1' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#5A3DF0' : 'var(--border)'}`, background: experience === y ? '#5A3DF00d' : 'var(--bg)', color: experience === y ? '#5A3DF0' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
                         {y} {y === 1 ? t('common.years').replace('s','') : t('common.years')}
                       </button>
                     ))}
@@ -616,12 +619,12 @@ export default function ArtisanProfileConfig() {
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>{t('artisanProfile.radiusLabel')}</label>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: '#6366f1' }}>{radiusKm} {t('common.km')}</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: '#5A3DF0' }}>{radiusKm} {t('common.km')}</span>
                   </div>
                   <input type="range" min={5} max={100} step={5}
                     value={radiusKm}
                     onChange={e => setRadiusKm(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#6366f1', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: '#5A3DF0', cursor: 'pointer' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                     <span style={{ fontSize: 10, color: 'var(--tx3)' }}>5 {t('common.km')}</span>
@@ -662,51 +665,131 @@ export default function ArtisanProfileConfig() {
                   <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{t('artisanProfile.tagTitle')}</div>
                   <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.6 }}>
                     {t('artisanProfile.tagDesc')}
-                    {services.length === 0 && <><br/><span style={{ color: '#6366f1' }}>{t('artisanProfile.tagDescExtra')}</span></>}
+                    {services.length === 0 && <><br/><span style={{ color: '#5A3DF0' }}>{t('artisanProfile.tagDescExtra')}</span></>}
                   </p>
                 </div>
 
-                <div style={{ minHeight: 52, padding: '8px 12px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 12 }}>
-                  {tags.map(tag => (
-                    <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: '#6366f10d', border: '0.5px solid #6366f1', fontSize: 12, color: '#6366f1', fontWeight: 800 }}>
-                      {tag}
-                      <button onClick={() => removeTag(tag)} style={{ background: 'transparent', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 11, padding: 0, opacity: 0.7 }}>✕</button>
-                    </div>
-                  ))}
+                {/* Tags actifs — effet neon-button (cybergaz / 21st.dev) */}
+                <style suppressHydrationWarning>{`
+                  @keyframes neon-pulse {
+                    0%, 100% { box-shadow: 0 0 6px #7C5CFF, 0 0 14px #7C5CFF66, 0 0 28px #5A3DF044, inset 0 0 8px #7C5CFF18; }
+                    50%       { box-shadow: 0 0 10px #A78BFA, 0 0 22px #7C5CFF88, 0 0 42px #5A3DF055, inset 0 0 12px #7C5CFF28; }
+                  }
+                  .neon-tag {
+                    display: inline-flex; align-items: center; gap: 7px;
+                    padding: 7px 15px; border-radius: 10px;
+                    background: transparent;
+                    border: 1.5px solid #7C5CFF;
+                    color: #A78BFA;
+                    font-size: 13px; font-weight: 700; font-family: Nexa, sans-serif;
+                    letter-spacing: 0.03em;
+                    box-shadow: 0 0 6px #7C5CFF, 0 0 14px #7C5CFF66, 0 0 28px #5A3DF044, inset 0 0 8px #7C5CFF18;
+                    animation: neon-pulse 2.8s ease-in-out infinite;
+                    transition: border-color .2s, color .2s;
+                  }
+                  .neon-tag:hover {
+                    border-color: #A78BFA;
+                    color: #fff;
+                    box-shadow: 0 0 12px #A78BFA, 0 0 26px #7C5CFFaa, 0 0 50px #5A3DF066, inset 0 0 16px #7C5CFF33;
+                    animation: none;
+                  }
+                  .neon-tag-x {
+                    background: transparent; border: none; cursor: pointer;
+                    color: #7C5CFF; font-size: 13px; font-weight: 800;
+                    padding: 0 2px; line-height: 1; transition: color .15s, text-shadow .15s;
+                  }
+                  .neon-tag-x:hover { color: #ff6b9d; text-shadow: 0 0 8px #ff6b9d; }
+                  @media (prefers-reduced-motion: reduce) { .neon-tag { animation: none; } }
+                `}</style>
+                {tags.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+                    {tags.map(tag => (
+                      <div key={tag} className="neon-tag">
+                        {tag}
+                        <button className="neon-tag-x" onClick={() => removeTag(tag)}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Champ de saisie */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 16px', borderRadius: 14,
+                  background: 'var(--bg)', border: '1px solid var(--border)',
+                  marginBottom: 16, transition: 'border-color 0.2s',
+                }}
+                  onFocusCapture={e => (e.currentTarget.style.borderColor = '#5A3DF0')}
+                  onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                >
+                  <span style={{ fontSize: 16 }}>🔍</span>
                   <input
                     value={tagInput}
                     onChange={e => setTagInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
                     placeholder={tags.length === 0 ? t('artisanProfile.tagPh1') : t('artisanProfile.tagPh2')}
-                    style={{ flex: 1, minWidth: 120, background: 'transparent', border: 'none', outline: 'none', color: 'var(--tx)', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300, padding: '4px' }}
+                    style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--tx)', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
                   />
                   {tagInput.trim() && (
-                    <button onClick={() => addTag(tagInput)}
-                      style={{ padding: '4px 14px', borderRadius: 20, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0 }}>
+                    <button onClick={() => addTag(tagInput)} style={{
+                      padding: '5px 14px', borderRadius: 10,
+                      background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)',
+                      border: 'none', color: '#fff', fontSize: 11, fontWeight: 800,
+                      cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
+                    }}>
                       {t('artisanProfile.tagAdd')}
                     </button>
                   )}
                 </div>
 
+                {/* Compteur */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{tags.length}/15 {t('artisanProfile.tagCount')}</span>
-                  <div style={{ display: 'flex', gap: 4 }}>
+                  <div style={{ display: 'flex', gap: 3 }}>
                     {Array.from({ length: 15 }).map((_, i) => (
-                      <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < tags.length ? '#6366f1' : 'var(--border)' }}/>
+                      <div key={i} style={{
+                        width: i < tags.length ? 14 : 6, height: 6, borderRadius: 3,
+                        background: i < tags.length ? 'linear-gradient(90deg,#5A3DF0,#A78BFA)' : 'var(--border)',
+                        transition: 'all 0.25s ease',
+                      }}/>
                     ))}
                   </div>
                 </div>
 
+                {/* Suggestions */}
                 {tags.length < 15 && (
-                  <div>
-                    <div style={{ fontSize: 10, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '.08em', marginBottom: 8 }}>{t('artisanProfile.tagSuggestions')}</div>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div style={{
+                    padding: '16px', borderRadius: 14,
+                    background: 'color-mix(in srgb,#5A3DF0 4%,var(--bg2))',
+                    border: '1px solid color-mix(in srgb,#5A3DF0 12%,transparent)',
+                  }}>
+                    <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.1em', marginBottom: 10 }}>
+                      ✦ {t('artisanProfile.tagSuggestions')}
+                    </div>
+                    <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                       {POPULAR_TAGS.filter(tag => !tags.includes(tag)).slice(0, 10).map(tag => (
-                        <button key={tag} onClick={() => addTag(tag)}
-                          style={{ padding: '5px 14px', borderRadius: 20, background: 'transparent', border: '0.5px solid var(--border)', color: 'var(--tx3)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'all 0.15s' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx3)' }}
-                        >+ {tag}</button>
+                        <button key={tag} onClick={() => addTag(tag)} style={{
+                          padding: '6px 14px', borderRadius: 10,
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
+                          color: 'var(--tx2)', fontSize: 12,
+                          cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300,
+                          transition: 'all 0.15s',
+                          display: 'flex', alignItems: 'center', gap: 5,
+                        }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.background = 'color-mix(in srgb,#5A3DF0 10%,var(--bg))'
+                            e.currentTarget.style.borderColor = '#5A3DF0'
+                            e.currentTarget.style.color = '#5A3DF0'
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.background = 'var(--bg)'
+                            e.currentTarget.style.borderColor = 'var(--border)'
+                            e.currentTarget.style.color = 'var(--tx2)'
+                          }}
+                        >
+                          <span style={{ color: '#5A3DF0', fontWeight: 800 }}>+</span> {tag}
+                        </button>
                       ))}
                     </div>
                   </div>

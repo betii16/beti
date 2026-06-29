@@ -2,18 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Police de marque. NB : la famille s'appelle 'Nexa' pour des raisons
-   historiques (référencée dans tout le code via font-family:'Nexa'), mais les
-   fichiers Nexa étaient absents → tout le site retombait sur la police système.
-   On sert désormais Plus Jakarta Sans (géométrique, auto-hébergée, libre). Un
-   seul fichier woff2 VARIABLE couvre tous les poids 200→800 (d'où une seule
-   déclaration). Pour la rebaptiser un jour, renommer 'Nexa' partout. */
-@font-face {
-  font-family: 'Nexa';
-  src: url('/fonts/plus-jakarta.woff2') format('woff2');
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
+/* Police de marque : Poppins (Google Fonts, chargée via next/font).
+   Les CSS variables --font-poppins et --font-arabic sont injectées par layout.tsx.
+   Le sélecteur !important écrase les fontFamily inline 'Nexa' hérités du code. */
+*, *::before, *::after {
+  font-family: var(--font-poppins, system-ui), sans-serif !important;
+}
+[dir="rtl"] *, [lang="ar"] * {
+  font-family: var(--font-arabic, system-ui), var(--font-poppins, system-ui), sans-serif !important;
 }
 
 /* ═══ DARK THEME (default) ═══ */
@@ -28,10 +24,10 @@
   --tx3: #4a4a65;
   --border: #1c1c30;
   --border2: #26263e;
-  --accent: #6366f1;
-  --accent2: #8b5cf6;
-  --gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
-  --gradient-text: linear-gradient(135deg, #818cf8, #a78bfa);
+  --accent: #5A3DF0;
+  --accent2: #7C5CFF;
+  --gradient: linear-gradient(135deg, #5A3DF0, #7C5CFF);
+  --gradient-text: linear-gradient(135deg, #7C5CFF, #A78BFA);
   --card-shadow: 0 2px 8px rgba(0,0,0,0.25);
   --nav-bg: rgba(11,11,18,0.85);
   --glass-bg: rgba(11,11,18,0.92);
@@ -69,15 +65,15 @@
   --tx3:     #9898AC;
   --border:  #DCDBE6;
   --border2: #C6C5D2;
-  --accent:  #5558E8;
-  --accent2: #7B50E8;
-  --gradient: linear-gradient(135deg, #5558E8, #7B50E8);
-  --gradient-text: linear-gradient(135deg, #5558E8, #9B72F0);
+  --accent:  #5A3DF0;
+  --accent2: #7C5CFF;
+  --gradient: linear-gradient(135deg, #5A3DF0, #7C5CFF);
+  --gradient-text: linear-gradient(135deg, #5A3DF0, #A78BFA);
   --card-shadow: 0 1px 2px rgba(60,55,100,0.06), 0 4px 14px rgba(60,55,100,0.08);
   --nav-bg: rgba(238,237,244,0.88);
   --glass-bg: rgba(238,237,244,0.94);
-  --hover-shadow: 0 12px 40px rgba(99,102,241,0.1);
-  --hover-shadow-lg: 0 16px 48px rgba(99,102,241,0.12);
+  --hover-shadow: 0 12px 40px rgba(90,61,240,0.1);
+  --hover-shadow-lg: 0 16px 48px rgba(90,61,240,0.12);
   --success: #059669;
   --danger:  #dc2626;
   --warning: #d97706;
@@ -90,7 +86,7 @@
   /* Fond sobre — dégradé clair + lueur neutre + vignette */
   --bg-top: #F4F3F9;
   --bg-vignette: #E4E2EC;
-  --grid-glow: rgba(99,102,241,0.04);
+  --grid-glow: rgba(90,61,240,0.04);
 }
 
 html {
@@ -160,19 +156,21 @@ body { background: transparent; }
 /* ── Cliquable uniquement : soulèvement, bord accent, halo curseur ── */
 .acard, .card.is-clickable { cursor: pointer; }
 .card.is-clickable:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: var(--hover-shadow), inset 0 1px 0 var(--glass-highlight), inset 0 -16px 30px -22px rgba(0,0,0,0.45);
-  border-color: var(--accent)55;
+  border-color: var(--accent)44;
 }
 .acard:hover {
-  transform: translateY(-6px) scale(1.01);
+  transform: translateY(-3px);
   box-shadow: var(--hover-shadow-lg), inset 0 1px 0 var(--glass-highlight);
-  border-color: var(--accent)66;
+  border-color: var(--accent)55;
 }
+/* Reflet spéculaire discret qui suit le curseur — lecture « verre », pas « lampe torche ».
+   Blanc seul, basse opacité, dégradé doux (pas de teinte accent → évite l'effet template). */
 .acard::before, .card.is-clickable::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  opacity: 0; transition: opacity .4s ease; z-index: 3;
-  background: radial-gradient(180px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.14), rgba(139,124,246,0.10) 26%, transparent 50%);
+  opacity: 0; transition: opacity .5s ease; z-index: 3;
+  background: radial-gradient(240px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06), transparent 46%);
 }
 .acard:hover::before, .card.is-clickable:hover::before { opacity: 1; }
 /* Bulle iOS : verre + rim lumineux + reflet en haut à gauche */
@@ -298,7 +296,7 @@ textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
 
 /* Sélection de texte */
 ::selection {
-  background: rgba(99, 102, 241, 0.35);
+  background: rgba(90, 61, 240, 0.35);
   color: inherit;
 }
 
@@ -307,7 +305,7 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16) !important;
+  box-shadow: 0 0 0 3px rgba(90, 61, 240, 0.16) !important;
   outline: none;
 }
 
@@ -411,7 +409,7 @@ select:focus {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
 }
 [data-theme="light"] :where(div[style*="--card-shadow"]:hover) {
-  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 8px 28px rgba(90, 61, 240, 0.1);
 }
 
 /* ── Classes utilitaires d'animation (à poser via className) ── */
@@ -449,7 +447,7 @@ select:focus {
   bottom: -2px;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  background: linear-gradient(90deg, #5A3DF0, #7C5CFF);
   transform: scaleX(0);
   transform-origin: center;
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
@@ -502,7 +500,7 @@ select:focus {
 
 /* Texte en dégradé animé */
 .gradient-text-animated {
-  background: linear-gradient(135deg, #6366f1, #a78bfa, #818cf8, #6366f1);
+  background: linear-gradient(135deg, #5A3DF0, #a78bfa, #7C5CFF, #5A3DF0);
   background-size: 300% auto;
   -webkit-background-clip: text;
   background-clip: text;

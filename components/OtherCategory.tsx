@@ -108,7 +108,7 @@ export function OtherCategorySearch({
         onClick={() => inputRef.current?.focus()}
         style={{
           minHeight: 48, padding: '8px 12px',
-          background: 'var(--bg2)', border: '0.5px solid #6366f133',
+          background: 'var(--bg2)', border: '0.5px solid #5A3DF033',
           borderRadius: 12, cursor: 'text', display: 'flex',
           flexWrap: 'wrap', gap: 6, alignItems: 'center',
         }}
@@ -117,14 +117,14 @@ export function OtherCategorySearch({
           <div key={tag} style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 12px', borderRadius: 20,
-            background: '#6366f10d', border: '0.5px solid #6366f1',
-            fontSize: 12, color: '#6366f1', fontFamily: 'Nexa, sans-serif', fontWeight: 800,
+            background: '#5A3DF00d', border: '0.5px solid #5A3DF0',
+            fontSize: 12, color: '#5A3DF0', fontFamily: 'Nexa, sans-serif', fontWeight: 800,
             animation: 'fadeIn 0.2s ease',
           }}>
             {tag}
             <button
               onClick={(e) => { e.stopPropagation(); removeTag(tag) }}
-              style={{ background: 'transparent', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1, opacity: 0.7 }}
+              style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1, opacity: 0.7 }}
             >✕</button>
           </div>
         ))}
@@ -146,7 +146,7 @@ export function OtherCategorySearch({
             onClick={() => addTag(input)}
             style={{
               padding: '5px 16px', borderRadius: 20,
-              background: '#6366f1', border: 'none',
+              background: '#5A3DF0', border: 'none',
               color: '#fff', fontSize: 12, fontWeight: 800,
               cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
             }}
@@ -189,7 +189,7 @@ export function OtherCategorySearch({
                   fontFamily: 'Nexa, sans-serif', fontWeight: 300,
                   transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#5A3DF0'; e.currentTarget.style.color = '#5A3DF0' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx3)' }}
               >
                 <span style={{ fontSize: 11 }}>+</span> {s}
@@ -272,7 +272,7 @@ export function ArtisanTagsInput({
         </div>
         <p style={{ fontSize: 12, color: '#555', fontWeight: 300, lineHeight: 1.6, marginBottom: 14 }}>
           Ajoutez des mots-clés décrivant vos spécialités. Les clients pourront vous trouver en les cherchant.
-          <br/>Ex: <span style={{ color: '#6366f1' }}>piscine, climatisation, livreur, livraison...</span>
+          <br/>Ex: <span style={{ color: '#5A3DF0' }}>piscine, climatisation, livreur, livraison...</span>
         </p>
       </div>
 
@@ -289,13 +289,13 @@ export function ArtisanTagsInput({
           <div key={tag} style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '3px 10px', borderRadius: 20,
-            background: '#6366f10d', border: '0.5px solid #6366f144',
-            fontSize: 12, color: '#6366f1', fontFamily: 'Nexa, sans-serif', fontWeight: 300,
+            background: '#5A3DF00d', border: '0.5px solid #5A3DF044',
+            fontSize: 12, color: '#5A3DF0', fontFamily: 'Nexa, sans-serif', fontWeight: 300,
           }}>
             {tag}
             <button
               onClick={(e) => { e.stopPropagation(); removeTag(tag) }}
-              style={{ background: 'transparent', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1, opacity: 0.7 }}
+              style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1, opacity: 0.7 }}
             >✕</button>
           </div>
         ))}
@@ -316,7 +316,7 @@ export function ArtisanTagsInput({
             onClick={() => addTag(input)}
             style={{
               padding: '4px 14px', borderRadius: 20,
-              background: '#6366f1', border: 'none',
+              background: '#5A3DF0', border: 'none',
               color: '#fff', fontSize: 11, fontWeight: 800,
               cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
             }}
@@ -332,7 +332,7 @@ export function ArtisanTagsInput({
         <p style={{ fontSize: 11, color: '#444', fontWeight: 300 }}>{tags.length}/15 mots-clés</p>
         <div style={{ display: 'flex', gap: 4 }}>
           {Array.from({ length: 15 }).map((_, i) => (
-            <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < tags.length ? '#6366f1' : 'var(--border)', transition: 'background 0.2s' }}/>
+            <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < tags.length ? '#5A3DF0' : 'var(--border)', transition: 'background 0.2s' }}/>
           ))}
         </div>
       </div>
@@ -351,7 +351,7 @@ export function ArtisanTagsInput({
                   color: '#555', fontSize: 12, cursor: 'pointer',
                   fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#5A3DF0'; e.currentTarget.style.color = '#5A3DF0' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx3)' }}
               >
                 + {t}
@@ -366,7 +366,7 @@ export function ArtisanTagsInput({
         disabled={saving || tags.length === 0}
         style={{
           width: '100%', padding: '12px',
-          background: saved ? '#0a2010' : tags.length === 0 ? '#1a1a2a' : '#6366f1',
+          background: saved ? '#0a2010' : tags.length === 0 ? '#1a1a2a' : '#5A3DF0',
           border: saved ? '0.5px solid #4ade8044' : 'none',
           borderRadius: 10,
           color: saved ? '#4ade80' : tags.length === 0 ? 'var(--tx3)' : '#fff',

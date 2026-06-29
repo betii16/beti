@@ -43,7 +43,7 @@ export default function ParametresPage() {
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 72, direction: isAr ? 'rtl' : 'ltr' }}>
-      <style suppressHydrationWarning>{`* { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: #6366f144; border-radius: 2px; }`}</style>
+      <style suppressHydrationWarning>{`* { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: #5A3DF044; border-radius: 2px; }`}</style>
       <div style={{ maxWidth: 700, margin: '0 auto', padding: '40px 24px' }}>
         <div style={{ marginBottom: 8, fontSize: 10, color: 'var(--accent)', letterSpacing: '0.12em', fontWeight: 800 }}>{t('settings.myAccount')}</div>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 32 }}>{t('settings.title')}</h1>
@@ -90,6 +90,22 @@ export default function ParametresPage() {
               <button onClick={saveProfile} disabled={saving} className={saved ? 'btn-success btn-block' : 'btn-primary btn-block'}>
                 {saving ? t('settings.saving') : saved ? t('settings.saved') : t('settings.save')}
               </button>
+            </div>
+
+            <div className="card" style={{ padding: '8px 24px' }}>
+              <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', margin: '16px 0 4px' }}>{t('settings.legalSection')}</div>
+              {[
+                { l: t('home.footerLegal'),   h: '/mentions' },
+                { l: t('home.footerCgu'),     h: '/cgu' },
+                { l: t('home.footerPrivacy'), h: '/confidentialite' },
+                { l: t('nav.help'),           h: '/aide' },
+              ].map((item, i, arr) => (
+                <div key={item.h} onClick={() => router.push(item.h)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: i < arr.length - 1 ? '0.5px solid var(--border)' : 'none', cursor: 'pointer' }}>
+                  <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--tx2)' }}>{item.l}</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{ transform: isAr ? 'rotate(180deg)' : 'none', flexShrink: 0 }}><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              ))}
             </div>
 
             <div className="card" style={{ borderColor: '#ef444433', padding: '24px' }}>

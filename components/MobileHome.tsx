@@ -24,9 +24,9 @@ const CATS = [
   { id: 'serrurerie',   color: '#ef4444' },
   { id: 'menage',       color: '#10b981' },
   { id: 'peinture',     color: '#f97316' },
-  { id: 'demenagement', color: '#8b5cf6' },
+  { id: 'demenagement', color: '#7C5CFF' },
   { id: 'jardinage',    color: '#22c55e' },
-  { id: 'informatique', color: '#6366f1' },
+  { id: 'informatique', color: '#5A3DF0' },
   { id: 'coiffure',     color: '#ec4899' },
 ]
 
@@ -51,7 +51,7 @@ export default function MobileHome({
   const [shown, setShown] = useState(8)
 
   const cl = (id: string) => t(`categories.${id}`)
-  const catColor = (id: string) => CATS.find(c => c.id === id)?.color || '#6366f1'
+  const catColor = (id: string) => CATS.find(c => c.id === id)?.color || '#5A3DF0'
   const hour = new Date().getHours()
   const greet = hour >= 5 && hour < 18 ? t('mhome.greetingDay') : t('mhome.greetingEvening')
   const firstName = userName ? userName.split(' ')[0] : ''
@@ -128,7 +128,7 @@ export default function MobileHome({
               width: 56, height: 56, borderRadius: 19, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: cat === '' ? 'var(--gradient)' : 'var(--bg2)',
               border: `1px solid ${cat === '' ? 'transparent' : 'var(--border)'}`,
-              boxShadow: cat === '' ? '0 6px 18px rgba(99,102,241,0.35)' : 'var(--card-shadow)',
+              boxShadow: cat === '' ? '0 6px 18px rgba(90, 61, 240,0.35)' : 'var(--card-shadow)',
               transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)',
             }}>
               <LayoutGrid size={22} color={cat === '' ? '#fff' : 'var(--tx2)'} strokeWidth={1.9}/>
@@ -182,8 +182,8 @@ export default function MobileHome({
         <div className="anim-fade-up" style={{ padding: '20px 20px 0', animationDelay: '0.18s' }}>
           <div onClick={() => router.push('/map')} className="press" style={{
             position: 'relative', borderRadius: 22, overflow: 'hidden', cursor: 'pointer',
-            background: 'linear-gradient(120deg, #6366f1 0%, #7c5cf0 55%, #8b5cf6 100%)',
-            padding: '20px 22px', boxShadow: '0 12px 32px rgba(99,102,241,0.32)',
+            background: 'linear-gradient(120deg, #5A3DF0 0%, #7c5cf0 55%, #7C5CFF 100%)',
+            padding: '20px 22px', boxShadow: '0 12px 32px rgba(90, 61, 240,0.32)',
           }}>
             {/* Décor */}
             <div className="anim-float" style={{ position: 'absolute', width: 170, height: 170, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', top: -70, right: -40, pointerEvents: 'none' }}/>
@@ -194,7 +194,7 @@ export default function MobileHome({
               <div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', marginBottom: 5 }}>{t('mhome.promoTitle')}</div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.82)', fontWeight: 300, lineHeight: 1.5, marginBottom: 13, maxWidth: 230 }}>{t('mhome.promoSub')}</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 12, background: '#fff', color: '#6366f1', fontSize: 12, fontWeight: 800 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 12, background: '#fff', color: '#5A3DF0', fontSize: 12, fontWeight: 800 }}>
                   <Navigation size={13} strokeWidth={2.4}/>{t('mhome.promoCta')}
                 </div>
               </div>

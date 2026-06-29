@@ -1,9 +1,10 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
-import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map } from 'lucide-react'
+import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map, Sparkles } from 'lucide-react'
+import { isLaunchFree, SUB_FREE_UNTIL } from '@/lib/plans'
 
 export default function ArtisanDashboard(){
   const router=useRouter();const{t,isAr}=useLang()
@@ -61,20 +62,20 @@ export default function ArtisanDashboard(){
 
   // Complétion profil
   const completion=(()=>{
-    if(!artisan||!profile)return 0;let s=0,t=7
+    if(!artisan||!profile)return 0;let s=0,total=7
     if(profile.full_name)s++;if(profile.avatar_url)s++;if(profile.phone)s++
     if(artisan.bio&&artisan.bio.length>10)s++;if(artisan.lat&&artisan.lng)s++
     if(artisan.hourly_rate>0)s++;if(artisan.category)s++
-    return Math.round((s/t)*100)
+    return Math.round((s/total)*100)
   })()
 
   const missing=(()=>{
     if(!artisan||!profile)return[]
     const m:string[]=[]
-    if(!profile.avatar_url)m.push('Ajouter une photo de profil')
-    if(!artisan.bio||artisan.bio.length<10)m.push('Écrire une description')
-    if(!artisan.lat||!artisan.lng)m.push('Ajouter votre adresse')
-    if(!artisan.hourly_rate||artisan.hourly_rate===0)m.push('Définir votre tarif')
+    if(!profile.avatar_url)m.push(t('dashExtra.todoPhoto'))
+    if(!artisan.bio||artisan.bio.length<10)m.push(t('dashExtra.todoBio'))
+    if(!artisan.lat||!artisan.lng)m.push(t('dashExtra.todoAddress'))
+    if(!artisan.hourly_rate||artisan.hourly_rate===0)m.push(t('dashExtra.todoRate'))
     return m
   })()
 
@@ -82,38 +83,53 @@ export default function ArtisanDashboard(){
 
   const pendingBookings=bookings.filter(b=>b.status==='pending')
   const recentBookings=bookings.filter(b=>b.status!=='pending').slice(0,5)
+  const subFree=isLaunchFree()
+  const subUntil=SUB_FREE_UNTIL.toLocaleDateString('fr-DZ',{day:'numeric',month:'long',year:'numeric'})
 
   if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
 
+  const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
+
   return(
-    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif'}}>
+    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif',direction:isAr?'rtl':'ltr'}}>
       <div style={{maxWidth:1000,margin:'0 auto',padding:'24px'}}>
 
         {/* Header */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28,flexWrap:'wrap',gap:16}}>
           <div>
-            <h1 style={{fontSize:28,fontWeight:800,color:'var(--tx)',marginBottom:4}}>Bonjour {profile?.full_name?.split(' ')[0] || 'Artisan'}</h1>
-            <p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>Voici votre activité du jour</p>
+            <h1 style={{fontSize:28,fontWeight:800,color:'var(--tx)',marginBottom:4}}>👋 {profile?.full_name?.split(' ')[0] || 'Artisan'}</h1>
+            <p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>{t('dashExtra.activityToday')}</p>
           </div>
           <div style={{display:'flex',gap:10,alignItems:'center'}}>
             {/* Disponibilité toggle */}
             <button onClick={toggleAvail} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 20px',borderRadius:12,border:'1px solid var(--border)',background:isAvailable?'#10b98112':'var(--bg2)',cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:isAvailable?'#10b981':'var(--tx3)',boxShadow:isAvailable?'0 0 8px #10b98155':'none',transition:'all 0.3s'}}/>
-              <span style={{fontSize:13,fontWeight:700,color:isAvailable?'#10b981':'var(--tx3)'}}>{isAvailable?'En ligne':'Hors ligne'}</span>
+              <span style={{fontSize:13,fontWeight:700,color:isAvailable?'#10b981':'var(--tx3)'}}>{isAvailable?t('dashExtra.online'):t('dashExtra.offline')}</span>
             </button>
-            <a href="/artisan-dashboard/profil"><button className="btn-primary btn-sm">Mon profil</button></a>
+            <a href="/artisan-dashboard/profil"><button className="btn-primary btn-sm">{t('dashExtra.myProfile')}</button></a>
           </div>
         </div>
+
+        {/* Abonnement */}
+        <a href="/artisan-dashboard/abonnement" style={{textDecoration:'none'}}>
+          <div className="acard" style={{padding:'16px 20px',marginBottom:20,display:'flex',alignItems:'center',gap:14}}>
+            <div style={{width:40,height:40,borderRadius:12,background:'var(--gradient)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><Sparkles size={20}/></div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',marginBottom:2}}>{subFree?`${t('dashExtra.launchFree')} ${subUntil}`:t('dashExtra.yourSub')}</div>
+              <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{t('dashExtra.seePlans')}</div>
+            </div>
+          </div>
+        </a>
 
         {/* Complétion profil */}
         {completion<100&&(
           <div className="card" style={{padding:'20px 24px',marginBottom:20}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-              <span style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>Profil complété à {completion}%</span>
-              <a href="/artisan-dashboard/profil" style={{fontSize:12,color:'#6366f1',textDecoration:'none',fontWeight:700}}>Compléter</a>
+              <span style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{t('dashExtra.profileComplete')} {completion}%</span>
+              <a href="/artisan-dashboard/profil" style={{fontSize:12,color:'#5A3DF0',textDecoration:'none',fontWeight:700}}>{t('dashExtra.completeLink')}</a>
             </div>
             <div style={{height:6,background:'var(--border)',borderRadius:3,overflow:'hidden',marginBottom:12}}>
-              <div style={{height:'100%',width:`${completion}%`,background:'linear-gradient(90deg,#6366f1,#8b5cf6)',borderRadius:3,transition:'width 0.5s'}}/>
+              <div style={{height:'100%',width:`${completion}%`,background:'linear-gradient(90deg,#5A3DF0,#7C5CFF)',borderRadius:3,transition:'width 0.5s'}}/>
             </div>
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               {missing.map(m=><span key={m} style={{padding:'4px 12px',borderRadius:8,background:'#f59e0b12',border:'1px solid #f59e0b22',fontSize:11,color:'#f59e0b'}}>{m}</span>)}
@@ -124,10 +140,10 @@ export default function ArtisanDashboard(){
         {/* KPIs */}
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginBottom:24}}>
           {[
-            {label:'Revenus',value:`${stats.revenue.toLocaleString('fr-DZ')} DA`,Icon:Wallet,color:'#10b981',sub:'Total encaissé'},
-            {label:'Missions',value:stats.missions,Icon:CheckCircle2,color:'#6366f1',sub:'Terminées'},
-            {label:'En attente',value:stats.pending,Icon:Clock,color:'#f59e0b',sub:'Demandes à traiter'},
-            {label:'Note',value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'#f59e0b',sub:`${stats.ratingCount} avis`},
+            {label:t('dashExtra.kpiRevenue'),value:`${stats.revenue.toLocaleString('fr-DZ')} DA`,Icon:Wallet,color:'#10b981',sub:t('dashExtra.kpiRevenueSub')},
+            {label:t('dashExtra.kpiMissions'),value:stats.missions,Icon:CheckCircle2,color:'#5A3DF0',sub:t('dashExtra.kpiMissionsSub')},
+            {label:t('dashExtra.kpiPending'),value:stats.pending,Icon:Clock,color:'#f59e0b',sub:t('dashExtra.kpiPendingSub')},
+            {label:t('dashExtra.kpiRating'),value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'#f59e0b',sub:`${stats.ratingCount} ${t('dashExtra.ratingUnit')}`},
           ].map(k=>(
             <div key={k.label} className="card" style={{padding:'20px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
@@ -143,21 +159,21 @@ export default function ArtisanDashboard(){
         {/* Demandes en attente — réponse rapide */}
         {pendingBookings.length>0&&(
           <div style={{marginBottom:24}}>
-            <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>Demandes en attente ({pendingBookings.length})</h2>
+            <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>{t('dashExtra.pendingTitle')} ({pendingBookings.length})</h2>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {pendingBookings.map(b=>(
                 <div key={b.id} className="card" style={{borderColor:'#f59e0b55',padding:'18px 20px',display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
                   <div style={{width:40,height:40,borderRadius:10,background:'#f59e0b15',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Clock size={18} color="#f59e0b"/></div>
                   <div style={{flex:1,minWidth:180}}>
-                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{b.profiles?.full_name||'Client'}</div>
-                    <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{b.title||b.description||'Demande de service'}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',marginTop:4}}>{timeAgo(b.created_at)} · {b.address||'Adresse non précisée'}</div>
+                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
+                    <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{b.title||b.description||t('dashExtra.requestFallback')}</div>
+                    <div style={{fontSize:11,color:'var(--tx3)',marginTop:4}}>{timeAgo(b.created_at)} · {b.address||t('dashExtra.addrFallback')}</div>
                   </div>
                   <div style={{fontSize:16,fontWeight:800,color:'var(--tx)',marginRight:8}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
                   <div style={{display:'flex',gap:8}}>
-                    <button onClick={()=>respond(b.id,true)} className="btn-success btn-sm">Accepter</button>
-                    <button onClick={()=>respond(b.id,false)} className="btn-ghost btn-sm" style={{color:'#ef4444',borderColor:'#ef444455'}}>Refuser</button>
-                    <a href={`/chat/${b.id}`}><button className="btn-ghost btn-sm">Message</button></a>
+                    <button onClick={()=>respond(b.id,true)} className="btn-success btn-sm">{t('dashExtra.accept')}</button>
+                    <button onClick={()=>respond(b.id,false)} className="btn-ghost btn-sm" style={{color:'#ef4444',borderColor:'#ef444455'}}>{t('dashExtra.refuse')}</button>
+                    <a href={`/chat/${b.id}`}><button className="btn-ghost btn-sm">{t('dashExtra.message')}</button></a>
                   </div>
                 </div>
               ))}
@@ -168,25 +184,25 @@ export default function ArtisanDashboard(){
         {/* Historique récent */}
         <div style={{marginBottom:24}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-            <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)'}}>Historique récent</h2>
-            <a href="/artisan-dashboard/revenus" style={{fontSize:12,color:'#6366f1',textDecoration:'none',fontWeight:700}}>Voir tout</a>
+            <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)'}}>{t('dashExtra.recentHistory')}</h2>
+            <a href="/artisan-dashboard/revenus" style={{fontSize:12,color:'#5A3DF0',textDecoration:'none',fontWeight:700}}>{t('dashExtra.seeAll')}</a>
           </div>
           {recentBookings.length===0?(
             <div className="card" style={{padding:'40px',textAlign:'center'}}>
-              <p style={{fontSize:14,color:'var(--tx3)',fontWeight:300}}>Aucune mission pour l'instant</p>
-              <p style={{fontSize:12,color:'var(--tx3)',marginTop:8}}>Activez votre disponibilité pour recevoir des demandes</p>
+              <p style={{fontSize:14,color:'var(--tx3)',fontWeight:300}}>{t('dashExtra.noMission')}</p>
+              <p style={{fontSize:12,color:'var(--tx3)',marginTop:8}}>{t('dashExtra.activateHint')}</p>
             </div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {recentBookings.map(b=>(
                 <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':'#ef4444',flexShrink:0}}/>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':'#ef4444',flexShrink:0}}/>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||'Client'}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||'Mission'} · {timeAgo(b.created_at)}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
+                    <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||t('dashExtra.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
                   <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
-                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#6366f112':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#6366f1':'#ef4444'}}>{b.status==='completed'?'Terminé':b.status==='confirmed'?'Confirmé':b.status==='refused'?'Refusé':'Annulé'}</span>
+                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#5A3DF012':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':'#ef4444'}}>{statusLabel(b.status)}</span>
                 </div>
               ))}
             </div>
@@ -196,10 +212,10 @@ export default function ArtisanDashboard(){
         {/* Quick links */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10}}>
           {[
-            {label:'Mon profil',href:'/artisan-dashboard/profil',Icon:User,desc:'Modifier mes infos'},
-            {label:'Planning',href:'/artisan-dashboard/planning',Icon:Calendar,desc:'Gérer mes disponibilités'},
-            {label:'Revenus',href:'/artisan-dashboard/revenus',Icon:BarChart3,desc:'Statistiques détaillées'},
-            {label:'Carte',href:'/map',Icon:Map,desc:'Voir les clients proches'},
+            {label:t('dashExtra.qlProfile'),href:'/artisan-dashboard/profil',Icon:User,desc:t('dashExtra.qlEditInfo')},
+            {label:t('dashExtra.qlPlanning'),href:'/artisan-dashboard/planning',Icon:Calendar,desc:t('dashExtra.qlDispo')},
+            {label:t('dashExtra.qlRevenus'),href:'/artisan-dashboard/revenus',Icon:BarChart3,desc:t('dashExtra.qlStats')},
+            {label:t('dashExtra.qlMap'),href:'/map',Icon:Map,desc:t('dashExtra.qlNearClients')},
           ].map(l=>(
             <a key={l.label} href={l.href} style={{textDecoration:'none'}}>
               <div className="acard" style={{padding:'18px'}}>

@@ -283,7 +283,7 @@ export function AlgeriaCitySearch({
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         {/* Input */}
         <div style={{ position: 'relative', flex: 1 }}>
-          <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: selected ? '#6366f1' : '#555', display: 'flex' }}><MapPin size={14}/></div>
+          <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: selected ? '#5A3DF0' : '#555', display: 'flex' }}><MapPin size={14}/></div>
           <input
             ref={inputRef}
             type="text"
@@ -293,7 +293,7 @@ export function AlgeriaCitySearch({
             placeholder={detecting ? 'Détection...' : placeholder}
             style={{
               width: '100%', padding: '11px 36px 11px 34px',
-              background: 'var(--bg2)', border: `0.5px solid ${selected ? '#6366f144' : 'var(--border)'}`,
+              background: 'var(--bg2)', border: `0.5px solid ${selected ? '#5A3DF044' : 'var(--border)'}`,
               borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none',
               fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'border-color 0.2s',
             }}
@@ -308,7 +308,7 @@ export function AlgeriaCitySearch({
               opacity: detecting ? 0.5 : 0.8, transition: 'opacity 0.2s',
             }}
           >
-            {detecting ? '…' : <Crosshair size={15} color="#6366f1"/>}
+            {detecting ? '…' : <Crosshair size={15} color="#5A3DF0"/>}
           </button>
         </div>
       </div>
@@ -334,13 +334,13 @@ export function AlgeriaCitySearch({
                       onClick={() => handleSelect(city)}
                       style={{
                         padding: '5px 12px', borderRadius: 20,
-                        background: '#6366f10d', border: '0.5px solid #6366f118',
-                        color: '#6366f1', fontSize: 12, cursor: 'pointer',
+                        background: '#5A3DF00d', border: '0.5px solid #5A3DF018',
+                        color: '#5A3DF0', fontSize: 12, cursor: 'pointer',
                         fontFamily: 'Nexa, sans-serif', fontWeight: 300,
                         transition: 'all 0.15s',
                       }}
                       onMouseEnter={e => (e.target as HTMLElement).style.background = '#241e08'}
-                      onMouseLeave={e => (e.target as HTMLElement).style.background = '#6366f10d'}
+                      onMouseLeave={e => (e.target as HTMLElement).style.background = '#5A3DF00d'}
                     >
                       {city.name}
                     </button>
@@ -354,7 +354,7 @@ export function AlgeriaCitySearch({
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--border)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <span style={{ display: 'inline-flex', color: '#6366f1' }}><Crosshair size={16}/></span>
+                <span style={{ display: 'inline-flex', color: '#5A3DF0' }}><Crosshair size={16}/></span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>Utiliser ma position</div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Détection GPS automatique</div>
@@ -378,14 +378,14 @@ export function AlgeriaCitySearch({
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ display: 'inline-flex', color: '#6366f1' }}><MapPin size={14}/></span>
+                <span style={{ display: 'inline-flex', color: '#5A3DF0' }}><MapPin size={14}/></span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>{city.name}</div>
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>{city.wilaya}</div>
                 </div>
               </div>
               {city.priority === 1 && (
-                <span style={{ fontSize: 9, background: '#6366f10d', border: '0.5px solid #6366f118', color: '#6366f1', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>
+                <span style={{ fontSize: 9, background: '#5A3DF00d', border: '0.5px solid #5A3DF018', color: '#5A3DF0', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>
                   POPULAIRE
                 </span>
               )}

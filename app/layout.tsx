@@ -1,5 +1,20 @@
 import type { Metadata, Viewport } from 'next'
+import { Poppins, Noto_Sans_Arabic } from 'next/font/google'
 import './globals.css'
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '600', '700', '800'],
+  variable: '--font-poppins',
+  display: 'swap',
+})
+
+const arabic = Noto_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['300', '400', '600', '700'],
+  variable: '--font-arabic',
+  display: 'swap',
+})
 import Navigation from '@/components/Navigation'
 import BottomTabBar from '@/components/BottomTabBar'
 import MobileHeader from '@/components/MobileHeader'
@@ -50,7 +65,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning className={`${poppins.variable} ${arabic.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico"/>
         <link rel="manifest" href="/site.webmanifest"/>

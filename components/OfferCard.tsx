@@ -33,7 +33,7 @@ export function OfferCard({
   const declined = offer.status === 'declined'
   const superseded = offer.status === 'superseded'
 
-  const accent = accepted ? '#10b981' : declined ? '#ef4444' : '#6366f1'
+  const accent = accepted ? '#10b981' : declined ? '#ef4444' : '#5A3DF0'
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', margin: '12px 0' }}>
@@ -64,7 +64,7 @@ export function OfferCard({
         {/* Actions (destinataire d'une offre en attente) */}
         {pending && !mine && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button onClick={onAccept} style={{ width: '100%', padding: '12px', borderRadius: 11, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', color: '#fff', fontSize: 13.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa,sans-serif', boxShadow: '0 4px 14px #6366f133' }}>
+            <button onClick={onAccept} style={{ width: '100%', padding: '12px', borderRadius: 11, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', color: '#fff', fontSize: 13.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa,sans-serif', boxShadow: '0 4px 14px #5A3DF033' }}>
               {isClient ? t('offer.acceptPay') : t('offer.accept')}
             </button>
             <div style={{ display: 'flex', gap: 8 }}>

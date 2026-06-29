@@ -1,27 +1,75 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+// components/BetiMap.tsx
+// Carte BETI sur MapLibre GL (vectoriel, look « glass ») via components/ui/mapcn.
+// - Marqueurs artisans avec PHOTO DE PROFIL, cliquables → popup glass (note, prix,
+//   Réserver / Suivre).
+// - Suivi temps réel façon Uber : puck qui glisse, rotation, vraie route (OSRM),
+//   caméra qui suit. Interface (props) identique à l'ancienne version Leaflet.
+
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+import { isDemoArtisan } from '@/lib/contactArtisan'
+import { isPremium } from '@/lib/subscription'
+import PremiumBadge from '@/components/PremiumBadge'
+import { Star, Navigation, Route } from 'lucide-react'
+import {
+  Map, MapMarker, MarkerContent, MarkerPopup, MapControls, MapRoute, type MapRef,
+} from '@/components/ui/mapcn-marker-popup'
 
 type ArtisanMarker = {
-  id: string
-  name: string
-  initials: string
-  category: string
-  rating: number
-  price: number
-  available: boolean
-  color: string
-  lat: number
-  lng: number
-  radius_km: number
+  id: string; name: string; initials: string; avatar: string | null
+  category: string; rating: number; price: number; available: boolean
+  color: string; lat: number; lng: number
+  plan?: string | null; plan_until?: string | null
 }
 
 const CAT_COLORS: Record<string, string> = {
   plomberie: '#3b82f6', electricite: '#f59e0b', menage: '#10b981',
-  demenagement: '#8b5cf6', jardinage: '#22c55e', peinture: '#ef4444',
-  serrurerie: '#f97316', informatique: '#6366f1', coiffure: '#ec4899',
-  autre: '#a78bfa',
+  demenagement: '#7C5CFF', jardinage: '#22c55e', peinture: '#ef4444',
+  serrurerie: '#f97316', informatique: '#5A3DF0', coiffure: '#ec4899', autre: '#a78bfa',
+}
+
+const DEMO: ArtisanMarker[] = [
+  { id: 'd1', name: 'Karim Benali', initials: 'KB', avatar: null, category: 'plomberie', rating: 4.9, price: 3500, available: true, color: '#3b82f6', lat: 36.7538, lng: 3.0588 },
+  { id: 'd2', name: 'Sofiane Amrani', initials: 'SA', avatar: null, category: 'electricite', rating: 4.8, price: 4000, available: true, color: '#f59e0b', lat: 36.7700, lng: 3.0310 },
+  { id: 'd3', name: 'Amina Kaci', initials: 'AK', avatar: null, category: 'menage', rating: 5.0, price: 2000, available: true, color: '#10b981', lat: 36.7400, lng: 3.0900 },
+  { id: 'd4', name: 'Riad Hamdi', initials: 'RH', avatar: null, category: 'serrurerie', rating: 4.6, price: 4500, available: false, color: '#f97316', lat: 36.7200, lng: 3.0200 },
+  { id: 'd5', name: 'Nadia Bouzid', initials: 'NB', avatar: null, category: 'coiffure', rating: 4.9, price: 1500, available: true, color: '#ec4899', lat: 36.7600, lng: 3.1200 },
+]
+
+const calcDist = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+const bearingDeg = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180, Δλ = (lng2 - lng1) * Math.PI / 180
+  const y = Math.sin(Δλ) * Math.cos(φ2)
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ)
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360
+}
+// OSRM (démo public) → coords en [lng, lat] (ordre GeoJSON, prêt pour MapRoute).
+async function fetchRoute(fromLat: number, fromLng: number, toLat: number, toLng: number) {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`
+    const r = (await (await fetch(url)).json())?.routes?.[0]
+    if (!r) return null
+    return { coords: r.geometry.coordinates as [number, number][], distanceKm: r.distance / 1000, durationMin: Math.max(1, Math.round(r.duration / 60)) }
+  } catch { return null }
+}
+
+function useBetiTheme(): 'dark' | 'light' {
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  useEffect(() => {
+    const read = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark')
+    read()
+    const obs = new MutationObserver(read)
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => obs.disconnect()
+  }, [])
+  return theme
 }
 
 export default function BetiMap({
@@ -30,400 +78,258 @@ export default function BetiMap({
   clientLng = 3.0588,
   showAllArtisans = true,
   categoryFilter = '',
-  focusOffsetY = 0,
 }: {
   trackingArtisanId?: string
   clientLat?: number
   clientLng?: number
   showAllArtisans?: boolean
   categoryFilter?: string
-  // Remonte le point de localisation de N pixels pour qu'il ne soit pas caché
-  // derrière une bottom sheet (cas de la page carte).
   focusOffsetY?: number
 }) {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstance = useRef<any>(null)
-  const leafletRef = useRef<any>(null)
-  const markersRef = useRef<any[]>([])
-  const clientMarkerRef = useRef<any>(null)
-  const trackingMarkerRef = useRef<any>(null)
-  const routeLayerRef = useRef<any>(null)
-  const [selectedArtisan, setSelectedArtisan] = useState<ArtisanMarker | null>(null)
-  const [mapReady, setMapReady] = useState(false)
+  const theme = useBetiTheme()
+  const mapRef = useRef<MapRef | null>(null)
+  const [artisans, setArtisans] = useState<ArtisanMarker[]>(DEMO)
+
+  // Suivi
+  const [puck, setPuck] = useState<{ lng: number; lat: number } | null>(null)
+  const [heading, setHeading] = useState(0)
+  const [routeCoords, setRouteCoords] = useState<[number, number][]>([])
   const [distance, setDistance] = useState('')
   const [eta, setEta] = useState('')
-  const [artisans, setArtisans] = useState<ArtisanMarker[]>([])
 
-  const calcDist = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-    const R = 6371
-    const dLat = (lat2 - lat1) * Math.PI / 180
-    const dLng = (lng2 - lng1) * Math.PI / 180
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  }
-
-  // ── Charger artisans depuis Supabase ──
+  // ── Charger artisans (avec avatar + plan) ──
   useEffect(() => {
-    const loadArtisans = async () => {
+    const load = async () => {
       try {
         const { data } = await supabase
           .from('artisans')
-          .select('id, category, hourly_rate, is_available, rating_avg, intervention_radius_km, lat, lng, profiles(full_name)')
-          .not('lat', 'is', null)
-          .not('lng', 'is', null)
-
+          .select('id, category, hourly_rate, is_available, rating_avg, lat, lng, plan, plan_until, profiles(full_name, avatar_url)')
+          .not('lat', 'is', null).not('lng', 'is', null)
         if (data && data.length > 0) {
           setArtisans(data.map((a: any) => ({
             id: a.id,
             name: a.profiles?.full_name || 'Artisan',
-            initials: (a.profiles?.full_name || 'A').split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+            initials: (a.profiles?.full_name || 'A').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2),
+            avatar: a.profiles?.avatar_url || null,
             category: a.category || 'autre',
             rating: a.rating_avg || 0,
             price: a.hourly_rate || 0,
             available: a.is_available,
-            color: CAT_COLORS[a.category] || '#C9A84C',
-            lat: a.lat,
-            lng: a.lng,
-            radius_km: a.intervention_radius_km || 20,
+            color: CAT_COLORS[a.category] || '#5A3DF0',
+            lat: a.lat, lng: a.lng, plan: a.plan, plan_until: a.plan_until,
           })))
-        } else {
-          // Données démo si aucun artisan avec coordonnées
-          setArtisans([
-            { id: '1', name: 'Karim Benali', initials: 'KB', category: 'plomberie', rating: 4.9, price: 3500, available: true, color: '#3b82f6', lat: 36.7538, lng: 3.0588, radius_km: 15 },
-            { id: '2', name: 'Sofiane Amrani', initials: 'SA', category: 'electricite', rating: 4.8, price: 4000, available: true, color: '#f59e0b', lat: 36.7700, lng: 3.0310, radius_km: 20 },
-            { id: '3', name: 'Amina Kaci', initials: 'AK', category: 'menage', rating: 5.0, price: 2000, available: true, color: '#10b981', lat: 36.7400, lng: 3.0900, radius_km: 10 },
-            { id: '4', name: 'Riad Hamdi', initials: 'RH', category: 'serrurerie', rating: 4.6, price: 4500, available: false, color: '#f97316', lat: 36.7200, lng: 3.0200, radius_km: 25 },
-            { id: '5', name: 'Nadia Bouzid', initials: 'NB', category: 'coiffure', rating: 4.9, price: 1500, available: true, color: '#ec4899', lat: 36.7600, lng: 3.1200, radius_km: 8 },
-          ])
         }
-      } catch {
-        // Fallback silencieux
-        setArtisans([
-          { id: '1', name: 'Karim Benali', initials: 'KB', category: 'plomberie', rating: 4.9, price: 3500, available: true, color: '#3b82f6', lat: 36.7538, lng: 3.0588, radius_km: 15 },
-          { id: '2', name: 'Sofiane Amrani', initials: 'SA', category: 'electricite', rating: 4.8, price: 4000, available: true, color: '#f59e0b', lat: 36.7700, lng: 3.0310, radius_km: 20 },
-          { id: '3', name: 'Amina Kaci', initials: 'AK', category: 'menage', rating: 5.0, price: 2000, available: true, color: '#10b981', lat: 36.7400, lng: 3.0900, radius_km: 10 },
-        ])
-      }
+      } catch { /* garde les démos */ }
     }
-    loadArtisans()
-
-    const channel = supabase
-      .channel('artisans-map')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'artisans' }, loadArtisans)
+    load()
+    const channel = supabase.channel('artisans-map')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'artisans' }, load)
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [])
 
-  // ── Charger Leaflet + init carte ──
+  const shown = useMemo(
+    () => (categoryFilter ? artisans.filter(a => a.category === categoryFilter) : artisans),
+    [artisans, categoryFilter],
+  )
+
+  // ── Suivi temps réel façon Uber ──
   useEffect(() => {
-    if (typeof window === 'undefined' || !mapRef.current) return
-
-    let cancelled = false
-
-    const init = async () => {
-      // Charger CSS
-      if (!document.getElementById('leaflet-css')) {
-        const link = document.createElement('link')
-        link.id = 'leaflet-css'
-        link.rel = 'stylesheet'
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-        document.head.appendChild(link)
-      }
-
-      // Charger JS
-      if (!(window as any).L) {
-        await new Promise<void>(resolve => {
-          const s = document.createElement('script')
-          s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-          s.onload = () => resolve()
-          document.head.appendChild(s)
-        })
-      }
-
-      if (cancelled || !mapRef.current) return
-
-      const L = (window as any).L
-      if (!L) return
-      leafletRef.current = L
-
-      // Détruire l'ancienne carte si elle existe
-      if (mapInstance.current) {
-        try { mapInstance.current.remove() } catch {}
-        mapInstance.current = null
-      }
-
-      // Créer la carte
-      const map = L.map(mapRef.current, {
-        center: [clientLat, clientLng],
-        zoom: 13,
-        zoomControl: false,
-      })
-
-      // Satellite — ESRI World Imagery
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-      }).addTo(map)
-
-      // Labels par-dessus le satellite
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        pane: 'overlayPane',
-      }).addTo(map)
-
-      L.control.zoom({ position: 'bottomright' }).addTo(map)
-
-      // Marqueur client
-      const clientIcon = L.divIcon({
-        html: `<div style="position:relative;width:18px;height:18px">
-          <div style="position:absolute;inset:-8px;border-radius:50%;background:#C9A84C33;animation:mapPulse 2s infinite"></div>
-          <div style="width:18px;height:18px;border-radius:50%;background:#C9A84C;border:3px solid #0D0D12;box-shadow:0 0 0 3px #C9A84C44,0 0 20px #C9A84C66;position:relative;z-index:2"></div>
-        </div>`,
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
-        className: '',
-      })
-      clientMarkerRef.current = L.marker([clientLat, clientLng], { icon: clientIcon }).addTo(map)
-      clientMarkerRef.current.bindPopup('<div style="font-family:sans-serif;font-weight:800;color:#0D0D12">📍 Votre position</div>')
-
-      mapInstance.current = map
-
-      // Attendre que Leaflet soit VRAIMENT prêt
-      map.whenReady(() => {
-        if (!cancelled) setMapReady(true)
-        // Le conteneur (plein écran) peut ne pas avoir sa taille finale au moment
-        // de l'init → Leaflet ne charge alors les tuiles que sur une fine bande.
-        // invalidateSize() force le recalcul une fois la mise en page établie.
-        setTimeout(() => { try { map.invalidateSize() } catch {} }, 0)
-        setTimeout(() => { try { map.invalidateSize(); if (focusOffsetY) map.panBy([0, focusOffsetY], { animate: false }) } catch {} }, 250)
-      })
-    }
-
-    init()
-
-    // Recalcule la taille de la carte si la fenêtre change.
-    const onResize = () => { try { mapInstance.current?.invalidateSize() } catch {} }
-    window.addEventListener('resize', onResize)
-
-    return () => {
-      cancelled = true
-      window.removeEventListener('resize', onResize)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Recentrer la carte quand la position change ──
-  useEffect(() => {
-    if (!mapInstance.current || !mapReady) return
-    mapInstance.current.setView([clientLat, clientLng], mapInstance.current.getZoom())
-    if (focusOffsetY) { try { mapInstance.current.panBy([0, focusOffsetY], { animate: false }) } catch {} }
-    if (clientMarkerRef.current) {
-      clientMarkerRef.current.setLatLng([clientLat, clientLng])
-    }
-  }, [clientLat, clientLng, mapReady, focusOffsetY])
-
-  // ── Ajouter les marqueurs artisans ──
-  const addMarkers = useCallback(() => {
-    if (!mapReady || !mapInstance.current || !leafletRef.current || artisans.length === 0) return
-
-    const map = mapInstance.current
-    const L = leafletRef.current
-
-    // Nettoyer anciens marqueurs
-    markersRef.current.forEach(item => {
-      try {
-        if (item.marker) map.removeLayer(item.marker)
-        if (item.circle) map.removeLayer(item.circle)
-      } catch {}
-    })
-    markersRef.current = []
-
-    artisans.forEach(artisan => {
-      try {
-        // Zone d'intervention
-        const circle = L.circle([artisan.lat, artisan.lng], {
-          radius: artisan.radius_km * 1000,
-          color: artisan.color,
-          fillColor: artisan.color,
-          fillOpacity: 0.08,
-          weight: 1.5,
-          opacity: 0.4,
-          dashArray: '4 4',
-        }).addTo(map)
-
-        // Marqueur artisan — visible sur satellite
-        const icon = L.divIcon({
-          html: `<div style="width:42px;height:42px;border-radius:50%;background:rgba(13,13,18,0.85);border:2.5px solid ${artisan.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${artisan.color};box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 12px ${artisan.color}44;cursor:pointer;${!artisan.available ? 'opacity:0.4;filter:grayscale(0.6)' : ''}">${artisan.initials}</div>`,
-          iconSize: [42, 42],
-          iconAnchor: [21, 21],
-          className: '',
-        })
-
-        const marker = L.marker([artisan.lat, artisan.lng], { icon })
-          .addTo(map)
-          .on('click', () => {
-            setSelectedArtisan(artisan)
-            const dist = calcDist(clientLat, clientLng, artisan.lat, artisan.lng)
-            setDistance(dist.toFixed(1))
-            setEta(Math.round(dist / 30 * 60) + ' min')
-            if (routeLayerRef.current) {
-              try { map.removeLayer(routeLayerRef.current) } catch {}
-            }
-            routeLayerRef.current = L.polyline(
-              [[artisan.lat, artisan.lng], [clientLat, clientLng]],
-              { color: artisan.color, weight: 2, opacity: 0.8, dashArray: '8 6' }
-            ).addTo(map)
-            map.fitBounds([[artisan.lat, artisan.lng], [clientLat, clientLng]], { padding: [60, 60] })
-          })
-
-        markersRef.current.push({ marker, circle })
-      } catch (err) {
-        console.warn('Erreur marqueur artisan:', err)
-      }
-    })
-  }, [mapReady, artisans, clientLat, clientLng])
-
-  useEffect(() => {
-    addMarkers()
-  }, [addMarkers])
-
-  // ── Suivi GPS RÉEL via Supabase Realtime ──
-  useEffect(() => {
-    if (!trackingArtisanId || !mapReady || !mapInstance.current || !leafletRef.current) return
-    const L = leafletRef.current
-    const map = mapInstance.current
-
+    if (!trackingArtisanId) { setPuck(null); setRouteCoords([]); return }
     const artisan = artisans.find(a => a.id === trackingArtisanId) || artisans[0]
     if (!artisan) return
 
-    const vehicleIcon = L.divIcon({
-      html: `<div style="width:44px;height:44px;border-radius:50%;background:rgba(13,13,18,0.9);border:3px solid #C9A84C;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#C9A84C;box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 20px #C9A84C44">${artisan.initials}</div>`,
-      iconSize: [44, 44],
-      iconAnchor: [22, 22],
-      className: '',
-    })
+    let aborted = false, raf: number | null = null, simTimer: ReturnType<typeof setTimeout> | null = null
+    let curr = { lng: artisan.lng, lat: artisan.lat }
+    setPuck(curr)
 
-    // Placer le marqueur à la position actuelle de l'artisan
-    if (trackingMarkerRef.current) {
-      try { map.removeLayer(trackingMarkerRef.current) } catch {}
-    }
-    trackingMarkerRef.current = L.marker([artisan.lat, artisan.lng], { icon: vehicleIcon }).addTo(map)
+    const follow = (lng: number, lat: number) => { try { mapRef.current?.setCenter([lng, lat]) } catch {} }
 
-    const updatePosition = (lat: number, lng: number) => {
-      trackingMarkerRef.current?.setLatLng([lat, lng])
-      if (routeLayerRef.current) {
-        try { map.removeLayer(routeLayerRef.current) } catch {}
+    const animateTo = (tLng: number, tLat: number) => {
+      if (raf) cancelAnimationFrame(raf)
+      const start = { ...curr }
+      if (calcDist(start.lat, start.lng, tLat, tLng) > 0.005) setHeading(bearingDeg(start.lat, start.lng, tLat, tLng))
+      const t0 = performance.now(), dur = 1100
+      const ease = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2)
+      const step = (now: number) => {
+        const k = Math.min(1, (now - t0) / dur), e = ease(k)
+        curr = { lng: start.lng + (tLng - start.lng) * e, lat: start.lat + (tLat - start.lat) * e }
+        setPuck(curr); follow(curr.lng, curr.lat)
+        if (k < 1) raf = requestAnimationFrame(step)
       }
-      routeLayerRef.current = L.polyline(
-        [[lat, lng], [clientLat, clientLng]],
-        { color: '#C9A84C', weight: 2.5, opacity: 0.9, dashArray: '8 6' }
-      ).addTo(map)
-      const dist = calcDist(lat, lng, clientLat, clientLng)
-      setDistance(dist.toFixed(1))
-      setEta(Math.max(1, Math.round(dist / 30 * 60)) + ' min')
-      map.fitBounds([[lat, lng], [clientLat, clientLng]], { padding: [80, 80] })
+      raf = requestAnimationFrame(step)
     }
 
-    // Position initiale
-    updatePosition(artisan.lat, artisan.lng)
+    const setRouteFrom = async (fromLat: number, fromLng: number) => {
+      const r = await fetchRoute(fromLat, fromLng, clientLat, clientLng)
+      if (aborted) return
+      if (r) { setRouteCoords(r.coords); setDistance(r.distanceKm.toFixed(1)); setEta(r.durationMin + ' min') }
+      else {
+        setRouteCoords([[fromLng, fromLat], [clientLng, clientLat]])
+        const d = calcDist(fromLat, fromLng, clientLat, clientLng)
+        setDistance(d.toFixed(1)); setEta(Math.max(1, Math.round(d / 30 * 60)) + ' min')
+      }
+    }
 
-    // Écouter les mises à jour GPS en temps réel
-    const channel = supabase
-      .channel(`track-${trackingArtisanId}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'artisans',
-        filter: `id=eq.${trackingArtisanId}`,
-      }, (payload: any) => {
-        const { lat, lng } = payload.new
-        if (lat && lng) updatePosition(lat, lng)
-      })
-      .subscribe()
+    const start = () => {
+      if (aborted) return
+      try { mapRef.current?.easeTo({ center: [curr.lng, curr.lat], zoom: 14.5, duration: 700 }) } catch {}
+      if (isDemoArtisan(trackingArtisanId)) {
+        // DÉMO : simuler le déplacement le long de la vraie route jusqu'au client.
+        fetchRoute(curr.lat, curr.lng, clientLat, clientLng).then(r => {
+          if (aborted) return
+          const pts = r ? r.coords : [[curr.lng, curr.lat], [clientLng, clientLat]] as [number, number][]
+          setRouteCoords(pts)
+          const totalKm = r ? r.distanceKm : calcDist(curr.lat, curr.lng, clientLat, clientLng)
+          const totalMin = r ? r.durationMin : Math.max(1, Math.round(totalKm / 30 * 60))
+          setDistance(totalKm.toFixed(1)); setEta(totalMin + ' min')
+          let i = 0; const stepN = Math.max(1, Math.floor(pts.length / 45))
+          const advance = () => {
+            if (aborted) return
+            i = Math.min(i + stepN, pts.length - 1)
+            animateTo(pts[i][0], pts[i][1])
+            setRouteCoords(pts.slice(i))
+            const frac = 1 - i / (pts.length - 1 || 1)
+            setDistance((totalKm * frac).toFixed(1)); setEta(Math.max(1, Math.round(totalMin * frac)) + ' min')
+            if (i < pts.length - 1) simTimer = setTimeout(advance, 1600)
+          }
+          simTimer = setTimeout(advance, 1200)
+        })
+      } else {
+        setRouteFrom(curr.lat, curr.lng)
+        let lastRouteAt = { ...curr }
+        const channel = supabase.channel(`track-${trackingArtisanId}`)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'artisans', filter: `id=eq.${trackingArtisanId}` }, (payload: any) => {
+            const { lat, lng } = payload.new
+            if (!lat || !lng) return
+            animateTo(lng, lat)
+            if (calcDist(lastRouteAt.lat, lastRouteAt.lng, lat, lng) > 0.12) { lastRouteAt = { lng, lat }; setRouteFrom(lat, lng) }
+          })
+          .subscribe()
+        cleanupChannel = () => supabase.removeChannel(channel)
+      }
+    }
+
+    let cleanupChannel: (() => void) | null = null
+    const map = mapRef.current
+    if (map && (map as any).isStyleLoaded?.()) start()
+    else map?.once('load', start)
 
     return () => {
-      supabase.removeChannel(channel)
-      if (trackingMarkerRef.current) {
-        try { map.removeLayer(trackingMarkerRef.current) } catch {}
-        trackingMarkerRef.current = null
-      }
-      if (routeLayerRef.current) {
-        try { map.removeLayer(routeLayerRef.current) } catch {}
-        routeLayerRef.current = null
-      }
+      aborted = true
+      if (raf) cancelAnimationFrame(raf)
+      if (simTimer) clearTimeout(simTimer)
+      if (cleanupChannel) cleanupChannel()
     }
-  }, [trackingArtisanId, mapReady, artisans, clientLat, clientLng])
+  }, [trackingArtisanId, artisans, clientLat, clientLng])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      <div ref={mapRef} style={{ width: '100%', height: '100%', background: '#1a2030' }} />
+      <style>{`
+        .maplibregl-popup-content { background: transparent !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+        .maplibregl-popup-tip { display: none !important; }
+        .maplibregl-ctrl-attrib, .maplibregl-ctrl-logo { opacity: 0.5; }
+        @keyframes bmDot { 0% { transform: scale(1); opacity: 0.55; } 70% { transform: scale(2.4); opacity: 0; } 100% { opacity: 0; } }
+      `}</style>
 
-      {/* Loading state */}
-      {!mapReady && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a2030', zIndex: 1000 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#0D0D12', margin: '0 auto 12px', animation: 'mapPulse 1.5s infinite' }}>B</div>
-            <div style={{ fontSize: 13, color: '#555', fontWeight: 300 }}>Chargement de la carte...</div>
-          </div>
-        </div>
-      )}
+      <Map ref={mapRef} theme={theme} center={[clientLng, clientLat]} zoom={13}>
+        {/* Position client */}
+        <MapMarker longitude={clientLng} latitude={clientLat}>
+          <MarkerContent>
+            <div style={{ position: 'relative', width: 18, height: 18 }}>
+              <div style={{ position: 'absolute', inset: -7, borderRadius: '50%', background: 'rgba(90,61,240,0.35)', animation: 'bmDot 2s infinite' }} />
+              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#5A3DF0', border: '3px solid #fff', boxShadow: '0 0 0 2px rgba(90,61,240,0.4)' }} />
+            </div>
+          </MarkerContent>
+        </MapMarker>
 
-      {/* Tracking info */}
+        {/* Artisans cliquables avec photo de profil */}
+        {showAllArtisans && shown.map(a => (
+          <MapMarker key={a.id} longitude={a.lng} latitude={a.lat}>
+            <MarkerContent>
+              <div style={{ position: 'relative', transform: 'translateY(-4px)', opacity: a.available ? 1 : 0.55 }}>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', padding: 3, background: `linear-gradient(135deg, ${a.color}, #7C5CFF)`, boxShadow: '0 6px 16px rgba(0,0,0,0.35)' }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid #fff', background: '#13131e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {a.avatar
+                      ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span style={{ color: '#fff', fontWeight: 800, fontSize: 13 }}>{a.initials}</span>}
+                  </div>
+                </div>
+                <div style={{ position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%) rotate(45deg)', width: 10, height: 10, background: '#7C5CFF', borderBottomRightRadius: 2 }} />
+                {a.available && <div style={{ position: 'absolute', top: 0, right: 0, width: 12, height: 12, borderRadius: '50%', background: '#10b981', border: '2px solid #fff' }} />}
+              </div>
+            </MarkerContent>
+
+            <MarkerPopup className="!bg-transparent !border-0 !p-0 !shadow-none">
+              <div style={{ width: 250, borderRadius: 18, overflow: 'hidden', background: 'var(--glass-bg)', border: '1px solid var(--glass-edge)', backdropFilter: 'blur(18px) saturate(180%)', WebkitBackdropFilter: 'blur(18px) saturate(180%)', boxShadow: '0 16px 48px rgba(0,0,0,0.45)', fontFamily: 'Nexa, sans-serif' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: a.color + '22', border: `1.5px solid ${a.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {a.avatar ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: a.color, fontWeight: 800 }}>{a.initials}</span>}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
+                      {isPremium(a) && <PremiumBadge size="sm" />}
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', color: a.color, textTransform: 'uppercase' }}>{a.category}</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Star size={14} fill="#f59e0b" strokeWidth={0} />
+                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>{a.rating.toFixed(1)}</span>
+                  </div>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent)' }}>{a.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, padding: '0 12px 12px' }}>
+                  <a href={`/artisan/${a.id}`} style={{ flex: 1, textDecoration: 'none' }}>
+                    <button style={{ width: '100%', padding: '10px 0', borderRadius: 11, border: 'none', background: 'var(--gradient)', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                      <Navigation size={13} /> Réserver
+                    </button>
+                  </a>
+                  <a href={`/suivi/${a.id}`} aria-label="Suivre" style={{ textDecoration: 'none' }}>
+                    <button style={{ width: 40, padding: '10px 0', borderRadius: 11, border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--tx2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Route size={15} />
+                    </button>
+                  </a>
+                </div>
+              </div>
+            </MarkerPopup>
+          </MapMarker>
+        ))}
+
+        {/* Suivi : route + puck directionnel */}
+        {trackingArtisanId && routeCoords.length > 1 && <MapRoute coordinates={routeCoords} color="#7C5CFF" width={5} />}
+        {trackingArtisanId && puck && (
+          <MapMarker longitude={puck.lng} latitude={puck.lat}>
+            <MarkerContent>
+              <div style={{ position: 'relative', width: 46, height: 46 }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(124,92,255,0.3)', animation: 'bmDot 2s infinite' }} />
+                <div style={{ position: 'absolute', top: 7, left: 7, width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: '3px solid #fff', boxShadow: '0 3px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `rotate(${heading}deg)`, transition: 'transform 0.45s ease' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 L19.5 21 L12 16.2 L4.5 21 Z" /></svg>
+                </div>
+              </div>
+            </MarkerContent>
+          </MapMarker>
+        )}
+
+        <MapControls showZoom showLocate />
+      </Map>
+
+      {/* Bandeau ETA en mode suivi */}
       {trackingArtisanId && (distance || eta) && (
-        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, background: 'rgba(9,9,15,0.92)', backdropFilter: 'blur(12px)', border: '0.5px solid #C9A84C44', borderRadius: 12, padding: '16px 20px', minWidth: 200 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
-            <span style={{ fontSize: 11, color: '#4ade80', fontWeight: 800, letterSpacing: '0.08em' }}>ARTISAN EN ROUTE</span>
+        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 20, background: 'var(--glass-bg)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid var(--glass-edge)', borderRadius: 14, padding: '14px 18px', fontFamily: 'Nexa, sans-serif', boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+            <span style={{ fontSize: 11, color: '#10b981', fontWeight: 800, letterSpacing: '0.08em' }}>ARTISAN EN ROUTE</span>
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#C9A84C' }}>{distance} km</div>
-              <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Distance</div>
-            </div>
-            <div style={{ width: '0.5px', background: '#2a2a3a' }} />
-            <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#F0EDE8' }}>{eta}</div>
-              <div style={{ fontSize: 11, color: '#555', fontWeight: 300 }}>Arrivée estimée</div>
-            </div>
+            <div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{distance} km</div><div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Distance</div></div>
+            <div style={{ width: '0.5px', background: 'var(--border)' }} />
+            <div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--tx)' }}>{eta}</div><div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Arrivée</div></div>
           </div>
         </div>
       )}
-
-      {/* Fiche artisan sélectionné */}
-      {selectedArtisan && (
-        <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16, zIndex: 1000, background: 'rgba(9,9,15,0.95)', backdropFilter: 'blur(16px)', border: `0.5px solid ${selectedArtisan.color}44`, borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', background: selectedArtisan.color + '22', border: `2px solid ${selectedArtisan.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: selectedArtisan.color, flexShrink: 0 }}>
-            {selectedArtisan.initials}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#F0EDE8', marginBottom: 2 }}>{selectedArtisan.name}</div>
-            <div style={{ fontSize: 11, color: selectedArtisan.color, letterSpacing: '0.06em', fontWeight: 800 }}>
-              {selectedArtisan.category.toUpperCase()} · {distance ? `${distance} km` : ''} · ETA {eta}
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#C9A84C', marginBottom: 8 }}>{selectedArtisan.price.toLocaleString('fr-DZ')} DA/h</div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { setSelectedArtisan(null); if (routeLayerRef.current && mapInstance.current) { try { mapInstance.current.removeLayer(routeLayerRef.current) } catch {} } }}
-                style={{ padding: '8px 14px', borderRadius: 8, background: 'transparent', border: '0.5px solid #2a2a3a', color: '#666', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
-                Fermer
-              </button>
-              <a href={`/artisan/${selectedArtisan.id}`}>
-                <button style={{ padding: '8px 16px', borderRadius: 8, background: '#C9A84C', border: 'none', color: '#0D0D12', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Réserver</button>
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        .leaflet-container { background: #1a2030 !important; }
-        .leaflet-tile { }
-        .leaflet-popup-content-wrapper { background: rgba(13,13,18,0.95) !important; border: 0.5px solid #C9A84C44 !important; border-radius: 10px !important; color: #F0EDE8 !important; backdrop-filter: blur(12px); }
-        .leaflet-popup-tip { background: rgba(13,13,18,0.95) !important; }
-        .leaflet-control-zoom a { background: rgba(13,13,18,0.85) !important; color: #F0EDE8 !important; border: 0.5px solid rgba(201,168,76,0.2) !important; backdrop-filter: blur(8px); }
-        .leaflet-control-attribution { display: none; }
-        @keyframes mapPulse { 0% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(2.5); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
-      `}</style>
     </div>
   )
 }

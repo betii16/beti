@@ -6,17 +6,19 @@ import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
 import { CategoryIcon } from '@/components/icons'
 import { Search, Frown, LayoutGrid } from 'lucide-react'
+import PremiumBadge from '@/components/PremiumBadge'
+import { fetchPlans } from '@/lib/subscription'
 
 const CATEGORIES = [
   { id: '',             icon: '✳',  label: 'Tous',          color: 'var(--tx2)' },
   { id: 'plomberie',    icon: '⚙',  label: 'Plomberie',     color: '#3b82f6' },
   { id: 'electricite',  icon: '⚡',  label: 'Électricité',   color: '#f59e0b' },
   { id: 'menage',       icon: '✦',  label: 'Ménage',        color: '#10b981' },
-  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#8b5cf6' },
+  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#7C5CFF' },
   { id: 'jardinage',    icon: '❧',  label: 'Jardinage',     color: '#22c55e' },
   { id: 'peinture',     icon: '◉',  label: 'Peinture',      color: '#ef4444' },
   { id: 'serrurerie',   icon: '⌘',  label: 'Serrurerie',    color: '#f97316' },
-  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#6366f1' },
+  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#5A3DF0' },
   { id: 'coiffure',     icon: '✂',  label: 'Coiffure',      color: '#ec4899' },
 ]
 
@@ -25,13 +27,14 @@ type Artisan = {
   category: string; rating_avg: number; rating_count: number
   hourly_rate: number; distance_km: number; is_available: boolean
   total_missions: number; bio: string | null
+  plan?: 'free' | 'basic' | 'premium'
 }
 
 function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
   return (
     <div style={{ display: 'flex', gap: 2 }}>
       {[1,2,3,4,5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= Math.round(rating) ? '#6366f1' : 'var(--border)'}>
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= Math.round(rating) ? '#5A3DF0' : 'var(--border)'}>
           <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
         </svg>
       ))}
@@ -101,7 +104,14 @@ export default function RecherchePage() {
           )
         )
       }
+      // Plan effectif (lecture publique) → priorité d'affichage Premium
+      const plans = await fetchPlans(results.map(a => a.artisan_id))
+      results = results.map(a => ({ ...a, plan: plans[a.artisan_id] || 'free' }))
       results.sort((a, b) => {
+        // Les Premium passent toujours devant, puis le critère de tri choisi.
+        const pa = a.plan === 'premium' ? 0 : 1
+        const pb = b.plan === 'premium' ? 0 : 1
+        if (pa !== pb) return pa - pb
         if (sortBy === 'rating') return (b.rating_avg || 0) - (a.rating_avg || 0)
         if (sortBy === 'price_asc') return (a.hourly_rate || 0) - (b.hourly_rate || 0)
         if (sortBy === 'price_desc') return (b.hourly_rate || 0) - (a.hourly_rate || 0)
@@ -129,7 +139,7 @@ export default function RecherchePage() {
 
           {/* ── SIDEBAR FILTRES ── */}
           <div style={{ position: 'sticky', top: 84 }}>
-            <div style={{ fontSize: 10, color: '#6366f1', fontWeight: 800, letterSpacing: '.12em', marginBottom: 8 }}>RECHERCHE</div>
+            <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.12em', marginBottom: 8 }}>RECHERCHE</div>
             <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', marginBottom: 24, lineHeight: 1.2 }}>Trouvez votre<br/>artisan idéal.</h1>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -156,16 +166,16 @@ export default function RecherchePage() {
                 {keywords.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {keywords.map(kw => (
-                      <div key={kw} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#6366f10d', border: '0.5px solid #6366f144', borderRadius: 20 }}>
-                        <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 300 }}>{kw}</span>
-                        <button onClick={() => removeKeyword(kw)} style={{ background: 'transparent', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+                      <div key={kw} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#5A3DF00d', border: '0.5px solid #5A3DF044', borderRadius: 20 }}>
+                        <span style={{ fontSize: 12, color: '#5A3DF0', fontWeight: 300 }}>{kw}</span>
+                        <button onClick={() => removeKeyword(kw)} style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
                       </div>
                     ))}
                     <button onClick={() => setKeywords([])} style={{ padding: '4px 10px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 20, color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Tout effacer</button>
                   </div>
                 )}
                 {keywords.length === 0 && (
-                  <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Tapez un mot et cliquez <strong style={{ color: '#6366f1' }}>+ Ajouter</strong></div>
+                  <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Tapez un mot et cliquez <strong style={{ color: '#5A3DF0' }}>+ Ajouter</strong></div>
                 )}
               </div>
 
@@ -198,9 +208,9 @@ export default function RecherchePage() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>RAYON</label>
-                  <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 800 }}>{radius} km</span>
+                  <span style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800 }}>{radius} km</span>
                 </div>
-                <input type="range" min={5} max={100} step={5} value={radius} onChange={e => setRadius(Number(e.target.value))} style={{ width: '100%', accentColor: '#6366f1', cursor: 'pointer' }}/>
+                <input type="range" min={5} max={100} step={5} value={radius} onChange={e => setRadius(Number(e.target.value))} style={{ width: '100%', accentColor: '#5A3DF0', cursor: 'pointer' }}/>
               </div>
 
               {/* Note minimum */}
@@ -209,7 +219,7 @@ export default function RecherchePage() {
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[0, 3, 4, 4.5].map(r => (
                     <button key={r} onClick={() => setMinRating(r)}
-                      style={{ flex: 1, padding: '7px 4px', borderRadius: 8, border: `0.5px solid ${minRating === r ? '#6366f1' : 'var(--border)'}`, background: minRating === r ? '#6366f10d' : 'var(--bg2)', color: minRating === r ? '#6366f1' : 'var(--tx3)', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: minRating === r ? 800 : 300 }}
+                      style={{ flex: 1, padding: '7px 4px', borderRadius: 8, border: `0.5px solid ${minRating === r ? '#5A3DF0' : 'var(--border)'}`, background: minRating === r ? '#5A3DF00d' : 'var(--bg2)', color: minRating === r ? '#5A3DF0' : 'var(--tx3)', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: minRating === r ? 800 : 300 }}
                     >{r === 0 ? 'Tous' : `${r}+⭐`}</button>
                   ))}
                 </div>
@@ -219,9 +229,9 @@ export default function RecherchePage() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>PRIX MAX</label>
-                  <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 800 }}>{maxPrice === 15000 ? 'Illimité' : `${maxPrice.toLocaleString('fr-DZ')} DA/h`}</span>
+                  <span style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800 }}>{maxPrice === 15000 ? 'Illimité' : `${maxPrice.toLocaleString('fr-DZ')} DA/h`}</span>
                 </div>
-                <input type="range" min={500} max={15000} step={500} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', accentColor: '#6366f1', cursor: 'pointer' }}/>
+                <input type="range" min={500} max={15000} step={500} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', accentColor: '#5A3DF0', cursor: 'pointer' }}/>
               </div>
 
               {/* Disponible maintenant */}
@@ -294,7 +304,7 @@ export default function RecherchePage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {artisans.map((a, idx) => {
-                const col = CATEGORIES.find(c => a.category?.toLowerCase().includes(c.id.slice(0, 5)))?.color || '#6366f1'
+                const col = CATEGORIES.find(c => a.category?.toLowerCase().includes(c.id.slice(0, 5)))?.color || '#5A3DF0'
                 const initials = a.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'A'
                 return (
                   <div key={a.artisan_id} className="acard"
@@ -307,7 +317,8 @@ export default function RecherchePage() {
                     <div style={{ flex: 1, overflow: 'hidden' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>{a.full_name}</span>
-                        <span style={{ fontSize: 9, background: '#6366f10d', border: '0.5px solid #6366f118', color: '#6366f1', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>CERTIFIÉ</span>
+                        {a.plan === 'premium' && <PremiumBadge size="sm" />}
+                        <span style={{ fontSize: 9, background: '#5A3DF00d', border: '0.5px solid #5A3DF018', color: '#5A3DF0', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>CERTIFIÉ</span>
                       </div>
                       <div style={{ fontSize: 10, color: col, letterSpacing: '.06em', fontWeight: 800, marginBottom: 6 }}>{a.category?.toUpperCase()}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -320,7 +331,7 @@ export default function RecherchePage() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: '#6366f1', marginBottom: 6 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: '#5A3DF0', marginBottom: 6 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.is_available ? '#10b981' : 'var(--tx3)', boxShadow: a.is_available ? '0 0 6px #10b981' : 'none' }}/>
                         <span style={{ fontSize: 11, color: a.is_available ? '#10b981' : 'var(--tx3)', fontWeight: 300 }}>{a.is_available ? 'Disponible' : 'Occupé'}</span>

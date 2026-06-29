@@ -47,14 +47,14 @@ export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userI
 
   return (
     <div style={{ position:'relative', display:'inline-block' }}>
-      <div style={{ width:88, height:88, borderRadius:16, background:preview?'transparent':'#6366f115', border:'2px solid #6366f133', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, fontWeight:800, color:'#6366f1', cursor:'pointer', position:'relative' }} onClick={()=>ref.current?.click()}>
+      <div style={{ width:88, height:88, borderRadius:16, background:preview?'transparent':'#5A3DF015', border:'2px solid #5A3DF033', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, fontWeight:800, color:'#5A3DF0', cursor:'pointer', position:'relative' }} onClick={()=>ref.current?.click()}>
         {preview ? <img src={preview} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : initials}
         <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', opacity:0, transition:'opacity 0.2s', fontSize:13, color:'#fff', fontWeight:300 }}
           onMouseEnter={e=>(e.currentTarget.style.opacity='1')} onMouseLeave={e=>(e.currentTarget.style.opacity='0')}>
           {loading ? '...' : 'Modifier'}
         </div>
       </div>
-      <div onClick={()=>ref.current?.click()} style={{ position:'absolute', bottom:-2, right:-2, width:26, height:26, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'2px solid var(--bg,#0b0b12)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:11, color:'#fff' }}>+</div>
+      <div onClick={()=>ref.current?.click()} style={{ position:'absolute', bottom:-2, right:-2, width:26, height:26, borderRadius:'50%', background:'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border:'2px solid var(--bg,#0b0b12)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:11, color:'#fff' }}>+</div>
       <input ref={ref} type="file" accept="image/*" onChange={handleFile} style={{ display:'none' }}/>
       {err && <div style={{ position:'absolute', top:'100%', left:0, right:0, marginTop:6, padding:'6px 10px', borderRadius:8, background:'#ef444418', border:'1px solid #ef444433', fontSize:10, color:'#ef4444', whiteSpace:'nowrap' }}>{err}</div>}
     </div>

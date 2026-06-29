@@ -93,7 +93,7 @@ export function ArtisanZonePicker({
 
     // Marqueur artisan
     const pinIcon = L.divIcon({
-      html: `<div style="width:36px;height:36px;border-radius:50%;background:#6366f122;border:2.5px solid #6366f1;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px #6366f144;cursor:grab">🔧</div>`,
+      html: `<div style="width:36px;height:36px;border-radius:50%;background:#5A3DF022;border:2.5px solid #5A3DF0;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px #5A3DF044;cursor:grab">🔧</div>`,
       iconSize: [36, 36], iconAnchor: [18, 18], className: '',
     })
 
@@ -102,7 +102,7 @@ export function ArtisanZonePicker({
     // Zone d'intervention
     const circle = L.circle([lat, lng], {
       radius: radius * 1000,
-      color: '#6366f1', fillColor: '#6366f1',
+      color: '#5A3DF0', fillColor: '#5A3DF0',
       fillOpacity: 0.08, weight: 1.5, opacity: 0.6,
       dashArray: '6 4',
     }).addTo(map)
@@ -229,7 +229,7 @@ export function ArtisanZonePicker({
       {/* Barre adresse + GPS */}
       <div ref={dropRef} style={{ position: 'relative', marginBottom: 16 }}>
         <div style={{ display: 'flex', background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 12, overflow: 'visible' }}>
-          <div style={{ padding: '0 14px', color: '#6366f1', display: 'flex', alignItems: 'center', flexShrink: 0 }}><Wrench size={16}/></div>
+          <div style={{ padding: '0 14px', color: '#5A3DF0', display: 'flex', alignItems: 'center', flexShrink: 0 }}><Wrench size={16}/></div>
           <input
             type="text"
             value={address}
@@ -238,7 +238,7 @@ export function ArtisanZonePicker({
             placeholder="Votre adresse (rue, quartier, ville)..."
             style={{ flex: 1, padding: '13px 0', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
           />
-          <button onClick={handleGPS} style={{ padding: '0 16px', background: 'transparent', border: 'none', borderLeft: '0.5px solid var(--border)', color: detecting ? '#555' : '#6366f1', cursor: 'pointer', fontSize: 16, flexShrink: 0 }} title="Ma position">
+          <button onClick={handleGPS} style={{ padding: '0 16px', background: 'transparent', border: 'none', borderLeft: '0.5px solid var(--border)', color: detecting ? '#555' : '#5A3DF0', cursor: 'pointer', fontSize: 16, flexShrink: 0 }} title="Ma position">
             {detecting ? '…' : <Crosshair size={16}/>}
           </button>
         </div>
@@ -252,7 +252,7 @@ export function ArtisanZonePicker({
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--border)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <span style={{ flexShrink: 0, display: 'inline-flex', color: '#6366f1' }}><MapPin size={14}/></span>
+                <span style={{ flexShrink: 0, display: 'inline-flex', color: '#5A3DF0' }}><MapPin size={14}/></span>
                 <div style={{ overflow: 'hidden' }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.address?.road || s.address?.suburb || s.display_name.split(',')[0]}
@@ -279,15 +279,15 @@ export function ArtisanZonePicker({
               onClick={() => { setRadius(opt.km); setSaved(false) }}
               style={{
                 flex: 1, minWidth: 80, padding: '10px 8px', borderRadius: 10, cursor: 'pointer',
-                background: radius === opt.km ? '#6366f10d' : 'var(--bg2)',
-                border: `0.5px solid ${radius === opt.km ? '#6366f1' : 'var(--border)'}`,
+                background: radius === opt.km ? '#5A3DF00d' : 'var(--bg2)',
+                border: `0.5px solid ${radius === opt.km ? '#5A3DF0' : 'var(--border)'}`,
                 outline: 'none', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif',
               }}
             >
-              <div style={{ fontSize: 15, fontWeight: 800, color: radius === opt.km ? '#6366f1' : 'var(--tx)', marginBottom: 2 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: radius === opt.km ? '#5A3DF0' : 'var(--tx)', marginBottom: 2 }}>
                 {opt.label}
               </div>
-              <div style={{ fontSize: 10, color: radius === opt.km ? '#6366f1' : '#555', fontWeight: 300 }}>
+              <div style={{ fontSize: 10, color: radius === opt.km ? '#5A3DF0' : '#555', fontWeight: 300 }}>
                 {opt.desc}
               </div>
             </button>
@@ -300,7 +300,7 @@ export function ArtisanZonePicker({
         <div ref={mapRef} style={{ width: '100%', height: 260 }}/>
         <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '5px 12px', zIndex: 1000, whiteSpace: 'nowrap' }}>
           <span style={{ fontSize: 11, color: '#888', fontWeight: 300 }}>
-            Zone couverte : <strong style={{ color: '#6366f1', fontWeight: 800 }}>{radius} km</strong> autour de votre position
+            Zone couverte : <strong style={{ color: '#5A3DF0', fontWeight: 800 }}>{radius} km</strong> autour de votre position
           </span>
         </div>
         <style>{`
@@ -315,7 +315,7 @@ export function ArtisanZonePicker({
       <button onClick={handleSave} disabled={!address || saving}
         style={{
           width: '100%', padding: '13px',
-          background: saved ? 'rgba(74,222,128,0.08)' : !address ? 'var(--bg3)' : '#6366f1',
+          background: saved ? 'rgba(74,222,128,0.08)' : !address ? 'var(--bg3)' : '#5A3DF0',
           border: saved ? '0.5px solid rgba(74,222,128,0.3)' : 'none',
           borderRadius: 10,
           color: saved ? '#4ade80' : !address ? 'var(--tx3)' : '#fff',

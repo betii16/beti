@@ -14,15 +14,15 @@ import { LayoutGrid } from 'lucide-react'
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
 
 const CATS = [
-  { id:'',           label:'Tous',         icon:'✳', color:'#6366f1' },
+  { id:'',           label:'Tous',         icon:'✳', color:'#5A3DF0' },
   { id:'plomberie',  label:'Plomberie',    icon:'⚙', color:'#3b82f6' },
   { id:'electricite',label:'Électricité',  icon:'⚡', color:'#f59e0b' },
   { id:'serrurerie', label:'Serrurerie',   icon:'⌘', color:'#ef4444' },
   { id:'menage',     label:'Ménage',       icon:'✦', color:'#10b981' },
   { id:'peinture',   label:'Peinture',     icon:'◉', color:'#f97316' },
-  { id:'demenagement',label:'Déménagement',icon:'◈', color:'#8b5cf6' },
+  { id:'demenagement',label:'Déménagement',icon:'◈', color:'#7C5CFF' },
   { id:'jardinage',  label:'Jardinage',    icon:'❧', color:'#22c55e' },
-  { id:'informatique',label:'Informatique',icon:'⬡', color:'#6366f1' },
+  { id:'informatique',label:'Informatique',icon:'⬡', color:'#5A3DF0' },
   { id:'coiffure',   label:'Coiffure',     icon:'✂', color:'#ec4899' },
 ]
 
@@ -95,7 +95,7 @@ export default function MapPage() {
     setSent(true)
   }
 
-  const cc=(id:string)=>CATS.find(c=>c.id===id)?.color||'#6366f1'
+  const cc=(id:string)=>CATS.find(c=>c.id===id)?.color||'#5A3DF0'
   const cl=(id:string)=>CATS.find(c=>c.id===id)?.label||id
   const filtered=search?artisans.filter(a=>a.full_name.toLowerCase().includes(search.toLowerCase())||a.category.includes(search.toLowerCase())):artisans
   const visibleInSheet=sheetFull?filtered:filtered.slice(0,3)
@@ -112,7 +112,7 @@ export default function MapPage() {
         body{overflow:hidden;background:#1a2030}
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.3)}70%{box-shadow:0 0 0 10px rgba(99,102,241,0)}}
+        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(90, 61, 240,0.3)}70%{box-shadow:0 0 0 10px rgba(90, 61, 240,0)}}
         .pill{padding:8px 16px;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer;font-family:Nexa,sans-serif;border:none;transition:all 0.25s;white-space:nowrap;display:flex;align-items:center;gap:5px}
         .arow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;cursor:pointer;transition:all 0.2s;border:1px solid transparent}
         .arow:hover{background:var(--bg3);border-color:var(--border)}
@@ -251,7 +251,7 @@ export default function MapPage() {
                 <div style={{flex:1}}>
                   <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
                     <span style={{fontSize:16,fontWeight:800,color:tx}}>{selected.full_name}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#6366f1"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#5A3DF0"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:tx2}}>
                     <span style={{color:cc(selected.category),fontWeight:700}}>{cl(selected.category)}</span>
@@ -269,7 +269,7 @@ export default function MapPage() {
                 {[
                   {v:selected.distance_km!=null?`${selected.distance_km.toFixed(1)} km`:'—',c:'#10b981'},
                   {v:`${selected.total_missions} missions`,c:tx2},
-                  {v:`${selected.hourly_rate.toLocaleString('fr-DZ')} DA`,c:'#6366f1'},
+                  {v:`${selected.hourly_rate.toLocaleString('fr-DZ')} DA`,c:'#5A3DF0'},
                 ].map(s=>(
                   <div key={s.v} style={{flex:1,padding:'8px',borderRadius:10,background:'var(--bg3)',border:`0.5px solid ${brd}`,textAlign:'center',fontSize:12,color:s.c,fontWeight:500}}>{s.v}</div>
                 ))}

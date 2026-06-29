@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 // components/Portfolio.tsx
 // Portfolio des artisans — fil de "posts" de travaux (description + plusieurs photos).
 // PortfolioManager : édition côté dashboard artisan (création/suppression).
@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useLang } from '@/lib/LangContext'
 import { Skeleton } from '@/components/Skeleton'
 import { Camera, Hammer } from 'lucide-react'
 
@@ -78,7 +79,11 @@ const navBtn = (side: 'left' | 'right'): React.CSSProperties => ({ position: 'fi
 // ════════════════════════════════════════════════════════════════════════════
 // MANAGER — côté dashboard artisan
 // ════════════════════════════════════════════════════════════════════════════
-export function PortfolioManager({ artisanId }: { artisanId: string }) {
+// Formule Basic : portfolio plafonné. Premium : illimité (cf. lib/plans.ts FEATURES).
+const BASIC_PHOTO_LIMIT = 6
+
+export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: string; plan?: 'free' | 'basic' | 'premium' }) {
+  const { t } = useLang()
   const [posts, setPosts] = useState<PortfolioPost[]>([])
   const [loading, setLoading] = useState(true)
   const [description, setDescription] = useState('')
@@ -96,19 +101,29 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
     setLoading(false)
   }
 
+  const unlimited = plan === 'premium'
+  const postedCount = posts.reduce((s, p) => s + p.photos.length, 0)
+  const usedCount = postedCount + drafts.length
+  const limitReached = !unlimited && usedCount >= BASIC_PHOTO_LIMIT
+
   const addPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
-    if (drafts.length + files.length > 8) { setErr('Maximum 8 photos par post'); return }
+    if (drafts.length + files.length > 8) { setErr(t('portfolio.errMaxPhotos')); return }
+    if (!unlimited && postedCount + drafts.length + files.length > BASIC_PHOTO_LIMIT) {
+      setErr(`${t('portfolio.errBasicLimit')} ${BASIC_PHOTO_LIMIT} ${t('portfolio.errBasicLimitEnd')}`)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
     setUploading(true); setErr('')
     const urls: string[] = []
     for (const file of files) {
-      if (file.size > 5 * 1024 * 1024) { setErr(`${file.name} dépasse 5 Mo`); continue }
-      if (!file.type.startsWith('image/')) { setErr(`${file.name} n'est pas une image`); continue }
+      if (file.size > 5 * 1024 * 1024) { setErr(`${file.name} ${t('portfolio.errSizeLimit')}`); continue }
+      if (!file.type.startsWith('image/')) { setErr(`${file.name} ${t('portfolio.errNotImage')}`); continue }
       const ext = file.name.split('.').pop()
       const path = `portfolio/${artisanId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
-      if (error) { setErr(error.message.includes('security policy') ? 'Upload refusé — policies Storage manquantes (supabase/storage_policies.sql)' : 'Upload échoué : ' + error.message); continue }
+      if (error) { setErr(error.message.includes('security policy') ? t('portfolio.errStoragePolicy') : `${t('portfolio.errUploadFailed')} ${error.message}`); continue }
       urls.push(supabase.storage.from('beti-photos').getPublicUrl(path).data.publicUrl)
     }
     setDrafts(d => [...d, ...urls]); setUploading(false)
@@ -116,19 +131,19 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
   }
 
   const publish = async () => {
-    if (drafts.length === 0 && !description.trim()) { setErr('Ajoutez au moins une photo ou une description'); return }
+    if (drafts.length === 0 && !description.trim()) { setErr(t('portfolio.errEmpty')); return }
     setPosting(true); setErr('')
     const { data, error } = await supabase.from('portfolio_posts')
       .insert({ artisan_id: artisanId, description: description.trim() || null, photos: drafts })
       .select('*').single()
-    if (error) { setErr('Publication échouée : ' + error.message); setPosting(false); return }
+    if (error) { setErr(`${t('portfolio.errPublish')} ${error.message}`); setPosting(false); return }
     setPosts(p => [data as PortfolioPost, ...p])
     setDescription(''); setDrafts([]); setPosting(false)
   }
 
   const removeDraft = (i: number) => setDrafts(d => d.filter((_, x) => x !== i))
   const deletePost = async (id: string) => {
-    if (!confirm('Supprimer ce post ?')) return
+    if (!confirm(t('portfolio.deleteConfirm'))) return
     await supabase.from('portfolio_posts').delete().eq('id', id)
     setPosts(p => p.filter(x => x.id !== id))
   }
@@ -137,11 +152,18 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
     <div style={{ animation: 'fadeIn 0.3s ease' }}>
       {/* Composer */}
       <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 24 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>Publier une réalisation</div>
-        <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 14 }}>Décrivez le travail effectué et ajoutez des photos (avant/après, résultat...). Jusqu'à 8 photos par post.</p>
+        <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('portfolio.publishTitle')}</div>
+        <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 14 }}>{t('portfolio.publishDesc')}</p>
+
+        {!unlimited && (
+          <div style={{ fontSize: 12, color: limitReached ? '#f59e0b' : 'var(--tx3)', fontWeight: 300, lineHeight: 1.6, marginBottom: 14, padding: '10px 12px', borderRadius: 10, background: 'var(--bg)', border: '0.5px solid var(--border)' }}>
+            {t('portfolio.basicQuota')} <strong style={{ color: 'var(--tx2)' }}>{Math.min(postedCount, BASIC_PHOTO_LIMIT)}/{BASIC_PHOTO_LIMIT}</strong> {t('portfolio.basicQuotaUsed')}{' '}
+            <a href="/artisan-dashboard/abonnement" style={{ color: '#5A3DF0', fontWeight: 700, textDecoration: 'none' }}>{t('portfolio.upgradePremium')}</a> {t('portfolio.unlimitedHint')}
+          </div>
+        )}
 
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
-          placeholder="Ex : Réfection complète d'une salle de bain — pose de carrelage et plomberie. Photos avant / après."
+          placeholder={t('portfolio.descPh')}
           style={{ width: '100%', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '12px 14px', color: 'var(--tx)', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300, resize: 'none', outline: 'none', marginBottom: 12 }} />
 
         {drafts.length > 0 && (
@@ -158,14 +180,14 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
         {err && <div style={{ fontSize: 12, color: '#ef4444', marginBottom: 12 }}>{err}</div>}
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button onClick={() => fileRef.current?.click()} disabled={uploading || drafts.length >= 8}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, background: 'var(--bg)', border: '1px dashed var(--border)', color: drafts.length >= 8 ? 'var(--tx3)' : '#6366f1', fontSize: 13, fontWeight: 700, cursor: uploading ? 'wait' : 'pointer', fontFamily: 'Nexa, sans-serif' }}>
-            <Camera size={15} />{uploading ? 'Envoi...' : `Ajouter des photos (${drafts.length}/8)`}
+          <button onClick={() => fileRef.current?.click()} disabled={uploading || drafts.length >= 8 || limitReached}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, background: 'var(--bg)', border: '1px dashed var(--border)', color: (drafts.length >= 8 || limitReached) ? 'var(--tx3)' : '#5A3DF0', fontSize: 13, fontWeight: 700, cursor: (uploading ? 'wait' : limitReached ? 'not-allowed' : 'pointer'), fontFamily: 'Nexa, sans-serif' }}>
+            <Camera size={15} />{uploading ? t('portfolio.uploading') : limitReached ? t('portfolio.limitReached') : `${t('portfolio.addPhotos')} (${drafts.length}/8)`}
           </button>
           <div style={{ flex: 1 }} />
           <button onClick={publish} disabled={posting || (drafts.length === 0 && !description.trim())}
-            style={{ padding: '10px 22px', borderRadius: 10, background: (drafts.length || description.trim()) ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'var(--border)', border: 'none', color: (drafts.length || description.trim()) ? '#fff' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: posting ? 'wait' : 'pointer', fontFamily: 'Nexa, sans-serif' }}>
-            {posting ? 'Publication...' : 'Publier'}
+            style={{ padding: '10px 22px', borderRadius: 10, background: (drafts.length || description.trim()) ? 'linear-gradient(135deg,#5A3DF0,#7C5CFF)' : 'var(--border)', border: 'none', color: (drafts.length || description.trim()) ? '#fff' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: posting ? 'wait' : 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+            {posting ? t('portfolio.publishing') : t('portfolio.publish')}
           </button>
         </div>
         <input ref={fileRef} type="file" accept="image/*" multiple onChange={addPhotos} style={{ display: 'none' }} />
@@ -177,8 +199,8 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
       ) : posts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--tx3)' }}>
           <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><Hammer size={32} /></div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx2)', marginBottom: 4 }}>Aucune réalisation publiée</div>
-          <div style={{ fontSize: 12, fontWeight: 300 }}>Vos posts apparaîtront sur votre profil public, visibles par les clients.</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx2)', marginBottom: 4 }}>{t('portfolio.emptyTitle')}</div>
+          <div style={{ fontSize: 12, fontWeight: 300 }}>{t('portfolio.emptyDesc')}</div>
         </div>
       ) : (
         <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -186,7 +208,7 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
             <div key={post.id} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 16, padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{fmtDate(post.created_at)}</span>
-                <button onClick={() => deletePost(post.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', opacity: 0.7 }}>Supprimer</button>
+                <button onClick={() => deletePost(post.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', opacity: 0.7 }}>{t('portfolio.deletePost')}</button>
               </div>
               {post.description && <p style={{ fontSize: 13, color: 'var(--tx)', lineHeight: 1.6, fontWeight: 300, marginBottom: post.photos.length ? 12 : 0 }}>{post.description}</p>}
               <PhotoGrid photos={post.photos} onOpen={i => setLb({ photos: post.photos, i })} />
@@ -204,6 +226,7 @@ export function PortfolioManager({ artisanId }: { artisanId: string }) {
 // FEED — profil public (lecture seule)
 // ════════════════════════════════════════════════════════════════════════════
 export function PortfolioFeed({ artisanId }: { artisanId: string }) {
+  const { t } = useLang()
   const [posts, setPosts] = useState<PortfolioPost[]>([])
   const [loading, setLoading] = useState(true)
   const [lb, setLb] = useState<{ photos: string[]; i: number } | null>(null)
@@ -217,7 +240,7 @@ export function PortfolioFeed({ artisanId }: { artisanId: string }) {
   if (posts.length === 0) return (
     <div style={{ textAlign: 'center', padding: 48, color: 'var(--tx3)' }}>
       <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><Hammer size={32}/></div>
-      <div style={{ fontSize: 14, fontWeight: 300 }}>Cet artisan n'a pas encore publié de réalisations.</div>
+      <div style={{ fontSize: 14, fontWeight: 300 }}>{t('portfolio.emptyFeed')}</div>
     </div>
   )
 
