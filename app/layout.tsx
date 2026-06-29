@@ -22,6 +22,7 @@ import BackgroundMesh from '@/components/BackgroundMesh'
 import GlassHover from '@/components/GlassHover'
 import NativeBridge from '@/components/NativeBridge'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import AppIntro from '@/components/AppIntro'
 import { LangProvider } from '@/lib/LangContext'
 
 // Viewport « application » : pas de zoom pinch, couvre l'encoche iPhone
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NativeBridge/>
         <ServiceWorkerRegister/>
         <LangProvider>
+          <AppIntro/>
           <Navigation/>
           <MobileHeader/>
           {children}

@@ -135,7 +135,7 @@ export default function RecherchePage() {
         body{font-family:Nexa,sans-serif}
       `}</style>
       <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 84 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
+        <div className="grid-collapse page-pad-m" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
 
           {/* ── SIDEBAR FILTRES ── */}
           <div style={{ position: 'sticky', top: 84 }}>

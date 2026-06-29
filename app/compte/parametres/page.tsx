@@ -120,7 +120,7 @@ export default function Parametres() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }}>
+      <div className="grid-collapse page-pad-m" style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }}>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {sections.map(s => (

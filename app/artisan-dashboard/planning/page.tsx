@@ -106,7 +106,7 @@ export default function Planning() {
     <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
 
       {/* Header */}
-      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+      <div className="page-x" style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('planning.eyebrow')}</div>
@@ -123,10 +123,10 @@ export default function Planning() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 40px' }}>
+      <div className="page-pad-m" style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 40px' }}>
 
         {view === 'month' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
+          <div className="grid-collapse" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
 
             {/* Calendrier */}
             <div className="card" style={{ padding: '24px' }}>

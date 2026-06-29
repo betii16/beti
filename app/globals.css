@@ -536,6 +536,27 @@ select:focus {
   .desktop-only { display: none !important; }
 }
 
+/* Layouts 2-colonnes desktop (filtres+résultats, calendrier+détail…) repliés en
+   une seule colonne sur mobile. Le !important en media query bat le
+   grid-template-columns posé en style inline par React. */
+@media (max-width: 767px) {
+  .grid-collapse {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+  /* Marge horizontale resserrée. */
+  .page-x {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  /* Idem + espace bas pour ne pas passer sous le dock flottant. */
+  .page-pad-m {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
 html, body {
   /* Pas de rebond élastique ni de pull-to-refresh accidentel */
   overscroll-behavior-y: none;

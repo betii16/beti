@@ -980,6 +980,22 @@ export const translations = {
     ratingUnit:     { fr: 'avis',                         ar: 'تقييم'                               },
   },
 
+  // ── Intro premier lancement (choix langue + carrousel) ────────────
+  intro: {
+    langTitle:  { fr: 'Choisissez votre langue',          ar: 'اختر لغتك'                           },
+    langSub:    { fr: 'Vous pourrez la changer à tout moment', ar: 'يمكنك تغييرها في أي وقت'        },
+    s1Title:    { fr: 'Des artisans de confiance',        ar: 'حرفيون موثوقون'                      },
+    s1Desc:     { fr: 'Plombiers, électriciens, ménage… vérifiés et notés, près de chez vous.', ar: 'سبّاكون، كهربائيون، تنظيف… موثّقون ومقيّمون، بالقرب منك.' },
+    s2Title:    { fr: 'Réservez en quelques secondes',    ar: 'احجز في ثوانٍ'                       },
+    s2Desc:     { fr: 'Choisissez, contactez et suivez l\'arrivée de votre artisan en temps réel.', ar: 'اختر، تواصل، وتابع وصول حرفيك مباشرةً.' },
+    s3Title:    { fr: 'Payez en cash, sans surprise',     ar: 'ادفع نقداً، دون مفاجآت'              },
+    s3Desc:     { fr: 'Tarifs affichés à l\'avance. Aucune commission cachée.', ar: 'الأسعار معروضة مسبقاً. لا عمولات خفية.' },
+    skip:       { fr: 'Passer',                           ar: 'تخطّي'                               },
+    next:       { fr: 'Continuer',                        ar: 'متابعة'                              },
+    start:      { fr: 'Créer un compte',                  ar: 'إنشاء حساب'                          },
+    later:      { fr: 'S\'inscrire plus tard',            ar: 'التسجيل لاحقاً'                      },
+  },
+
 } as const
 
 // ── Helper pour récupérer une traduction ──────────────────────────
