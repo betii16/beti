@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
 import { CategoryIcon } from '@/components/icons'
-import { Search, Frown, LayoutGrid } from 'lucide-react'
+import { Search, Frown, LayoutGrid, SlidersHorizontal } from 'lucide-react'
 import PremiumBadge from '@/components/PremiumBadge'
 import { fetchPlans } from '@/lib/subscription'
 
@@ -47,6 +47,7 @@ export default function RecherchePage() {
   const [artisans, setArtisans] = useState<Artisan[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false) // bottom-sheet mobile
 
   // Filtres
   const [category, setCategory] = useState('')
@@ -82,7 +83,13 @@ export default function RecherchePage() {
     }
   }, [])
 
+  // Filtres actifs (≠ valeurs par défaut) → badge sur le déclencheur mobile
+  const activeCount =
+    (category ? 1 : 0) + keywords.length + (minRating > 0 ? 1 : 0) +
+    (maxPrice < 15000 ? 1 : 0) + (availableOnly ? 1 : 0) + (radius !== 50 ? 1 : 0)
+
   const search = async () => {
+    setFiltersOpen(false) // referme le sheet mobile au lancement
     setLoading(true)
     setSearched(true)
     try {
@@ -137,10 +144,17 @@ export default function RecherchePage() {
       <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 84 }}>
         <div className="grid-collapse page-pad-m" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
 
-          {/* ── SIDEBAR FILTRES ── */}
-          <div style={{ position: 'sticky', top: 84 }}>
-            <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.12em', marginBottom: 8 }}>RECHERCHE</div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', marginBottom: 24, lineHeight: 1.2 }}>Trouvez votre<br/>artisan idéal.</h1>
+          {/* ── PANNEAU FILTRES (sidebar desktop / bottom-sheet mobile) ── */}
+          <div className={`filters-panel${filtersOpen ? ' open' : ''}`} style={{ position: 'sticky', top: 84 }}>
+            {/* En-tête du sheet (mobile uniquement) */}
+            <div className="mobile-only" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+              <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--tx)' }}>Filtres</span>
+              <button onClick={() => setFiltersOpen(false)} aria-label="Fermer" style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', fontSize: 24, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
+            </div>
+            <div className="desktop-only">
+              <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.12em', marginBottom: 8 }}>RECHERCHE</div>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', marginBottom: 24, lineHeight: 1.2 }}>Trouvez votre<br/>artisan idéal.</h1>
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -253,6 +267,18 @@ export default function RecherchePage() {
 
           {/* ── RÉSULTATS ── */}
           <div>
+            {/* Déclencheur du sheet de filtres (mobile) */}
+            <button onClick={() => setFiltersOpen(true)} className="filters-trigger press" style={{
+              width: '100%', alignItems: 'center', justifyContent: 'space-between',
+              padding: '13px 16px', marginBottom: 16, borderRadius: 14,
+              background: 'var(--bg2)', border: '1px solid var(--border)', cursor: 'pointer',
+              color: 'var(--tx)', fontSize: 14, fontWeight: 700, fontFamily: 'Nexa, sans-serif',
+            }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><SlidersHorizontal size={16} color="#5A3DF0"/>Filtres</span>
+              {activeCount > 0 && (
+                <span style={{ minWidth: 20, height: 20, padding: '0 6px', borderRadius: 10, background: '#5A3DF0', color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{activeCount}</span>
+              )}
+            </button>
             {searched && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ fontSize: 14, color: 'var(--tx2)', fontWeight: 300 }}>
@@ -344,6 +370,9 @@ export default function RecherchePage() {
           </div>
         </div>
       </div>
+
+      {/* Fond sombre du sheet de filtres (mobile) */}
+      <div className={`filters-backdrop${filtersOpen ? ' open' : ''}`} onClick={() => setFiltersOpen(false)} />
     </>
   )
 }

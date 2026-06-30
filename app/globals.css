@@ -637,6 +637,37 @@ button, a {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Panneau de filtres : sidebar sur desktop, bottom-sheet coulissant sur mobile.
+   Une seule instance dans le JSX ; la présentation bascule en CSS pur (pas de
+   détection viewport en JS → aucun flash au montage). .open piloté par l'état. */
+.filters-trigger { display: none; }
+.filters-backdrop { display: none; }
+@media (max-width: 767px) {
+  .filters-panel {
+    position: fixed !important;
+    left: 0; right: 0; bottom: 0; top: auto !important;
+    z-index: 300;
+    max-height: 86dvh; overflow-y: auto;
+    background: var(--bg2-solid);
+    border-top: 1px solid var(--border);
+    border-radius: 22px 22px 0 0;
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+    transform: translateY(105%);
+    transition: transform .42s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
+  }
+  .filters-panel.open { transform: translateY(0); }
+  .filters-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 299;
+    background: rgba(0,0,0,0.5);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none; transition: opacity .3s ease;
+  }
+  .filters-backdrop.open { opacity: 1; pointer-events: auto; }
+  .filters-trigger { display: flex !important; }
+}
+
 /* Carrousels : pas de barre de défilement visible */
 .no-scrollbar {
   -ms-overflow-style: none;
