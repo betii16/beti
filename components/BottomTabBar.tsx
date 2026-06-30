@@ -21,6 +21,7 @@ export default function BottomTabBar() {
   const [role, setRole] = useState<'client' | 'artisan' | 'admin' | null>(null)
   const [logged, setLogged] = useState(false)
   const [notifCount, setNotifCount] = useState(0)
+  const [hidden, setHidden] = useState(true) // masqué au départ → glisse à l'entrée
 
   useEffect(() => {
     let alive = true
@@ -41,6 +42,33 @@ export default function BottomTabBar() {
     }
     init()
     return () => { alive = false; if (channel) supabase.removeChannel(channel) }
+  }, [pathname])
+
+  // Entrée : glisse vers le haut juste après le montage
+  useEffect(() => {
+    const tmr = setTimeout(() => setHidden(false), 60)
+    return () => clearTimeout(tmr)
+  }, [])
+
+  // Auto-masquage : se cache au scroll vers le bas, revient au scroll vers le
+  // haut, toujours visible en haut de page (lecture/validation sans gêne).
+  useEffect(() => {
+    let lastY = window.scrollY
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        const y = window.scrollY
+        if (y < 60) setHidden(false)
+        else if (y > lastY + 6) setHidden(true)
+        else if (y < lastY - 6) setHidden(false)
+        lastY = y
+        ticking = false
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [pathname])
 
   if (HIDDEN_PREFIXES.some(p => pathname?.startsWith(p))) return null
@@ -84,7 +112,10 @@ export default function BottomTabBar() {
         border: '1px solid var(--border)',
         boxShadow: 'var(--hover-shadow-lg)',
         direction: isAr ? 'rtl' : 'ltr',
-        animation: 'dockUp 0.5s cubic-bezier(0.22,1,0.36,1) both',
+        transform: hidden ? 'translateY(calc(100% + 28px))' : 'translateY(0)',
+        opacity: hidden ? 0 : 1,
+        pointerEvents: hidden ? 'none' : 'auto',
+        transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease',
       }}>
         {TABS.map(({ href, label, Icon, match, center, badge }) => {
           const active = match(pathname || '')
