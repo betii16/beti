@@ -84,6 +84,7 @@ export default function BottomTabBar() {
         border: '1px solid var(--border)',
         boxShadow: 'var(--hover-shadow-lg)',
         direction: isAr ? 'rtl' : 'ltr',
+        animation: 'dockUp 0.5s cubic-bezier(0.22,1,0.36,1) both',
       }}>
         {TABS.map(({ href, label, Icon, match, center, badge }) => {
           const active = match(pathname || '')
@@ -113,17 +114,26 @@ export default function BottomTabBar() {
 
           // ── Onglets standards : pilule animée derrière l'icône ──
           return (
-            <button key={label} onClick={() => go(href)} style={{
+            <button key={label} onClick={() => go(href)} className="press" style={{
+              position: 'relative',
               flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
               background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
               color: active ? 'var(--accent)' : 'var(--tx3)',
               WebkitTapHighlightColor: 'transparent',
             }}>
+              {/* Indicateur actif : barre lumineuse en haut de l'onglet */}
+              <div style={{
+                position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)',
+                width: active ? 18 : 0, height: 3, borderRadius: 2,
+                background: 'var(--accent)', boxShadow: active ? '0 0 8px var(--accent)' : 'none',
+                opacity: active ? 1 : 0,
+                transition: 'width 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease',
+              }}/>
               <div style={{
                 position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 42, height: 27, borderRadius: 14,
                 background: active ? 'rgba(90, 61, 240,0.14)' : 'transparent',
-                transform: active ? 'scale(1)' : 'scale(0.92)',
+                transform: active ? 'scale(1) translateY(-2px)' : 'scale(0.92)',
                 transition: 'background 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
               }}>
                 <Icon size={21} strokeWidth={active ? 2.4 : 1.8}/>
