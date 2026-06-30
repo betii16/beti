@@ -12,7 +12,7 @@
 // la slide retombe proprement sur l'icône (aucune image cassée, aucun flash :
 // les photos sont préchargées et n'apparaissent qu'une fois prêtes).
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import type { Lang } from '@/lib/translations'
@@ -32,7 +32,9 @@ export default function AppIntro() {
   const { t, setLang, isAr } = useLang()
   const [show, setShow] = useState(false)
   const [step, setStep] = useState(0) // 0 = langue · 1..3 = slides
+  const [anim, setAnim] = useState<'next' | 'prev'>('next')
   const [okPhotos, setOkPhotos] = useState<Record<number, boolean>>({})
+  const touch = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     try { if (!localStorage.getItem(DONE_KEY)) setShow(true) } catch {}
@@ -54,21 +56,37 @@ export default function AppIntro() {
     try { localStorage.setItem(DONE_KEY, '1') } catch {}
     setShow(false)
   }
-  const chooseLang = (l: Lang) => { setLang(l); setStep(1) }
+  const chooseLang = (l: Lang) => { setAnim('next'); setLang(l); setStep(1) }
   const goSignup = () => { finish(); router.push('/auth/signup') }
 
   const isLast = step === SLIDES.length
   const slide = step >= 1 ? SLIDES[step - 1] : null
   const photo = step >= 1 && !!okPhotos[step]
 
+  const next = () => { setAnim('next'); setStep(s => s + 1) }
+  const prev = () => { setAnim('prev'); setStep(s => s - 1) }
+
+  // Navigation au swipe horizontal (slides uniquement, pas l'écran langue)
+  const onTouchStart = (e: React.TouchEvent) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!touch.current || step === 0) return
+    const dx = e.changedTouches[0].clientX - touch.current.x
+    const dy = e.changedTouches[0].clientY - touch.current.y
+    touch.current = null
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return // pas un swipe horizontal franc
+    const forward = isAr ? dx > 0 : dx < 0
+    if (forward) { if (!isLast) next() }
+    else if (step > 1) prev()
+  }
+
   return (
-    <div style={{
+    <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{
       position: 'fixed', inset: 0, zIndex: 100000, direction: isAr ? 'rtl' : 'ltr', overflow: 'hidden',
       background: 'radial-gradient(120% 80% at 50% 0%, #2a1d63 0%, #0b0b12 62%)',
       display: 'flex', flexDirection: 'column',
       paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
-      <style>{`@keyframes introIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes introFade{from{opacity:0}to{opacity:1}}`}</style>
+      <style>{`@keyframes introIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes introFade{from{opacity:0}to{opacity:1}}@keyframes introNext{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}@keyframes introPrev{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}`}</style>
 
       {/* Photo plein écran (slides) — derrière le contenu, avec dégradé lisibilité */}
       {photo && slide && (
@@ -106,7 +124,7 @@ export default function AppIntro() {
             </div>
           </div>
         ) : (
-          <div key={step} style={{ width: '100%', maxWidth: 460, animation: 'introIn 0.4s ease both' }}>
+          <div key={step} style={{ width: '100%', maxWidth: 460, animation: `${anim === 'prev' ? 'introPrev' : 'introNext'} 0.4s ease both` }}>
             {!photo && (
               <div style={{ width: 96, height: 96, borderRadius: 28, margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #5A3DF0, #7C5CFF)', boxShadow: '0 18px 50px rgba(90,61,240,0.45)' }}>
                 {slide && <slide.Icon size={44} color="#fff" strokeWidth={1.8} />}
@@ -129,7 +147,7 @@ export default function AppIntro() {
         )}
 
         {step >= 1 && !isLast && (
-          <button onClick={() => setStep(s => s + 1)} style={PRIMARY_BTN}>{t('intro.next')}</button>
+          <button onClick={next} style={PRIMARY_BTN}>{t('intro.next')}</button>
         )}
 
         {isLast && (
