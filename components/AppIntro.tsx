@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import type { Lang } from '@/lib/translations'
 import { LogoMark } from '@/components/Logo'
+import AlgeriaWatermark from '@/components/AlgeriaWatermark'
 import { ShieldCheck, CalendarClock, Banknote } from 'lucide-react'
 
 const DONE_KEY = 'beti-intro-done'
@@ -87,6 +88,9 @@ export default function AppIntro() {
       paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       <style>{`@keyframes introIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes introFade{from{opacity:0}to{opacity:1}}@keyframes introNext{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}@keyframes introPrev{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}`}</style>
+
+      {/* Filigrane carte d'Algérie sur le dégradé (masqué par les photos plein écran) */}
+      <AlgeriaWatermark position="absolute" zIndex={0} color="#8B6DFF" opacity={0.1} blur={0.8} size="min(80vh, 115vw)" />
 
       {/* Photo plein écran (slides) — derrière le contenu, avec dégradé lisibilité */}
       {photo && slide && (

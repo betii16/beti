@@ -19,6 +19,7 @@ import Navigation from '@/components/Navigation'
 import BottomTabBar from '@/components/BottomTabBar'
 import MobileHeader from '@/components/MobileHeader'
 import BackgroundMesh from '@/components/BackgroundMesh'
+import AlgeriaBackdrop from '@/components/AlgeriaBackdrop'
 import GlassHover from '@/components/GlassHover'
 import NativeBridge from '@/components/NativeBridge'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <BackgroundMesh/>
+        <AlgeriaBackdrop/>
         <GlassHover/>
         <NativeBridge/>
         <ServiceWorkerRegister/>
