@@ -1,6 +1,7 @@
 // lib/plans.ts
 // Source de vérité des abonnements artisans BETI (modèle annuaire + abonnements,
-// aucune commission sur les prestations — cf. lib/payment-config.ts).
+// aucune commission sur les prestations : le règlement se fait en cash direct
+// entre client et artisan, BETI n'encaisse rien).
 // Deux formules : Basic et Premium, payables au mois ou à l'année (économie).
 // Période de lancement : gratuite pour les artisans jusqu'à LAUNCH + 2 mois.
 
