@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
-import { Check, Minus, Star, Sparkles, X, Clock, CheckCircle2 } from 'lucide-react'
+import { Check, Minus, Star, Sparkles, X, Clock, CheckCircle2, CreditCard, Banknote } from 'lucide-react'
 import {
   PLAN_LIST, FEATURES, priceFor, yearlySavings, freeMonths,
   isLaunchFree, SUB_FREE_UNTIL, type Plan, type BillingCycle,
@@ -27,6 +27,7 @@ export default function AbonnementPage() {
   const [chosen, setChosen] = useState<Plan | null>(null)
   const [uid, setUid] = useState<string | null>(null)
   const [latest, setLatest] = useState<Subscription | null>(null)
+  const [payMethod, setPayMethod] = useState<'card' | 'cash'>('card')
   const [payRef, setPayRef] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -51,14 +52,14 @@ export default function AbonnementPage() {
     setSubmitting(true); setErr('')
     const res = await submitSubscriptionRequest({
       artisanId: uid, plan: chosen.id, cycle, amount: priceFor(chosen, cycle),
-      method: 'transfer', ref: payRef.trim() || undefined,
+      method: payMethod, ref: payRef.trim() || undefined,
     })
     if (!res.ok) { setErr(res.message); setSubmitting(false); return }
     setSubmitting(false); setSubmitted(true)
     setLatest(await getMyLatestSubscription(uid))
   }
 
-  const closeModal = () => { setChosen(null); setSubmitted(false); setPayRef(''); setErr('') }
+  const closeModal = () => { setChosen(null); setSubmitted(false); setPayRef(''); setErr(''); setPayMethod('card') }
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 72, direction: isAr ? 'rtl' : 'ltr' }}>
@@ -147,7 +148,7 @@ export default function AbonnementPage() {
                 </div>
 
                 <button
-                  onClick={() => { setSubmitted(false); setErr(''); setPayRef(''); setChosen(plan) }}
+                  onClick={() => { setSubmitted(false); setErr(''); setPayRef(''); setPayMethod('card'); setChosen(plan) }}
                   className={plan.highlighted ? 'btn-primary btn-block' : 'btn-ghost btn-block'}
                   style={{ margin: '22px 0', ...(plan.highlighted ? {} : { borderColor: 'var(--accent)', color: 'var(--accent)' }) }}>
                   {t('sub.choosePlan')} {plan.name}
@@ -208,29 +209,60 @@ export default function AbonnementPage() {
                   <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>{da(priceFor(chosen, cycle))} DA <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>/ {cycle === 'monthly' ? t('sub.monthly').toLowerCase() : t('sub.yearly').toLowerCase()}</span></span>
                 </div>
 
-                <div style={{ background: 'var(--bg3)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 8 }}>{t('sub.howToPay')}</div>
-                  <p style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, lineHeight: 1.7 }}>
-                    {t('sub.howToPayDesc')} <strong style={{ color: 'var(--tx)' }}>{da(priceFor(chosen, cycle))} DA</strong> {t('sub.howToPayOn')}<br />
-                    <strong style={{ color: 'var(--tx)' }}>{t('sub.ribLabel')}</strong><br />
-                    {t('sub.ribHint')} <strong style={{ color: 'var(--tx)' }}>{t('sub.ribHintEnd')}</strong> {t('sub.ribHintEnd2')}
-                  </p>
+                {/* Mode de paiement : carte (recommandé, bientôt) ou espèces */}
+                <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 10 }}>{t('sub.methodTitle')}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+                  {([
+                    { id: 'card' as const, Icon: CreditCard, label: t('sub.methodCard'), sub: t('sub.methodCardSub'), reco: true },
+                    { id: 'cash' as const, Icon: Banknote,   label: t('sub.methodCash'), sub: t('sub.methodCashSub'), reco: false },
+                  ]).map(m => (
+                    <button key={m.id} onClick={() => { setPayMethod(m.id); setErr('') }}
+                      style={{
+                        textAlign: 'start', padding: '13px 14px', borderRadius: 14, cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
+                        background: payMethod === m.id ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'var(--bg3)',
+                        border: `1.5px solid ${payMethod === m.id ? 'var(--accent)' : 'var(--border)'}`, transition: 'all 0.15s',
+                      }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <m.Icon size={16} color={payMethod === m.id ? 'var(--accent)' : 'var(--tx2)'} />
+                        <span style={{ fontSize: 13.5, fontWeight: 800, color: payMethod === m.id ? 'var(--accent)' : 'var(--tx)' }}>{m.label}</span>
+                        {m.reco && <span style={{ fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--gradient)', padding: '2px 6px', borderRadius: 10, letterSpacing: '0.04em' }}>{t('sub.recommended')}</span>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{m.sub}</div>
+                    </button>
+                  ))}
                 </div>
 
-                <label style={{ fontSize: 11, color: 'var(--tx3)', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>{t('sub.refLabel')}</label>
-                <input value={payRef} onChange={e => setPayRef(e.target.value)} placeholder={t('sub.refPh')} className="field" style={{ marginBottom: 16 }} />
+                {payMethod === 'card' ? (
+                  <>
+                    <div style={{ background: 'color-mix(in srgb, var(--accent) 7%, transparent)', border: '0.5px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 12, padding: '14px 16px', marginBottom: 16 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent)', marginBottom: 6 }}>{t('sub.cardSoonTitle')}</div>
+                      <p style={{ fontSize: 12.5, color: 'var(--tx2)', fontWeight: 300, lineHeight: 1.6 }}>{t('sub.cardSoonDesc')}</p>
+                    </div>
+                    <button disabled className="btn-primary btn-block" style={{ opacity: 0.5, cursor: 'not-allowed' }}>{t('sub.cardBtnSoon')}</button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ background: 'var(--bg3)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 16 }}>
+                      <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 8 }}>{t('sub.howToPay')}</div>
+                      <p style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, lineHeight: 1.7 }}>{t('sub.cashInstr')}</p>
+                    </div>
 
-                {free && (
-                  <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.6, marginBottom: 14 }}>
-                    {t('sub.launchNote')} {freeUntil}. {t('sub.launchNoteEnd')}
-                  </p>
+                    <label style={{ fontSize: 11, color: 'var(--tx3)', display: 'block', marginBottom: 8, fontWeight: 800, letterSpacing: '0.06em' }}>{t('sub.refLabelCash')}</label>
+                    <input value={payRef} onChange={e => setPayRef(e.target.value)} placeholder={t('sub.refPh')} className="field" style={{ marginBottom: 16 }} />
+
+                    {free && (
+                      <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.6, marginBottom: 14 }}>
+                        {t('sub.launchNote')} {freeUntil}. {t('sub.launchNoteEnd')}
+                      </p>
+                    )}
+
+                    {err && <div style={{ fontSize: 12, color: '#f87171', fontWeight: 500, marginBottom: 12 }}>{err}</div>}
+
+                    <button onClick={submit} disabled={submitting || !payRef.trim()} className="btn-primary btn-block">
+                      {submitting ? t('sub.sending') : t('sub.submit')}
+                    </button>
+                  </>
                 )}
-
-                {err && <div style={{ fontSize: 12, color: '#f87171', fontWeight: 500, marginBottom: 12 }}>{err}</div>}
-
-                <button onClick={submit} disabled={submitting} className="btn-primary btn-block">
-                  {submitting ? t('sub.sending') : t('sub.submit')}
-                </button>
               </>
             )}
           </div>
