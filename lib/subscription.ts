@@ -4,7 +4,7 @@
 // seul l'admin valide. Le plan EFFECTIF est lu sur artisans.plan / plan_until.
 
 import { supabase } from './supabase'
-import type { PlanId, BillingCycle } from './plans'
+import { isLaunchFree, type PlanId, type BillingCycle } from './plans'
 
 export type SubStatus = 'pending' | 'active' | 'rejected' | 'expired' | 'cancelled'
 
@@ -34,6 +34,16 @@ export function effectivePlan(artisan: { plan?: string | null; plan_until?: stri
 
 export function isPremium(artisan: { plan?: string | null; plan_until?: string | null } | null): boolean {
   return effectivePlan(artisan) === 'premium'
+}
+
+/** Paywall : un artisan est-il visible dans l'annuaire public (recherche, carte,
+ *  listings, profil public) ? Pendant la période de lancement gratuite TOUT le
+ *  monde est listé ; ensuite, seuls les abonnés (basic|premium) — un artisan
+ *  'free'/expiré disparaît jusqu'à ce qu'il prenne un abonnement.
+ *  NB : filtrage côté client, cohérent avec l'archi existante. Un durcissement
+ *  RLS/RPC reste possible plus tard pour rendre le mur non contournable. */
+export function isListed(artisan: { plan?: string | null; plan_until?: string | null } | null): boolean {
+  return isLaunchFree() || effectivePlan(artisan) !== 'free'
 }
 
 /** Crée une demande d'abonnement (status 'pending'), à valider par un admin. */

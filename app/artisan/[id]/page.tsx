@@ -8,7 +8,7 @@ import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import PremiumBadge from '@/components/PremiumBadge'
 import TrustButton from '@/components/TrustButton'
-import { isPremium } from '@/lib/subscription'
+import { isPremium, isListed } from '@/lib/subscription'
 
 function Stars({r,s=14}:{r:number;s?:number}){return<div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border,#2a2a3a)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
@@ -65,6 +65,18 @@ export default function ArtisanPage(){
   }
 
   if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>{t('common.loading')}</div></div>
+
+  // Paywall : hors période de lancement, le profil d'un artisan non abonné est
+  // indisponible au public (le propriétaire garde l'accès pour se réabonner).
+  if(a&&!isListed(a)&&uid!==id)return(
+    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24,paddingTop:64,textAlign:'center',direction:isAr?'rtl':'ltr'}}>
+      <div style={{maxWidth:380}}>
+        <div style={{fontSize:20,fontWeight:800,color:'var(--tx)',marginBottom:10}}>{t('profile.unavailableTitle')}</div>
+        <p style={{fontSize:14,color:'var(--tx2)',fontWeight:300,lineHeight:1.7,marginBottom:24}}>{t('profile.unavailableDesc')}</p>
+        <button onClick={()=>router.push('/recherche')} className="btn-primary" style={{padding:'11px 24px'}}>{t('profile.unavailableCta')}</button>
+      </div>
+    </div>
+  )
 
   const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}

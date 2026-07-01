@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Metadata } from 'next'
 import { CategoryIcon } from '@/components/icons'
+import { isListed } from '@/lib/subscription'
 
 import { notFound } from 'next/navigation'
 
@@ -74,12 +75,14 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
   const c = CATEGORIES[params.category]
   if (!w || !c) notFound()
 
-  const { data: artisans } = await supabase
+  const { data: rawArtisans } = await supabase
     .from('artisans')
-    .select('id, hourly_rate, is_available, rating_avg, rating_count, total_missions, profiles(full_name)')
+    .select('id, hourly_rate, is_available, rating_avg, rating_count, total_missions, plan, plan_until, profiles(full_name)')
     .eq('category', params.category)
     .eq('is_available', true)
     .limit(12)
+  // Paywall : hors période de lancement, on masque les non-abonnés.
+  const artisans = (rawArtisans || []).filter(a => isListed(a))
 
   // Schema.org
   const schema = {

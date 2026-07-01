@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { isDemoArtisan } from '@/lib/contactArtisan'
-import { isPremium } from '@/lib/subscription'
+import { isPremium, isListed } from '@/lib/subscription'
 import PremiumBadge from '@/components/PremiumBadge'
 import { Star, Navigation, Route } from 'lucide-react'
 import {
@@ -106,7 +106,8 @@ export default function BetiMap({
           .select('id, category, hourly_rate, is_available, rating_avg, lat, lng, plan, plan_until, profiles(full_name, avatar_url)')
           .not('lat', 'is', null).not('lng', 'is', null)
         if (data && data.length > 0) {
-          setArtisans(data.map((a: any) => ({
+          // Paywall : hors période de lancement, on masque les non-abonnés.
+          setArtisans(data.filter((a: any) => isListed(a)).map((a: any) => ({
             id: a.id,
             name: a.profiles?.full_name || 'Artisan',
             initials: (a.profiles?.full_name || 'A').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2),

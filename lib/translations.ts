@@ -276,6 +276,9 @@ export const translations = {
     certified:     { fr: 'ARTISAN BETI CERTIFIÉ',  ar: 'حرفي BETI معتمد'         },
     about:         { fr: 'À propos',               ar: 'نبذة'                    },
     rates:         { fr: 'Tarifs',                 ar: 'الأسعار'                 },
+    unavailableTitle:{ fr: 'Profil indisponible',   ar: 'الملف غير متاح'          },
+    unavailableDesc: { fr: "Cet artisan n'a pas d'abonnement actif pour le moment. Son profil n'est pas visible publiquement.", ar: 'هذا الحرفي ليس لديه اشتراك نشط حالياً. ملفه غير مرئي للعموم.' },
+    unavailableCta:  { fr: "Voir d'autres artisans", ar: 'اكتشف حرفيين آخرين'       },
     presentation:  { fr: 'Présentation',           ar: 'التعريف بالحرفي'        },
     specialties:   { fr: 'Spécialités',            ar: 'التخصصات'               },
     ratingDist:    { fr: 'Répartition des avis',   ar: 'توزيع التقييمات'        },
@@ -618,14 +621,13 @@ export const translations = {
     title:        { fr: 'Proposer un prix',               ar: 'اقترح سعراً'                         },
   },
 
-  // ── Séquestre (paiement protégé) ─────────────────────────────
-  escrow: {
-    held:         { fr: 'Argent protégé par BETI',        ar: 'المبلغ محمي من BETI'                 },
-    heldDesc:     { fr: 'Votre paiement est bloqué et ne sera versé à l’artisan qu’une fois la prestation confirmée.', ar: 'دفعتك محجوزة ولن تُحوّل للحرفي إلا بعد تأكيد إنجاز الخدمة.' },
-    confirmDone:  { fr: 'Confirmer la prestation terminée', ar: 'تأكيد إنجاز الخدمة'                 },
-    released:     { fr: 'Prestation confirmée — versement libéré.', ar: 'تم تأكيد الخدمة — حُرّر الدفع.' },
-    report:       { fr: 'Signaler un problème',           ar: 'الإبلاغ عن مشكلة'                    },
-    reportSent:   { fr: 'Problème signalé — notre équipe va vous contacter.', ar: 'تم الإبلاغ — سيتواصل معك فريقنا.' },
+  // ── Clôture de la prestation (cash, en deux temps) ───────────
+  done: {
+    cashHint:       { fr: 'Le règlement se fait en cash, en main propre, à la fin de la prestation.', ar: 'الدفع نقداً ومباشرةً عند انتهاء الخدمة.' },
+    markDone:       { fr: 'Marquer terminé',                ar: 'وضع علامة منجز'                     },
+    confirm:        { fr: 'Confirmer la prestation',        ar: 'تأكيد الخدمة'                       },
+    awaitingClient: { fr: 'L’artisan a marqué la prestation terminée. Confirmez pour clôturer et laisser un avis.', ar: 'أشار الحرفي إلى انتهاء الخدمة. أكّد للإغلاق وترك تقييم.' },
+    awaitingArtisan:{ fr: 'En attente de la confirmation du client.', ar: 'في انتظار تأكيد العميل.'   },
   },
 
   // ── Commun ───────────────────────────────────────────────────

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound, useParams } from 'next/navigation'
 import PremiumBadge from '@/components/PremiumBadge'
-import { effectivePlan } from '@/lib/subscription'
+import { effectivePlan, isListed } from '@/lib/subscription'
 
 const WILAYAS: Record<string, { name: string; nameAr: string; lat: number; lng: number; num: number }> = {
   'alger':          { name: 'Alger',          nameAr: 'الجزائر',      lat: 36.7538, lng: 3.0588,  num: 16 },
@@ -54,7 +54,8 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
       .eq('is_available', true)
       .limit(12)
       .then(({ data }) => {
-        const list = (data || []) as any[]
+        // Paywall : hors période de lancement, on masque les non-abonnés.
+        const list = ((data || []) as any[]).filter(a => isListed(a))
         // Premium en tête (mise en avant promise dans la grille tarifaire).
         list.sort((a, b) => (effectivePlan(b) === 'premium' ? 1 : 0) - (effectivePlan(a) === 'premium' ? 1 : 0))
         setArtisans(list)

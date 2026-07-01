@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
 import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
+import { fetchPlans, isListed } from '@/lib/subscription'
 import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
@@ -74,7 +75,9 @@ export default function MapPage() {
     let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat)q=q.eq('category',cat)
     const{data}=await q
-    const real:Art[]=(data||[]).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(lat,lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0}))
+    // Paywall : hors période de lancement, on masque les non-abonnés.
+    const plans=await fetchPlans((data||[]).map((a:any)=>a.id))
+    const real:Art[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(lat,lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0}))
     // Démo en SECOURS uniquement : s'il existe de vrais artisans, on n'affiche
     // qu'eux (pas de faux profils mélangés en production).
     if(real.length>0){setArtisans(real);setLoading(false);return}

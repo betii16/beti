@@ -7,7 +7,7 @@ import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
 import { CategoryIcon } from '@/components/icons'
 import { Search, Frown, LayoutGrid, SlidersHorizontal } from 'lucide-react'
 import PremiumBadge from '@/components/PremiumBadge'
-import { fetchPlans } from '@/lib/subscription'
+import { fetchPlans, isListed } from '@/lib/subscription'
 
 const CATEGORIES = [
   { id: '',             icon: '✳',  label: 'Tous',          color: 'var(--tx2)' },
@@ -114,6 +114,8 @@ export default function RecherchePage() {
       // Plan effectif (lecture publique) → priorité d'affichage Premium
       const plans = await fetchPlans(results.map(a => a.artisan_id))
       results = results.map(a => ({ ...a, plan: plans[a.artisan_id] || 'free' }))
+      // Paywall : hors période de lancement, on masque les non-abonnés.
+      results = results.filter(a => isListed(a))
       results.sort((a, b) => {
         // Les Premium passent toujours devant, puis le critère de tri choisi.
         const pa = a.plan === 'premium' ? 0 : 1
