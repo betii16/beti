@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { SkeletonPage } from '@/components/Skeleton'
-import { AlertTriangle, Banknote } from 'lucide-react'
+import { AlertTriangle, Banknote, Check } from 'lucide-react'
 function pad(n: number) { return String(n).padStart(2, '0') }
 
 function formatDate(dateStr: string) {
@@ -371,7 +371,7 @@ export default function FacturePage() {
 
           {/* Statut */}
           <div className="inv-status">
-            <span>✓</span>
+            <Check size={12} strokeWidth={3}/>
             Mission terminée · Paiement reçu
           </div>
 

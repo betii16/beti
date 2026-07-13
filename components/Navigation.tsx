@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { LogoMark } from '@/components/Logo'
+import { Sun, Moon } from 'lucide-react'
 
 export default function Navigation() {
   const router = useRouter()
@@ -135,8 +136,8 @@ export default function Navigation() {
 
           {/* Theme toggle */}
           <button onClick={toggleTheme} title={dark ? t('navArtisan.themeLight') : t('navArtisan.themeDark')}
-            style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--border)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, transition: 'all 0.2s', color: 'var(--tx)' }}>
-            {dark ? '☀' : '☾'}
+            style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--border)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', color: 'var(--tx)' }}>
+            {dark ? <Sun size={14} strokeWidth={2}/> : <Moon size={13} strokeWidth={2}/>}
           </button>
 
           {user ? (

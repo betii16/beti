@@ -1,11 +1,13 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { toE164 } from '@/lib/countryCodes'
 import { CountryPicker } from '@/components/CountryPicker'
 import { LogoMark } from '@/components/Logo'
+import OtpInput from '@/components/OtpInput'
+import { UserRound, Hammer, Check } from 'lucide-react'
 
 const race = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
   Promise.race([Promise.resolve(p), new Promise<T>((_, r) => setTimeout(() => r(new Error('Délai dépassé')), ms))])
@@ -24,11 +26,19 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
   const [phoneErr, setPhoneErr] = useState('')
+  const [cooldown, setCooldown] = useState(0)
 
   const [okMsg, setOkMsg] = useState('')
 
   const fullPhone = toE164(cc, phone)
   const canSend = Boolean(name.trim() && phone.replace(/\D/g, '').length >= 6 && !phoneErr)
+
+  // Compte à rebours avant de pouvoir renvoyer un code
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const id = setInterval(() => setCooldown(c => c - 1), 1000)
+    return () => clearInterval(id)
+  }, [cooldown])
 
   const checkPhone = async () => {
     if (phone.replace(/\D/g, '').length < 6) return
@@ -52,15 +62,16 @@ export default function SignupPage() {
         setErr(/already registered|exists/i.test(m) ? t('auth.phoneUsed') : t('auth.errSend') + m)
         setLoading(false); return
       }
-      setStep(3); setLoading(false)
+      setStep(3); setCode(''); setCooldown(30); setLoading(false)
     } catch (e: any) { setErr(e.message); setLoading(false) }
   }
 
-  const verifyCode = async () => {
-    if (code.replace(/\D/g, '').length < 4 || !role) return
+  const verifyCode = async (v?: string) => {
+    const token = (v ?? code).trim()
+    if (token.replace(/\D/g, '').length < 4 || !role) return
     setLoading(true); setErr('')
     try {
-      const { data, error } = await race(supabase.auth.verifyOtp({ phone: fullPhone, token: code.trim(), type: 'sms' }))
+      const { data, error } = await race(supabase.auth.verifyOtp({ phone: fullPhone, token, type: 'sms' }))
       if (error) { setErr(/expired|invalid|incorrect/i.test(error.message) ? t('auth.errCode') : error.message); setLoading(false); return }
       const uid = data.user?.id
       if (uid) {
@@ -74,15 +85,12 @@ export default function SignupPage() {
     } catch (e: any) { setErr(e.message); setLoading(false) }
   }
 
-const I: React.CSSProperties = { width: '100%', padding: '15px 18px', background: 'var(--bg3,#0e0e18)', border: '1px solid var(--border,#1c1c30)', borderRadius: 16, color: 'var(--tx,#e0dfe5)', fontSize: 15, outline: 'none', fontFamily: 'Nexa,sans-serif', fontWeight: 300 }
-  const BTN = (active: boolean): React.CSSProperties => ({ width: '100%', padding: 16, border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: active && !loading ? 'pointer' : 'not-allowed', fontFamily: 'Nexa,sans-serif', background: active ? 'linear-gradient(135deg,#5A3DF0,#7C5CFF)' : 'var(--border)', color: active ? '#fff' : 'var(--tx3)', boxShadow: active ? '0 8px 24px rgba(90, 61, 240,0.32)' : 'none', transition: 'box-shadow 0.2s, transform 0.1s' })
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, direction: isAr ? 'rtl' : 'ltr' }}>
       <div style={{ width: '100%', maxWidth: 440 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', boxShadow: '0 6px 20px rgba(90, 61, 240,0.35)' }}><LogoMark size={20} variant="white" /></div>
+            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(90, 61, 240,0.35)' }}><LogoMark size={20} variant="white" /></div>
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.08em' }}>BETI</span>
           </a>
         </div>
@@ -98,10 +106,10 @@ const I: React.CSSProperties = { width: '100%', padding: '15px 18px', background
           {okMsg ? (
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#10b98115', border: '2px solid #10b98133', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><path d="M20 6L9 17l-5-5" /></svg>
+                <Check size={26} color="#10b981" strokeWidth={2.5} />
               </div>
               <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{okMsg}</div>
-              <a href="/auth/login" style={{ display: 'inline-block', marginTop: 12, padding: '14px 30px', borderRadius: 16, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700, boxShadow: '0 8px 24px rgba(90, 61, 240,0.32)' }}>{t('auth.signIn')}</a>
+              <a href="/auth/login" className="btn-primary btn-lg" style={{ marginTop: 12 }}>{t('auth.signIn')}</a>
             </div>
           ) : (<>
 
@@ -110,13 +118,44 @@ const I: React.CSSProperties = { width: '100%', padding: '15px 18px', background
             <>
               <h1 style={{ fontSize: 27, fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center' }}>{t('auth.welcome2')}</h1>
               <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 28, textAlign: 'center', lineHeight: 1.5 }}>{t('auth.youAre2')}</p>
-              {[{ v: 'client', tt: t('auth.clientT'), d: t('auth.clientD') }, { v: 'artisan', tt: t('auth.artisanT'), d: t('auth.artisanD') }].map(o => (
-                <div key={o.v} onClick={() => setRole(o.v as any)} style={{ padding: '16px 18px', borderRadius: 16, cursor: 'pointer', border: `1px solid ${role === o.v ? '#5A3DF0' : 'var(--border)'}`, background: role === o.v ? '#5A3DF00d' : 'var(--bg3)', marginBottom: 10 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--tx)', marginBottom: 2 }}>{o.tt}</div>
-                  <div style={{ fontSize: 12, color: 'var(--tx2)' }}>{o.d}</div>
-                </div>
-              ))}
-              <button onClick={() => role && setStep(2)} style={BTN(!!role)}>{t('auth.continueBtn')}</button>
+              {[{ v: 'client', tt: t('auth.clientT'), d: t('auth.clientD'), Icon: UserRound }, { v: 'artisan', tt: t('auth.artisanT'), d: t('auth.artisanD'), Icon: Hammer }].map(o => {
+                const active = role === o.v
+                return (
+                  <div key={o.v} onClick={() => setRole(o.v as any)} className="press" style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '16px 18px', borderRadius: 16, cursor: 'pointer', marginBottom: 10,
+                    border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+                    background: active ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'var(--glass-surface-2)',
+                    boxShadow: active ? '0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent)' : 'none',
+                    transition: 'border-color .2s ease, background .2s ease, box-shadow .25s ease',
+                  }}>
+                    <div style={{
+                      flexShrink: 0, width: 42, height: 42, borderRadius: 13,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: active ? 'var(--gradient)' : 'var(--glass-surface)',
+                      border: `1px solid ${active ? 'transparent' : 'var(--border)'}`,
+                      boxShadow: active ? '0 6px 16px rgba(90,61,240,0.35)' : 'none',
+                      transition: 'background .2s ease, box-shadow .25s ease',
+                    }}>
+                      <o.Icon size={20} color={active ? '#fff' : 'var(--tx2)'} strokeWidth={1.9} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--tx)', marginBottom: 2 }}>{o.tt}</div>
+                      <div style={{ fontSize: 12, color: 'var(--tx2)' }}>{o.d}</div>
+                    </div>
+                    <div style={{
+                      flexShrink: 0, width: 20, height: 20, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: active ? 'var(--accent)' : 'transparent',
+                      border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border2)'}`,
+                      transition: 'background .2s ease, border-color .2s ease',
+                    }}>
+                      {active && <Check size={12} color="#fff" strokeWidth={3} />}
+                    </div>
+                  </div>
+                )
+              })}
+              <button onClick={() => role && setStep(2)} disabled={!role} className="btn-primary btn-block btn-lg" style={{ marginTop: 4 }}>{t('auth.continueBtn')}</button>
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.alreadyAccount')} <a href="/auth/login" style={{ color: '#5A3DF0', textDecoration: 'none', fontWeight: 700 }}>{t('auth.signIn')}</a></p>
             </>
           )}
@@ -129,43 +168,45 @@ const I: React.CSSProperties = { width: '100%', padding: '15px 18px', background
 
               <div style={{ marginBottom: 14 }}>
                 <label style={LBL}>{t('auth.fullName')}</label>
-                <input type="text" placeholder="Karim Benali" value={name} onChange={e => setName(e.target.value)} style={I} />
+                <input type="text" className="field" placeholder="Karim Benali" value={name} onChange={e => setName(e.target.value)} />
               </div>
 
               <div style={{ marginBottom: 14 }}>
                 <label style={LBL}>{t('auth.phoneLabel')} *</label>
                 <div style={{ display: 'flex' }}>
                   <CountryPicker value={cc} onChange={v => { setCc(v); setPhoneErr('') }} />
-                  <input type="tel" placeholder="555 12 34 56" value={phone} onChange={e => { setPhone(e.target.value); setPhoneErr('') }} onBlur={checkPhone} style={{ ...I, borderRadius: '0 16px 16px 0', flex: 1, borderColor: phoneErr ? '#ef4444' : undefined }} />
+                  <input type="tel" className="field" placeholder="555 12 34 56" value={phone} onChange={e => { setPhone(e.target.value); setPhoneErr('') }} onBlur={checkPhone}
+                    style={{ flex: 1, minWidth: 0, borderStartStartRadius: 0, borderEndStartRadius: 0, fontSize: 15, padding: '15px 16px', borderColor: phoneErr ? '#ef4444' : undefined }} />
                 </div>
-                {phoneErr && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>{phoneErr}</p>}
+                {phoneErr && <p className="anim-scale-in" style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>{phoneErr}</p>}
               </div>
 
               <div style={{ marginBottom: 20 }}>
                 <label style={LBL}>{t('auth.email')} <span style={{ color: 'var(--tx3)', fontWeight: 300 }}>{t('auth.emailOptional')}</span></label>
-                <input type="email" placeholder="votre@email.com" value={email} onChange={e => setEmail(e.target.value)} style={I} />
+                <input type="email" className="field" placeholder="votre@email.com" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
 
               {err && <Err msg={err} />}
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setStep(1)} style={{ flex: 1, padding: 16, borderRadius: 16, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa,sans-serif' }}>{t('auth.back')}</button>
-                <button onClick={sendCode} disabled={!canSend || loading} style={{ ...BTN(canSend), flex: 2 }}>{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
+                <button onClick={() => setStep(1)} className="btn-ghost btn-lg" style={{ flex: 1 }}>{t('auth.back')}</button>
+                <button onClick={sendCode} disabled={!canSend || loading} className="btn-primary btn-lg" style={{ flex: 2 }}>{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
               </div>
             </>
           )}
 
-{/* ── Étape 3 : code ── */}
+          {/* ── Étape 3 : code ── */}
           {step === 3 && (
             <>
               <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center' }}>{t('auth.codeTitle')}</h1>
               <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>{t('auth.codeSentOn')} <span style={{ color: '#25D366', fontWeight: 700 }}>WhatsApp</span> {t('auth.codeTo')} <span style={{ color: 'var(--tx)', fontWeight: 700 }} dir="ltr">{cc} {phone}</span></p>
-              <input type="tel" inputMode="numeric" autoFocus placeholder="––––––" value={code} onChange={e => { setCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setErr('') }} onKeyDown={e => e.key === 'Enter' && verifyCode()}
-                style={{ ...I, textAlign: 'center', fontSize: 30, fontWeight: 800, letterSpacing: '0.4em', padding: '18px' }} />
+              <OtpInput value={code} onChange={v => { setCode(v); setErr('') }} onComplete={v => !loading && verifyCode(v)} />
               {err && <div style={{ marginTop: 16 }}><Err msg={err} /></div>}
-              <button onClick={verifyCode} disabled={loading || code.length < 4} style={{ ...BTN(code.length >= 4), marginTop: 16 }}>{loading ? t('auth.creatingAccount') : t('auth.create')}</button>
+              <button onClick={() => verifyCode()} disabled={loading || code.length < 4} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.creatingAccount') : t('auth.create')}</button>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14 }}>
                 <button onClick={() => { setStep(2); setCode(''); setErr('') }} style={LINK}>{t('auth.modify')}</button>
-                <button onClick={sendCode} disabled={loading} style={{ ...LINK, color: '#5A3DF0', textAlign: 'right' }}>{t('auth.resend')}</button>
+                <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, color: cooldown > 0 ? 'var(--tx3)' : '#5A3DF0', cursor: cooldown > 0 ? 'default' : 'pointer' }}>
+                  {t('auth.resend')}{cooldown > 0 ? ` (${cooldown}s)` : ''}
+                </button>
               </div>
             </>
           )}
@@ -178,7 +219,7 @@ const I: React.CSSProperties = { width: '100%', padding: '15px 18px', background
 }
 
 const LBL: React.CSSProperties = { fontSize: 11, color: 'var(--tx2)', display: 'block', marginBottom: 6, fontWeight: 700, letterSpacing: '0.04em' }
-const LINK: React.CSSProperties = { background: 'transparent', border: 'none', color: 'var(--tx2)', fontSize: 13, cursor: 'pointer', fontFamily: 'Nexa,sans-serif' }
+const LINK: React.CSSProperties = { background: 'transparent', border: 'none', color: 'var(--tx2)', fontSize: 13, cursor: 'pointer', padding: 6 }
 function Err({ msg }: { msg: string }) {
-  return <div style={{ padding: '11px 15px', borderRadius: 12, marginBottom: 16, background: '#ef444412', border: '1px solid #ef444422', fontSize: 13, color: '#ef4444' }}>{msg}</div>
+  return <div className="anim-scale-in" style={{ padding: '11px 15px', borderRadius: 12, marginBottom: 16, background: '#ef444412', border: '1px solid #ef444422', fontSize: 13, color: '#ef4444' }}>{msg}</div>
 }

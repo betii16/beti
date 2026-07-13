@@ -10,21 +10,21 @@ import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
 import { CategoryIcon } from '@/components/icons'
-import { LayoutGrid } from 'lucide-react'
+import { LayoutGrid, X } from 'lucide-react'
 
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
 
 const CATS = [
-  { id:'',           label:'Tous',         icon:'✳', color:'#5A3DF0' },
-  { id:'plomberie',  label:'Plomberie',    icon:'⚙', color:'#3b82f6' },
-  { id:'electricite',label:'Électricité',  icon:'⚡', color:'#f59e0b' },
-  { id:'serrurerie', label:'Serrurerie',   icon:'⌘', color:'#ef4444' },
-  { id:'menage',     label:'Ménage',       icon:'✦', color:'#10b981' },
-  { id:'peinture',   label:'Peinture',     icon:'◉', color:'#f97316' },
-  { id:'demenagement',label:'Déménagement',icon:'◈', color:'#7C5CFF' },
-  { id:'jardinage',  label:'Jardinage',    icon:'❧', color:'#22c55e' },
-  { id:'informatique',label:'Informatique',icon:'⬡', color:'#5A3DF0' },
-  { id:'coiffure',   label:'Coiffure',     icon:'✂', color:'#ec4899' },
+  { id:'',           label:'Tous',         color:'#5A3DF0' },
+  { id:'plomberie',  label:'Plomberie',    color:'#3b82f6' },
+  { id:'electricite',label:'Électricité',  color:'#f59e0b' },
+  { id:'serrurerie', label:'Serrurerie',   color:'#ef4444' },
+  { id:'menage',     label:'Ménage',       color:'#10b981' },
+  { id:'peinture',   label:'Peinture',     color:'#f97316' },
+  { id:'demenagement',label:'Déménagement',color:'#7C5CFF' },
+  { id:'jardinage',  label:'Jardinage',    color:'#22c55e' },
+  { id:'informatique',label:'Informatique',color:'#5A3DF0' },
+  { id:'coiffure',   label:'Coiffure',     color:'#ec4899' },
 ]
 
 type Art = {
@@ -135,7 +135,7 @@ export default function MapPage() {
             <input type="text" value={search} onChange={e=>setSearch(e.target.value)}
               placeholder={t('map.searchPlaceholder')}
               style={{flex:1,background:'transparent',border:'none',outline:'none',color:tx,fontSize:14,fontFamily:'Nexa,sans-serif',fontWeight:300}}/>
-            {search&&<button onClick={()=>setSearch('')} style={{background:'transparent',border:'none',color:tx3,fontSize:16,cursor:'pointer'}}>✕</button>}
+            {search&&<button onClick={()=>setSearch('')} style={{background:'transparent',border:'none',color:tx3,cursor:'pointer',display:'flex',padding:2}}><X size={16}/></button>}
           </div>
         </div>
 
@@ -264,7 +264,7 @@ export default function MapPage() {
                     <span>({selected.rating_count})</span>
                   </div>
                 </div>
-                <button onClick={()=>{setSelected(null);setSent(false)}} style={{background:'transparent',border:'none',color:tx3,fontSize:18,cursor:'pointer',padding:4}}>✕</button>
+                <button onClick={()=>{setSelected(null);setSent(false)}} style={{background:'transparent',border:'none',color:tx3,cursor:'pointer',display:'flex',padding:4}}><X size={18}/></button>
               </div>
 
               {/* Quick stats */}

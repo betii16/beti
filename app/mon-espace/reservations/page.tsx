@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, MapPin, Calendar, Banknote } from 'lucide-react'
+import { Package, MapPin, Calendar, Banknote, Star } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 
 type Booking = {
@@ -150,8 +150,8 @@ export default function MesReservations() {
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{b.title}</div>
                       {b.artisans && (
-                        <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>
-                          {t(`categories.${b.artisans.category}`)} · ⭐ {b.artisans.rating_avg?.toFixed(1) || 'N/A'}
+                        <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 5 }}>
+                          {t(`categories.${b.artisans.category}`)} · <Star size={11} fill="#f59e0b" strokeWidth={0}/> {b.artisans.rating_avg?.toFixed(1) || 'N/A'}
                         </div>
                       )}
                     </div>
@@ -179,7 +179,7 @@ export default function MesReservations() {
                   {b.status === 'completed' && (
                     <a href={`/mon-espace/avis?booking=${b.id}`} style={{ textDecoration: 'none' }}>
                       <button className="btn-soft btn-sm">
-                        ⭐ {t('mySpace.leaveReview')}
+                        <Star size={13} fill="currentColor" strokeWidth={0}/> {t('mySpace.leaveReview')}
                       </button>
                     </a>
                   )}

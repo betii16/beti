@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabase'
 import { useState, useRef, useEffect } from 'react'
-import { Check } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 
 // ================================================================
 // BETI — Catégorie "Autre" avec système d'AJOUT de mots-clés
@@ -124,8 +124,8 @@ export function OtherCategorySearch({
             {tag}
             <button
               onClick={(e) => { e.stopPropagation(); removeTag(tag) }}
-              style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1, opacity: 0.7 }}
-            >✕</button>
+              style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', padding: 0, display: 'inline-flex', opacity: 0.7 }}
+            ><X size={11} strokeWidth={2.5}/></button>
           </div>
         ))}
         <input
@@ -295,8 +295,8 @@ export function ArtisanTagsInput({
             {tag}
             <button
               onClick={(e) => { e.stopPropagation(); removeTag(tag) }}
-              style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1, opacity: 0.7 }}
-            >✕</button>
+              style={{ background: 'transparent', border: 'none', color: '#5A3DF0', cursor: 'pointer', padding: 0, display: 'inline-flex', opacity: 0.7 }}
+            ><X size={12} strokeWidth={2.5}/></button>
           </div>
         ))}
         <input

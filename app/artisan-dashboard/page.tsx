@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map, Sparkles } from 'lucide-react'
 import { isLaunchFree, SUB_FREE_UNTIL } from '@/lib/plans'
+import NavigateButton from '@/components/NavigateButton'
 
 export default function ArtisanDashboard(){
   const router=useRouter();const{t,isAr}=useLang()
@@ -202,6 +203,7 @@ export default function ArtisanDashboard(){
                     <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||t('dashExtra.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
                   <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                  {(b.status==='confirmed'||b.status==='in_progress')&&<NavigateButton lat={b.lat} lng={b.lng} compact/>}
                   <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#5A3DF012':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':'#ef4444'}}>{statusLabel(b.status)}</span>
                 </div>
               ))}

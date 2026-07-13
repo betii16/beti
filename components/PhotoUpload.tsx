@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { X } from 'lucide-react'
 
 export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userId:string; currentUrl:string|null; initials:string; onUpload:(url:string)=>void }) {
   const [loading, setLoading] = useState(false)
@@ -90,7 +91,7 @@ export function ProblemPhotosUpload({ bookingId, onUpload }: { bookingId:string;
         {photos.map(url => (
           <div key={url} style={{ position:'relative', width:80, height:80 }}>
             <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:8, border:'1px solid var(--border)' }}/>
-            <button onClick={()=>{const u=photos.filter(p=>p!==url);setPhotos(u);onUpload(u)}} style={{ position:'absolute', top:-6, right:-6, width:20, height:20, borderRadius:'50%', background:'#ef4444', border:'none', color:'#fff', cursor:'pointer', fontSize:10, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+            <button onClick={()=>{const u=photos.filter(p=>p!==url);setPhotos(u);onUpload(u)}} style={{ position:'absolute', top:-6, right:-6, width:20, height:20, borderRadius:'50%', background:'#ef4444', border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={11}/></button>
           </div>
         ))}
         {photos.length<5 && (
@@ -134,7 +135,7 @@ export function PortfolioUpload({ artisanId, existingPhotos }: { artisanId:strin
         {photos.map((url,i) => (
           <div key={i} style={{ position:'relative', aspectRatio:'1', borderRadius:10, overflow:'hidden', border:'1px solid var(--border)' }}>
             <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-            <button onClick={async()=>{const u=photos.filter(p=>p!==url);setPhotos(u)}} style={{ position:'absolute', top:4, right:4, width:20, height:20, borderRadius:'50%', background:'rgba(0,0,0,0.7)', border:'none', color:'#fff', cursor:'pointer', fontSize:10 }}>✕</button>
+            <button onClick={async()=>{const u=photos.filter(p=>p!==url);setPhotos(u)}} style={{ position:'absolute', top:4, right:4, width:20, height:20, borderRadius:'50%', background:'rgba(0,0,0,0.7)', border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={11}/></button>
           </div>
         ))}
         {photos.length<12 && (

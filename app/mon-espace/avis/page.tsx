@@ -38,15 +38,21 @@ function Stars({ rating, interactive = false, onRate }: { rating: number; intera
   const [hover, setHover] = useState(0)
   return (
     <div style={{ display: 'flex', gap: 4 }}>
-      {[1,2,3,4,5].map(n => (
-        <span key={n}
-          onClick={() => interactive && onRate?.(n)}
-          onMouseEnter={() => interactive && setHover(n)}
-          onMouseLeave={() => interactive && setHover(0)}
-          style={{ fontSize: interactive ? 28 : 16, cursor: interactive ? 'pointer' : 'default', color: n <= (hover || rating) ? '#5A3DF0' : 'var(--border)', transition: 'color 0.15s' }}>
-          ★
-        </span>
-      ))}
+      {[1,2,3,4,5].map(n => {
+        const s = interactive ? 28 : 16
+        const active = n <= (hover || rating)
+        return (
+          <span key={n}
+            onClick={() => interactive && onRate?.(n)}
+            onMouseEnter={() => interactive && setHover(n)}
+            onMouseLeave={() => interactive && setHover(0)}
+            style={{ display: 'flex', cursor: interactive ? 'pointer' : 'default', transition: 'transform 0.15s ease', transform: interactive && hover === n ? 'scale(1.18)' : 'none' }}>
+            <svg width={s} height={s} viewBox="0 0 24 24" fill={active ? '#f59e0b' : 'var(--border)'} style={{ transition: 'fill 0.15s' }}>
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+            </svg>
+          </span>
+        )
+      })}
     </div>
   )
 }
@@ -178,9 +184,11 @@ function MesAvisContent() {
         )}
 
         {reviews.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>⭐</div>
-            <div style={{ fontSize: 14, fontWeight: 300 }}>{t('avis.empty')}</div>
+          <div style={{ textAlign: 'center', padding: '64px 0' }}>
+            <div style={{ width: 64, height: 64, borderRadius: 20, margin: '0 auto 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--glass-surface)', border: '1px solid var(--glass-edge)' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--tx3)"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 300, color: 'var(--tx2)' }}>{t('avis.empty')}</div>
             <a href="/mon-espace/reservations" className="btn-primary btn-sm" style={{ marginTop: 20 }}>
               {t('avis.seeBookings')}
             </a>

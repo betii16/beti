@@ -6,7 +6,7 @@
 
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Camera } from 'lucide-react'
+import { Camera, X, Check } from 'lucide-react'
 
 // ================================================================
 // 1. UPLOAD PHOTOS DANS L'AVIS (côté client après mission)
@@ -87,10 +87,10 @@ export function ReviewPhotoUpload({
                 position: 'absolute', top: 4, right: 4,
                 width: 20, height: 20, borderRadius: '50%',
                 background: 'rgba(0,0,0,0.7)', border: 'none',
-                color: '#fff', fontSize: 10, cursor: 'pointer',
+                color: '#fff', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-            >✕</button>
+            ><X size={11}/></button>
           </div>
         ))}
 
@@ -190,7 +190,7 @@ export function WorkGallery({
               {photo.rating && (
                 <div style={{ display: 'flex', gap: 2, marginTop: 2 }}>
                   {[1,2,3,4,5].map(n => (
-                    <span key={n} style={{ fontSize: 8, color: n <= photo.rating! ? '#5A3DF0' : '#444' }}>★</span>
+                    <svg key={n} width="8" height="8" viewBox="0 0 24 24" fill={n <= photo.rating! ? '#f59e0b' : '#444'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
                   ))}
                 </div>
               )}
@@ -203,7 +203,7 @@ export function WorkGallery({
               fontSize: 9, color: '#4ade80', fontWeight: 800,
               display: 'flex', alignItems: 'center', gap: 3,
             }}>
-              <span>✓</span> Client vérifié
+              <Check size={9} strokeWidth={3}/> Client vérifié
             </div>
           </div>
         ))}
@@ -258,8 +258,8 @@ export function WorkGallery({
             {/* Close */}
             <button
               onClick={() => setSelectedPhoto(null)}
-              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >✕</button>
+              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            ><X size={16}/></button>
           </div>
         </div>
       )}

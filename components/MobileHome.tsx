@@ -9,7 +9,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
-import { LayoutGrid, MapPin, Search, BadgeCheck, ChevronRight, Shapes, X, Navigation } from 'lucide-react'
+import { LayoutGrid, MapPin, Search, BadgeCheck, ChevronRight, Shapes, X, Navigation, SearchX } from 'lucide-react'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 
 type Artisan = {
@@ -236,6 +236,9 @@ export default function MobileHome({
             [1, 2, 3, 4, 5].map(i => <div key={i} className="skeleton" style={{ height: 86, borderRadius: 18 }}/>)
           ) : visible.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '44px 20px' }}>
+              <div style={{ width: 56, height: 56, borderRadius: 18, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--glass-surface)', border: '1px solid var(--glass-edge)' }}>
+                <SearchX size={24} color="var(--tx3)" strokeWidth={1.6}/>
+              </div>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx2)', marginBottom: 6 }}>{q ? t('mhome.noResults') : (cat === 'autre' && tags.length === 0 ? t('home.addKeywords') : t('home.noArtisan'))}</div>
               {(q || cat) && (
                 <button onClick={() => { setQ(''); setCat(''); setTags([]) }} style={{ marginTop: 10, padding: '10px 24px', borderRadius: 12, background: 'var(--gradient)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Nexa,sans-serif' }}>{t('home.seeAll')}</button>

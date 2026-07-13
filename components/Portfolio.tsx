@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { Skeleton } from '@/components/Skeleton'
-import { Camera, Hammer } from 'lucide-react'
+import { Camera, Hammer, X } from 'lucide-react'
 
 /** Grille de vignettes shimmer pour le chargement du portfolio. */
 function PortfolioSkeleton() {
@@ -69,7 +69,7 @@ function Lightbox({ photos, index, onClose }: { photos: string[]; index: number;
       <img src={photos[i]} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: '90%', maxHeight: '85vh', objectFit: 'contain', borderRadius: 12 }} />
       {i > 0 && <button onClick={e => { e.stopPropagation(); setI(i - 1) }} style={navBtn('left')}>‹</button>}
       {i < photos.length - 1 && <button onClick={e => { e.stopPropagation(); setI(i + 1) }} style={navBtn('right')}>›</button>}
-      <button onClick={onClose} style={{ position: 'fixed', top: 24, right: 24, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }}>✕</button>
+      <button onClick={onClose} style={{ position: 'fixed', top: 24, right: 24, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18}/></button>
       <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{i + 1} / {photos.length}</div>
     </div>
   )
@@ -171,7 +171,7 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
             {drafts.map((url, i) => (
               <div key={i} style={{ position: 'relative', width: 84, height: 84, borderRadius: 10, overflow: 'hidden', border: '0.5px solid var(--border)' }}>
                 <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <button onClick={() => removeDraft(i)} style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: 10, cursor: 'pointer' }}>✕</button>
+                <button onClick={() => removeDraft(i)} style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={11}/></button>
               </div>
             ))}
           </div>

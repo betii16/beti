@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { ChevronLeft, Bell } from 'lucide-react'
+import { ChevronLeft, Bell, Sun, Moon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { LogoMark } from '@/components/Logo'
@@ -124,8 +124,8 @@ export default function MobileHeader() {
               {lang === 'fr' ? 'AR' : 'FR'}
             </button>
             {/* Thème */}
-            <button onClick={toggleTheme} style={{ ...iconBtn, fontSize: 14, color: 'var(--tx)' }}>
-              {dark ? '☀' : '☾'}
+            <button onClick={toggleTheme} style={{ ...iconBtn, color: 'var(--tx)' }}>
+              {dark ? <Sun size={15} strokeWidth={2}/> : <Moon size={14} strokeWidth={2}/>}
             </button>
           </>
         )}

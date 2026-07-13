@@ -75,7 +75,9 @@ export function CountryPicker({ value, onChange, rounded = 'left' }: Props) {
     if (open) setTimeout(() => searchRef.current?.focus(), 50)
   }, [open])
 
-  const br = rounded === 'left' ? '16px 0 0 16px' : 16
+  // Arrondis logiques : accolé au champ téléphone côté fin de ligne,
+  // fonctionne en LTR comme en RTL (arabe).
+  const attached = rounded === 'left'
 
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
@@ -86,10 +88,11 @@ export function CountryPicker({ value, onChange, rounded = 'left' }: Props) {
         style={{
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '15px 14px',
-          background: 'var(--bg3)',
-          border: '1px solid var(--border)',
-          borderRight: rounded === 'left' ? 'none' : '1px solid var(--border)',
-          borderRadius: br,
+          background: 'var(--glass-surface)',
+          border: '1px solid var(--glass-edge)',
+          borderInlineEnd: attached ? 'none' : '1px solid var(--glass-edge)',
+          borderStartStartRadius: 14, borderEndStartRadius: 14,
+          borderStartEndRadius: attached ? 0 : 14, borderEndEndRadius: attached ? 0 : 14,
           cursor: 'pointer', color: 'var(--tx)',
           fontFamily: 'Nexa,sans-serif', minWidth: 96,
           whiteSpace: 'nowrap',

@@ -5,21 +5,21 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
 import { CategoryIcon } from '@/components/icons'
-import { Search, Frown, LayoutGrid, SlidersHorizontal } from 'lucide-react'
+import { Search, Frown, LayoutGrid, SlidersHorizontal, Check, Star } from 'lucide-react'
 import PremiumBadge from '@/components/PremiumBadge'
 import { fetchPlans, isListed } from '@/lib/subscription'
 
 const CATEGORIES = [
-  { id: '',             icon: '✳',  label: 'Tous',          color: 'var(--tx2)' },
-  { id: 'plomberie',    icon: '⚙',  label: 'Plomberie',     color: '#3b82f6' },
-  { id: 'electricite',  icon: '⚡',  label: 'Électricité',   color: '#f59e0b' },
-  { id: 'menage',       icon: '✦',  label: 'Ménage',        color: '#10b981' },
-  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#7C5CFF' },
-  { id: 'jardinage',    icon: '❧',  label: 'Jardinage',     color: '#22c55e' },
-  { id: 'peinture',     icon: '◉',  label: 'Peinture',      color: '#ef4444' },
-  { id: 'serrurerie',   icon: '⌘',  label: 'Serrurerie',    color: '#f97316' },
-  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#5A3DF0' },
-  { id: 'coiffure',     icon: '✂',  label: 'Coiffure',      color: '#ec4899' },
+  { id: '',             label: 'Tous',          color: 'var(--tx2)' },
+  { id: 'plomberie',    label: 'Plomberie',     color: '#3b82f6' },
+  { id: 'electricite',  label: 'Électricité',   color: '#f59e0b' },
+  { id: 'menage',       label: 'Ménage',        color: '#10b981' },
+  { id: 'demenagement', label: 'Déménagement',  color: '#7C5CFF' },
+  { id: 'jardinage',    label: 'Jardinage',     color: '#22c55e' },
+  { id: 'peinture',     label: 'Peinture',      color: '#ef4444' },
+  { id: 'serrurerie',   label: 'Serrurerie',    color: '#f97316' },
+  { id: 'informatique', label: 'Informatique',  color: '#5A3DF0' },
+  { id: 'coiffure',     label: 'Coiffure',      color: '#ec4899' },
 ]
 
 type Artisan = {
@@ -214,7 +214,7 @@ export default function RecherchePage() {
                       style={{ padding: '9px 14px', borderRadius: 9, border: `0.5px solid ${category === cat.id ? cat.color : 'var(--border)'}`, background: category === cat.id ? cat.color + '12' : 'transparent', color: category === cat.id ? cat.color : 'var(--tx2)', fontSize: 13, fontWeight: category === cat.id ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}
                     >
                       {cat.id ? <CategoryIcon id={cat.id} size={15}/> : <LayoutGrid size={15}/>}{cat.label}
-                      {category === cat.id && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                      {category === cat.id && <Check size={14} strokeWidth={2.5} style={{ marginLeft: 'auto', flexShrink: 0 }}/>}
                     </button>
                   ))}
                 </div>
@@ -236,7 +236,7 @@ export default function RecherchePage() {
                   {[0, 3, 4, 4.5].map(r => (
                     <button key={r} onClick={() => setMinRating(r)}
                       style={{ flex: 1, padding: '7px 4px', borderRadius: 8, border: `0.5px solid ${minRating === r ? '#5A3DF0' : 'var(--border)'}`, background: minRating === r ? '#5A3DF00d' : 'var(--bg2)', color: minRating === r ? '#5A3DF0' : 'var(--tx3)', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: minRating === r ? 800 : 300 }}
-                    >{r === 0 ? 'Tous' : `${r}+⭐`}</button>
+                    >{r === 0 ? 'Tous' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{r}+ <Star size={10} fill="currentColor" strokeWidth={0}/></span>}</button>
                   ))}
                 </div>
               </div>

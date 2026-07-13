@@ -125,7 +125,7 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
                     </div>
                     <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 12, color: '#4ade80' }}>● Disponible</span>
+                      <span style={{ fontSize: 12, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade8066' }}/>Disponible</span>
                       <span style={{ fontSize: 13, fontWeight: 800, color: '#5A3DF0' }}>{a.hourly_rate} DA/h</span>
                     </div>
                   </div>

@@ -10,20 +10,22 @@ import { useLang } from '@/lib/LangContext'
 import { ArtisanZonePicker } from '@/components/ArtisanZonePicker'
 import { CategoryIcon } from '@/components/icons'
 import { Check, User, Wrench, Wallet, MapPin, PartyPopper, CheckCircle2, Rocket } from 'lucide-react'
+import { LogoMark } from '@/components/Logo'
 
 
 
+// Libellés traduits au rendu via t('categories.*')
 const CATEGORIES = [
-  { id: 'plomberie',    icon: '⚙',  label: 'Plomberie',    color: '#3b82f6' },
-  { id: 'electricite',  icon: '⚡',  label: 'Électricité',  color: '#f59e0b' },
-  { id: 'menage',       icon: '✦',  label: 'Ménage',        color: '#10b981' },
-  { id: 'demenagement', icon: '◈',  label: 'Déménagement',  color: '#7C5CFF' },
-  { id: 'jardinage',    icon: '❧',  label: 'Jardinage',     color: '#22c55e' },
-  { id: 'peinture',     icon: '◉',  label: 'Peinture',      color: '#ef4444' },
-  { id: 'serrurerie',   icon: '⌘',  label: 'Serrurerie',    color: '#f97316' },
-  { id: 'informatique', icon: '⬡',  label: 'Informatique',  color: '#5A3DF0' },
-  { id: 'coiffure',     icon: '✂',  label: 'Coiffure',      color: '#ec4899' },
-  { id: 'autre',        icon: '✳',  label: 'Autre',         color: '#a78bfa' },
+  { id: 'plomberie',    color: '#3b82f6' },
+  { id: 'electricite',  color: '#f59e0b' },
+  { id: 'menage',       color: '#10b981' },
+  { id: 'demenagement', color: '#7C5CFF' },
+  { id: 'jardinage',    color: '#22c55e' },
+  { id: 'peinture',     color: '#ef4444' },
+  { id: 'serrurerie',   color: '#f97316' },
+  { id: 'informatique', color: '#5A3DF0' },
+  { id: 'coiffure',     color: '#ec4899' },
+  { id: 'autre',        color: '#a78bfa' },
 ]
 
 export default function OnboardingPage() {
@@ -100,14 +102,14 @@ export default function OnboardingPage() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'Nexa, sans-serif' }}>
 
         {/* Grille fond */}
-        <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }}/>
+        <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(90,61,240,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(90,61,240,0.03) 1px,transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }}/>
 
         <div style={{ width: '100%', maxWidth: 560, position: 'relative', direction: isAr ? 'rtl' : 'ltr' }}>
 
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: 'var(--bg)' }}>B</div>
+              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(90,61,240,0.35)' }}><LogoMark size={19} variant="white" /></div>
               <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)', letterSpacing: '.1em' }}>BETI</span>
             </div>
           </div>
@@ -168,8 +170,8 @@ export default function OnboardingPage() {
                       style={{ padding: '14px 16px', borderRadius: 12, cursor: 'pointer', border: `0.5px solid ${category === cat.id ? cat.color : 'var(--border)'}`, background: category === cat.id ? cat.color + '12' : 'var(--bg)', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s' }}
                     >
                       <div style={{ width: 32, height: 32, borderRadius: 8, background: category === cat.id ? cat.color + '28' : 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={cat.id} size={16} color={category === cat.id ? cat.color : 'var(--tx2)'}/></div>
-                      <span style={{ fontSize: 13, fontWeight: category === cat.id ? 800 : 300, color: category === cat.id ? cat.color : 'var(--tx2)' }}>{cat.label}</span>
-                      {category === cat.id && <span style={{ marginLeft: 'auto', color: cat.color }}>✓</span>}
+                      <span style={{ fontSize: 13, fontWeight: category === cat.id ? 800 : 300, color: category === cat.id ? cat.color : 'var(--tx2)' }}>{t(`categories.${cat.id}`)}</span>
+                      {category === cat.id && <Check size={15} color={cat.color} strokeWidth={2.5} style={{ marginInlineStart: 'auto', flexShrink: 0 }}/>}
                     </div>
                   ))}
                 </div>

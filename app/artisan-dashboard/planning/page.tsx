@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { SkeletonPage } from '@/components/Skeleton'
 import { Calendar, ClipboardList, Inbox, Clock, User, Phone, MapPin, Banknote } from 'lucide-react'
+import NavigateButton from '@/components/NavigateButton'
 
 type Mission = {
   id: string
@@ -14,6 +15,8 @@ type Mission = {
   scheduled_at: string
   status: string
   price_agreed: number | null
+  lat: number | null
+  lng: number | null
   profiles: { full_name: string; phone: string | null } | null
 }
 
@@ -204,6 +207,9 @@ export default function Planning() {
                     {m.profiles?.phone && <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 4 }}><Phone size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.profiles.phone}</div>}
                     <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}><MapPin size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.address}</div>
                     {m.price_agreed && <div style={{ fontSize: 12, color: '#5A3DF0', fontWeight: 800, marginTop: 8 }}><Banknote size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.price_agreed} DA/h</div>}
+                    {m.status !== 'completed' && (
+                      <div style={{ marginTop: 12 }}><NavigateButton lat={m.lat} lng={m.lng} /></div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -238,6 +244,7 @@ export default function Planning() {
                         {m.price_agreed && <span style={{ fontSize: 12, color: '#5A3DF0', fontWeight: 800 }}><Banknote size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.price_agreed} DA/h</span>}
                       </div>
                     </div>
+                    {m.status !== 'completed' && <NavigateButton lat={m.lat} lng={m.lng} />}
                   </div>
                 ))}
               </div>

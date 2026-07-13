@@ -7,7 +7,7 @@ import { ArtisanAvatar } from '@/components/ReviewPhotos'
 import { PortfolioManager } from '@/components/Portfolio'
 import { effectivePlan } from '@/lib/subscription'
 import { CategoryIcon } from '@/components/icons'
-import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock } from 'lucide-react'
+import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 
 // ── Types ──
@@ -494,7 +494,7 @@ export default function ArtisanProfileConfig() {
                 <div className="card" style={{ borderColor: '#5A3DF055', padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pickService')}</div>
-                    <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', fontSize: 16 }}>✕</button>
+                    <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', display: 'flex', padding: 2 }}><X size={16}/></button>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                     {CATEGORIES.filter(c => !services.find(s => s.category === c.id)).map(cat => (
@@ -706,7 +706,7 @@ export default function ArtisanProfileConfig() {
                     {tags.map(tag => (
                       <div key={tag} className="neon-tag">
                         {tag}
-                        <button className="neon-tag-x" onClick={() => removeTag(tag)}>✕</button>
+                        <button className="neon-tag-x" onClick={() => removeTag(tag)} style={{ display: 'inline-flex', alignItems: 'center' }}><X size={11} strokeWidth={2.5}/></button>
                       </div>
                     ))}
                   </div>
@@ -763,8 +763,8 @@ export default function ArtisanProfileConfig() {
                     background: 'color-mix(in srgb,#5A3DF0 4%,var(--bg2))',
                     border: '1px solid color-mix(in srgb,#5A3DF0 12%,transparent)',
                   }}>
-                    <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.1em', marginBottom: 10 }}>
-                      ✦ {t('artisanProfile.tagSuggestions')}
+                    <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.1em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Sparkles size={11}/> {t('artisanProfile.tagSuggestions')}
                     </div>
                     <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                       {POPULAR_TAGS.filter(tag => !tags.includes(tag)).slice(0, 10).map(tag => (

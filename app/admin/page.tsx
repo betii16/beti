@@ -514,7 +514,7 @@ export default function AdminDashboard() {
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#5A3DF0' : 'var(--tx3)' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)}` : '—'}</td>
+                          <td style={{ color: a.rating_avg > 0 ? '#5A3DF0' : 'var(--tx3)' }}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={11} fill="#f59e0b" strokeWidth={0}/>{a.rating_avg.toFixed(1)}</span> : '—'}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'pending'}/></td>
                         </tr>
                       ))}
@@ -559,7 +559,7 @@ export default function AdminDashboard() {
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
                           <td style={{ color: '#5A3DF0', fontWeight: 800 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#5A3DF0' : 'var(--tx3)' }}>{a.rating_avg > 0 ? `⭐ ${a.rating_avg.toFixed(1)} (${a.rating_count})` : '—'}</td>
+                          <td style={{ color: a.rating_avg > 0 ? '#5A3DF0' : 'var(--tx3)' }}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={11} fill="#f59e0b" strokeWidth={0}/>{a.rating_avg.toFixed(1)} ({a.rating_count})</span> : '—'}</td>
                           <td>{a.total_missions || 0}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'suspended'}/></td>
                           <td>
@@ -699,7 +699,7 @@ export default function AdminDashboard() {
                             <div style={{ flex: 1 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                                 <div style={{ display: 'flex', gap: 2 }}>
-                                  {[1,2,3,4,5].map(i => <span key={i} style={{ fontSize: 12, color: i <= r.rating ? '#5A3DF0' : 'var(--border)' }}>★</span>)}
+                                  {[1,2,3,4,5].map(i => <Star key={i} size={12} fill={i <= r.rating ? '#f59e0b' : 'var(--border)'} strokeWidth={0}/>)}
                                 </div>
                                 <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 300 }}>
                                   {r.client?.full_name || 'Client'} → {r.artisan_profile?.full_name || 'Artisan'}
