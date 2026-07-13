@@ -104,14 +104,27 @@ export default function CinematicLanding({ onClose }: { onClose: () => void }) {
   const heroRef = useRef<HTMLDivElement>(null)
   const hintRef = useRef<HTMLDivElement>(null)
   const camRef = useRef<CamState>(initialCamState())
-  // Debug : ?cineCam=x,y,z,tx,ty,tz fige la caméra à cette pose (repérage des pièces)
+  // Debug : ?cineCam=x,y,z,tx,ty,tz fige la caméra à cette pose (repérage) ;
+  // ?cineZone=N charge la section N complète (caméra + halo + mascotte) pour
+  // régler les positions de lib/cinematic.ts capture par capture.
   if (typeof window !== 'undefined' && camRef.current.spin === 1) {
-    const dbg = new URLSearchParams(window.location.search).get('cineCam')
+    const params = new URLSearchParams(window.location.search)
+    const dbg = params.get('cineCam')
     if (dbg) {
       const [x, y, z, tx, ty, tz] = dbg.split(',').map(Number)
       if ([x, y, z, tx, ty, tz].every(n => Number.isFinite(n))) {
         Object.assign(camRef.current, { x, y, z, tx, ty, tz, spin: 0 })
       }
+    }
+    const zs = params.get('cineZone')
+    const s = zs != null ? SECTIONS[parseInt(zs, 10)] : undefined
+    if (s) {
+      Object.assign(camRef.current, {
+        x: s.cam[0], y: s.cam[1], z: s.cam[2],
+        tx: s.look[0], ty: s.look[1], tz: s.look[2],
+        hx: s.look[0], hz: s.look[2], hOp: 1, hColor: s.color,
+        bx: s.bot[0], bz: s.bot[1], zone: SECTIONS.indexOf(s), spin: 0,
+      })
     }
   }
   const mouseRef = useRef({ x: 0, y: 0 })
@@ -172,6 +185,7 @@ export default function CinematicLanding({ onClose }: { onClose: () => void }) {
           x: midX, y: ARC_HEIGHT, z: midZ,
           tx: w.look[0], ty: w.look[1], tz: w.look[2],
           hx: w.look[0], hz: w.look[2],
+          bx: SECTIONS[i].bot[0], bz: SECTIONS[i].bot[1],
           ...(i === 0 ? { spin: 0 } : {}),
           ease: 'power1.inOut', duration: 0.55,
         }).to(cam, {

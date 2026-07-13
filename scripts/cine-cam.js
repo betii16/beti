@@ -1,12 +1,14 @@
 // scripts/cine-cam.js — capture une pose caméra précise de l'expérience 3D.
-// Usage : node scripts/cine-cam.js "x,y,z,tx,ty,tz" sortie.png
+// Usage : node scripts/cine-cam.js "x,y,z,tx,ty,tz" sortie.png   (pose libre)
+//         node scripts/cine-cam.js zone:2 sortie.png             (section complète)
 const { chromium } = require('playwright')
 
 ;(async () => {
   const [pose, out] = process.argv.slice(2)
+  const q = pose.startsWith('zone:') ? `cineZone=${pose.slice(5)}` : `cineCam=${pose}`
   const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] })
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
-  await page.goto(`http://localhost:3000/?cine=1&cineCam=${pose}`, { waitUntil: 'networkidle', timeout: 90000 })
+  await page.goto(`http://localhost:3000/?cine=1&${q}`, { waitUntil: 'networkidle', timeout: 90000 })
   await page.waitForTimeout(7000)
   // Cache tout l'habillage HTML : seule la scène 3D reste visible
   await page.evaluate(() => {

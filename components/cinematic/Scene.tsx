@@ -11,9 +11,9 @@
 import { useRef, useEffect, useMemo, type MutableRefObject } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useGLTF, ContactShadows } from '@react-three/drei'
+import { useGLTF, useAnimations, ContactShadows } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
-import { MODEL_URL, CINE_VIOLET, type CamState } from '@/lib/cinematic'
+import { MODEL_URL, BOT_URL, CINE_VIOLET, type CamState } from '@/lib/cinematic'
 
 type Mouse = MutableRefObject<{ x: number; y: number }>
 
@@ -123,6 +123,104 @@ function HighlightPulse({ cam }: { cam: CamState }) {
       <mesh renderOrder={998}>
         <circleGeometry args={[1.15, 48]} />
         <meshBasicMaterial ref={discMat} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} depthTest={false} />
+      </mesh>
+    </group>
+  )
+}
+
+/* ── Mascotte artisan : petit robot qui COURT d'une pièce à l'autre au scroll,
+      travaille sur la zone du halo avec un outil coloré selon le métier
+      (oscillation « coup de marteau »), et danse dans l'embrasement final.
+      Il se place toujours entre la caméra et la zone → jamais caché par un mur.
+      NB : matériaux PBR → éclairé par les lumières dédiées du Canvas (l'appartement
+      unlit les ignore, donc zéro impact sur le rendu baked). ── */
+const BOT_SCALE = 0.26 // robot natif ≈ 4,5 u → ≈ 1,15 m : mascotte bien lisible
+const WORK_ANIMS = ['Punch', 'Yes', 'Punch', 'Wave', 'ThumbsUp'] // par section
+function ArtisanBot({ cam }: { cam: CamState }) {
+  const { scene, animations } = useGLTF(BOT_URL, true)
+  const group = useRef<THREE.Group>(null)
+  const toolGroup = useRef<THREE.Group>(null)
+  const toolMat = useRef<THREE.MeshBasicMaterial>(null)
+  const { actions } = useAnimations(animations, group)
+  const current = useRef('')
+  const prev = useRef(new THREE.Vector2(0, 0))
+  const yaw = useRef(0)
+
+  const play = (name: string) => {
+    if (current.current === name || !actions[name]) return
+    actions[current.current]?.fadeOut(0.25)
+    actions[name]!.reset().fadeIn(0.25).play()
+    current.current = name
+  }
+
+  useFrame((state, dt) => {
+    if (!group.current) return
+    const t = state.clock.elapsedTime
+    const finalMode = cam.tint > 0.25
+    const visible = cam.hOp > 0.04 || finalMode
+
+    // Cible : position par pièce définie dans la config (SECTIONS[].bot),
+    // interpolée par GSAP (cam.bx/bz) → il court d'une pièce à l'autre ;
+    // au final, il vient danser au milieu de l'appartement.
+    const tx = finalMode ? 0 : cam.bx
+    const tz = finalMode ? 2 : cam.bz
+    const k = 1 - Math.pow(0.0005, dt)
+    const p = group.current.position
+    p.x += (tx - p.x) * k
+    p.z += (tz - p.z) * k
+
+    // Vitesse réelle → course entre les pièces, travail une fois posé
+    const speed = Math.hypot(p.x - prev.current.x, p.z - prev.current.y) / Math.max(dt, 1e-4)
+    const running = !finalMode && speed > 1.4
+
+    // Orientation : vers son déplacement en courant, vers la zone en travaillant,
+    // vers la caméra pour la danse finale — toujours amorti.
+    let targetYaw = yaw.current
+    if (running) targetYaw = Math.atan2(tx - p.x, tz - p.z)
+    else if (finalMode) targetYaw = Math.atan2(cam.x - p.x, cam.z - p.z)
+    else targetYaw = Math.atan2(cam.hx - p.x, cam.hz - p.z)
+    let d = targetYaw - yaw.current
+    while (d > Math.PI) d -= Math.PI * 2
+    while (d < -Math.PI) d += Math.PI * 2
+    yaw.current += d * k
+    group.current.rotation.y = yaw.current
+
+    // Apparition/disparition en douceur
+    const s = THREE.MathUtils.lerp(group.current.scale.x, visible ? BOT_SCALE : 0.0001, k)
+    group.current.scale.setScalar(s)
+
+    // Animation
+    if (finalMode) play('Dance')
+    else if (running) play('Running')
+    else play(WORK_ANIMS[Math.max(0, cam.zone)] || 'Punch')
+
+    // Outil : visible quand il travaille, couleur du métier, geste de frappe
+    if (toolGroup.current) {
+      toolGroup.current.visible = visible && !running && !finalMode
+      toolGroup.current.rotation.x = -0.6 + Math.sin(t * 7) * 0.55
+    }
+    if (toolMat.current) toolMat.current.color.set(cam.hColor)
+    prev.current.set(p.x, p.z)
+  })
+
+  return (
+    <group ref={group} scale={0.0001}>
+      <primitive object={scene} />
+      {/* Outil stylisé dans la main droite (coordonnées natives du robot) */}
+      <group ref={toolGroup} position={[1.15, 2.15, 0.7]}>
+        <mesh position={[0, 0.35, 0]}>
+          <cylinderGeometry args={[0.09, 0.09, 0.9, 10]} />
+          <meshBasicMaterial color="#3a3a4a" />
+        </mesh>
+        <mesh position={[0, 0.85, 0]}>
+          <boxGeometry args={[0.5, 0.28, 0.24]} />
+          <meshBasicMaterial ref={toolMat} color={CINE_VIOLET} />
+        </mesh>
+      </group>
+      {/* Ombre portée simple sous les pieds */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+        <circleGeometry args={[1.15, 24]} />
+        <meshBasicMaterial color="#000" transparent opacity={0.22} depthWrite={false} />
       </mesh>
     </group>
   )
@@ -243,6 +341,7 @@ function AnimatedBloom({ cam }: { cam: CamState }) {
 }
 
 useGLTF.preload(MODEL_URL, true)
+useGLTF.preload(BOT_URL, true)
 
 /* ── Canvas principal ── */
 export default function Scene({ cam, mouse }: { cam: CamState; mouse: Mouse }) {
@@ -254,10 +353,15 @@ export default function Scene({ cam, mouse }: { cam: CamState; mouse: Mouse }) {
       gl={{ antialias: true, powerPreference: 'high-performance', alpha: true }}
       style={{ position: 'absolute', inset: 0 }}
     >
+      {/* Lumières dédiées à la mascotte (PBR) — l'appartement unlit les ignore.
+          Intensités modérées : au-delà, le blanc du robot part dans le bloom. */}
+      <ambientLight intensity={0.65} />
+      <directionalLight position={[6, 12, 8]} intensity={0.85} />
       <CameraRig cam={cam} mouse={mouse} />
       <ApartmentModel cam={cam} />
       <HighlightPulse cam={cam} />
       <ZoneParticles cam={cam} />
+      <ArtisanBot cam={cam} />
       <DustParticles />
       <ContactShadows position={[0, -0.02, 0]} scale={44} blur={2.6} far={5} opacity={0.32} frames={1} />
       <EffectComposer multisampling={0}>
