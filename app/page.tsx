@@ -9,9 +9,10 @@ import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
-import { LayoutGrid, Users, Heart, Clock, MapPinned, Search, CalendarCheck, CheckCircle2 } from 'lucide-react'
+import { LayoutGrid, Users, Heart, Clock, MapPinned, Search, CalendarCheck, CheckCircle2, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
 import { LogoMark } from '@/components/Logo'
+import CinematicGate from '@/components/cinematic/CinematicGate'
 
 type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string;phone?:string }
 type Review = { id:string;rating:number;comment:string|null;created_at:string;photos?:string[];profiles?:{full_name:string}|null }
@@ -163,12 +164,15 @@ export default function Home(){
         .tag{padding:4px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--border);font-size:10px;color:var(--tx3);font-weight:400}
       `}</style>
 
+      {/* ── EXPÉRIENCE CINÉMATIQUE 3D (première visite desktop) ── */}
+      <CinematicGate />
+
       <div style={{minHeight:'100vh',paddingTop:52,transition:'background 0.4s',direction:isAr?'rtl':'ltr'}}>
 
         {/* ── THEME TOGGLE (floating) ── */}
         <button onClick={toggleTheme} className="desktop-only" style={{position:'fixed',bottom:24,right:24,zIndex:200,width:44,height:44,borderRadius:'50%',background:'var(--bg2)',border:'1px solid var(--border)',boxShadow:'var(--card-shadow)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,transition:'all 0.3s'}}
           title={dark?t('home.themeLight'):t('home.themeDark')}>
-          {dark?'☀':'☾'}
+          {dark?<Sun size={18} color="var(--tx2)" strokeWidth={1.9}/>:<Moon size={17} color="var(--tx2)" strokeWidth={1.9}/>}
         </button>
 
         {/* ── ACCUEIL MOBILE (app native, < 768px) ── */}
@@ -237,7 +241,7 @@ export default function Home(){
           <div style={{marginBottom:24}}><div className="section-label">{t('home.servicesTag')}</div><h2 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.servicesTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
             <div onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} className="card is-clickable" style={{padding:18,borderColor:!cat?'var(--accent)':'var(--border)'}}>
-              <div style={{fontSize:20,marginBottom:10,opacity:0.6}}>✳</div>
+              <div style={{marginBottom:10}}><LayoutGrid size={22} color={!cat?'var(--accent)':'var(--tx2)'} strokeWidth={1.75}/></div>
               <div style={{fontSize:14,fontWeight:700,color:!cat?'var(--accent)':'var(--tx)',marginBottom:4}}>{t('home.allServices')}</div>
               <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{t('home.allServicesSub')}</div>
             </div>
@@ -250,7 +254,7 @@ export default function Home(){
               </div>
             ))}
             <div onClick={()=>{setCat('autre');setTags([])}} className="card is-clickable" style={{padding:18,borderColor:cat==='autre'?'#a78bfa':'var(--border)'}}>
-              <div style={{marginBottom:10}}><LayoutGrid size={22} color={cat==='autre'?'#a78bfa':'var(--tx2)'} strokeWidth={1.75}/></div>
+              <div style={{marginBottom:10}}><Shapes size={22} color={cat==='autre'?'#a78bfa':'var(--tx2)'} strokeWidth={1.75}/></div>
               <div style={{fontSize:14,fontWeight:700,color:cat==='autre'?'#a78bfa':'var(--tx)',marginBottom:4}}>{t('home.otherService')}</div>
               <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{t('home.otherServiceSub')}</div>
             </div>
@@ -279,12 +283,21 @@ export default function Home(){
             </div>
           ):artisans.length===0?(
             <div style={{textAlign:'center',padding:'64px 0'}}>
-              {cat==='autre'&&tags.length>0?(<><div style={{fontSize:15,fontWeight:700,color:'var(--tx2)',marginBottom:8}}>{t('home.noKeywordResults')}</div><button onClick={()=>{setCat('');setTags([])}} className="btn-primary" style={{marginTop:16}}>{t('home.seeAll')}</button></>):cat==='autre'&&tags.length===0?null:(<><div style={{fontSize:15,fontWeight:700,color:'var(--tx2)',marginBottom:8}}>{t('home.noArtisan')}</div><button onClick={()=>setCat('')} className="btn-primary" style={{marginTop:16}}>{t('home.seeAll')}</button></>)}
+              {cat==='autre'&&tags.length===0?null:(<>
+                <div style={{width:64,height:64,borderRadius:20,margin:'0 auto 18px',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--glass-surface)',border:'1px solid var(--glass-edge)'}}>
+                  <SearchX size={28} color="var(--tx3)" strokeWidth={1.6}/>
+                </div>
+                <div style={{fontSize:15,fontWeight:700,color:'var(--tx2)',marginBottom:8}}>{cat==='autre'?t('home.noKeywordResults'):t('home.noArtisan')}</div>
+                <button onClick={()=>{setCat('');setTags([])}} className="btn-primary" style={{marginTop:16}}>{t('home.seeAll')}</button>
+              </>)}
             </div>
           ):(
             <>
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))',gap:12}}>
-                {vis.map((a,i)=>{const c=cc(a.category);const init=a.full_name?.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'A';const rt=Math.floor(Math.random()*20+5)
+                {vis.map((a,i)=>{const c=cc(a.category);const init=a.full_name?.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'A'
+                  // Temps de réponse indicatif STABLE (dérivé de l'id — pas de Math.random
+                  // qui changerait à chaque re-render sous les yeux de l'utilisateur)
+                  const rt=5+(Array.from(a.artisan_id).reduce((h,ch)=>((h*31+ch.charCodeAt(0))|0),7)>>>0)%20
                   return(
                     <div key={a.artisan_id} onClick={()=>openA(a)} className="acard"
                       style={{borderRadius:20,cursor:'pointer',overflow:'hidden',opacity:a.is_available?1:0.4,position:'relative',animation:`fadeUp 0.5s ease ${i*0.06}s both`}}>
@@ -475,7 +488,7 @@ export default function Home(){
           <div style={{padding:24,borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:14}}>
             {sel.avatar_url?<img src={sel.avatar_url} alt="" style={{width:52,height:52,borderRadius:'50%',objectFit:'cover',border:`2px solid ${cc(sel.category)}33`}}/>:<div style={{width:52,height:52,borderRadius:'50%',background:`${cc(sel.category)}12`,border:`2px solid ${cc(sel.category)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:cc(sel.category)}}>{sel.full_name?.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>}
             <div style={{flex:1}}><div style={{fontSize:17,fontWeight:800}}>{sel.full_name}</div><div style={{fontSize:11,color:cc(sel.category),fontWeight:700,marginBottom:3}}>{cl(sel.category)}</div><div style={{display:'flex',alignItems:'center',gap:5}}><Stars r={sel.rating_avg} s={12}/><span style={{fontSize:12,fontWeight:800,color:'#f59e0b'}}>{sel.rating_avg?.toFixed(1)}</span><span style={{fontSize:10,color:'var(--tx3)'}}>({sel.rating_count})</span></div></div>
-            <button onClick={()=>setSel(null)} style={{background:'transparent',border:'none',color:'var(--tx3)',fontSize:18,cursor:'pointer'}}>✕</button>
+            <button onClick={()=>setSel(null)} style={{background:'transparent',border:'none',color:'var(--tx3)',cursor:'pointer',display:'flex',padding:4}}><X size={18}/></button>
           </div>
           <div style={{padding:'14px 24px',display:'flex',gap:10,borderBottom:'1px solid var(--border)'}}>
             {[{v:`${(sel.hourly_rate||0).toLocaleString('fr-DZ')} ${t('common.da')}`,l:t('booking.rate')},{v:sel.distance_km!=null?`${sel.distance_km.toFixed(1)} ${t('common.km')}`:'—',l:t('home.sortDistance')},{v:sel.total_missions.toString(),l:t('profile.missions')}].map(s=>(

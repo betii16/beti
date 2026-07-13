@@ -651,6 +651,7 @@ export const translations = {
     bookNow:      { fr: 'Réserver maintenant',   ar: 'احجز الآن'          },
     viewProfile:  { fr: 'Voir le profil',        ar: 'عرض الملف'          },
     da:           { fr: 'DA',                    ar: 'دج'                 },
+    navigate:     { fr: 'Y aller',               ar: 'اذهب'               },
     perHour:      { fr: '/h',                    ar: '/س'                 },
     km:           { fr: 'km',                    ar: 'كم'                 },
     years:        { fr: 'ans',                   ar: 'سنوات'              },
@@ -1006,6 +1007,29 @@ export const translations = {
     next:       { fr: 'Continuer',                        ar: 'متابعة'                              },
     start:      { fr: 'Créer un compte',                  ar: 'إنشاء حساب'                          },
     later:      { fr: 'S\'inscrire plus tard',            ar: 'التسجيل لاحقاً'                      },
+  },
+
+  // ── Expérience cinématique 3D (première visite desktop) ───────────
+  cine: {
+    heroTitle:  { fr: 'Trouvez l\'artisan parfait en quelques minutes.', ar: 'اعثر على الحرفي المثالي في دقائق.' },
+    heroSub:    { fr: 'Plombiers, électriciens, peintres, menuisiers, climatisation et plus encore.', ar: 'سبّاكون، كهربائيون، دهّانون، نجّارون، تكييف والمزيد.' },
+    ctaFind:    { fr: 'Trouver un artisan',    ar: 'ابحث عن حرفي'        },
+    ctaBecome:  { fr: 'Devenir artisan',       ar: 'كن حرفياً'           },
+    skip:       { fr: 'Passer l\'intro',       ar: 'تخطّي المقدمة'       },
+    scrollHint: { fr: 'Faites défiler pour visiter', ar: 'مرّر للزيارة'  },
+    loading:    { fr: 'Préparation de la visite…',   ar: 'جارٍ تجهيز الزيارة…' },
+    s1Title:    { fr: 'Plomberie',             ar: 'السباكة'             },
+    s1Desc:     { fr: 'Fuites, urgences, installations et entretien.', ar: 'تسرّبات، طوارئ، تركيبات وصيانة.' },
+    s2Title:    { fr: 'Menuiserie',            ar: 'النجارة'             },
+    s2Desc:     { fr: 'Montage de meubles et travail du bois sur mesure.', ar: 'تركيب الأثاث وأعمال الخشب حسب الطلب.' },
+    s3Title:    { fr: 'Électricité',           ar: 'الكهرباء'            },
+    s3Desc:     { fr: 'Travaux électriques sûrs et professionnels.', ar: 'أعمال كهربائية آمنة واحترافية.' },
+    s4Title:    { fr: 'Peinture',              ar: 'الدهان'              },
+    s4Desc:     { fr: 'Intérieur et extérieur, finitions impeccables.', ar: 'داخلي وخارجي، لمسات نهائية متقنة.' },
+    s5Title:    { fr: 'Climatisation',         ar: 'التكييف'             },
+    s5Desc:     { fr: 'Installation, entretien et dépannage.', ar: 'تركيب وصيانة وإصلاح.' },
+    finalTitle: { fr: 'Votre maison mérite les meilleurs artisans.', ar: 'منزلك يستحق أفضل الحرفيين.' },
+    finalCta:   { fr: 'Commencer',             ar: 'ابدأ الآن'           },
   },
 
 } as const

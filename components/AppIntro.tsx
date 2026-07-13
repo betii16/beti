@@ -38,18 +38,23 @@ export default function AppIntro() {
   const touch = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
-    try { if (!localStorage.getItem(DONE_KEY)) setShow(true) } catch {}
+    // Mobile uniquement : sur desktop, la première visite est prise en charge
+    // par l'expérience cinématique 3D (components/cinematic/CinematicGate).
+    try {
+      if (!localStorage.getItem(DONE_KEY) && window.matchMedia('(max-width: 767px)').matches) setShow(true)
+    } catch {}
   }, [])
 
   // Préchargement : une photo n'est utilisée qu'après chargement réussi → pas
   // de bordel d'image cassée si le fichier n'existe pas encore.
   useEffect(() => {
+    if (!show) return // pas de requêtes (404 si photos absentes) quand l'intro ne s'affiche pas
     SLIDES.forEach((s, i) => {
       const img = new window.Image()
       img.src = s.img
       img.onload = () => setOkPhotos(p => ({ ...p, [i + 1]: true }))
     })
-  }, [])
+  }, [show])
 
   if (!show) return null
 
