@@ -79,7 +79,7 @@ export default function Navigation() {
       <div style={{ display: 'flex', gap: 3 }}>
         {(['fr', 'ar'] as const).map(l => (
           <button key={l} onClick={() => setLang(l)}
-            style={{ padding: '3px 8px', borderRadius: 6, border: 'none', background: lang === l ? 'var(--accent, #5A3DF0)' : 'var(--border, #2a2a3a)', color: lang === l ? '#fff' : 'var(--tx3, #555)', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif' }}>
+            style={{ padding: '3px 8px', borderRadius: 6, border: 'none', background: lang === l ? 'var(--accent, #175CC4)' : 'var(--border, #2a2a3a)', color: lang === l ? '#fff' : 'var(--tx3, #555)', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif' }}>
             {l.toUpperCase()}
           </button>
         ))}
@@ -111,7 +111,7 @@ export default function Navigation() {
         <div className="desktop-only" style={{ display: 'flex', gap: 30, alignItems: 'center', justifySelf: 'center' }}>
           {LINKS.map(l => {
             const active = l.href === pathname
-            const base = l.gold ? 'var(--accent, #5A3DF0)' : 'var(--tx2)'
+            const base = l.gold ? 'var(--accent, #175CC4)' : 'var(--tx2)'
             return (
               <a key={l.href} href={l.href}
                 className={`nav-link${active ? ' nav-link-active' : ''}`}
@@ -123,7 +123,7 @@ export default function Navigation() {
                   }
                 }}
                 style={{ fontSize: 13, fontWeight: 500, fontFamily: 'Nexa, sans-serif', color: base, textDecoration: 'none', transition: 'color 0.2s', letterSpacing: '0.01em' }}
-                onMouseEnter={e => (e.currentTarget.style.color = l.gold ? 'var(--accent, #5A3DF0)' : 'var(--tx)')}
+                onMouseEnter={e => (e.currentTarget.style.color = l.gold ? 'var(--accent, #175CC4)' : 'var(--tx)')}
                 onMouseLeave={e => (e.currentTarget.style.color = base)}
               >{l.label}</a>
             )
@@ -144,16 +144,16 @@ export default function Navigation() {
             <>
               <a href={getDashboardLink()} style={{ textDecoration: 'none', position: 'relative', display: 'flex' }}>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--border)', border: '0.5px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #5A3DF0)" strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #175CC4)" strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                   {notifCount > 0 && (
-                    <div style={{ position: 'absolute', top: -3, right: -3, width: 15, height: 15, borderRadius: '50%', background: 'var(--accent, #5A3DF0)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>{notifCount > 9 ? '9+' : notifCount}</div>
+                    <div style={{ position: 'absolute', top: -3, right: -3, width: 15, height: 15, borderRadius: '50%', background: 'var(--accent, #175CC4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>{notifCount > 9 ? '9+' : notifCount}</div>
                   )}
                 </div>
               </a>
 
               <div className="desktop-only" style={{ position: 'relative' }}>
                 <button onClick={() => setMenuOpen(!menuOpen)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px 4px 4px', borderRadius: 40, background: 'var(--border)', border: '0.5px solid var(--border2)', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'border-color 0.2s' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent, #5A3DF0)22', border: '1.5px solid var(--accent, #5A3DF0)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--accent, #5A3DF0)' }}>{(user.email || 'U')[0].toUpperCase()}</div>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent, #175CC4)22', border: '1.5px solid var(--accent, #175CC4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--accent, #175CC4)' }}>{(user.email || 'U')[0].toUpperCase()}</div>
                   <span style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 300 }}>{role || t('navArtisan.clientRole')}</span>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{ transform: menuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><path d="M6 9l6 6 6-6"/></svg>
                 </button>
@@ -164,7 +164,7 @@ export default function Navigation() {
 
                     <div style={{ padding: '12px 14px', borderBottom: '0.5px solid var(--border)', background: 'var(--bg)' }}>
                       <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--tx)', marginBottom: 2 }}>{user.email}</div>
-                      <div style={{ fontSize: 10, color: 'var(--accent, #5A3DF0)', fontWeight: 700, letterSpacing: '0.06em' }}>
+                      <div style={{ fontSize: 10, color: 'var(--accent, #175CC4)', fontWeight: 700, letterSpacing: '0.06em' }}>
                         {role === 'artisan' ? t('nav.artisanAcc') : role === 'admin' ? t('nav.adminAcc') : t('nav.clientAcc')}
                       </div>
                     </div>
@@ -225,12 +225,12 @@ export default function Navigation() {
             <>
               <a className="desktop-only" href="/auth/login">
                 <button style={{ padding: '6px 14px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'all 0.2s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent, #5A3DF0)'; e.currentTarget.style.color = 'var(--accent, #5A3DF0)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent, #175CC4)'; e.currentTarget.style.color = 'var(--accent, #175CC4)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--tx2)' }}
                 >{t('nav.login')}</button>
               </a>
               <a href="/auth/signup">
-                <button style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--gradient, linear-gradient(135deg,#5A3DF0,#7C5CFF))', border: 'none', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', boxShadow: '0 2px 8px #5A3DF022' }}>{t('nav.signup')}</button>
+                <button style={{ padding: '6px 14px', borderRadius: 8, background: 'var(--gradient, linear-gradient(135deg,#175CC4,#1E6FD6))', border: 'none', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', boxShadow: '0 2px 8px #175CC422' }}>{t('nav.signup')}</button>
               </a>
             </>
           )}

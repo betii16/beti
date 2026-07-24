@@ -27,20 +27,20 @@ export default function TrustButton({
           position: relative; display: inline-flex; align-items: center; justify-content: center;
           padding: var(--ring); border: none; border-radius: 999px; background: transparent;
           isolation: isolate; overflow: hidden; font-family: 'Nexa', sans-serif; cursor: pointer;
-          box-shadow: 0 8px 28px color-mix(in srgb,#5A3DF0 38%,transparent);
+          box-shadow: 0 8px 28px color-mix(in srgb,#175CC4 38%,transparent);
           transition: transform .2s ease, box-shadow .2s ease;
         }
-        .beti-trust:hover { transform: translateY(-1px); box-shadow: 0 12px 34px color-mix(in srgb,#5A3DF0 48%,transparent); }
+        .beti-trust:hover { transform: translateY(-1px); box-shadow: 0 12px 34px color-mix(in srgb,#175CC4 48%,transparent); }
         .beti-trust:active { transform: translateY(0); }
         .beti-trust::before {
           content: ""; position: absolute; z-index: -2; top: 50%; left: 50%;
           width: 250%; aspect-ratio: 1; translate: -50% -50%;
-          background: conic-gradient(from 0deg,transparent 0deg 70deg,color-mix(in srgb,#fff 85%,#5A3DF0) 92deg,#fff 100deg,transparent 130deg 360deg);
+          background: conic-gradient(from 0deg,transparent 0deg 70deg,color-mix(in srgb,#fff 85%,#175CC4) 92deg,#fff 100deg,transparent 130deg 360deg);
           animation: beti-trust-rotate 3.8s linear infinite;
         }
         .beti-trust__face {
           position: relative; z-index: 1; display: inline-flex; align-items: center;
-          border-radius: 999px; background: var(--gradient,linear-gradient(135deg,#5A3DF0,#7C5CFF));
+          border-radius: 999px; background: var(--gradient,linear-gradient(135deg,#175CC4,#1E6FD6));
           color: #fff; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap;
         }
         .beti-trust__shine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; overflow: hidden; pointer-events: none; }
@@ -82,8 +82,8 @@ export default function TrustButton({
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 380, borderRadius: 24,
-              background: 'var(--bg2,#111)', border: '1px solid color-mix(in srgb,#5A3DF0 30%,transparent)',
-              boxShadow: '0 24px 64px rgba(0,0,0,.6), 0 0 0 1px color-mix(in srgb,#5A3DF0 15%,transparent)',
+              background: 'var(--bg2,#111)', border: '1px solid color-mix(in srgb,#175CC4 30%,transparent)',
+              boxShadow: '0 24px 64px rgba(0,0,0,.6), 0 0 0 1px color-mix(in srgb,#175CC4 15%,transparent)',
               overflow: 'hidden',
               animation: 'beti-trust-popup .25s ease',
               direction: isAr ? 'rtl' : 'ltr',
@@ -91,7 +91,7 @@ export default function TrustButton({
           >
             {/* Header violet dégradé */}
             <div style={{
-              background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)',
+              background: 'linear-gradient(135deg,#175CC4,#1E6FD6)',
               padding: '28px 28px 24px',
               position: 'relative',
             }}>
@@ -130,11 +130,11 @@ export default function TrustButton({
                 <div key={key} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   <div style={{
                     flexShrink: 0, width: 36, height: 36, borderRadius: 10,
-                    background: 'color-mix(in srgb,#5A3DF0 12%,var(--bg,#000))',
-                    border: '1px solid color-mix(in srgb,#5A3DF0 25%,transparent)',
+                    background: 'color-mix(in srgb,#175CC4 12%,var(--bg,#000))',
+                    border: '1px solid color-mix(in srgb,#175CC4 25%,transparent)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Icon size={17} color="#7C5CFF" strokeWidth={2} />
+                    <Icon size={17} color="#1E6FD6" strokeWidth={2} />
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx,#fff)', fontFamily: 'Nexa,sans-serif', marginBottom: 2 }}>{t(tk)}</div>

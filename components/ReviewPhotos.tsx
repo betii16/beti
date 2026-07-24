@@ -102,7 +102,7 @@ export function ReviewPhotoUpload({
             style={{
               width: 80, height: 80, borderRadius: 10,
               background: 'var(--bg)', border: '1px dashed var(--border)',
-              color: uploading ? '#444' : '#5A3DF0', fontSize: 24,
+              color: uploading ? '#444' : '#175CC4', fontSize: 24,
               cursor: uploading ? 'wait' : 'pointer',
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 4,
@@ -233,7 +233,7 @@ export function WorkGallery({
                   </div>
                 )}
                 {photos[selectedPhoto].service && (
-                  <div style={{ fontSize: 11, color: '#5A3DF0', marginTop: 4 }}>{photos[selectedPhoto].service}</div>
+                  <div style={{ fontSize: 11, color: '#175CC4', marginTop: 4 }}>{photos[selectedPhoto].service}</div>
                 )}
               </div>
               <div style={{ padding: '4px 12px', borderRadius: 20, background: '#0a2010', border: '0.5px solid #0a3a20', fontSize: 11, color: '#4ade80', fontWeight: 800 }}>
@@ -278,7 +278,7 @@ export function ArtisanAvatar({
   name,
   size = 88,
   editable = false,
-  color = '#5A3DF0',
+  color = '#175CC4',
   onUpload,
 }: {
   userId: string
@@ -364,7 +364,7 @@ export function ArtisanAvatar({
             style={{
               position: 'absolute', bottom: -2, right: -2,
               width: 28, height: 28, borderRadius: '50%',
-              background: '#5A3DF0', border: '2px solid #fff',
+              background: '#175CC4', border: '2px solid #fff',
               color: '#fff', fontSize: 12, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}

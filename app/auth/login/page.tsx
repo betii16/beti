@@ -100,7 +100,7 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(90, 61, 240,0.35)' }}><LogoMark size={20} variant="white" /></div>
+            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(23,92,196,0.35)' }}><LogoMark size={20} variant="white" /></div>
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.08em' }}>BETI</span>
           </a>
         </div>
@@ -141,7 +141,7 @@ export default function LoginPage() {
               {err && <Err msg={err} />}
               <button onClick={sendCode} disabled={loading || phone.length < 6} className="btn-primary btn-block btn-lg">{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
 
-              <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.noAccount')} <a href="/auth/signup" style={{ color: '#5A3DF0', textDecoration: 'none', fontWeight: 700 }}>{t('auth.register')}</a></p>
+              <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.noAccount')} <a href="/auth/signup" style={{ color: '#175CC4', textDecoration: 'none', fontWeight: 700 }}>{t('auth.register')}</a></p>
               <button onClick={() => { setEmailMode(true); setErr('') }} style={{ ...LINK, marginTop: 4 }}>{t('auth.loginByEmail')}</button>
             </>
           ) : (
@@ -153,7 +153,7 @@ export default function LoginPage() {
               <button onClick={() => verifyCode()} disabled={loading || code.length < 4} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.verifying') : t('auth.validate')}</button>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14 }}>
                 <button onClick={() => { setStep('phone'); setCode(''); setErr('') }} style={{ ...LINK, marginTop: 0, width: 'auto' }}>{t('auth.changeNumber')}</button>
-                <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, marginTop: 0, width: 'auto', color: cooldown > 0 ? 'var(--tx3)' : '#5A3DF0', cursor: cooldown > 0 ? 'default' : 'pointer' }}>
+                <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, marginTop: 0, width: 'auto', color: cooldown > 0 ? 'var(--tx3)' : '#175CC4', cursor: cooldown > 0 ? 'default' : 'pointer' }}>
                   {t('auth.resend')}{cooldown > 0 ? ` (${cooldown}s)` : ''}
                 </button>
               </div>

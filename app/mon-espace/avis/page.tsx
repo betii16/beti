@@ -135,7 +135,7 @@ function MesAvisContent() {
     <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
       <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('avis.eyebrow')}</div>
+          <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('avis.eyebrow')}</div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('avis.title')}</h1>
           <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{reviews.length} {t('avis.subtitle')}</p>
         </div>
@@ -150,9 +150,9 @@ function MesAvisContent() {
         )}
 
         {showForm && bookingId && bookingOk === true && (
-          <div className="card" style={{ borderColor: '#5A3DF055', padding: '28px', marginBottom: 28 }}>
-            <div style={{ height: 2, background: 'linear-gradient(90deg, #5A3DF0, #f59e0b)', marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
-            <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>{t('avis.formTitle')}</div>
+          <div className="card" style={{ borderColor: '#175CC455', padding: '28px', marginBottom: 28 }}>
+            <div style={{ height: 2, background: 'linear-gradient(90deg, #175CC4, #f59e0b)', marginBottom: 24, marginTop: -28, marginLeft: -28, marginRight: -28 }}/>
+            <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 16 }}>{t('avis.formTitle')}</div>
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 10 }}>{t('avis.ratingLabel')}</div>
               <Stars rating={rating} interactive onRate={setRating}/>

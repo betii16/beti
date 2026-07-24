@@ -67,9 +67,9 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
   return (
     <>
       <style suppressHydrationWarning>{`
-        .cat-link:hover { border-color: #5A3DF0 !important; color: #5A3DF0 !important; }
-        .art-card:hover { border-color: #5A3DF044 !important; transform: translateY(-2px); }
-        .wilaya-link:hover { color: #5A3DF0 !important; }
+        .cat-link:hover { border-color: #175CC4 !important; color: #175CC4 !important; }
+        .art-card:hover { border-color: #175CC444 !important; transform: translateY(-2px); }
+        .wilaya-link:hover { color: #175CC4 !important; }
         .cta-btn:hover { background: #d4b55a !important; }
       `}</style>
 
@@ -77,7 +77,7 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
 
         {/* Hero SEO */}
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 32px' }}>
-          <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
             WILAYA {w.num} · {w.nameAr}
           </div>
           <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
@@ -87,7 +87,7 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
             Trouvez un artisan certifié BETI à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Disponibles maintenant, paiement en cash.
           </p>
           <a href={`/?wilaya=${params.wilaya}`}>
-            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
+            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
               Trouver un artisan à {w.name}
             </button>
           </a>
@@ -123,10 +123,10 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
                       <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{a.profiles?.full_name || 'Artisan'}</span>
                       {effectivePlan(a) === 'premium' && <PremiumBadge size="sm" />}
                     </div>
-                    <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
+                    <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 12, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade8066' }}/>Disponible</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#5A3DF0' }}>{a.hourly_rate} DA/h</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#175CC4' }}>{a.hourly_rate} DA/h</span>
                     </div>
                   </div>
                 </a>

@@ -7,9 +7,9 @@ import { CheckCircle2, XCircle, Star, Inbox, MessageSquare, Phone, Clock, Bell }
 
 const ICONS:Record<string,{Icon:any;color:string}>={
   booking_confirmed:{Icon:CheckCircle2,color:'#10b981'},booking_cancelled:{Icon:XCircle,color:'#ef4444'},
-  booking_completed:{Icon:Star,color:'#5A3DF0'},new_booking:{Icon:Inbox,color:'#3b82f6'},
-  new_message:{Icon:MessageSquare,color:'#7C5CFF'},call_request:{Icon:Phone,color:'#f59e0b'},
-  reminder:{Icon:Clock,color:'#5A3DF0'},default:{Icon:Bell,color:'var(--tx3)'}
+  booking_completed:{Icon:Star,color:'#175CC4'},new_booking:{Icon:Inbox,color:'#3b82f6'},
+  new_message:{Icon:MessageSquare,color:'#1E6FD6'},call_request:{Icon:Phone,color:'#f59e0b'},
+  reminder:{Icon:Clock,color:'#175CC4'},default:{Icon:Bell,color:'var(--tx3)'}
 }
 
 export default function NotificationsPage(){
@@ -40,7 +40,7 @@ export default function NotificationsPage(){
       <div style={{maxWidth:640,margin:'0 auto',padding:24}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
           <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>{t('notifs.title')}</h1>
-          {unread>0&&<p style={{fontSize:13,color:'#5A3DF0',fontWeight:300}}>{unread} {t('notifs.unread')}</p>}</div>
+          {unread>0&&<p style={{fontSize:13,color:'#175CC4',fontWeight:300}}>{unread} {t('notifs.unread')}</p>}</div>
           {notifs.length>0&&<button onClick={clear} className="btn-ghost btn-sm">{t('notifs.clearAll')}</button>}
         </div>
 

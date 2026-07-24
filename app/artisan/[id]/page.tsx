@@ -12,7 +12,7 @@ import { isPremium, isListed } from '@/lib/subscription'
 
 function Stars({r,s=14}:{r:number;s?:number}){return<div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border,#2a2a3a)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
-const COLORS:Record<string,string>={plomberie:'#3b82f6',electricite:'#f59e0b',menage:'#10b981',demenagement:'#7C5CFF',jardinage:'#22c55e',peinture:'#ef4444',serrurerie:'#f97316',informatique:'#5A3DF0',coiffure:'#ec4899',autre:'#a78bfa'}
+const COLORS:Record<string,string>={plomberie:'#3b82f6',electricite:'#f59e0b',menage:'#10b981',demenagement:'#1E6FD6',jardinage:'#22c55e',peinture:'#ef4444',serrurerie:'#f97316',informatique:'#175CC4',coiffure:'#ec4899',autre:'#6BA3E6'}
 
 export default function ArtisanPage(){
   const params=useParams();const id=params?.id as string;const router=useRouter()
@@ -80,7 +80,7 @@ export default function ArtisanPage(){
 
   const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}
-  const c=COLORS[art.category]||'#5A3DF0'
+  const c=COLORS[art.category]||'#175CC4'
   const init=prof.full_name?.split(' ').map((n:string)=>n[0]).join('').toUpperCase().slice(0,2)||'A'
   const avgR=revs.length>0?revs.reduce((s:number,r:any)=>s+r.rating,0)/revs.length:art.rating_avg||0
 
@@ -130,7 +130,7 @@ export default function ArtisanPage(){
 
               <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,marginBottom:6}}>
                 <h1 style={{fontSize:28,fontWeight:800,color:tx}}>{prof.full_name}</h1>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#5A3DF0"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#175CC4"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 {isPremium(art)&&<PremiumBadge/>}
               </div>
 
@@ -190,9 +190,9 @@ export default function ArtisanPage(){
             {art.tags&&art.tags.length>0&&(
               <div style={{padding:'0 32px 20px',display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center'}}>
                 <style suppressHydrationWarning>{`
-                  @keyframes np{0%,100%{box-shadow:0 0 5px #7C5CFF,0 0 12px #7C5CFF55,inset 0 0 6px #7C5CFF14}50%{box-shadow:0 0 9px #A78BFA,0 0 20px #7C5CFF77,inset 0 0 10px #7C5CFF22}}
-                  .ntag{display:inline-flex;align-items:center;padding:6px 14px;border-radius:10px;background:transparent;border:1.5px solid #7C5CFF;color:#A78BFA;font-size:12px;font-weight:700;font-family:Nexa,sans-serif;letter-spacing:.03em;box-shadow:0 0 5px #7C5CFF,0 0 12px #7C5CFF55,inset 0 0 6px #7C5CFF14;animation:np 2.8s ease-in-out infinite;transition:all .2s}
-                  .ntag:hover{border-color:#A78BFA;color:#fff;box-shadow:0 0 10px #A78BFA,0 0 24px #7C5CFFaa,0 0 44px #5A3DF066,inset 0 0 14px #7C5CFF2a;animation:none}
+                  @keyframes np{0%,100%{box-shadow:0 0 5px #1E6FD6,0 0 12px #1E6FD655,inset 0 0 6px #1E6FD614}50%{box-shadow:0 0 9px #6BA3E6,0 0 20px #1E6FD677,inset 0 0 10px #1E6FD622}}
+                  .ntag{display:inline-flex;align-items:center;padding:6px 14px;border-radius:10px;background:transparent;border:1.5px solid #1E6FD6;color:#6BA3E6;font-size:12px;font-weight:700;font-family:Nexa,sans-serif;letter-spacing:.03em;box-shadow:0 0 5px #1E6FD6,0 0 12px #1E6FD655,inset 0 0 6px #1E6FD614;animation:np 2.8s ease-in-out infinite;transition:all .2s}
+                  .ntag:hover{border-color:#6BA3E6;color:#fff;box-shadow:0 0 10px #6BA3E6,0 0 24px #1E6FD6aa,0 0 44px #175CC466,inset 0 0 14px #1E6FD62a;animation:none}
                   @media(prefers-reduced-motion:reduce){.ntag{animation:none}}
                 `}</style>
                 {art.tags.map((tag:string)=><span key={tag} className="ntag">{tag}</span>)}
@@ -202,7 +202,7 @@ export default function ArtisanPage(){
             {/* ── TABS ── */}
             <div style={{borderTop:`1px solid ${brd}`,display:'flex'}}>
               {TABS.map(item=>(
-                <button key={item.id} onClick={()=>setTab(item.id)} style={{flex:1,padding:'16px',background:'transparent',border:'none',borderBottom:tab===item.id?'2px solid #5A3DF0':'2px solid transparent',color:tab===item.id?'#5A3DF0':tx3,fontSize:13,fontWeight:tab===item.id?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{item.label}</button>
+                <button key={item.id} onClick={()=>setTab(item.id)} style={{flex:1,padding:'16px',background:'transparent',border:'none',borderBottom:tab===item.id?'2px solid #175CC4':'2px solid transparent',color:tab===item.id?'#175CC4':tx3,fontSize:13,fontWeight:tab===item.id?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{item.label}</button>
               ))}
             </div>
 

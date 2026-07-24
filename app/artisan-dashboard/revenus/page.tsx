@@ -76,7 +76,7 @@ export default function RevenusPage(){
           </div>
           <div className="card" style={{padding:'20px'}}>
             <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>{t('revenus.missions')}</div>
-            <div style={{fontSize:28,fontWeight:800,color:'#5A3DF0'}}>{completed.length}</div>
+            <div style={{fontSize:28,fontWeight:800,color:'#175CC4'}}>{completed.length}</div>
           </div>
           <div className="card" style={{padding:'20px'}}>
             <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>{t('revenus.avgBasket')}</div>
@@ -92,7 +92,7 @@ export default function RevenusPage(){
             {weekData.map((w,i)=>(
               <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
                 <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300}}>{w.value>0?`${(w.value/1000).toFixed(0)}k`:''}</div>
-                <div style={{width:'100%',background:`linear-gradient(180deg,#5A3DF0,#7C5CFF)`,borderRadius:'6px 6px 0 0',height:`${Math.max((w.value/maxWeek)*100,4)}%`,minHeight:4,transition:'height 0.5s ease',opacity:w.value>0?1:0.2}}/>
+                <div style={{width:'100%',background:`linear-gradient(180deg,#175CC4,#1E6FD6)`,borderRadius:'6px 6px 0 0',height:`${Math.max((w.value/maxWeek)*100,4)}%`,minHeight:4,transition:'height 0.5s ease',opacity:w.value>0?1:0.2}}/>
                 <div style={{fontSize:10,color:'var(--tx3)'}}>{w.label}</div>
               </div>
             ))}
@@ -100,7 +100,7 @@ export default function RevenusPage(){
         </div>
         ):(
         <div className="card" style={{padding:'32px 24px',marginBottom:24,textAlign:'center',position:'relative',overflow:'hidden'}}>
-          <div style={{display:'flex',justifyContent:'center',color:'#5A3DF0',marginBottom:12}}><Lock size={26}/></div>
+          <div style={{display:'flex',justifyContent:'center',color:'#175CC4',marginBottom:12}}><Lock size={26}/></div>
           <div style={{fontSize:15,fontWeight:800,color:'var(--tx)',marginBottom:6}}>{t('revenus.premiumTitle')}</div>
           <p style={{fontSize:13,color:'var(--tx2)',fontWeight:300,lineHeight:1.6,maxWidth:380,margin:'0 auto 18px'}}>
             {t('revenus.premiumDesc')} <strong style={{color:'var(--tx)'}}>Premium</strong>.
@@ -118,13 +118,13 @@ export default function RevenusPage(){
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {filtered.map(b=>(
                 <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':b.status==='pending'?'#f59e0b':'#ef4444',flexShrink:0}}/>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':b.status==='pending'?'#f59e0b':'#ef4444',flexShrink:0}}/>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||t('revenus.clientFallback')}</div>
                     <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||t('revenus.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
                   <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
-                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#5A3DF012':b.status==='pending'?'#f59e0b12':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':b.status==='pending'?'#f59e0b':'#ef4444'}}>{statusLabel(b.status)}</span>
+                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#175CC412':b.status==='pending'?'#f59e0b12':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':b.status==='pending'?'#f59e0b':'#ef4444'}}>{statusLabel(b.status)}</span>
                 </div>
               ))}
             </div>

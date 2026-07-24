@@ -1,11 +1,24 @@
 import type { Metadata, Viewport } from 'next'
-import { Poppins, Noto_Sans_Arabic } from 'next/font/google'
+import { Bricolage_Grotesque, Instrument_Sans, Spline_Sans_Mono, Noto_Sans_Arabic } from 'next/font/google'
 import './globals.css'
 
-const poppins = Poppins({
+// Identité « Chaux & Zellige » — duo grotesque humaniste + mono « devis d'artisan ».
+// Bricolage Grotesque : display (le nom même = bricolage/artisanat).
+const display = Bricolage_Grotesque({
   subsets: ['latin'],
-  weight: ['300', '400', '600', '700', '800'],
-  variable: '--font-poppins',
+  variable: '--font-display',
+  display: 'swap',
+})
+// Instrument Sans : texte courant, chaleureux et lisible.
+const body = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+})
+// Spline Sans Mono : prix, stats, labels — le « chiffré » du métier.
+const mono = Spline_Sans_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
   display: 'swap',
 })
 
@@ -67,7 +80,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`${poppins.variable} ${arabic.variable}`}>
+    <html lang="fr" suppressHydrationWarning className={`${display.variable} ${body.variable} ${mono.variable} ${arabic.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico"/>
         <link rel="manifest" href="/site.webmanifest"/>
@@ -75,16 +88,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
         <meta name="apple-mobile-web-app-title" content="BETI"/>
-        <meta name="theme-color" content="#0b0b12"/>
-        {/* Theme init BEFORE React — prevents white flash */}
+        <meta name="theme-color" content="#F0ECE3"/>
+        {/* Theme init BEFORE React — prevents flash. Défaut = clair (identité Chaux). */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {
               var t = localStorage.getItem('beti-theme');
-              if (t === 'light') document.documentElement.setAttribute('data-theme','light');
-              else document.documentElement.setAttribute('data-theme','dark');
+              document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
             } catch(e) {
-              document.documentElement.setAttribute('data-theme','dark');
+              document.documentElement.setAttribute('data-theme','light');
             }
           })();
         `}}/>

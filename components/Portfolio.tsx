@@ -158,7 +158,7 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
         {!unlimited && (
           <div style={{ fontSize: 12, color: limitReached ? '#f59e0b' : 'var(--tx3)', fontWeight: 300, lineHeight: 1.6, marginBottom: 14, padding: '10px 12px', borderRadius: 10, background: 'var(--bg)', border: '0.5px solid var(--border)' }}>
             {t('portfolio.basicQuota')} <strong style={{ color: 'var(--tx2)' }}>{Math.min(postedCount, BASIC_PHOTO_LIMIT)}/{BASIC_PHOTO_LIMIT}</strong> {t('portfolio.basicQuotaUsed')}{' '}
-            <a href="/artisan-dashboard/abonnement" style={{ color: '#5A3DF0', fontWeight: 700, textDecoration: 'none' }}>{t('portfolio.upgradePremium')}</a> {t('portfolio.unlimitedHint')}
+            <a href="/artisan-dashboard/abonnement" style={{ color: '#175CC4', fontWeight: 700, textDecoration: 'none' }}>{t('portfolio.upgradePremium')}</a> {t('portfolio.unlimitedHint')}
           </div>
         )}
 
@@ -181,12 +181,12 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button onClick={() => fileRef.current?.click()} disabled={uploading || drafts.length >= 8 || limitReached}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, background: 'var(--bg)', border: '1px dashed var(--border)', color: (drafts.length >= 8 || limitReached) ? 'var(--tx3)' : '#5A3DF0', fontSize: 13, fontWeight: 700, cursor: (uploading ? 'wait' : limitReached ? 'not-allowed' : 'pointer'), fontFamily: 'Nexa, sans-serif' }}>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10, background: 'var(--bg)', border: '1px dashed var(--border)', color: (drafts.length >= 8 || limitReached) ? 'var(--tx3)' : '#175CC4', fontSize: 13, fontWeight: 700, cursor: (uploading ? 'wait' : limitReached ? 'not-allowed' : 'pointer'), fontFamily: 'Nexa, sans-serif' }}>
             <Camera size={15} />{uploading ? t('portfolio.uploading') : limitReached ? t('portfolio.limitReached') : `${t('portfolio.addPhotos')} (${drafts.length}/8)`}
           </button>
           <div style={{ flex: 1 }} />
           <button onClick={publish} disabled={posting || (drafts.length === 0 && !description.trim())}
-            style={{ padding: '10px 22px', borderRadius: 10, background: (drafts.length || description.trim()) ? 'linear-gradient(135deg,#5A3DF0,#7C5CFF)' : 'var(--border)', border: 'none', color: (drafts.length || description.trim()) ? '#fff' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: posting ? 'wait' : 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+            style={{ padding: '10px 22px', borderRadius: 10, background: (drafts.length || description.trim()) ? 'linear-gradient(135deg,#175CC4,#1E6FD6)' : 'var(--border)', border: 'none', color: (drafts.length || description.trim()) ? '#fff' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: posting ? 'wait' : 'pointer', fontFamily: 'Nexa, sans-serif' }}>
             {posting ? t('portfolio.publishing') : t('portfolio.publish')}
           </button>
         </div>

@@ -22,7 +22,7 @@ type Mission = {
 
 const STATUS_COLOR: Record<string, string> = {
   confirmed:   '#60a5fa',
-  in_progress: '#a78bfa',
+  in_progress: '#6BA3E6',
   completed:   '#4ade80',
 }
 
@@ -112,7 +112,7 @@ export default function Planning() {
       <div className="page-x" style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('planning.eyebrow')}</div>
+            <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('planning.eyebrow')}</div>
             <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('planning.title')}</h1>
             <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{upcoming.length} {t('planning.missions')}</p>
           </div>
@@ -166,16 +166,16 @@ export default function Planning() {
                       style={{
                         aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                         borderRadius: 10, cursor: 'pointer', position: 'relative', transition: 'all 0.15s',
-                        background: isSelected ? '#5A3DF0' : isToday ? '#5A3DF00d' : hasMissions ? '#161628' : 'transparent',
-                        border: isToday && !isSelected ? '0.5px solid #5A3DF044' : '0.5px solid transparent',
+                        background: isSelected ? '#175CC4' : isToday ? '#175CC40d' : hasMissions ? '#161628' : 'transparent',
+                        border: isToday && !isSelected ? '0.5px solid #175CC444' : '0.5px solid transparent',
                       }}>
-                      <span style={{ fontSize: 13, fontWeight: isToday || isSelected ? 800 : 300, color: isSelected ? '#fff' : isToday ? '#5A3DF0' : hasMissions ? 'var(--tx)' : 'var(--tx3)' }}>
+                      <span style={{ fontSize: 13, fontWeight: isToday || isSelected ? 800 : 300, color: isSelected ? '#fff' : isToday ? '#175CC4' : hasMissions ? 'var(--tx)' : 'var(--tx3)' }}>
                         {day}
                       </span>
                       {hasMissions && !isSelected && (
                         <div style={{ display: 'flex', gap: 2, marginTop: 2 }}>
                           {Array.from({ length: Math.min(mCount, 3) }).map((_, j) => (
-                            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: STATUS_COLOR[missionsByDay[day][j]?.status] || '#5A3DF0' }}/>
+                            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: STATUS_COLOR[missionsByDay[day][j]?.status] || '#175CC4' }}/>
                           ))}
                         </div>
                       )}
@@ -187,7 +187,7 @@ export default function Planning() {
 
             {/* Détail du jour sélectionné */}
             <div>
-              <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 14 }}>
                 {selectedDay ? `${selectedDay} ${months[currentMonth]}` : t('planning.selectDay')}
               </div>
 
@@ -200,13 +200,13 @@ export default function Planning() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {selectedMissions.map(m => (
-                  <div key={m.id} className="card" style={{ padding: '16px', borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#5A3DF0'}` }}>
+                  <div key={m.id} className="card" style={{ padding: '16px', borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#175CC4'}` }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{m.title}</div>
                     <div style={{ fontSize: 12, color: '#4ade80', fontWeight: 800, marginBottom: 8 }}><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{fmtTime(m.scheduled_at)}</div>
                     <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 4 }}><User size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.profiles?.full_name || t('planning.clientFallback')}</div>
                     {m.profiles?.phone && <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 4 }}><Phone size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.profiles.phone}</div>}
                     <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}><MapPin size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.address}</div>
-                    {m.price_agreed && <div style={{ fontSize: 12, color: '#5A3DF0', fontWeight: 800, marginTop: 8 }}><Banknote size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.price_agreed} DA/h</div>}
+                    {m.price_agreed && <div style={{ fontSize: 12, color: '#175CC4', fontWeight: 800, marginTop: 8 }}><Banknote size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.price_agreed} DA/h</div>}
                     {m.status !== 'completed' && (
                       <div style={{ marginTop: 12 }}><NavigateButton lat={m.lat} lng={m.lng} /></div>
                     )}
@@ -220,7 +220,7 @@ export default function Planning() {
         {/* Vue liste */}
         {view === 'list' && (
           <div>
-            <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 20 }}>{t('planning.upcoming')}</div>
+            <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 20 }}>{t('planning.upcoming')}</div>
             {upcoming.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
                 <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Calendar size={38}/></div>
@@ -229,7 +229,7 @@ export default function Planning() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {upcoming.map(m => (
-                  <div key={m.id} className="card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20, borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#5A3DF0'}` }}>
+                  <div key={m.id} className="card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20, borderLeft: `3px solid ${STATUS_COLOR[m.status] || '#175CC4'}` }}>
                     <div style={{ textAlign: 'center', minWidth: 50 }}>
                       <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--tx)' }}>{new Date(m.scheduled_at).getDate()}</div>
                       <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{months[new Date(m.scheduled_at).getMonth()].slice(0,3)}</div>
@@ -241,7 +241,7 @@ export default function Planning() {
                         <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}><Clock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{fmtTime(m.scheduled_at)}</span>
                         <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}><User size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.profiles?.full_name || t('planning.clientFallback')}</span>
                         <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}><MapPin size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.address}</span>
-                        {m.price_agreed && <span style={{ fontSize: 12, color: '#5A3DF0', fontWeight: 800 }}><Banknote size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.price_agreed} DA/h</span>}
+                        {m.price_agreed && <span style={{ fontSize: 12, color: '#175CC4', fontWeight: 800 }}><Banknote size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{m.price_agreed} DA/h</span>}
                       </div>
                     </div>
                     {m.status !== 'completed' && <NavigateButton lat={m.lat} lng={m.lng} />}

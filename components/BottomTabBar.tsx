@@ -130,8 +130,8 @@ export default function BottomTabBar() {
                   border: '4px solid var(--bg)',
                   transform: 'translateY(-20px)',
                   boxShadow: active
-                    ? '0 10px 30px rgba(90, 61, 240,0.55), 0 0 0 2px rgba(90, 61, 240,0.35)'
-                    : '0 10px 26px rgba(90, 61, 240,0.4)',
+                    ? '0 10px 30px rgba(23,92,196,0.55), 0 0 0 2px rgba(23,92,196,0.35)'
+                    : '0 10px 26px rgba(23,92,196,0.4)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', padding: 0, flexShrink: 0,
                   WebkitTapHighlightColor: 'transparent',
@@ -163,7 +163,7 @@ export default function BottomTabBar() {
               <div style={{
                 position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 42, height: 27, borderRadius: 14,
-                background: active ? 'rgba(90, 61, 240,0.14)' : 'transparent',
+                background: active ? 'rgba(23,92,196,0.14)' : 'transparent',
                 transform: active ? 'scale(1) translateY(-2px)' : 'scale(0.92)',
                 transition: 'background 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)',
               }}>

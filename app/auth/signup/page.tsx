@@ -90,13 +90,13 @@ export default function SignupPage() {
       <div style={{ width: '100%', maxWidth: 440 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(90, 61, 240,0.35)' }}><LogoMark size={20} variant="white" /></div>
+            <div className="anim-float" style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(23,92,196,0.35)' }}><LogoMark size={20} variant="white" /></div>
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.08em' }}>BETI</span>
           </a>
         </div>
 
         <div style={{ display: 'flex', gap: 6, marginBottom: 28, justifyContent: 'center' }}>
-          {[1, 2, 3].map(i => <div key={i} style={{ height: 3, width: 48, borderRadius: 2, background: i <= step ? '#5A3DF0' : 'var(--border)', transition: 'background 0.4s ease' }} />)}
+          {[1, 2, 3].map(i => <div key={i} style={{ height: 3, width: 48, borderRadius: 2, background: i <= step ? '#175CC4' : 'var(--border)', transition: 'background 0.4s ease' }} />)}
         </div>
 
         {/* zIndex > overlay (40) : l'animation transform crée un stacking context qui
@@ -134,7 +134,7 @@ export default function SignupPage() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: active ? 'var(--gradient)' : 'var(--glass-surface)',
                       border: `1px solid ${active ? 'transparent' : 'var(--border)'}`,
-                      boxShadow: active ? '0 6px 16px rgba(90,61,240,0.35)' : 'none',
+                      boxShadow: active ? '0 6px 16px rgba(23,92,196,0.35)' : 'none',
                       transition: 'background .2s ease, box-shadow .25s ease',
                     }}>
                       <o.Icon size={20} color={active ? '#fff' : 'var(--tx2)'} strokeWidth={1.9} />
@@ -156,7 +156,7 @@ export default function SignupPage() {
                 )
               })}
               <button onClick={() => role && setStep(2)} disabled={!role} className="btn-primary btn-block btn-lg" style={{ marginTop: 4 }}>{t('auth.continueBtn')}</button>
-              <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.alreadyAccount')} <a href="/auth/login" style={{ color: '#5A3DF0', textDecoration: 'none', fontWeight: 700 }}>{t('auth.signIn')}</a></p>
+              <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.alreadyAccount')} <a href="/auth/login" style={{ color: '#175CC4', textDecoration: 'none', fontWeight: 700 }}>{t('auth.signIn')}</a></p>
             </>
           )}
 
@@ -204,7 +204,7 @@ export default function SignupPage() {
               <button onClick={() => verifyCode()} disabled={loading || code.length < 4} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.creatingAccount') : t('auth.create')}</button>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14 }}>
                 <button onClick={() => { setStep(2); setCode(''); setErr('') }} style={LINK}>{t('auth.modify')}</button>
-                <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, color: cooldown > 0 ? 'var(--tx3)' : '#5A3DF0', cursor: cooldown > 0 ? 'default' : 'pointer' }}>
+                <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, color: cooldown > 0 ? 'var(--tx3)' : '#175CC4', cursor: cooldown > 0 ? 'default' : 'pointer' }}>
                   {t('auth.resend')}{cooldown > 0 ? ` (${cooldown}s)` : ''}
                 </button>
               </div>

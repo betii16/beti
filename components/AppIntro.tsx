@@ -133,7 +133,7 @@ export default function AppIntro() {
         ) : (
           <div key={step} style={{ width: '100%', maxWidth: 460, animation: `${anim === 'prev' ? 'introPrev' : 'introNext'} 0.4s ease both` }}>
             {!photo && (
-              <div style={{ width: 96, height: 96, borderRadius: 28, margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #5A3DF0, #7C5CFF)', boxShadow: '0 18px 50px rgba(90,61,240,0.45)' }}>
+              <div style={{ width: 96, height: 96, borderRadius: 28, margin: '0 auto 30px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #175CC4, #1E6FD6)', boxShadow: '0 18px 50px rgba(23,92,196,0.45)' }}>
                 {slide && <slide.Icon size={44} color="#fff" strokeWidth={1.8} />}
               </div>
             )}
@@ -148,7 +148,7 @@ export default function AppIntro() {
         {step >= 1 && (
           <div style={{ display: 'flex', gap: 7, justifyContent: photo ? (isAr ? 'flex-end' : 'flex-start') : 'center', marginBottom: 24, padding: photo ? '0 2px' : 0 }}>
             {SLIDES.map((_, i) => (
-              <div key={i} style={{ height: 7, borderRadius: 4, transition: 'all 0.3s', width: i === step - 1 ? 24 : 7, background: i === step - 1 ? '#7C5CFF' : 'rgba(255,255,255,0.25)' }} />
+              <div key={i} style={{ height: 7, borderRadius: 4, transition: 'all 0.3s', width: i === step - 1 ? 24 : 7, background: i === step - 1 ? '#1E6FD6' : 'rgba(255,255,255,0.25)' }} />
             ))}
           </div>
         )}
@@ -175,6 +175,6 @@ const LANG_BTN: React.CSSProperties = {
 
 const PRIMARY_BTN: React.CSSProperties = {
   width: '100%', padding: '16px', borderRadius: 16, border: 'none', cursor: 'pointer',
-  background: 'linear-gradient(135deg, #5A3DF0, #7C5CFF)', color: '#fff', fontSize: 15, fontWeight: 700,
-  boxShadow: '0 10px 30px rgba(90,61,240,0.4)',
+  background: 'linear-gradient(135deg, #175CC4, #1E6FD6)', color: '#fff', fontSize: 15, fontWeight: 700,
+  boxShadow: '0 10px 30px rgba(23,92,196,0.4)',
 }

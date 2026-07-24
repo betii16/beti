@@ -110,11 +110,11 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
           <div style={{ fontSize: 12, color: '#555', marginBottom: 16, display: 'flex', gap: 6, alignItems: 'center' }}>
             <a href="/" style={{ color: '#555', textDecoration: 'none' }}>Accueil</a> /
             <a href={`/artisans/${params.wilaya}`} style={{ color: '#555', textDecoration: 'none' }}>{w.name}</a> /
-            <span style={{ color: '#7C5CFF' }}>{c.label}</span>
+            <span style={{ color: '#1E6FD6' }}>{c.label}</span>
           </div>
 
-          <div style={{ fontSize: 11, color: '#7C5CFF', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <CategoryIcon id={params.category} size={14} color="#7C5CFF"/> {c.labelPlural.toUpperCase()}
+          <div style={{ fontSize: 11, color: '#1E6FD6', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <CategoryIcon id={params.category} size={14} color="#1E6FD6"/> {c.labelPlural.toUpperCase()}
           </div>
           <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
             {c.label} à {w.name}
@@ -125,7 +125,7 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
           </p>
 
           <a href={`/?wilaya=${params.wilaya}&category=${params.category}`}>
-            <button style={{ padding: '12px 28px', borderRadius: 12, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(90,61,240,0.32)' }}>
+            <button style={{ padding: '12px 28px', borderRadius: 12, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(23,92,196,0.32)' }}>
               Trouver un {c.label.toLowerCase()} maintenant
             </button>
           </a>
@@ -142,10 +142,10 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
                 <a key={a.id} href={`/artisan/${a.id}`} style={{ textDecoration: 'none' }}>
                   <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px' }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{a.profiles?.full_name}</div>
-                    <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, marginBottom: 10 }}>{c.label} certifié BETI</div>
+                    <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, marginBottom: 10 }}>{c.label} certifié BETI</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 12, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade8066' }}/>Disponible</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#5A3DF0' }}>{a.hourly_rate} DA/h</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#175CC4' }}>{a.hourly_rate} DA/h</span>
                     </div>
                   </div>
                 </a>

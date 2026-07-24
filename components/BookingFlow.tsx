@@ -47,7 +47,7 @@ export default function BookingFlow({
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState('')
 
-  const c = artisan.color || '#5A3DF0'
+  const c = artisan.color || '#175CC4'
   const cl = (id: string) => t(`categories.${id}`)
 
   // Conversation active existante ? → on l'ouvre directement.
@@ -127,7 +127,7 @@ export default function BookingFlow({
     color: active ? '#fff' : 'var(--tx3)', fontSize: 14, fontWeight: 800,
     cursor: active && !sending ? 'pointer' : 'not-allowed',
     fontFamily: 'Nexa,sans-serif',
-    boxShadow: active ? '0 6px 20px rgba(90, 61, 240,0.35)' : 'none',
+    boxShadow: active ? '0 6px 20px rgba(23,92,196,0.35)' : 'none',
   })
 
   return (
@@ -207,7 +207,7 @@ export default function BookingFlow({
                 ]).map(o => (
                   <div key={o.id} onClick={() => setWhen(o.id)} className="press" style={{
                     display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderRadius: 15, cursor: 'pointer', marginBottom: 9,
-                    background: when === o.id ? 'rgba(90, 61, 240,0.08)' : 'var(--bg)',
+                    background: when === o.id ? 'rgba(23,92,196,0.08)' : 'var(--bg)',
                     border: `1.5px solid ${when === o.id ? 'var(--accent)' : 'var(--border)'}`,
                     transition: 'all 0.2s ease',
                   }}>

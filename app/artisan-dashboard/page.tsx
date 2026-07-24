@@ -127,10 +127,10 @@ export default function ArtisanDashboard(){
           <div className="card" style={{padding:'20px 24px',marginBottom:20}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
               <span style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{t('dashExtra.profileComplete')} {completion}%</span>
-              <a href="/artisan-dashboard/profil" style={{fontSize:12,color:'#5A3DF0',textDecoration:'none',fontWeight:700}}>{t('dashExtra.completeLink')}</a>
+              <a href="/artisan-dashboard/profil" style={{fontSize:12,color:'#175CC4',textDecoration:'none',fontWeight:700}}>{t('dashExtra.completeLink')}</a>
             </div>
             <div style={{height:6,background:'var(--border)',borderRadius:3,overflow:'hidden',marginBottom:12}}>
-              <div style={{height:'100%',width:`${completion}%`,background:'linear-gradient(90deg,#5A3DF0,#7C5CFF)',borderRadius:3,transition:'width 0.5s'}}/>
+              <div style={{height:'100%',width:`${completion}%`,background:'linear-gradient(90deg,#175CC4,#1E6FD6)',borderRadius:3,transition:'width 0.5s'}}/>
             </div>
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               {missing.map(m=><span key={m} style={{padding:'4px 12px',borderRadius:8,background:'#f59e0b12',border:'1px solid #f59e0b22',fontSize:11,color:'#f59e0b'}}>{m}</span>)}
@@ -142,7 +142,7 @@ export default function ArtisanDashboard(){
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginBottom:24}}>
           {[
             {label:t('dashExtra.kpiRevenue'),value:`${stats.revenue.toLocaleString('fr-DZ')} DA`,Icon:Wallet,color:'#10b981',sub:t('dashExtra.kpiRevenueSub')},
-            {label:t('dashExtra.kpiMissions'),value:stats.missions,Icon:CheckCircle2,color:'#5A3DF0',sub:t('dashExtra.kpiMissionsSub')},
+            {label:t('dashExtra.kpiMissions'),value:stats.missions,Icon:CheckCircle2,color:'#175CC4',sub:t('dashExtra.kpiMissionsSub')},
             {label:t('dashExtra.kpiPending'),value:stats.pending,Icon:Clock,color:'#f59e0b',sub:t('dashExtra.kpiPendingSub')},
             {label:t('dashExtra.kpiRating'),value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'#f59e0b',sub:`${stats.ratingCount} ${t('dashExtra.ratingUnit')}`},
           ].map(k=>(
@@ -186,7 +186,7 @@ export default function ArtisanDashboard(){
         <div style={{marginBottom:24}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
             <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)'}}>{t('dashExtra.recentHistory')}</h2>
-            <a href="/artisan-dashboard/revenus" style={{fontSize:12,color:'#5A3DF0',textDecoration:'none',fontWeight:700}}>{t('dashExtra.seeAll')}</a>
+            <a href="/artisan-dashboard/revenus" style={{fontSize:12,color:'#175CC4',textDecoration:'none',fontWeight:700}}>{t('dashExtra.seeAll')}</a>
           </div>
           {recentBookings.length===0?(
             <div className="card" style={{padding:'40px',textAlign:'center'}}>
@@ -197,14 +197,14 @@ export default function ArtisanDashboard(){
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {recentBookings.map(b=>(
                 <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':'#ef4444',flexShrink:0}}/>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':'#ef4444',flexShrink:0}}/>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
                     <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||t('dashExtra.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
                   <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
                   {(b.status==='confirmed'||b.status==='in_progress')&&<NavigateButton lat={b.lat} lng={b.lng} compact/>}
-                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#5A3DF012':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#5A3DF0':'#ef4444'}}>{statusLabel(b.status)}</span>
+                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#175CC412':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':'#ef4444'}}>{statusLabel(b.status)}</span>
                 </div>
               ))}
             </div>

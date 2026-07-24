@@ -60,7 +60,7 @@ export default function AlgeriaWatermark({
   size = 'min(96vh, 130vw)',
   position = 'fixed',
   color = 'var(--accent)',
-  color2 = '#A78BFA',
+  color2 = '#6BA3E6',
   zIndex = -1,
   animated = true,
 }: {

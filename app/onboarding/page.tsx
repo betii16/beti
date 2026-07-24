@@ -19,13 +19,13 @@ const CATEGORIES = [
   { id: 'plomberie',    color: '#3b82f6' },
   { id: 'electricite',  color: '#f59e0b' },
   { id: 'menage',       color: '#10b981' },
-  { id: 'demenagement', color: '#7C5CFF' },
+  { id: 'demenagement', color: '#1E6FD6' },
   { id: 'jardinage',    color: '#22c55e' },
   { id: 'peinture',     color: '#ef4444' },
   { id: 'serrurerie',   color: '#f97316' },
-  { id: 'informatique', color: '#5A3DF0' },
+  { id: 'informatique', color: '#175CC4' },
   { id: 'coiffure',     color: '#ec4899' },
-  { id: 'autre',        color: '#a78bfa' },
+  { id: 'autre',        color: '#6BA3E6' },
 ]
 
 export default function OnboardingPage() {
@@ -102,14 +102,14 @@ export default function OnboardingPage() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'Nexa, sans-serif' }}>
 
         {/* Grille fond */}
-        <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(90,61,240,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(90,61,240,0.03) 1px,transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }}/>
+        <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(23,92,196,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(23,92,196,0.03) 1px,transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }}/>
 
         <div style={{ width: '100%', maxWidth: 560, position: 'relative', direction: isAr ? 'rtl' : 'ltr' }}>
 
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(90,61,240,0.35)' }}><LogoMark size={19} variant="white" /></div>
+              <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(23,92,196,0.35)' }}><LogoMark size={19} variant="white" /></div>
               <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)', letterSpacing: '.1em' }}>BETI</span>
             </div>
           </div>
@@ -121,16 +121,16 @@ export default function OnboardingPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, transition: 'all 0.3s',
-                    background: step > s.id ? '#5A3DF0' : step === s.id ? '#5A3DF00d' : 'var(--bg2)',
-                    border: step >= s.id ? '1.5px solid #5A3DF0' : '1.5px solid var(--border)',
-                    color: step > s.id ? 'var(--bg)' : step === s.id ? '#5A3DF0' : 'var(--tx3)',
+                    background: step > s.id ? '#175CC4' : step === s.id ? '#175CC40d' : 'var(--bg2)',
+                    border: step >= s.id ? '1.5px solid #175CC4' : '1.5px solid var(--border)',
+                    color: step > s.id ? 'var(--bg)' : step === s.id ? '#175CC4' : 'var(--tx3)',
                   }}>
                     {step > s.id ? <Check size={15}/> : <s.Icon size={15}/>}
                   </div>
-                  <span style={{ fontSize: 10, color: step >= s.id ? '#5A3DF0' : 'var(--tx3)', fontWeight: step === s.id ? 800 : 300 }}>{s.label}</span>
+                  <span style={{ fontSize: 10, color: step >= s.id ? '#175CC4' : 'var(--tx3)', fontWeight: step === s.id ? 800 : 300 }}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div style={{ flex: 1, height: 1.5, background: step > s.id ? '#5A3DF0' : 'var(--border)', margin: '0 4px', marginBottom: 20, transition: 'background 0.3s' }}/>
+                  <div style={{ flex: 1, height: 1.5, background: step > s.id ? '#175CC4' : 'var(--border)', margin: '0 4px', marginBottom: 20, transition: 'background 0.3s' }}/>
                 )}
               </div>
             ))}
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
             {/* ÉTAPE 1 — Profil */}
             {step === 1 && (
               <>
-                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step1Eyebrow')}</div>
+                <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step1Eyebrow')}</div>
                 <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step1Title')}</h2>
                 <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>{t('onboarding.step1Desc')}</p>
                 <div style={{ marginBottom: 20 }}>
@@ -161,7 +161,7 @@ export default function OnboardingPage() {
             {/* ÉTAPE 2 — Catégorie */}
             {step === 2 && (
               <>
-                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step2Eyebrow')}</div>
+                <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step2Eyebrow')}</div>
                 <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step2Title')}</h2>
                 <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 24, lineHeight: 1.6 }}>{t('onboarding.step2Desc')}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -181,7 +181,7 @@ export default function OnboardingPage() {
             {/* ÉTAPE 3 — Tarif */}
             {step === 3 && (
               <>
-                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step3Eyebrow')}</div>
+                <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step3Eyebrow')}</div>
                 <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step3Title')}</h2>
                 <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 28, lineHeight: 1.6 }}>{t('onboarding.step3Desc')}</p>
 
@@ -189,10 +189,10 @@ export default function OnboardingPage() {
                 <div style={{ marginBottom: 28 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>{t('onboarding.hourlyLabel')}</label>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#5A3DF0' }}>{hourlyRate.toLocaleString('fr-DZ')} <span style={{ fontSize: 14, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#175CC4' }}>{hourlyRate.toLocaleString('fr-DZ')} <span style={{ fontSize: 14, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
                   </div>
                   <input type="range" min={500} max={15000} step={500} value={hourlyRate} onChange={e => setHourlyRate(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#5A3DF0', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: '#175CC4', cursor: 'pointer' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
                     <span style={{ fontSize: 11, color: 'var(--tx3)' }}>{t('onboarding.priceMin')}</span>
@@ -202,7 +202,7 @@ export default function OnboardingPage() {
 
                 {/* Référence prix marché */}
                 <div style={{ background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '14px 16px', marginBottom: 24 }}>
-                  <div style={{ fontSize: 11, color: '#5A3DF0', fontWeight: 800, marginBottom: 10 }}>{t('onboarding.marketPrices')}</div>
+                  <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, marginBottom: 10 }}>{t('onboarding.marketPrices')}</div>
                   {[
                     { label: 'Plombier', range: '2 500 — 5 000 DA/h' },
                     { label: 'Électricien', range: '3 000 — 6 000 DA/h' },
@@ -221,7 +221,7 @@ export default function OnboardingPage() {
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {[1, 2, 3, 5, 7, 10, 15, 20].map(y => (
                       <button key={y} onClick={() => setExperience(y)}
-                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#5A3DF0' : 'var(--border)'}`, background: experience === y ? '#5A3DF00d' : 'var(--bg)', color: experience === y ? '#5A3DF0' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
+                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#175CC4' : 'var(--border)'}`, background: experience === y ? '#175CC40d' : 'var(--bg)', color: experience === y ? '#175CC4' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}
                       >{y} {t('onboarding.yearSuffix')}</button>
                     ))}
                   </div>
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
             {/* ÉTAPE 4 — Zone */}
             {step === 4 && (
               <>
-                <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step4Eyebrow')}</div>
+                <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '.1em', fontWeight: 800, marginBottom: 8 }}>{t('onboarding.step4Eyebrow')}</div>
                 <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 8 }}>{t('onboarding.step4Title')}</h2>
                 <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300, marginBottom: 24, lineHeight: 1.6 }}>{t('onboarding.step4Desc')}</p>
                 {user && (
@@ -253,7 +253,7 @@ export default function OnboardingPage() {
                 <p style={{ fontSize: 14, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.7, marginBottom: 28 }}>
                   {t('onboarding.successDesc')}
                   <br/><br/>
-                  <strong style={{ color: '#5A3DF0' }}>{t('onboarding.earlyBadge')}</strong>
+                  <strong style={{ color: '#175CC4' }}>{t('onboarding.earlyBadge')}</strong>
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
                   {[

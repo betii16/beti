@@ -25,11 +25,11 @@ const CATEGORIES = [
   { id: 'plomberie',    icon: '⚙',  color: '#3b82f6' },
   { id: 'electricite',  icon: '⚡',  color: '#f59e0b' },
   { id: 'menage',       icon: '✦',  color: '#10b981' },
-  { id: 'demenagement', icon: '◈',  color: '#7C5CFF' },
+  { id: 'demenagement', icon: '◈',  color: '#1E6FD6' },
   { id: 'jardinage',    icon: '❧',  color: '#22c55e' },
   { id: 'peinture',     icon: '◉',  color: '#ef4444' },
   { id: 'serrurerie',   icon: '⌘',  color: '#f97316' },
-  { id: 'informatique', icon: '⬡',  color: '#5A3DF0' },
+  { id: 'informatique', icon: '⬡',  color: '#175CC4' },
   { id: 'coiffure',     icon: '✂',  color: '#ec4899' },
 ]
 
@@ -313,8 +313,8 @@ export default function ArtisanProfileConfig() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Nexa', sans-serif; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        input[type=range] { accent-color: #5A3DF0; cursor: pointer; }
-        textarea:focus, input:focus { border-color: #5A3DF066 !important; }
+        input[type=range] { accent-color: #175CC4; cursor: pointer; }
+        textarea:focus, input:focus { border-color: #175CC466 !important; }
       `}</style>
 
       <div style={{ minHeight: '100vh', paddingTop: 64, fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
@@ -323,7 +323,7 @@ export default function ArtisanProfileConfig() {
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
             <div>
-              <div style={{ fontSize: 10, color: '#5A3DF0', letterSpacing: '.1em', fontWeight: 800, marginBottom: 6 }}>
+              <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '.1em', fontWeight: 800, marginBottom: 6 }}>
                 {isNewProfile ? t('artisanProfile.newConfig') : t('artisanProfile.editProfile')}
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pageTitle')}</h1>
@@ -353,8 +353,8 @@ export default function ArtisanProfileConfig() {
               <button key={tab.id} onClick={() => setActiveSection(tab.id)}
                 style={{
                   flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none',
-                  background: activeSection === tab.id ? '#5A3DF00d' : 'transparent',
-                  color: activeSection === tab.id ? '#5A3DF0' : 'var(--tx3)',
+                  background: activeSection === tab.id ? '#175CC40d' : 'transparent',
+                  color: activeSection === tab.id ? '#175CC4' : 'var(--tx3)',
                   fontSize: 13, fontWeight: activeSection === tab.id ? 800 : 300,
                   cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -363,7 +363,7 @@ export default function ArtisanProfileConfig() {
               >
                 <tab.Icon size={15}/> {tab.label}
                 {'badge' in tab && (tab as any).badge > 0 && (
-                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', color: '#fff', fontSize: 10, fontWeight: 800 }}>{(tab as any).badge}</span>
+                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', color: '#fff', fontSize: 10, fontWeight: 800 }}>{(tab as any).badge}</span>
                 )}
               </button>
             ))}
@@ -387,7 +387,7 @@ export default function ArtisanProfileConfig() {
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 10, background: (cat?.color || '#5A3DF0') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={service.category} size={18} color={cat?.color || '#5A3DF0'}/></div>
+                        <div style={{ width: 40, height: 40, borderRadius: 10, background: (cat?.color || '#175CC4') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={service.category} size={18} color={cat?.color || '#175CC4'}/></div>
                         <div>
                           <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{catLabel}</div>
                           <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{t('artisanProfile.serviceNum')} {i + 1}{i === 0 ? ` ${t('artisanProfile.servicePrimary')}` : ''}</div>
@@ -426,9 +426,9 @@ export default function ArtisanProfileConfig() {
                             <button key={ptId} onClick={() => updateService(i, { price_type: ptId as any })}
                               style={{
                                 padding: '10px 14px', borderRadius: 10,
-                                border: `0.5px solid ${service.price_type === ptId ? '#5A3DF0' : 'var(--border)'}`,
-                                background: service.price_type === ptId ? '#5A3DF00d' : 'var(--bg)',
-                                color: service.price_type === ptId ? '#5A3DF0' : 'var(--tx3)',
+                                border: `0.5px solid ${service.price_type === ptId ? '#175CC4' : 'var(--border)'}`,
+                                background: service.price_type === ptId ? '#175CC40d' : 'var(--bg)',
+                                color: service.price_type === ptId ? '#175CC4' : 'var(--tx3)',
                                 fontSize: 12, fontWeight: service.price_type === ptId ? 800 : 300,
                                 cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
                                 display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
@@ -447,7 +447,7 @@ export default function ArtisanProfileConfig() {
                           <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>
                             {service.price_type === 'hour' ? t('artisanProfile.tariffHour') : t('artisanProfile.tariffService')}
                           </label>
-                          <div style={{ fontSize: 22, fontWeight: 800, color: '#5A3DF0' }}>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: '#175CC4' }}>
                             {service.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{priceTypeSuffix(service.price_type)}</span>
                           </div>
                         </div>
@@ -481,8 +481,8 @@ export default function ArtisanProfileConfig() {
                 <button onClick={() => setAddingService(true)}
                   style={{
                     width: '100%', padding: '16px', borderRadius: 14,
-                    background: 'transparent', border: '1px dashed #5A3DF044',
-                    color: '#5A3DF0', fontSize: 14, fontWeight: 800,
+                    background: 'transparent', border: '1px dashed #175CC444',
+                    color: '#175CC4', fontSize: 14, fontWeight: 800,
                     cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     transition: 'all 0.2s',
@@ -491,7 +491,7 @@ export default function ArtisanProfileConfig() {
                   {t('artisanProfile.addService')} {services.length === 0 && t('artisanProfile.addRequired')}
                 </button>
               ) : (
-                <div className="card" style={{ borderColor: '#5A3DF055', padding: '24px' }}>
+                <div className="card" style={{ borderColor: '#175CC455', padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pickService')}</div>
                     <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', display: 'flex', padding: 2 }}><X size={16}/></button>
@@ -576,7 +576,7 @@ export default function ArtisanProfileConfig() {
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {[1, 2, 3, 5, 7, 10, 15, 20].map(y => (
                       <button key={y} onClick={() => setExperience(y)}
-                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#5A3DF0' : 'var(--border)'}`, background: experience === y ? '#5A3DF00d' : 'var(--bg)', color: experience === y ? '#5A3DF0' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#175CC4' : 'var(--border)'}`, background: experience === y ? '#175CC40d' : 'var(--bg)', color: experience === y ? '#175CC4' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
                         {y} {y === 1 ? t('common.years').replace('s','') : t('common.years')}
                       </button>
                     ))}
@@ -619,12 +619,12 @@ export default function ArtisanProfileConfig() {
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>{t('artisanProfile.radiusLabel')}</label>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: '#5A3DF0' }}>{radiusKm} {t('common.km')}</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: '#175CC4' }}>{radiusKm} {t('common.km')}</span>
                   </div>
                   <input type="range" min={5} max={100} step={5}
                     value={radiusKm}
                     onChange={e => setRadiusKm(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#5A3DF0', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: '#175CC4', cursor: 'pointer' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                     <span style={{ fontSize: 10, color: 'var(--tx3)' }}>5 {t('common.km')}</span>
@@ -665,37 +665,37 @@ export default function ArtisanProfileConfig() {
                   <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{t('artisanProfile.tagTitle')}</div>
                   <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.6 }}>
                     {t('artisanProfile.tagDesc')}
-                    {services.length === 0 && <><br/><span style={{ color: '#5A3DF0' }}>{t('artisanProfile.tagDescExtra')}</span></>}
+                    {services.length === 0 && <><br/><span style={{ color: '#175CC4' }}>{t('artisanProfile.tagDescExtra')}</span></>}
                   </p>
                 </div>
 
                 {/* Tags actifs — effet neon-button (cybergaz / 21st.dev) */}
                 <style suppressHydrationWarning>{`
                   @keyframes neon-pulse {
-                    0%, 100% { box-shadow: 0 0 6px #7C5CFF, 0 0 14px #7C5CFF66, 0 0 28px #5A3DF044, inset 0 0 8px #7C5CFF18; }
-                    50%       { box-shadow: 0 0 10px #A78BFA, 0 0 22px #7C5CFF88, 0 0 42px #5A3DF055, inset 0 0 12px #7C5CFF28; }
+                    0%, 100% { box-shadow: 0 0 6px #1E6FD6, 0 0 14px #1E6FD666, 0 0 28px #175CC444, inset 0 0 8px #1E6FD618; }
+                    50%       { box-shadow: 0 0 10px #6BA3E6, 0 0 22px #1E6FD688, 0 0 42px #175CC455, inset 0 0 12px #1E6FD628; }
                   }
                   .neon-tag {
                     display: inline-flex; align-items: center; gap: 7px;
                     padding: 7px 15px; border-radius: 10px;
                     background: transparent;
-                    border: 1.5px solid #7C5CFF;
-                    color: #A78BFA;
+                    border: 1.5px solid #1E6FD6;
+                    color: #6BA3E6;
                     font-size: 13px; font-weight: 700; font-family: Nexa, sans-serif;
                     letter-spacing: 0.03em;
-                    box-shadow: 0 0 6px #7C5CFF, 0 0 14px #7C5CFF66, 0 0 28px #5A3DF044, inset 0 0 8px #7C5CFF18;
+                    box-shadow: 0 0 6px #1E6FD6, 0 0 14px #1E6FD666, 0 0 28px #175CC444, inset 0 0 8px #1E6FD618;
                     animation: neon-pulse 2.8s ease-in-out infinite;
                     transition: border-color .2s, color .2s;
                   }
                   .neon-tag:hover {
-                    border-color: #A78BFA;
+                    border-color: #6BA3E6;
                     color: #fff;
-                    box-shadow: 0 0 12px #A78BFA, 0 0 26px #7C5CFFaa, 0 0 50px #5A3DF066, inset 0 0 16px #7C5CFF33;
+                    box-shadow: 0 0 12px #6BA3E6, 0 0 26px #1E6FD6aa, 0 0 50px #175CC466, inset 0 0 16px #1E6FD633;
                     animation: none;
                   }
                   .neon-tag-x {
                     background: transparent; border: none; cursor: pointer;
-                    color: #7C5CFF; font-size: 13px; font-weight: 800;
+                    color: #1E6FD6; font-size: 13px; font-weight: 800;
                     padding: 0 2px; line-height: 1; transition: color .15s, text-shadow .15s;
                   }
                   .neon-tag-x:hover { color: #ff6b9d; text-shadow: 0 0 8px #ff6b9d; }
@@ -719,7 +719,7 @@ export default function ArtisanProfileConfig() {
                   background: 'var(--bg)', border: '1px solid var(--border)',
                   marginBottom: 16, transition: 'border-color 0.2s',
                 }}
-                  onFocusCapture={e => (e.currentTarget.style.borderColor = '#5A3DF0')}
+                  onFocusCapture={e => (e.currentTarget.style.borderColor = '#175CC4')}
                   onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                 >
                   <span style={{ fontSize: 16 }}>🔍</span>
@@ -733,7 +733,7 @@ export default function ArtisanProfileConfig() {
                   {tagInput.trim() && (
                     <button onClick={() => addTag(tagInput)} style={{
                       padding: '5px 14px', borderRadius: 10,
-                      background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)',
+                      background: 'linear-gradient(135deg,#175CC4,#1E6FD6)',
                       border: 'none', color: '#fff', fontSize: 11, fontWeight: 800,
                       cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
                     }}>
@@ -749,7 +749,7 @@ export default function ArtisanProfileConfig() {
                     {Array.from({ length: 15 }).map((_, i) => (
                       <div key={i} style={{
                         width: i < tags.length ? 14 : 6, height: 6, borderRadius: 3,
-                        background: i < tags.length ? 'linear-gradient(90deg,#5A3DF0,#A78BFA)' : 'var(--border)',
+                        background: i < tags.length ? 'linear-gradient(90deg,#175CC4,#6BA3E6)' : 'var(--border)',
                         transition: 'all 0.25s ease',
                       }}/>
                     ))}
@@ -760,10 +760,10 @@ export default function ArtisanProfileConfig() {
                 {tags.length < 15 && (
                   <div style={{
                     padding: '16px', borderRadius: 14,
-                    background: 'color-mix(in srgb,#5A3DF0 4%,var(--bg2))',
-                    border: '1px solid color-mix(in srgb,#5A3DF0 12%,transparent)',
+                    background: 'color-mix(in srgb,#175CC4 4%,var(--bg2))',
+                    border: '1px solid color-mix(in srgb,#175CC4 12%,transparent)',
                   }}>
-                    <div style={{ fontSize: 10, color: '#5A3DF0', fontWeight: 800, letterSpacing: '.1em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ fontSize: 10, color: '#175CC4', fontWeight: 800, letterSpacing: '.1em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
                       <Sparkles size={11}/> {t('artisanProfile.tagSuggestions')}
                     </div>
                     <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
@@ -778,9 +778,9 @@ export default function ArtisanProfileConfig() {
                           display: 'flex', alignItems: 'center', gap: 5,
                         }}
                           onMouseEnter={e => {
-                            e.currentTarget.style.background = 'color-mix(in srgb,#5A3DF0 10%,var(--bg))'
-                            e.currentTarget.style.borderColor = '#5A3DF0'
-                            e.currentTarget.style.color = '#5A3DF0'
+                            e.currentTarget.style.background = 'color-mix(in srgb,#175CC4 10%,var(--bg))'
+                            e.currentTarget.style.borderColor = '#175CC4'
+                            e.currentTarget.style.color = '#175CC4'
                           }}
                           onMouseLeave={e => {
                             e.currentTarget.style.background = 'var(--bg)'
@@ -788,7 +788,7 @@ export default function ArtisanProfileConfig() {
                             e.currentTarget.style.color = 'var(--tx2)'
                           }}
                         >
-                          <span style={{ color: '#5A3DF0', fontWeight: 800 }}>+</span> {tag}
+                          <span style={{ color: '#175CC4', fontWeight: 800 }}>+</span> {tag}
                         </button>
                       ))}
                     </div>

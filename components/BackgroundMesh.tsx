@@ -16,17 +16,18 @@ export default function BackgroundMesh() {
       {/* Dégradé de base : très léger éclaircissement vers le haut */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, var(--bg-top), var(--bg) 42%)' }} />
 
-      {/* Aurore — deux nappes accent qui dérivent lentement (opacité très basse) */}
+      {/* Lavis — deux nappes très douces (bleu d'Alger + laiton) qui dérivent
+          lentement. Basse opacité : une lumière de mur, pas une aurore SaaS. */}
       <div style={{
         position: 'absolute', top: '-25%', left: '-15%', width: '80%', height: '80%',
-        background: 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%)',
-        filter: 'blur(60px)', opacity: 0.5, willChange: 'transform, opacity',
+        background: 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 62%)',
+        filter: 'blur(70px)', opacity: 0.16, willChange: 'transform, opacity',
         animation: 'auroraA 26s ease-in-out infinite',
       }} />
       <div style={{
         position: 'absolute', top: '5%', right: '-20%', width: '75%', height: '75%',
-        background: 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent2) 22%, transparent), transparent 60%)',
-        filter: 'blur(70px)', opacity: 0.42, willChange: 'transform, opacity',
+        background: 'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--laiton) 18%, transparent), transparent 60%)',
+        filter: 'blur(80px)', opacity: 0.14, willChange: 'transform, opacity',
         animation: 'auroraB 32s ease-in-out infinite',
       }} />
 

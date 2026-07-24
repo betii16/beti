@@ -2,91 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Police de marque : Poppins (Google Fonts, chargée via next/font).
-   Les CSS variables --font-poppins et --font-arabic sont injectées par layout.tsx.
-   Le sélecteur !important écrase les fontFamily inline 'Nexa' hérités du code. */
+/* Typographie « Chaux & Zellige » (vars injectées par layout.tsx) :
+   texte = Instrument Sans, titres = Bricolage Grotesque, données = mono.
+   Le !important écrase les fontFamily inline 'Nexa'/Poppins hérités du code. */
 *, *::before, *::after {
-  font-family: var(--font-poppins, system-ui), sans-serif !important;
+  font-family: var(--font-body, system-ui), sans-serif !important;
+}
+h1, h2, h3, h4, .display {
+  font-family: var(--font-display, var(--font-body, system-ui)), sans-serif !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+/* Données chiffrées & labels techniques — le « devis d'artisan ». */
+.mono, .num, .section-label {
+  font-family: var(--font-mono, ui-monospace, monospace) !important;
+  font-feature-settings: 'tnum' 1;
 }
 [dir="rtl"] *, [lang="ar"] * {
-  font-family: var(--font-arabic, system-ui), var(--font-poppins, system-ui), sans-serif !important;
+  font-family: var(--font-arabic, system-ui), var(--font-body, system-ui), sans-serif !important;
+}
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4,
+[lang="ar"] h1, [lang="ar"] h2, [lang="ar"] h3, [lang="ar"] h4 {
+  font-family: var(--font-arabic, system-ui), sans-serif !important;
 }
 
-/* ═══ DARK THEME (default) ═══ */
+/* ═══════════════════════════════════════════════════════════════
+   IDENTITÉ « CHAUX & ZELLIGE » — l'atelier algérien.
+   Palette tirée de la matière des métiers : chaux/plâtre des murs
+   blanchis (fond), bleu d'Alger des portes (accent), vert zellige,
+   laiton/safran (prix & notes), brique (touche chaude).
+   Plus de verre dépoli ni de dégradé violet : surfaces MATÉRIELLES,
+   bord net, ombre franche façon carreau posé.
+   L'accent est un token unique (--accent) → repalettable en 1 ligne.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══ CHAUX (thème clair — défaut) ═══ */
 :root,
-[data-theme="dark"] {
-  --bg: #0b0b12;
-  --bg2: rgba(22,22,34,0.58);
-  --bg2-solid: #13131e;
-  --bg3: #0e0e18;
-  --tx: #e0dfe5;
-  --tx2: #8585a0;
-  --tx3: #4a4a65;
-  --border: #1c1c30;
-  --border2: #26263e;
-  --accent: #5A3DF0;
-  --accent2: #7C5CFF;
-  --gradient: linear-gradient(135deg, #5A3DF0, #7C5CFF);
-  --gradient-text: linear-gradient(135deg, #7C5CFF, #A78BFA);
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  --nav-bg: rgba(11,11,18,0.85);
-  --glass-bg: rgba(11,11,18,0.92);
-  --hover-shadow: 0 12px 40px rgba(0,0,0,0.4);
-  --hover-shadow-lg: 0 16px 48px rgba(0,0,0,0.45);
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  /* Liquid Glass (iOS) — surface translucide + reflets spéculaires */
-  --glass-surface: rgba(255,255,255,0.055);
-  --glass-surface-2: rgba(255,255,255,0.018);
-  --glass-edge: rgba(255,255,255,0.14);
-  --glass-highlight: rgba(255,255,255,0.22);
-  --glass-blur: 18px;
-  /* Rayons canoniques — une seule échelle pour tout le site */
-  --r-chip: 12px;
-  --r-btn: 14px;
-  --r-field: 14px;
-  --r-card: 18px;
+[data-theme="light"] {
+  --bg:        #F0ECE3;   /* mur de chaux */
+  --bg2:       #FBF9F4;   /* surface blanchie (cartes) — SOLIDE */
+  --bg2-solid: #FBF9F4;
+  --bg3:       #E7E1D5;   /* renfoncement (footer) */
+  --tx:        #17242F;   /* encre bleu-nuit d'Alger */
+  --tx2:       #55636D;   /* ardoise */
+  --tx3:       #939A98;   /* estompé */
+  --border:    #E2DBCC;   /* filet sur chaux */
+  --border2:   #CFC7B5;
+  --accent:    #175CC4;   /* BLEU D'ALGER */
+  --accent2:   #1E6FD6;
+  --accent-ink:#0F3F86;   /* bleu foncé (texte accent sur chaux) */
+  --gradient:  #175CC4;   /* aplat (dégradé tué) */
+  --gradient-text: #17242F;
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 0 rgba(23,36,47,0.04), 0 12px 26px -16px rgba(23,36,47,0.28);
+  --nav-bg:    rgba(240,236,227,0.86);
+  --glass-bg:  rgba(240,236,227,0.94);
+  --hover-shadow:    0 16px 30px -18px rgba(23,36,47,0.34);
+  --hover-shadow-lg: 0 20px 40px -20px rgba(23,36,47,0.40);
+  --success:   #0E877A;   /* vert zellige */
+  --danger:    #C0392B;   /* rouge brique */
+  --warning:   #B98A2E;   /* laiton */
+  --zellige:   #0E877A;
+  --brique:    #B9512F;
+  --laiton:    #B98A2E;
+  /* Anciennes vars « verre » recyclées en surfaces SOLIDES (compat .card, .btn…) */
+  --glass-surface:   #FBF9F4;
+  --glass-surface-2: #F3EFE6;
+  --glass-edge:      #E2DBCC;
+  --glass-highlight: rgba(255,255,255,0.7);
+  --glass-blur: 0px;      /* flou coupé */
+  /* Rayons resserrés — lecture « carreau posé / bon de devis » */
+  --r-chip: 9px;
+  --r-btn: 11px;
+  --r-field: 11px;
+  --r-card: 13px;
   --r-pill: 999px;
-  /* Fond sobre — dégradé + lueur neutre + vignette */
-  --bg-top: #11131c;
-  --bg-vignette: #07070c;
-  --grid-glow: rgba(130,150,190,0.045);
+  /* Fond plâtre — dégradé très doux + grain (BackgroundMesh) */
+  --bg-top: #F5F1E9;
+  --bg-vignette: #E4DDCF;
+  --grid-glow: rgba(23,92,196,0.05);
 }
 
-/* ═══ LIGHT THEME ═══ */
-[data-theme="light"] {
-  --bg:      #EEEDF4;
-  --bg2:     rgba(248,247,253,0.62);
-  --bg2-solid: #F6F5FB;
-  --bg3:     #E4E3EC;
-  --tx:      #111118;
-  --tx2:     #5C5C72;
-  --tx3:     #9898AC;
-  --border:  #DCDBE6;
-  --border2: #C6C5D2;
-  --accent:  #5A3DF0;
-  --accent2: #7C5CFF;
-  --gradient: linear-gradient(135deg, #5A3DF0, #7C5CFF);
-  --gradient-text: linear-gradient(135deg, #5A3DF0, #A78BFA);
-  --card-shadow: 0 1px 2px rgba(60,55,100,0.06), 0 4px 14px rgba(60,55,100,0.08);
-  --nav-bg: rgba(238,237,244,0.88);
-  --glass-bg: rgba(238,237,244,0.94);
-  --hover-shadow: 0 12px 40px rgba(90,61,240,0.1);
-  --hover-shadow-lg: 0 16px 48px rgba(90,61,240,0.12);
-  --success: #059669;
-  --danger:  #dc2626;
-  --warning: #d97706;
-  /* Liquid Glass (iOS) — verre clair sur thème lumineux */
-  --glass-surface: rgba(255,255,255,0.55);
-  --glass-surface-2: rgba(255,255,255,0.30);
-  --glass-edge: rgba(255,255,255,0.85);
-  --glass-highlight: rgba(255,255,255,0.9);
-  --glass-blur: 18px;
-  /* Fond sobre — dégradé clair + lueur neutre + vignette */
-  --bg-top: #F4F3F9;
-  --bg-vignette: #E4E2EC;
-  --grid-glow: rgba(90,61,240,0.04);
+/* ═══ NUIT D'ALGER (thème sombre) ═══ */
+[data-theme="dark"] {
+  --bg:        #0E1922;   /* nuit bleu-noir */
+  --bg2:       #14212C;
+  --bg2-solid: #14212C;
+  --bg3:       #0B141B;
+  --tx:        #E9E4D8;   /* craie chaude */
+  --tx2:       #93A0A8;
+  --tx3:       #566169;
+  --border:    #21313D;
+  --border2:   #2C3E4B;
+  --accent:    #4E9BE8;   /* bleu d'Alger éclairci */
+  --accent2:   #6FB0EE;
+  --accent-ink:#8EC2F2;
+  --gradient:  #3D82D6;
+  --gradient-text: #E9E4D8;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  --nav-bg:    rgba(14,25,34,0.85);
+  --glass-bg:  rgba(14,25,34,0.92);
+  --hover-shadow:    0 16px 34px -16px rgba(0,0,0,0.5);
+  --hover-shadow-lg: 0 20px 44px -18px rgba(0,0,0,0.55);
+  --success:   #2BB39E;
+  --danger:    #E05545;
+  --warning:   #D6A64A;
+  --zellige:   #2BB39E;
+  --brique:    #D6714E;
+  --laiton:    #D6A64A;
+  --glass-surface:   #14212C;
+  --glass-surface-2: #0F1B24;
+  --glass-edge:      #243645;
+  --glass-highlight: rgba(255,255,255,0.06);
+  --glass-blur: 0px;
+  --r-chip: 9px;
+  --r-btn: 11px;
+  --r-field: 11px;
+  --r-card: 13px;
+  --r-pill: 999px;
+  --bg-top: #12202B;
+  --bg-vignette: #070D12;
+  --grid-glow: rgba(78,155,232,0.06);
 }
 
 html {
@@ -123,56 +158,52 @@ body { background: transparent; }
   color: var(--tx);
 }
 
-/* ═══ LIQUID GLASS GLOBAL ═══
-   Tout panneau qui utilise var(--bg2) en fond devient du verre dépoli :
-   on lui applique un backdrop-filter, et var(--bg2) est translucide (voir :root)
-   pour laisser transparaître le fond mesh. Marche sur toutes les pages sans
-   toucher au markup (sélecteur d'attribut sur le style inline). */
+/* ═══ SURFACES MATÉRIELLES ═══
+   Fini le verre dépoli : les panneaux qui portent --bg2 en fond sont SOLIDES
+   (le flou est coupé, --glass-blur = 0). On garde la règle neutralisée pour ne
+   pas relancer un backdrop-filter coûteux hérité d'anciens navigateurs. */
 [style*="--bg2"] {
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
-/* ═══ LIQUID GLASS — CARTES (composant global, dispo sur toutes les pages) ═══
-   .card                        → surface de verre STATIQUE (informative, non-cliquable)
-   .card.is-clickable / .acard  → verre INTERACTIF (soulèvement + bord accent + halo curseur)
-   Le halo qui suit le curseur est piloté par --mx/--my (voir components/GlassHover). */
+/* ═══ CARTES — le « carreau posé » (composant global, toutes les pages) ═══
+   .card                        → surface informative (non-cliquable)
+   .card.is-clickable / .acard  → surface interactive (léger soulèvement + bord accent)
+   Matière : chaux blanchie, filet net, ombre franche. Une encoche d'angle discrète
+   (::after) rappelle le carreau de zellige — signature, pas décor gratuit. */
 .card, .acard {
-  position: relative; overflow: hidden; border-radius: 18px;
-  background: linear-gradient(140deg, var(--glass-surface), var(--glass-surface-2));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  border: 1px solid var(--glass-edge);
-  box-shadow: var(--card-shadow), inset 0 1px 0 var(--glass-highlight), inset 0 -16px 30px -22px rgba(0,0,0,0.5);
-  transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease;
+  position: relative; overflow: hidden; border-radius: var(--r-card);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease, border-color .3s ease;
 }
-/* Reflet de bord façon « lentille » (statique, purement décoratif — pas un signal de clic) */
+/* Encoche d'angle « carreau » — petit chevron d'accent en haut à droite. */
 .card::after, .acard::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2;
-  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 28%, transparent 72%, rgba(255,255,255,0.06));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude; padding: 1px;
+  content: ''; position: absolute; top: 0; right: 0; width: 14px; height: 14px; pointer-events: none; z-index: 2;
+  background: var(--accent);
+  opacity: 0.14;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  transition: opacity .3s ease;
 }
-/* ── Cliquable uniquement : soulèvement, bord accent, halo curseur ── */
+[dir="rtl"] .card::after, [dir="rtl"] .acard::after {
+  right: auto; left: 0; clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+/* ── Cliquable uniquement : soulèvement + bord accent ── */
 .acard, .card.is-clickable { cursor: pointer; }
 .card.is-clickable:hover {
   transform: translateY(-2px);
-  box-shadow: var(--hover-shadow), inset 0 1px 0 var(--glass-highlight), inset 0 -16px 30px -22px rgba(0,0,0,0.45);
-  border-color: var(--accent)44;
+  box-shadow: var(--hover-shadow);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
+.card.is-clickable:hover::after { opacity: 0.32; }
 .acard:hover {
   transform: translateY(-3px);
-  box-shadow: var(--hover-shadow-lg), inset 0 1px 0 var(--glass-highlight);
-  border-color: var(--accent)55;
+  box-shadow: var(--hover-shadow-lg);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
-/* Reflet spéculaire discret qui suit le curseur — lecture « verre », pas « lampe torche ».
-   Blanc seul, basse opacité, dégradé doux (pas de teinte accent → évite l'effet template). */
-.acard::before, .card.is-clickable::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  opacity: 0; transition: opacity .5s ease; z-index: 3;
-  background: radial-gradient(240px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06), transparent 46%);
-}
-.acard:hover::before, .card.is-clickable:hover::before { opacity: 1; }
+.acard:hover::after { opacity: 0.38; }
 /* Bulle iOS : verre + rim lumineux + reflet en haut à gauche */
 .glassb {
   position: relative; overflow: hidden;
@@ -206,17 +237,17 @@ body { background: transparent; }
 .btn:disabled, .btn-primary:disabled, .btn-ghost:disabled,
 .btn-danger:disabled, .btn-success:disabled, .btn-soft:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-/* Plein dégradé (action principale) */
+/* Aplat bleu d'Alger (action principale) — franc, sans dégradé */
 .btn-primary {
-  color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2));
-  box-shadow: 0 6px 18px -7px var(--accent), inset 0 1px 0 rgba(255,255,255,.28);
+  color: #fff; background: var(--accent);
+  box-shadow: 0 2px 0 var(--accent-ink), 0 10px 20px -12px var(--accent);
 }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 11px 26px -7px var(--accent), inset 0 1px 0 rgba(255,255,255,.34); }
+.btn-primary:hover { transform: translateY(-1px); background: var(--accent2); box-shadow: 0 3px 0 var(--accent-ink), 0 14px 24px -12px var(--accent); }
+.btn-primary:active { box-shadow: 0 1px 0 var(--accent-ink); }
 
-/* Verre (action secondaire) */
+/* Contour (action secondaire) — surface blanchie, filet net */
 .btn-ghost {
-  color: var(--tx); background: var(--glass-surface); border-color: var(--glass-edge);
-  -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%);
+  color: var(--tx); background: var(--bg2); border-color: var(--border2);
 }
 .btn-ghost:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
 
@@ -244,37 +275,43 @@ body { background: transparent; }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 9px 15px; border-radius: var(--r-chip); font-size: 13px; font-weight: 600;
-  color: var(--tx2); background: var(--glass-surface); border: 1px solid var(--glass-edge);
+  color: var(--tx2); background: var(--bg2); border: 1px solid var(--border);
   cursor: pointer; white-space: nowrap; text-decoration: none;
   transition: transform .18s cubic-bezier(.22,1,.36,1), border-color .2s ease, color .2s ease, background .2s ease;
 }
 .chip:hover { transform: translateY(-1px); color: var(--tx); border-color: var(--accent); }
 .chip-active {
-  color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-color: transparent; box-shadow: 0 5px 14px -6px var(--accent);
+  color: #fff; background: var(--accent);
+  border-color: transparent; box-shadow: 0 2px 0 var(--accent-ink);
 }
-.chip-active:hover { color: #fff; }
+.chip-active:hover { color: #fff; background: var(--accent2); }
 
 /* ── Champs de saisie unifiés ── */
 .field {
   width: 100%; padding: 13px 16px; border-radius: var(--r-field);
-  font-family: inherit; font-size: 14px; font-weight: 300; color: var(--tx);
-  background: var(--glass-surface); border: 1px solid var(--glass-edge);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  font-family: inherit; font-size: 14px; font-weight: 400; color: var(--tx);
+  background: var(--bg2); border: 1px solid var(--border2);
   transition: border-color .2s ease, box-shadow .25s ease, background .2s ease;
 }
 .field::placeholder { color: var(--tx3); }
 .field:focus {
-  outline: none; border-color: var(--accent); background: var(--glass-surface-2);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  outline: none; border-color: var(--accent); background: var(--bg2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
 
-/* ── Étiquette de section ── */
+/* ── Étiquette de section — mono + carreau de zellige (signature) ── */
 .section-label {
-  display: inline-block; font-size: 11px; font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent-ink); margin-bottom: 10px;
+}
+.section-label::before {
+  content: ''; width: 8px; height: 8px; flex-shrink: 0;
+  background: var(--accent);
+  /* étoile à 4 branches = carreau posé sur la pointe */
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
 }
 
 
@@ -287,7 +324,7 @@ textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  background: var(--border2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -296,7 +333,7 @@ textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
 
 /* Sélection de texte */
 ::selection {
-  background: rgba(90, 61, 240, 0.35);
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
   color: inherit;
 }
 
@@ -305,7 +342,7 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(90, 61, 240, 0.16) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent) !important;
   outline: none;
 }
 
@@ -447,7 +484,7 @@ select:focus {
   bottom: -2px;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(90deg, #5A3DF0, #7C5CFF);
+  background: var(--accent);
   transform: scaleX(0);
   transform-origin: center;
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
@@ -498,14 +535,10 @@ select:focus {
   border-radius: 10px;
 }
 
-/* Texte en dégradé animé */
+/* Ancien texte-dégradé animé → aplat encre (dégradé tué, compat classe) */
 .gradient-text-animated {
-  background: linear-gradient(135deg, #5A3DF0, #a78bfa, #7C5CFF, #5A3DF0);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientMove 5s ease infinite;
+  color: var(--tx);
+  -webkit-text-fill-color: currentColor;
 }
 
 /* Accessibilité : on coupe tout si l'utilisateur le demande */

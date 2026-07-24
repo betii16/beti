@@ -24,9 +24,9 @@ const SVC = [
   {id:'serrurerie',color:'#ef4444',u:true},
   {id:'menage',color:'#10b981'},
   {id:'peinture',color:'#f97316'},
-  {id:'demenagement',color:'#7C5CFF'},
+  {id:'demenagement',color:'#1E6FD6'},
   {id:'jardinage',color:'#22c55e'},
-  {id:'informatique',color:'#5A3DF0'},
+  {id:'informatique',color:'#175CC4'},
   {id:'coiffure',color:'#ec4899'},
 ]
 const NEED_KEYS = ['need1','need2','need3','need4','need5','need6','need7','need8']
@@ -56,7 +56,7 @@ function Stars({r,s=12}:{r:number;s?:number}){return<div style={{display:'flex',
 export default function Home(){
   const router=useRouter()
   const {t,isAr}=useLang()
-  const [dark,setDark]=useState(true)
+  const [dark,setDark]=useState(false)
   const [artisans,setArtisans]=useState<Artisan[]>([])
   const [loading,setLoading]=useState(true)
   const [cat,setCat]=useState('')
@@ -77,7 +77,7 @@ export default function Home(){
   // Theme — dark par défaut
   useEffect(()=>{
     const saved=localStorage.getItem('beti-theme')
-    if(saved==='light')setDark(false)
+    setDark(saved==='dark')
   },[])
   const toggleTheme=()=>{const next=!dark;setDark(next);localStorage.setItem('beti-theme',next?'dark':'light');document.documentElement.setAttribute('data-theme',next?'dark':'light')}
 
@@ -139,7 +139,7 @@ export default function Home(){
 
   useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!sa.current){sa.current=true;const t={a:12000,b:98,c:30,d:50};const s=Date.now();const tick=()=>{const p=Math.min((Date.now()-s)/1800,1);const e=1-Math.pow(1-p,3);setCnt({a:Math.floor(e*t.a),b:Math.floor(e*t.b),c:Math.floor(e*t.c),d:Math.floor(e*t.d)});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:0.3});if(sr.current)o.observe(sr.current);return()=>o.disconnect()},[])
 
-  const cc=(id:string)=>SVC.find(c=>c.id===id)?.color||'#5A3DF0'
+  const cc=(id:string)=>SVC.find(c=>c.id===id)?.color||'#175CC4'
   const cl=(id:string)=>t(`categories.${id}`)
   const svcDesc=(id:string)=>t(`home.svc${id[0].toUpperCase()}${id.slice(1)}`)
   const ta=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?t('common.today'):x===1?t('common.yesterday'):x<7?`${x}${t('common.daysShort')}`:x<30?`${Math.floor(x/7)} ${t('common.weeksShort')}`:`${Math.floor(x/30)} ${t('common.monthsShort')}`}
@@ -154,7 +154,7 @@ export default function Home(){
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
         @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
         @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-6px)}}
-        @keyframes glow{0%,100%{box-shadow:0 0 8px #5A3DF033}50%{box-shadow:0 0 20px #5A3DF055}}
+        @keyframes glow{0%,100%{box-shadow:0 0 8px #175CC433}50%{box-shadow:0 0 20px #175CC455}}
         *{box-sizing:border-box;margin:0;padding:0}
         html{scroll-behavior:smooth}
         #services,#artisans,#comment{scroll-margin-top:100px}
@@ -196,7 +196,7 @@ export default function Home(){
 
             <h1 style={{fontSize:'clamp(2.4rem,5.5vw,3.8rem)',fontWeight:800,lineHeight:1.08,letterSpacing:'-0.03em',marginBottom:20,animation:'fadeUp 0.6s ease 0.1s both'}}>
               {t('home.title1')}<br/>
-              <span style={{background:'linear-gradient(135deg,#5A3DF0,#a78bfa,#5A3DF0)',backgroundSize:'200% auto',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',animation:'shimmer 3s linear infinite'}}>{t('home.title2')}</span>
+              <span style={{background:'linear-gradient(135deg,#175CC4,#6BA3E6,#175CC4)',backgroundSize:'200% auto',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',animation:'shimmer 3s linear infinite'}}>{t('home.title2')}</span>
             </h1>
 
             <p style={{fontSize:16,color:'var(--tx2)',maxWidth:480,lineHeight:1.8,margin:'0 auto 36px',fontWeight:300,animation:'fadeUp 0.6s ease 0.2s both'}}>
@@ -253,9 +253,9 @@ export default function Home(){
                 <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{svcDesc(s.id)}</div>
               </div>
             ))}
-            <div onClick={()=>{setCat('autre');setTags([])}} className="card is-clickable" style={{padding:18,borderColor:cat==='autre'?'#a78bfa':'var(--border)'}}>
-              <div style={{marginBottom:10}}><Shapes size={22} color={cat==='autre'?'#a78bfa':'var(--tx2)'} strokeWidth={1.75}/></div>
-              <div style={{fontSize:14,fontWeight:700,color:cat==='autre'?'#a78bfa':'var(--tx)',marginBottom:4}}>{t('home.otherService')}</div>
+            <div onClick={()=>{setCat('autre');setTags([])}} className="card is-clickable" style={{padding:18,borderColor:cat==='autre'?'#6BA3E6':'var(--border)'}}>
+              <div style={{marginBottom:10}}><Shapes size={22} color={cat==='autre'?'#6BA3E6':'var(--tx2)'} strokeWidth={1.75}/></div>
+              <div style={{fontSize:14,fontWeight:700,color:cat==='autre'?'#6BA3E6':'var(--tx)',marginBottom:4}}>{t('home.otherService')}</div>
               <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>{t('home.otherServiceSub')}</div>
             </div>
           </div>
@@ -357,10 +357,10 @@ export default function Home(){
               séparés par de simples filets — fini les 4 rectangles flottants. */}
           <div className="card" style={{maxWidth:980,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(4,1fr)',padding:'6px 0'}}>
             {[
-              {v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA'),Icon:Users,c:'#5A3DF0'},
-              {v:cnt.b,x:'%',l:t('home.statsB'),Icon:Heart,c:'#5A3DF0'},
-              {v:cnt.c,p:'<',x:'min',l:t('home.statsC'),Icon:Clock,c:'#5A3DF0'},
-              {v:cnt.d,x:'+',l:t('home.statsD'),Icon:MapPinned,c:'#7C5CFF'},
+              {v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA'),Icon:Users,c:'#175CC4'},
+              {v:cnt.b,x:'%',l:t('home.statsB'),Icon:Heart,c:'#175CC4'},
+              {v:cnt.c,p:'<',x:'min',l:t('home.statsC'),Icon:Clock,c:'#175CC4'},
+              {v:cnt.d,x:'+',l:t('home.statsD'),Icon:MapPinned,c:'#1E6FD6'},
             ].map((s:any,i)=>(
               <div key={i} style={{padding:'26px 18px',textAlign:'center',borderInlineStart:i>0?'1px solid var(--border)':'none'}}>
                 <div style={{display:'inline-flex',width:40,height:40,borderRadius:12,marginBottom:12,alignItems:'center',justifyContent:'center',background:`${s.c}1a`,color:s.c}}>
@@ -381,7 +381,7 @@ export default function Home(){
         <section id="comment" className="reveal-on-scroll" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
           <div style={{textAlign:'center',marginBottom:44}}><div className="section-label">{t('home.howTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.howTitle')}</h2></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'28px 18px'}}>
-            {[{n:'01',k:'step1',c:'#5A3DF0',Icon:Search},{n:'02',k:'step2',c:'#5A3DF0',Icon:CalendarCheck},{n:'03',k:'step3',c:'#5A3DF0',Icon:CheckCircle2}].map((s,i)=>(
+            {[{n:'01',k:'step1',c:'#175CC4',Icon:Search},{n:'02',k:'step2',c:'#175CC4',Icon:CalendarCheck},{n:'03',k:'step3',c:'#175CC4',Icon:CheckCircle2}].map((s,i)=>(
               <div key={s.n} style={{position:'relative',padding:'0 8px'}}>
                 {/* Trait de liaison vers l'étape suivante (desktop) */}
                 {i<2&&<div aria-hidden className="desktop-only" style={{position:'absolute',top:27,insetInlineStart:70,insetInlineEnd:-18,height:2,background:`linear-gradient(90deg,${s.c}66,transparent)`,pointerEvents:'none'}}/>}
@@ -407,7 +407,7 @@ export default function Home(){
             {/* Liste de bénéfices à filets — volontairement « plate » pour trancher
                 avec le verre des sections interactives. */}
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:'0 40px'}}>
-              {[{k:'why1',c:'#5A3DF0'},{k:'why2',c:'#5A3DF0'},{k:'why3',c:'#5A3DF0'},{k:'why4',c:'#5A3DF0'},{k:'why5',c:'#5A3DF0'},{k:'why6',c:'#5A3DF0'}].map(f=>(
+              {[{k:'why1',c:'#175CC4'},{k:'why2',c:'#175CC4'},{k:'why3',c:'#175CC4'},{k:'why4',c:'#175CC4'},{k:'why5',c:'#175CC4'},{k:'why6',c:'#175CC4'}].map(f=>(
                 <div key={f.k} style={{display:'flex',gap:14,padding:'20px 2px',borderTop:'1px solid var(--border)'}}>
                   <div style={{flexShrink:0,width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`${f.c}14`,border:`1px solid ${f.c}30`}}>
                     <div style={{width:8,height:8,borderRadius:'50%',background:f.c,boxShadow:`0 0 12px ${f.c}55`}}/>

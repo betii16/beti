@@ -26,8 +26,8 @@ type ArtisanMarker = {
 
 const CAT_COLORS: Record<string, string> = {
   plomberie: '#3b82f6', electricite: '#f59e0b', menage: '#10b981',
-  demenagement: '#7C5CFF', jardinage: '#22c55e', peinture: '#ef4444',
-  serrurerie: '#f97316', informatique: '#5A3DF0', coiffure: '#ec4899', autre: '#a78bfa',
+  demenagement: '#1E6FD6', jardinage: '#22c55e', peinture: '#ef4444',
+  serrurerie: '#f97316', informatique: '#175CC4', coiffure: '#ec4899', autre: '#6BA3E6',
 }
 
 const DEMO: ArtisanMarker[] = [
@@ -116,7 +116,7 @@ export default function BetiMap({
             rating: a.rating_avg || 0,
             price: a.hourly_rate || 0,
             available: a.is_available,
-            color: CAT_COLORS[a.category] || '#5A3DF0',
+            color: CAT_COLORS[a.category] || '#175CC4',
             lat: a.lat, lng: a.lng, plan: a.plan, plan_until: a.plan_until,
           })))
         }
@@ -238,8 +238,8 @@ export default function BetiMap({
         <MapMarker longitude={clientLng} latitude={clientLat}>
           <MarkerContent>
             <div style={{ position: 'relative', width: 18, height: 18 }}>
-              <div style={{ position: 'absolute', inset: -7, borderRadius: '50%', background: 'rgba(90,61,240,0.35)', animation: 'bmDot 2s infinite' }} />
-              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#5A3DF0', border: '3px solid #fff', boxShadow: '0 0 0 2px rgba(90,61,240,0.4)' }} />
+              <div style={{ position: 'absolute', inset: -7, borderRadius: '50%', background: 'rgba(23,92,196,0.35)', animation: 'bmDot 2s infinite' }} />
+              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#175CC4', border: '3px solid #fff', boxShadow: '0 0 0 2px rgba(23,92,196,0.4)' }} />
             </div>
           </MarkerContent>
         </MapMarker>
@@ -249,14 +249,14 @@ export default function BetiMap({
           <MapMarker key={a.id} longitude={a.lng} latitude={a.lat}>
             <MarkerContent>
               <div style={{ position: 'relative', transform: 'translateY(-4px)', opacity: a.available ? 1 : 0.55 }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', padding: 3, background: `linear-gradient(135deg, ${a.color}, #7C5CFF)`, boxShadow: '0 6px 16px rgba(0,0,0,0.35)' }}>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', padding: 3, background: `linear-gradient(135deg, ${a.color}, #1E6FD6)`, boxShadow: '0 6px 16px rgba(0,0,0,0.35)' }}>
                   <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid #fff', background: '#13131e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {a.avatar
                       ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <span style={{ color: '#fff', fontWeight: 800, fontSize: 13 }}>{a.initials}</span>}
                   </div>
                 </div>
-                <div style={{ position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%) rotate(45deg)', width: 10, height: 10, background: '#7C5CFF', borderBottomRightRadius: 2 }} />
+                <div style={{ position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%) rotate(45deg)', width: 10, height: 10, background: '#1E6FD6', borderBottomRightRadius: 2 }} />
                 {a.available && <div style={{ position: 'absolute', top: 0, right: 0, width: 12, height: 12, borderRadius: '50%', background: '#10b981', border: '2px solid #fff' }} />}
               </div>
             </MarkerContent>
@@ -300,13 +300,13 @@ export default function BetiMap({
         ))}
 
         {/* Suivi : route + puck directionnel */}
-        {trackingArtisanId && routeCoords.length > 1 && <MapRoute coordinates={routeCoords} color="#7C5CFF" width={5} />}
+        {trackingArtisanId && routeCoords.length > 1 && <MapRoute coordinates={routeCoords} color="#1E6FD6" width={5} />}
         {trackingArtisanId && puck && (
           <MapMarker longitude={puck.lng} latitude={puck.lat}>
             <MarkerContent>
               <div style={{ position: 'relative', width: 46, height: 46 }}>
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(124,92,255,0.3)', animation: 'bmDot 2s infinite' }} />
-                <div style={{ position: 'absolute', top: 7, left: 7, width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', border: '3px solid #fff', boxShadow: '0 3px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `rotate(${heading}deg)`, transition: 'transform 0.45s ease' }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(30,111,214,0.3)', animation: 'bmDot 2s infinite' }} />
+                <div style={{ position: 'absolute', top: 7, left: 7, width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: '3px solid #fff', boxShadow: '0 3px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `rotate(${heading}deg)`, transition: 'transform 0.45s ease' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 L19.5 21 L12 16.2 L4.5 21 Z" /></svg>
                 </div>
               </div>
