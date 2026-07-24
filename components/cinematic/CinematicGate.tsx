@@ -20,12 +20,10 @@ export default function CinematicGate() {
 
   useEffect(() => {
     try {
+      // DÉSACTIVÉE (13/07, décision Raouf) : ne s'affiche plus jamais d'elle-même.
+      // L'expérience reste accessible via ?cine=1 si on veut la revisiter un jour.
       const force = new URLSearchParams(window.location.search).get('cine') === '1'
-      if (!force) {
-        if (localStorage.getItem(DONE_KEY)) return
-        if (!window.matchMedia('(min-width: 768px)').matches) return
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-      }
+      if (!force) return
       const canvas = document.createElement('canvas')
       const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
       if (!gl) return

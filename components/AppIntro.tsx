@@ -38,11 +38,9 @@ export default function AppIntro() {
   const touch = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
-    // Mobile uniquement : sur desktop, la première visite est prise en charge
-    // par l'expérience cinématique 3D (components/cinematic/CinematicGate).
-    try {
-      if (!localStorage.getItem(DONE_KEY) && window.matchMedia('(max-width: 767px)').matches) setShow(true)
-    } catch {}
+    // Tous écrans (comportement d'origine — l'expérience cinématique desktop
+    // a été désactivée, voir components/cinematic/CinematicGate).
+    try { if (!localStorage.getItem(DONE_KEY)) setShow(true) } catch {}
   }, [])
 
   // Préchargement : une photo n'est utilisée qu'après chargement réussi → pas
