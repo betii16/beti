@@ -124,6 +124,9 @@ h1, h2, h3, h4, .display {
   --grid-glow: rgba(78,155,232,0.06);
 }
 
+/* Logo (marque bleu d'Alger) — éclairci sur « Nuit d'Alger » pour rester lisible. */
+[data-theme="dark"] .beti-logo-mark { filter: brightness(1.7) saturate(0.9); }
+
 html {
   scroll-behavior: smooth;
 }

@@ -21,6 +21,7 @@ export function LogoMark({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
+      className={variant === 'color' ? 'beti-logo-mark' : undefined}
       src={src}
       alt="BETI"
       width={size}
