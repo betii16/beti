@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { haversineKm } from '@/lib/distance'
 import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
 import { fetchPlans, isListed } from '@/lib/subscription'
+import { artisanAvatar } from '@/lib/avatar'
 import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
@@ -186,52 +187,65 @@ export default function Home(){
         {/* ── ACCUEIL DESKTOP ── */}
         <div className="desktop-only" style={{display:'block'}}>
 
-        {/* ── HERO ── */}
-        <section style={{position:'relative',padding:'88px 24px 56px',overflow:'hidden'}}>
-          <div style={{maxWidth:680,margin:'0 auto',textAlign:'center',position:'relative',zIndex:2}}>
-            <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 18px',borderRadius:24,background:'var(--bg2)',border:'1px solid var(--border)',boxShadow:'var(--card-shadow)',fontSize:11,letterSpacing:'.1em',fontWeight:700,marginBottom:28,animation:'fadeUp 0.6s ease'}}>
-              <div style={{width:6,height:6,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 8px #10b98155'}}/>
-              <span style={{background:'var(--gradient-text)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{t('home.badge')}</span>
-            </div>
+        {/* ── HERO — layout asymétrique : accroche à gauche, registre d'artisans
+             « en ce moment » à droite. Volontairement PAS un hero centré (pill +
+             titre dégradé + 3 badges) : le produit (de vrais artisans de vrais
+             quartiers) EST l'image de marque. ── */}
+        <section style={{position:'relative',maxWidth:1180,margin:'0 auto',padding:'72px 24px 60px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'minmax(0,1.05fr) minmax(0,0.95fr)',gap:56,alignItems:'center'}} className="grid-collapse">
 
-            <h1 style={{fontSize:'clamp(2.4rem,5.5vw,3.8rem)',fontWeight:800,lineHeight:1.08,letterSpacing:'-0.03em',marginBottom:20,animation:'fadeUp 0.6s ease 0.1s both'}}>
-              {t('home.title1')}<br/>
-              <span style={{background:'linear-gradient(135deg,#175CC4,#6BA3E6,#175CC4)',backgroundSize:'200% auto',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',animation:'shimmer 3s linear infinite'}}>{t('home.title2')}</span>
-            </h1>
-
-            <p style={{fontSize:16,color:'var(--tx2)',maxWidth:480,lineHeight:1.8,margin:'0 auto 36px',fontWeight:300,animation:'fadeUp 0.6s ease 0.2s both'}}>
-              {t('home.subtitle1')}<br/>{t('home.subtitle2')}
-            </p>
-
-            {/* Search */}
-            <div className="card" style={{maxWidth:540,margin:'0 auto 20px',padding:'20px 22px',textAlign:'left',animation:'fadeUp 0.6s ease 0.3s both'}}>
-              <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,letterSpacing:'0.08em',marginBottom:12}}>{t('home.needTitle')}</div>
-              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                {NEED_KEYS.map(k=>(
-                  <button key={k} onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}}
-                    className="chip" style={{fontSize:12}}>{t(`home.${k}`)}</button>
-                ))}
+            {/* Colonne accroche */}
+            <div style={{maxWidth:520}}>
+              <div className="mono" style={{fontSize:12,letterSpacing:'0.06em',color:'var(--tx2)',display:'flex',alignItems:'center',gap:10,marginBottom:22}}>
+                <span style={{width:22,height:1,background:'var(--tx3)'}}/>{t('home.heroKicker')}
+              </div>
+              <h1 className="display" style={{fontSize:'clamp(2.5rem,4.6vw,3.7rem)',lineHeight:1.02,letterSpacing:'-0.035em',margin:0}}>
+                {t('home.heroT1')}<br/><span style={{color:'var(--accent)'}}>{t('home.heroT2')}</span>
+              </h1>
+              <p style={{fontSize:16.5,color:'var(--tx2)',lineHeight:1.65,margin:'22px 0 32px',maxWidth:440}}>
+                {t('home.heroLead')}
+              </p>
+              <div style={{display:'flex',alignItems:'center',gap:18,flexWrap:'wrap'}}>
+                <button onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}}
+                  className="btn-primary" style={{padding:'15px 26px',fontSize:15}}>{t('home.heroCta')}</button>
+                <a href="/map" style={{fontSize:14,fontWeight:600,color:'var(--tx)',textDecoration:'none',borderBottom:'2px solid var(--accent)',paddingBottom:2}}>{t('nav.map')}</a>
               </div>
             </div>
 
-            {/* Address */}
-            <div style={{display:'inline-flex',alignItems:'center',gap:10,padding:'10px 20px',borderRadius:12,background:'var(--bg2)',border:'1px solid var(--border)',maxWidth:440,width:'100%',animation:'fadeUp 0.6s ease 0.4s both'}}>
-              {locating?<span style={{fontSize:13,color:'var(--tx3)',fontWeight:300}}>{t('home.detecting')}</span>:(
-                <>
-                  <div style={{width:6,height:6,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 8px #10b98155',flexShrink:0}}/>
-                  <input type="text" value={addr} onChange={e=>setAddr(e.target.value)} placeholder={t('home.addressPh')}
-                    style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--tx)',fontSize:13,fontFamily:'Nexa,sans-serif',fontWeight:300,minWidth:0}}/>
-                </>
-              )}
-            </div>
-
-            {/* Trust */}
-            <div style={{display:'flex',gap:28,justifyContent:'center',marginTop:28,flexWrap:'wrap',animation:'fadeUp 0.6s ease 0.5s both'}}>
-              {['trust1','trust2','trust3','trust4'].map(k=>(
-                <div key={k} style={{display:'flex',alignItems:'center',gap:6,fontSize:11,color:'var(--tx3)',fontWeight:300}}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>{t(`home.${k}`)}
+            {/* Registre « en ce moment » — bordé, sans ombre ni coins ronds : un
+                tableau d'atelier, pas une carte glossy. */}
+            <div style={{border:'1px solid var(--border2)',background:'var(--bg2)',borderRadius:4}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px',borderBottom:'1px solid var(--border2)'}}>
+                <span className="mono" style={{fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--tx2)'}}>{t('home.heroBoard')} · Alger</span>
+                <span style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:11,color:'var(--success)',fontWeight:600}}>
+                  <span className="anim-pulse" style={{width:7,height:7,borderRadius:'50%',background:'var(--success)'}}/>live
+                </span>
+              </div>
+              {[
+                {name:'Karim B.',cat:'plomberie',zone:'Bab El Oued',r:4.9},
+                {name:'Amina K.',cat:'menage',zone:'Hydra',r:5.0},
+                {name:'Sofiane A.',cat:'electricite',zone:'Kouba',r:4.8},
+                {name:'Riad H.',cat:'serrurerie',zone:'El Biar',r:4.6},
+                {name:'Lina H.',cat:'coiffure',zone:'Belouizdad',r:4.9},
+              ].map((a,i)=>{const c=cc(a.cat);return(
+                <div key={a.name} onClick={()=>{setCat(a.cat);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}}
+                  style={{display:'grid',gridTemplateColumns:'40px 1fr auto',alignItems:'center',gap:14,padding:'12px 18px',borderTop:i===0?'none':'1px solid var(--border)',cursor:'pointer'}}>
+                  <div style={{position:'relative',width:40,height:40}}>
+                    <img src={artisanAvatar(null,a.name)} alt="" style={{width:40,height:40,borderRadius:'50%',objectFit:'cover',background:'var(--bg3)',border:`2px solid ${c}`}}/>
+                    <span style={{position:'absolute',right:-2,bottom:-2,width:14,height:14,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg2)',border:`1px solid ${c}44`}}>
+                      <CategoryIcon id={a.cat} size={9} color={c} strokeWidth={2.2}/>
+                    </span>
+                  </div>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.name} <span style={{color:'var(--tx3)',fontWeight:400}}>· {cl(a.cat)}</span></div>
+                    <div style={{fontSize:12,color:'var(--tx2)'}}>{a.zone}</div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div className="mono" style={{fontSize:13,fontWeight:600,color:'var(--laiton)'}}>★ {a.r.toFixed(1)}</div>
+                    <div className="mono" style={{fontSize:10,letterSpacing:'0.06em',color:'var(--success)',textTransform:'uppercase'}}>{t('home.heroDispo')}</div>
+                  </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         </section>
@@ -305,11 +319,7 @@ export default function Home(){
                       {/* Banner gradient + centered avatar */}
                       <div style={{position:'relative',height:130,background:`linear-gradient(160deg, ${c}28, var(--bg2) 65%)`,display:'flex',alignItems:'center',justifyContent:'center'}}>
                         <div style={{position:'absolute',inset:0,background:`radial-gradient(circle at 30% 40%, ${c}12, transparent 60%)`}}/>
-                        {a.avatar_url ? (
-                          <img src={a.avatar_url} alt="" style={{width:72,height:72,borderRadius:18,objectFit:'cover',border:'3px solid var(--bg2)',boxShadow:`0 8px 28px ${c}20`,zIndex:1}}/>
-                        ) : (
-                          <div style={{width:72,height:72,borderRadius:18,background:`linear-gradient(135deg, ${c}35, ${c}18)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,fontWeight:800,color:c,border:'3px solid var(--bg2)',boxShadow:`0 8px 28px ${c}20`,zIndex:1}}>{init}</div>
-                        )}
+                        <img src={artisanAvatar(a.avatar_url,a.artisan_id)} alt="" style={{width:76,height:76,borderRadius:18,objectFit:'cover',background:'var(--bg3)',border:`3px solid ${c}`,boxShadow:`0 8px 28px ${c}20`,zIndex:1}}/>
                         {/* Top badges */}
                         <div style={{position:'absolute',top:12,right:14,display:'flex',alignItems:'center',gap:5,padding:'4px 12px',borderRadius:20,background:'var(--bg2)',border:'1px solid var(--border)',backdropFilter:'blur(8px)',boxShadow:'0 2px 8px rgba(0,0,0,0.1)'}}>
                           {a.is_available ? <>
@@ -486,7 +496,7 @@ export default function Home(){
         <div onClick={()=>setSel(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(4px)'}}/>
         <div className="detail-sheet" style={{position:'absolute',right:0,top:0,bottom:0,width:'100%',maxWidth:440,background:'var(--bg)',borderLeft:'1px solid var(--border)',overflowY:'auto',animation:'slideIn 0.35s cubic-bezier(0.4,0,0.2,1)'}}>
           <div style={{padding:24,borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:14}}>
-            {sel.avatar_url?<img src={sel.avatar_url} alt="" style={{width:52,height:52,borderRadius:'50%',objectFit:'cover',border:`2px solid ${cc(sel.category)}33`}}/>:<div style={{width:52,height:52,borderRadius:'50%',background:`${cc(sel.category)}12`,border:`2px solid ${cc(sel.category)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:cc(sel.category)}}>{sel.full_name?.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>}
+            <img src={artisanAvatar(sel.avatar_url,sel.artisan_id)} alt="" style={{width:52,height:52,borderRadius:'50%',objectFit:'cover',background:'var(--bg3)',border:`2px solid ${cc(sel.category)}`}}/>
             <div style={{flex:1}}><div style={{fontSize:17,fontWeight:800}}>{sel.full_name}</div><div style={{fontSize:11,color:cc(sel.category),fontWeight:700,marginBottom:3}}>{cl(sel.category)}</div><div style={{display:'flex',alignItems:'center',gap:5}}><Stars r={sel.rating_avg} s={12}/><span style={{fontSize:12,fontWeight:800,color:'#f59e0b'}}>{sel.rating_avg?.toFixed(1)}</span><span style={{fontSize:10,color:'var(--tx3)'}}>({sel.rating_count})</span></div></div>
             <button onClick={()=>setSel(null)} style={{background:'transparent',border:'none',color:'var(--tx3)',cursor:'pointer',display:'flex',padding:4}}><X size={18}/></button>
           </div>

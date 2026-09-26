@@ -11,6 +11,7 @@ import { useLang } from '@/lib/LangContext'
 import { CategoryIcon } from '@/components/icons'
 import { LayoutGrid, MapPin, Search, BadgeCheck, ChevronRight, Shapes, X, Navigation, SearchX } from 'lucide-react'
 import { OtherCategorySearch } from '@/components/OtherCategory'
+import { artisanAvatar } from '@/lib/avatar'
 
 type Artisan = {
   artisan_id: string; full_name: string; avatar_url: string | null; category: string
@@ -258,11 +259,7 @@ export default function MobileHome({
                 }}>
                   {/* Avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>
-                    {a.avatar_url ? (
-                      <img src={a.avatar_url} alt="" style={{ width: 56, height: 56, borderRadius: 17, objectFit: 'cover', border: `2px solid ${c}30` }}/>
-                    ) : (
-                      <div style={{ width: 56, height: 56, borderRadius: 17, background: `linear-gradient(135deg, ${c}30, ${c}14)`, border: `2px solid ${c}26`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, fontWeight: 800, color: c }}>{init}</div>
-                    )}
+                    <img src={artisanAvatar(a.avatar_url, a.artisan_id)} alt="" style={{ width: 56, height: 56, borderRadius: 17, objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${c}` }}/>
                     {a.is_available && <div style={{ position: 'absolute', bottom: -1, insetInlineEnd: -1, width: 13, height: 13, borderRadius: '50%', background: '#10b981', border: '2.5px solid var(--bg2)' }}/>}
                   </div>
 
