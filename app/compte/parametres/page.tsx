@@ -72,7 +72,8 @@ export default function Parametres() {
 
   const saveProfil = async () => {
     setSavingProfil(true)
-    await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
+    if (error) { alert('Enregistrement impossible : ' + error.message); setSavingProfil(false); return }
     setProfilOk(true)
     setSavingProfil(false)
     setTimeout(() => setProfilOk(false), 3000)
@@ -85,8 +86,11 @@ export default function Parametres() {
       return
     }
     setSavingSecurite(true)
-    if (newEmail !== user.email) await supabase.auth.updateUser({ email: newEmail })
-    if (newPassword) await supabase.auth.updateUser({ password: newPassword })
+    const emailChanged = newEmail.trim() !== '' && newEmail !== (user.email || '')
+    const { error: emailErr } = emailChanged ? await supabase.auth.updateUser({ email: newEmail.trim() }) : { error: null }
+    const { error: pwErr } = newPassword ? await supabase.auth.updateUser({ password: newPassword }) : { error: null }
+    const err = emailErr || pwErr
+    if (err) { alert('Mise à jour impossible : ' + err.message); setSavingSecurite(false); return }
     setSecuriteOk(true)
     setSavingSecurite(false)
     setNewPassword('')

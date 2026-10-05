@@ -503,7 +503,7 @@ export const translations = {
     changePass:      { fr: 'Changer le mot de passe',       ar: 'تغيير كلمة المرور'              },
     myProfile:       { fr: 'Mon profil',                    ar: 'ملفي الشخصي'                    },
     deleteAccDesc:   { fr: 'La suppression de votre compte est définitive. Toutes vos données seront effacées.', ar: 'حذف حسابك نهائي. ستُمحى جميع بياناتك.' },
-    deleteAccConfirm:{ fr: 'Êtes-vous sûr ?',               ar: 'هل أنت متأكد؟'                  },
+    deleteAccConfirm:{ fr: 'Supprimer définitivement votre compte ? Cette action est irréversible.', ar: 'هل تريد حذف حسابك نهائياً؟ لا يمكن التراجع عن هذا الإجراء.' },
     passwordResetSub:{ fr: 'Un email de réinitialisation sera envoyé à', ar: 'سيتم إرسال بريد إعادة التعيين إلى' },
     resetSent:       { fr: 'Email envoyé !',                 ar: 'تم الإرسال!'                    },
     legalSection:    { fr: 'INFORMATIONS LÉGALES',          ar: 'معلومات قانونية'                },
@@ -664,6 +664,7 @@ export const translations = {
     years:        { fr: 'ans',                   ar: 'سنوات'              },
     newRating:    { fr: 'Nouveau',               ar: 'جديد'               },
     reviews:      { fr: 'avis',                  ar: 'تقييم'              },
+    errGeneric:   { fr: "Une erreur est survenue, réessaie.", ar: 'حدث خطأ، حاول مجدداً.' },
   },
 
   // ── Accueil mobile (app) ─────────────────────────────────────────
@@ -997,6 +998,7 @@ export const translations = {
     statusPending:  { fr: 'En attente',                   ar: 'قيد الانتظار'                        },
     statusRefused:  { fr: 'Refusé',                       ar: 'مرفوض'                               },
     statusCancelled:{ fr: 'Annulé',                       ar: 'ملغى'                                },
+    statusInProgress:{ fr: 'À confirmer par le client',   ar: 'بانتظار تأكيد العميل'                },
     ratingUnit:     { fr: 'avis',                         ar: 'تقييم'                               },
   },
 

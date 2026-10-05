@@ -132,7 +132,13 @@ export default function ParametresPage() {
               <p style={{ fontSize: 14, color: 'var(--tx2)', marginBottom: 16, lineHeight: 1.6 }}>
                 {t('settings.deleteAccDesc')}
               </p>
-              <button onClick={async () => { if (confirm(t('settings.deleteAccConfirm'))) { await supabase.auth.signOut(); router.push('/') } }}
+              <button onClick={async () => {
+                if (!confirm(t('settings.deleteAccConfirm'))) return
+                const { data: { session } } = await supabase.auth.getSession()
+                const res = await fetch('/api/account/delete', { method: 'POST', headers: { Authorization: `Bearer ${session?.access_token || ''}` } }).catch(() => null)
+                if (!res || !res.ok) { alert(t('common.errGeneric')); return }
+                await supabase.auth.signOut(); router.push('/')
+              }}
                 className="btn-ghost btn-sm" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 55%, transparent)', minHeight: 44 }}>
                 {t('settings.deleteAcc')}
               </button>

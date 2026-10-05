@@ -58,7 +58,7 @@ export default function RevenusPage(){
 
   if(loading)return<SkeletonPage stats rows={5}/>
 
-  const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),pending:t('dashExtra.statusPending'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
+  const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),pending:t('dashExtra.statusPending'),in_progress:t('dashExtra.statusInProgress'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
 
   return(
     <div className="rev-scope" style={{minHeight:'100vh',paddingTop:64,direction:isAr?'rtl':'ltr'}}>

@@ -74,13 +74,27 @@ export default function SignupPage() {
       const { data, error } = await race(supabase.auth.verifyOtp({ phone: fullPhone, token, type: 'sms' }))
       if (error) { setErr(/expired|invalid|incorrect/i.test(error.message) ? t('auth.errCode') : error.message); setLoading(false); return }
       const uid = data.user?.id
+      let finalRole = role
       if (uid) {
-        try { await race(supabase.from('profiles').upsert({ id: uid, full_name: name.trim(), phone: fullPhone, role }, { onConflict: 'id' })) } catch {}
-        if (role === 'artisan') {
-          try { await race(supabase.from('artisans').upsert({ id: uid, category: 'plomberie', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' })) } catch {}
+        // Compte déjà existant (numéro inscrit avant cette inscription) : on ne
+        // réécrit ni le nom ni le rôle. Un nouveau compte est créé à l'envoi du code.
+        const createdAt = data.user?.created_at ? new Date(data.user.created_at).getTime() : Date.now()
+        const isExistingAccount = Date.now() - createdAt > 60 * 60 * 1000
+        let existing: { role: string } | null = null
+        if (isExistingAccount) {
+          try { existing = (await race(supabase.from('profiles').select('role').eq('id', uid).maybeSingle())).data } catch {}
+        }
+        if (existing) {
+          finalRole = existing.role === 'artisan' ? 'artisan' : 'client'
+          if (existing.role === 'admin') { router.push('/admin'); router.refresh(); return }
+        } else {
+          try { await race(supabase.from('profiles').upsert({ id: uid, full_name: name.trim(), phone: fullPhone, role }, { onConflict: 'id' })) } catch {}
+          if (role === 'artisan') {
+            try { await race(supabase.from('artisans').upsert({ id: uid, category: 'plomberie', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' })) } catch {}
+          }
         }
       }
-      router.push(role === 'artisan' ? '/artisan-dashboard/profil' : '/mon-espace')
+      router.push(finalRole === 'artisan' ? '/artisan-dashboard/profil' : '/mon-espace')
       router.refresh()
     } catch (e: any) { setErr(e.message); setLoading(false) }
   }

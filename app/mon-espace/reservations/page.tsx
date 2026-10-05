@@ -94,7 +94,8 @@ export default function MesReservations() {
 
   const cancelBooking = async (id: string) => {
     if (!window.confirm(isAr ? 'هل تريد إلغاء هذا الطلب؟' : 'Annuler cette demande ? L’artisan en sera informé.')) return
-    await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
+    const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
+    if (error) { window.alert(isAr ? 'تعذر إلغاء الطلب، حاول مجدداً.' : 'Annulation impossible, réessaie.'); return }
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
   }
 
@@ -183,6 +184,11 @@ export default function MesReservations() {
                   {b.status === 'completed' && (
                     <Link href={`/mon-espace/avis?booking=${b.id}`} className="btn-soft btn-sm" style={{ minHeight: 44 }}>
                       <Star size={13} fill="currentColor" strokeWidth={0} aria-hidden/> {t('mySpace.leaveReview')}
+                    </Link>
+                  )}
+                  {b.status === 'completed' && (
+                    <Link href={`/facture/${b.id}`} className="btn-ghost btn-sm" style={{ minHeight: 44 }}>
+                      {isAr ? 'الفاتورة' : 'Facture'}
                     </Link>
                   )}
                 </div>

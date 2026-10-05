@@ -260,7 +260,6 @@ export default function ArtisanProfileConfig() {
       hourly_rate: mainRate,
       tags: tags.length > 0 ? tags : null,
       years_experience: experience,
-      is_available: true,
       intervention_radius_km: radiusKm,
       location_city: city,
     }

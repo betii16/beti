@@ -100,11 +100,13 @@ export default function ChatPage(){
   // deux temps : 1) l'artisan signale « travail terminé » → status 'in_progress',
   // 2) le client confirme → 'completed' (ce qui débloque l'avis).
   const markDone=async()=>{
-    await supabase.from('bookings').update({status:'in_progress'}).eq('id',bookingId)
+    const{error}=await supabase.from('bookings').update({status:'in_progress'}).eq('id',bookingId)
+    if(error){setSendErr('Action impossible : '+error.message);return}
     setBooking((b:any)=>b?{...b,status:'in_progress'}:b)
   }
   const confirmDone=async()=>{
-    await supabase.from('bookings').update({status:'completed'}).eq('id',bookingId)
+    const{error}=await supabase.from('bookings').update({status:'completed'}).eq('id',bookingId)
+    if(error){setSendErr('Action impossible : '+error.message);return}
     setBooking((b:any)=>b?{...b,status:'completed'}:b)
   }
 

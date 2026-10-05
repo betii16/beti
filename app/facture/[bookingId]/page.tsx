@@ -36,10 +36,7 @@ export default function FacturePage() {
         .from('bookings')
         .select(`
           *,
-          artisan:artisans(
-            id, category, hourly_rate,
-            profiles!artisans_id_fkey(full_name, phone, avatar_url)
-          ),
+          artisan_profile:profiles!bookings_artisan_id_fkey(full_name, phone, avatar_url),
           client:profiles!bookings_client_id_fkey(full_name, phone)
         `)
         .eq('id', bookingId)
@@ -47,7 +44,9 @@ export default function FacturePage() {
 
       if (error || !data) { setError('Facture introuvable'); setLoading(false); return }
       if (data.status !== 'completed') { setError("La mission n'est pas encore terminée"); setLoading(false); return }
-      setBooking(data)
+      // bookings.artisan_id référence profiles : la fiche métier est lue à part.
+      const { data: art } = await supabase.from('artisans').select('id, category, hourly_rate').eq('id', data.artisan_id).maybeSingle()
+      setBooking({ ...data, artisan: { ...(art || {}), profiles: data.artisan_profile } })
       setLoading(false)
     }
     load()

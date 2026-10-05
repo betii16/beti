@@ -191,12 +191,8 @@ export default function AdminDashboard() {
     // Vérifier si l'user est admin (role = 'admin' dans profiles)
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     if (!profile || profile.role !== 'admin') {
-      // Pour le dev, accepter aussi si c'est le premier user inscrit
-      const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
-      if (count === null || count > 1) {
-        router.push('/')
-        return
-      }
+      router.push('/')
+      return
     }
     setIsAdmin(true)
     await loadAll()
@@ -318,14 +314,17 @@ export default function AdminDashboard() {
     const exp = new Date(now)
     if (s.cycle === 'yearly') exp.setFullYear(exp.getFullYear() + 1)
     else exp.setMonth(exp.getMonth() + 1)
-    await supabase.from('subscriptions').update({ status: 'active', started_at: now.toISOString(), expires_at: exp.toISOString(), reviewed_at: now.toISOString() }).eq('id', s.id)
-    await supabase.from('artisans').update({ plan: s.plan, plan_until: exp.toISOString() }).eq('id', s.artisan_id)
+    const { error: artErr } = await supabase.from('artisans').update({ plan: s.plan, plan_until: exp.toISOString() }).eq('id', s.artisan_id)
+    if (artErr) { alert('Activation impossible : ' + artErr.message); return }
+    const { error: subErr } = await supabase.from('subscriptions').update({ status: 'active', started_at: now.toISOString(), expires_at: exp.toISOString(), reviewed_at: now.toISOString() }).eq('id', s.id)
+    if (subErr) { alert('Abonnement non mis à jour : ' + subErr.message); return }
     await loadSubscriptions()
   }
 
   const rejectSub = async (s: SubRow) => {
     const reason = prompt('Motif du refus (optionnel) :') || null
-    await supabase.from('subscriptions').update({ status: 'rejected', reviewed_at: new Date().toISOString(), note: reason }).eq('id', s.id)
+    const { error } = await supabase.from('subscriptions').update({ status: 'rejected', reviewed_at: new Date().toISOString(), note: reason }).eq('id', s.id)
+    if (error) { alert('Refus impossible : ' + error.message); return }
     await loadSubscriptions()
   }
 

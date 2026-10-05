@@ -24,6 +24,7 @@ export default function ArtisanDashboard(){
   const gpsRef=useRef<number|null>(null)
 
   useEffect(()=>{load()},[])
+  useEffect(()=>()=>{if(gpsRef.current!==null)navigator.geolocation.clearWatch(gpsRef.current)},[])
 
   const load=async()=>{
     const{data:{user:u}}=await supabase.auth.getUser()
@@ -59,7 +60,8 @@ export default function ArtisanDashboard(){
   }
 
   const respond=async(bookingId:string,accept:boolean)=>{
-    await supabase.from('bookings').update({status:accept?'confirmed':'refused'}).eq('id',bookingId)
+    const{error}=await supabase.from('bookings').update({status:accept?'confirmed':'refused'}).eq('id',bookingId)
+    if(error){alert(t('common.errGeneric'));return}
     setBookings(prev=>prev.map(x=>x.id===bookingId?{...x,status:accept?'confirmed':'refused'}:x))
     setStats(p=>({...p,pending:Math.max(0,p.pending-1)}))
   }
@@ -92,7 +94,7 @@ export default function ArtisanDashboard(){
 
   if(loading)return<div role="status" aria-label={t('common.loading')} style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
 
-  const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
+  const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),pending:t('dashExtra.statusPending'),in_progress:t('dashExtra.statusInProgress'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
 
   return(
     <div className="dash-scope" style={{minHeight:'100vh',paddingTop:64,direction:isAr?'rtl':'ltr'}}>
