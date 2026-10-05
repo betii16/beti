@@ -1,8 +1,8 @@
 'use client'
 
 // components/BetiMap.tsx
-// Carte BETI sur MapLibre GL (vectoriel, look « glass ») via components/ui/mapcn.
-// - Marqueurs artisans avec PHOTO DE PROFIL, cliquables → popup glass (note, prix,
+// Carte BETI sur MapLibre GL (vectoriel, surfaces mates Chaux & Zellige) via components/ui/mapcn.
+// - Marqueurs artisans avec PHOTO DE PROFIL, cliquables → popup (note, prix,
 //   Réserver / Suivre).
 // - Suivi temps réel façon Uber : puck qui glisse, rotation, vraie route (OSRM),
 //   caméra qui suit. Interface (props) identique à l'ancienne version Leaflet.
@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { isDemoArtisan } from '@/lib/contactArtisan'
 import { isPremium, isListed } from '@/lib/subscription'
 import PremiumBadge from '@/components/PremiumBadge'
+import { CATEGORY_COLOR } from '@/components/icons'
 import { Star, Navigation, Route } from 'lucide-react'
 import {
   Map, MapMarker, MarkerContent, MarkerPopup, MapControls, MapRoute, type MapRef,
@@ -24,18 +25,15 @@ type ArtisanMarker = {
   plan?: string | null; plan_until?: string | null
 }
 
-const CAT_COLORS: Record<string, string> = {
-  plomberie: '#3b82f6', electricite: '#f59e0b', menage: '#10b981',
-  demenagement: '#1E6FD6', jardinage: '#22c55e', peinture: '#ef4444',
-  serrurerie: '#f97316', informatique: '#175CC4', coiffure: '#ec4899', autre: '#6BA3E6',
-}
+// Palette unique « Chaux & Zellige » (components/icons)
+const CAT_COLORS: Record<string, string> = CATEGORY_COLOR
 
 const DEMO: ArtisanMarker[] = [
-  { id: 'd1', name: 'Karim Benali', initials: 'KB', avatar: null, category: 'plomberie', rating: 4.9, price: 3500, available: true, color: '#3b82f6', lat: 36.7538, lng: 3.0588 },
-  { id: 'd2', name: 'Sofiane Amrani', initials: 'SA', avatar: null, category: 'electricite', rating: 4.8, price: 4000, available: true, color: '#f59e0b', lat: 36.7700, lng: 3.0310 },
-  { id: 'd3', name: 'Amina Kaci', initials: 'AK', avatar: null, category: 'menage', rating: 5.0, price: 2000, available: true, color: '#10b981', lat: 36.7400, lng: 3.0900 },
-  { id: 'd4', name: 'Riad Hamdi', initials: 'RH', avatar: null, category: 'serrurerie', rating: 4.6, price: 4500, available: false, color: '#f97316', lat: 36.7200, lng: 3.0200 },
-  { id: 'd5', name: 'Nadia Bouzid', initials: 'NB', avatar: null, category: 'coiffure', rating: 4.9, price: 1500, available: true, color: '#ec4899', lat: 36.7600, lng: 3.1200 },
+  { id: 'd1', name: 'Karim Benali', initials: 'KB', avatar: null, category: 'plomberie', rating: 4.9, price: 3500, available: true, color: CATEGORY_COLOR.plomberie, lat: 36.7538, lng: 3.0588 },
+  { id: 'd2', name: 'Sofiane Amrani', initials: 'SA', avatar: null, category: 'electricite', rating: 4.8, price: 4000, available: true, color: CATEGORY_COLOR.electricite, lat: 36.7700, lng: 3.0310 },
+  { id: 'd3', name: 'Amina Kaci', initials: 'AK', avatar: null, category: 'menage', rating: 5.0, price: 2000, available: true, color: CATEGORY_COLOR.menage, lat: 36.7400, lng: 3.0900 },
+  { id: 'd4', name: 'Riad Hamdi', initials: 'RH', avatar: null, category: 'serrurerie', rating: 4.6, price: 4500, available: false, color: CATEGORY_COLOR.serrurerie, lat: 36.7200, lng: 3.0200 },
+  { id: 'd5', name: 'Nadia Bouzid', initials: 'NB', avatar: null, category: 'coiffure', rating: 4.9, price: 1500, available: true, color: CATEGORY_COLOR.coiffure, lat: 36.7600, lng: 3.1200 },
 ]
 
 const calcDist = (lat1: number, lng1: number, lat2: number, lng2: number) => {
@@ -61,7 +59,12 @@ async function fetchRoute(fromLat: number, fromLng: number, toLat: number, toLng
 }
 
 function useBetiTheme(): 'dark' | 'light' {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  // Lecture IMMÉDIATE du thème (composant chargé en ssr:false → document dispo).
+  // Avant : 'dark' par défaut puis bascule en 'light' juste après la création de
+  // la carte → setStyle() pendant le chargement du style (« Unable to perform
+  // style diff… Rebuilding ») → tuiles manquantes (trou rectangulaire) en clair.
+  const [theme, setTheme] = useState<'dark' | 'light'>(() =>
+    typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark')
   useEffect(() => {
     const read = () => setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark')
     read()
@@ -250,7 +253,7 @@ export default function BetiMap({
             <MarkerContent>
               <div style={{ position: 'relative', transform: 'translateY(-4px)', opacity: a.available ? 1 : 0.55 }}>
                 <div style={{ width: 46, height: 46, borderRadius: '50%', padding: 3, background: `linear-gradient(135deg, ${a.color}, #1E6FD6)`, boxShadow: '0 6px 16px rgba(0,0,0,0.35)' }}>
-                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid #fff', background: '#13131e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid #fff', background: 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {a.avatar
                       ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <span style={{ color: '#fff', fontWeight: 800, fontSize: 13 }}>{a.initials}</span>}
@@ -262,7 +265,7 @@ export default function BetiMap({
             </MarkerContent>
 
             <MarkerPopup className="!bg-transparent !border-0 !p-0 !shadow-none">
-              <div style={{ width: 250, borderRadius: 18, overflow: 'hidden', background: 'var(--glass-bg)', border: '1px solid var(--glass-edge)', backdropFilter: 'blur(18px) saturate(180%)', WebkitBackdropFilter: 'blur(18px) saturate(180%)', boxShadow: '0 16px 48px rgba(0,0,0,0.45)', fontFamily: 'Nexa, sans-serif' }}>
+              <div style={{ width: 250, borderRadius: 18, overflow: 'hidden', background: 'var(--bg2)', border: '1px solid var(--border)', boxShadow: '0 18px 40px -16px rgba(14,25,34,0.55)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
                   <div style={{ width: 44, height: 44, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: a.color + '22', border: `1.5px solid ${a.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {a.avatar ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: a.color, fontWeight: 800 }}>{a.initials}</span>}
@@ -277,7 +280,7 @@ export default function BetiMap({
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Star size={14} fill="#f59e0b" strokeWidth={0} />
+                    <Star size={14} fill="var(--star)" strokeWidth={0} />
                     <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>{a.rating.toFixed(1)}</span>
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent)' }}>{a.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></span>
@@ -319,7 +322,7 @@ export default function BetiMap({
 
       {/* Bandeau ETA en mode suivi */}
       {trackingArtisanId && (distance || eta) && (
-        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 20, background: 'var(--glass-bg)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid var(--glass-edge)', borderRadius: 14, padding: '14px 18px', fontFamily: 'Nexa, sans-serif', boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
+        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 20, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', boxShadow: '0 18px 40px -16px rgba(14,25,34,0.55)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
             <span style={{ fontSize: 11, color: '#10b981', fontWeight: 800, letterSpacing: '0.08em' }}>ARTISAN EN ROUTE</span>

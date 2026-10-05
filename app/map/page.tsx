@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
@@ -9,23 +9,30 @@ import { fetchPlans, isListed } from '@/lib/subscription'
 import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
-import { CategoryIcon } from '@/components/icons'
-import { LayoutGrid, X } from 'lucide-react'
+import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
+import { LayoutGrid, X, Search, LocateFixed, BadgeCheck, SearchX } from 'lucide-react'
 
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
 
-const CATS = [
-  { id:'',           label:'Tous',         color:'#175CC4' },
-  { id:'plomberie',  label:'Plomberie',    color:'#3b82f6' },
-  { id:'electricite',label:'Électricité',  color:'#f59e0b' },
-  { id:'serrurerie', label:'Serrurerie',   color:'#ef4444' },
-  { id:'menage',     label:'Ménage',       color:'#10b981' },
-  { id:'peinture',   label:'Peinture',     color:'#f97316' },
-  { id:'demenagement',label:'Déménagement',color:'#1E6FD6' },
-  { id:'jardinage',  label:'Jardinage',    color:'#22c55e' },
-  { id:'informatique',label:'Informatique',color:'#175CC4' },
-  { id:'coiffure',   label:'Coiffure',     color:'#ec4899' },
-]
+const CAT_IDS = ['', 'plomberie', 'electricite', 'serrurerie', 'menage', 'peinture', 'demenagement', 'jardinage', 'informatique', 'coiffure']
+
+// Libellés propres à la carte (FR / AR) — étaient codés en dur en français.
+const L = {
+  all:       { fr: 'Tous',                ar: 'الكل' },
+  artisan:   { fr: 'artisan',             ar: 'حرفي' },
+  artisans:  { fr: 'artisans',            ar: 'حرفيين' },
+  nearby:    { fr: 'à proximité',         ar: 'بالقرب منك' },
+  hide:      { fr: 'Masquer',             ar: 'إخفاء' },
+  show:      { fr: 'Afficher',            ar: 'إظهار' },
+  none:      { fr: 'Aucun artisan dans cette zone', ar: 'لا يوجد حرفي في هذه المنطقة' },
+  seeMore:   { fr: 'Voir les {n} autres artisans', ar: 'عرض {n} حرفيين آخرين' },
+  missions:  { fr: 'missions',            ar: 'مهمة' },
+  profile:   { fr: 'Profil',              ar: 'الملف' },
+  locate:    { fr: 'Me localiser',        ar: 'تحديد موقعي' },
+  clear:     { fr: 'Effacer',             ar: 'مسح' },
+  close:     { fr: 'Fermer',              ar: 'إغلاق' },
+  expand:    { fr: 'Agrandir la liste',   ar: 'توسيع القائمة' },
+} as const
 
 type Art = {
   id:string; full_name:string; avatar_url:string|null; category:string
@@ -44,10 +51,11 @@ const DEMO:Art[] = [
   {id:'d8',full_name:'Mourad Khelifi',avatar_url:null,category:'serrurerie',rating_avg:4.9,rating_count:114,hourly_rate:5500,distance_km:2.3,is_available:true,total_missions:278},
 ]
 
-function Stars({r,s=11}:{r:number;s?:number}){return<div style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'#ddd3'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
+function Stars({r,s=11}:{r:number;s?:number}){return<div role="img" aria-label={`${(r||0).toFixed(1)} / 5`} style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(i=><svg key={i} aria-hidden width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'var(--star)':'var(--border2)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
 export default function MapPage() {
-  const {t,isAr}=useLang()
+  const {t,isAr,lang}=useLang()
+  const tr=(k:keyof typeof L)=>L[k][lang==='ar'?'ar':'fr']
   const router=useRouter()
   const [cat,setCat]=useState('')
   const [lat,setLat]=useState(36.7538)
@@ -98,30 +106,34 @@ export default function MapPage() {
     setSent(true)
   }
 
-  const cc=(id:string)=>CATS.find(c=>c.id===id)?.color||'#175CC4'
-  const cl=(id:string)=>CATS.find(c=>c.id===id)?.label||id
-  const filtered=search?artisans.filter(a=>a.full_name.toLowerCase().includes(search.toLowerCase())||a.category.includes(search.toLowerCase())):artisans
+  const cc=(id:string)=>categoryColor(id)
+  const cl=(id:string)=>id?t(`categories.${id}`):tr('all')
+  const filtered=search?artisans.filter(a=>a.full_name.toLowerCase().includes(search.toLowerCase())||a.category.includes(search.toLowerCase())||cl(a.category).toLowerCase().includes(search.toLowerCase())):artisans
   const visibleInSheet=sheetFull?filtered:filtered.slice(0,3)
 
-  const bg='var(--bg)';const bg2='var(--bg2)'
+  const bg2='var(--bg2)'
   const tx='var(--tx)';const tx2='var(--tx2)';const tx3='var(--tx3)'
   const brd='var(--border)'
-  const glass='var(--glass-bg)'
+  // Surfaces flottantes MATES (plus de verre dépoli) : chaux/nuit opaques.
+  const surface='var(--bg2)'
+  const initials=(n:string)=>n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)
 
   return(
     <>
       <style suppressHydrationWarning>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        body{overflow:hidden;background:#1a2030}
+        body{overflow:hidden}
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(23,92,196,0.3)}70%{box-shadow:0 0 0 10px rgba(23,92,196,0)}}
-        .pill{padding:8px 16px;border-radius:24px;font-size:12px;font-weight:500;cursor:pointer;font-family:Nexa,sans-serif;border:none;transition:all 0.25s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-        .arow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;cursor:pointer;transition:all 0.2s;border:1px solid transparent}
+        .pill{min-height:40px;padding:8px 15px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+          display:flex;align-items:center;gap:6px;flex-shrink:0;transition:background .2s ease,border-color .2s ease,color .2s ease}
+        .pill:hover{border-color:var(--border2)}
+        .arow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-card);cursor:pointer;transition:background .2s ease,border-color .2s ease;border:1px solid transparent}
         .arow:hover{background:var(--bg3);border-color:var(--border)}
+        .map-float{background:${surface};border:1px solid ${brd};box-shadow:0 2px 0 rgba(0,0,0,0.03),0 12px 28px -14px rgba(14,25,34,0.45)}
       `}</style>
 
-      <div className="map-screen" style={{position:'fixed',inset:0,overflow:'hidden'}}>
+      <div className="map-screen" style={{position:'fixed',inset:0,overflow:'hidden',background:'var(--bg)',direction:isAr?'rtl':'ltr'}}>
 
         {/* ═══ MAP — full screen ═══ */}
         <div style={{position:'absolute',inset:0,zIndex:1}}>
@@ -129,100 +141,115 @@ export default function MapPage() {
         </div>
 
         {/* ═══ FLOATING SEARCH BAR ═══ */}
-        <div className="map-search" style={{position:'absolute',top:60,left:16,right:16,zIndex:10,animation:'fadeUp 0.4s ease'}}>
-          <div style={{background:glass,backdropFilter:'blur(20px)',borderRadius:16,padding:'12px 16px',display:'flex',alignItems:'center',gap:10,boxShadow:'var(--card-shadow)',border:`0.5px solid ${brd}`}}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={tx3} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder={t('map.searchPlaceholder')}
-              style={{flex:1,background:'transparent',border:'none',outline:'none',color:tx,fontSize:14,fontFamily:'Nexa,sans-serif',fontWeight:300}}/>
-            {search&&<button onClick={()=>setSearch('')} style={{background:'transparent',border:'none',color:tx3,cursor:'pointer',display:'flex',padding:2}}><X size={16}/></button>}
+        <div className="map-search" style={{position:'absolute',top:60,left:16,right:16,zIndex:10,animation:'fadeUp 0.4s ease',maxWidth:560,marginInline:'auto'}}>
+          <div className="map-float search-pill" style={{borderRadius:'var(--r-card)',paddingInlineStart:16,paddingInlineEnd:6,minHeight:50,display:'flex',alignItems:'center',gap:10}}>
+            <Search size={18} color="var(--tx3)" aria-hidden/>
+            <input type="search" enterKeyHint="search" value={search} onChange={e=>setSearch(e.target.value)}
+              placeholder={t('map.searchPlaceholder')} aria-label={t('map.searchPlaceholder')} className="bare-input"
+              style={{flex:1,minWidth:0,background:'transparent',border:'none',outline:'none',color:tx,fontSize:16,padding:'12px 0'}}/>
+            {search&&<button onClick={()=>setSearch('')} aria-label={tr('clear')} className="icon-btn" style={{margin:0,width:40,height:40}}><X size={17}/></button>}
           </div>
         </div>
 
         {/* ═══ FLOATING CATEGORY PILLS ═══ */}
-        <div className="map-pills" style={{position:'absolute',top:120,left:0,right:0,zIndex:10,padding:'0 16px',animation:'fadeUp 0.4s ease 0.1s both'}}>
-          <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4,msOverflowStyle:'none',scrollbarWidth:'none'}}>
-            {CATS.map(c=>(
-              <button key={c.id} onClick={()=>setCat(c.id)} className="pill"
-                style={{background:cat===c.id?c.color:glass,color:cat===c.id?'#fff':tx2,backdropFilter:cat===c.id?'none':'blur(12px)',border:`0.5px solid ${cat===c.id?'transparent':brd}`,boxShadow:cat===c.id?`0 2px 12px ${c.color}44`:'none'}}>
-                {c.id ? <CategoryIcon id={c.id} size={14}/> : <LayoutGrid size={14}/>}{c.label}
-              </button>
-            ))}
+        <div className="map-pills" style={{position:'absolute',top:120,left:0,right:0,zIndex:10,animation:'fadeUp 0.4s ease 0.1s both'}}>
+          <div className="no-scrollbar" style={{display:'flex',gap:6,overflowX:'auto',padding:'2px 16px 6px',scrollPaddingInline:16}}>
+            {CAT_IDS.map(id=>{
+              const on=cat===id
+              return(
+                <button key={id||'all'} onClick={()=>setCat(id)} aria-pressed={on} className={`pill${on?'':' map-float'}`}
+                  style={on
+                    ?{background:'var(--accent-fill)',color:'var(--on-accent)',border:'1px solid transparent',boxShadow:'0 2px 0 color-mix(in srgb, var(--accent-fill) 55%, #000), 0 10px 18px -10px var(--accent-fill)'}
+                    :{color:tx2}}>
+                  {id ? <CategoryIcon id={id} size={15} color={on?'currentColor':cc(id)}/> : <LayoutGrid size={15}/>}{cl(id)}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* ═══ LOCATE ME button ═══ */}
         <button onClick={()=>{navigator.geolocation?.getCurrentPosition(p=>{setLat(p.coords.latitude);setLng(p.coords.longitude)})}}
-          style={{position:'absolute',right:16,bottom:sheetOpen?(sheetFull?'65%':'260px'):'80px',zIndex:10,width:44,height:44,borderRadius:'50%',background:glass,backdropFilter:'blur(12px)',border:`0.5px solid ${brd}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'var(--card-shadow)',transition:'bottom 0.3s ease'}}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={tx} strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+          aria-label={tr('locate')} title={tr('locate')} className="map-float"
+          style={{position:'absolute',insetInlineEnd:16,bottom:sheetOpen?(sheetFull?'calc(70vh + 12px)':'272px'):'84px',zIndex:10,width:48,height:48,borderRadius:'50%',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'bottom 0.3s ease',color:tx}}>
+          <LocateFixed size={20}/>
         </button>
 
         {/* ═══ BOTTOM SHEET ═══ */}
-        <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:20,maxHeight:sheetFull?'70vh':'260px',background:glass,backdropFilter:'blur(24px)',borderRadius:'20px 20px 0 0',boxShadow:'var(--card-shadow)',border:`0.5px solid ${brd}`,borderBottom:'none',transition:'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',overflowY:'auto',animation:'slideUp 0.4s ease 0.2s both'}}>
+        <div className="map-float" style={{position:'absolute',bottom:0,left:0,right:0,zIndex:20,maxWidth:720,marginInline:'auto',maxHeight:sheetFull?'70vh':'260px',borderRadius:'20px 20px 0 0',borderBottom:'none',transition:'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',overflowY:'auto',animation:'slideUp 0.4s ease 0.2s both'}}>
 
           {/* Handle */}
-          <div onClick={()=>setSheetFull(!sheetFull)} style={{padding:'10px 0 6px',cursor:'pointer',display:'flex',justifyContent:'center'}}>
-            <div style={{width:36,height:4,borderRadius:2,background:'var(--border2)'}}/>
-          </div>
+          <button onClick={()=>setSheetFull(!sheetFull)} aria-label={tr('expand')} aria-expanded={sheetFull} style={{width:'100%',padding:'10px 0 8px',cursor:'pointer',display:'flex',justifyContent:'center',background:'transparent',border:'none'}}>
+            <span style={{width:40,height:4,borderRadius:2,background:'var(--border2)'}}/>
+          </button>
 
           {/* Sheet header */}
-          <div style={{padding:'4px 20px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <div>
-              <div style={{fontSize:16,fontWeight:800,color:tx}}>{filtered.length} artisan{filtered.length>1?'s':''} {cat?cl(cat).toLowerCase():''}</div>
-              <div style={{fontSize:12,color:tx3,fontWeight:300}}>à proximité</div>
+          <div style={{padding:'2px 20px 12px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+            <div style={{minWidth:0}}>
+              <div style={{fontSize:17,fontWeight:800,color:tx}}><span className="num">{filtered.length}</span> {filtered.length>1?tr('artisans'):tr('artisan')}{cat?<span style={{color:categoryInk(cat)}}> · {cl(cat)}</span>:''}</div>
+              <div style={{fontSize:12.5,color:tx2}}>{tr('nearby')}</div>
             </div>
-            <button onClick={()=>setSheetOpen(!sheetOpen)} className="btn-ghost btn-sm">
-              {sheetOpen?'Masquer':'Afficher'}
+            <button onClick={()=>setSheetOpen(!sheetOpen)} aria-expanded={sheetOpen} className="btn-ghost btn-sm">
+              {sheetOpen?tr('hide'):tr('show')}
             </button>
           </div>
 
           {/* Artisan list */}
           {sheetOpen&&(
-            <div style={{padding:'0 16px 20px'}}>
+            <div style={{padding:'0 12px 20px'}}>
               {loading?(
-                <div style={{textAlign:'center',padding:'20px',color:tx3,fontSize:13}}>Recherche...</div>
+                <div aria-busy="true" style={{display:'flex',flexDirection:'column',gap:6,padding:'0 4px'}}>
+                  {[1,2,3].map(i=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 4px'}}>
+                      <div className="skeleton" style={{width:44,height:44,borderRadius:12,flexShrink:0}}/>
+                      <div style={{flex:1,display:'flex',flexDirection:'column',gap:7}}><div className="skeleton" style={{width:'50%',height:12}}/><div className="skeleton" style={{width:'70%',height:10}}/></div>
+                      <div className="skeleton" style={{width:52,height:18}}/>
+                    </div>
+                  ))}
+                </div>
               ):filtered.length===0?(
-                <div style={{textAlign:'center',padding:'20px',color:tx3,fontSize:13}}>Aucun artisan trouvé</div>
+                <div className="empty-state" style={{padding:'18px 12px 10px'}}>
+                  <div className="empty-icon" style={{width:48,height:48}}><SearchX size={20}/></div>
+                  <div className="empty-title" style={{fontSize:14.5}}>{tr('none')}</div>
+                </div>
               ):(
                 <>
                   {visibleInSheet.map(a=>{
                     const c=cc(a.category)
-                    const init=a.full_name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)
                     const isSelected=selected?.id===a.id
+                    const pick=()=>{setSelected(isSelected?null:a);setSent(false);setContactErr('')}
                     return(
-                      <div key={a.id} className="arow" onClick={()=>setSelected(isSelected?null:a)}
-                        style={{borderColor:isSelected?c+'44':'transparent',background:isSelected?`${c}12`:'transparent',marginBottom:4}}>
+                      <div key={a.id} className="arow" onClick={pick} {...pressable(pick)} aria-pressed={isSelected}
+                        style={{borderColor:isSelected?c+'55':undefined,background:isSelected?`${c}12`:undefined,marginBottom:4}}>
 
                         {/* Avatar */}
                         {a.avatar_url?(
-                          <img src={a.avatar_url} alt="" style={{width:44,height:44,borderRadius:12,objectFit:'cover',border:`2px solid ${c}33`,flexShrink:0}}/>
+                          <img src={a.avatar_url} alt="" style={{width:44,height:44,borderRadius:12,objectFit:'cover',border:`2px solid ${c}55`,flexShrink:0}}/>
                         ):(
-                          <div style={{width:44,height:44,borderRadius:12,background:`linear-gradient(135deg,${c}30,${c}15)`,border:`2px solid ${c}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,fontWeight:800,color:c,flexShrink:0}}>{init}</div>
+                          <div aria-hidden style={{width:44,height:44,borderRadius:12,background:`${c}1F`,border:`2px solid ${c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,fontWeight:800,color:categoryInk(a.category),flexShrink:0}}>{initials(a.full_name)}</div>
                         )}
 
                         {/* Info */}
                         <div style={{flex:1,minWidth:0}}>
-                          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
-                            <span style={{fontSize:14,fontWeight:700,color:tx}}>{a.full_name}</span>
-                            <span style={{fontSize:10,color:c,fontWeight:700}}>{cl(a.category)}</span>
+                          <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:3,minWidth:0}}>
+                            <span style={{fontSize:14.5,fontWeight:700,color:tx,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.full_name}</span>
+                            <span style={{fontSize:11.5,color:categoryInk(a.category),fontWeight:700,whiteSpace:'nowrap'}}>{cl(a.category)}</span>
                           </div>
-                          <div style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:tx2}}>
-                            <span style={{display:'flex',alignItems:'center',gap:3}}>
-                              <Stars r={a.rating_avg} s={10}/>{a.rating_avg.toFixed(1)}
-                            </span>
-                            <span>·</span>
+                          <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:tx2,whiteSpace:'nowrap',overflow:'hidden'}}>
+                            <Stars r={a.rating_avg} s={10}/><span className="num" style={{color:'var(--laiton)',fontWeight:700}}>{a.rating_avg.toFixed(1)}</span>
+                            <span aria-hidden style={{color:tx3}}>·</span>
                             <span>{a.distance_km!=null?`${a.distance_km.toFixed(1)} km`:'—'}</span>
-                            <span>·</span>
-                            <span>{a.total_missions} missions</span>
+                            <span aria-hidden style={{color:tx3}}>·</span>
+                            <span style={{overflow:'hidden',textOverflow:'ellipsis'}}>{a.total_missions} {tr('missions')}</span>
                           </div>
                         </div>
 
-                        {/* Price + CTA */}
-                        <div style={{textAlign:'right',flexShrink:0}}>
-                          <div style={{fontSize:15,fontWeight:800,color:tx}}>{a.hourly_rate.toLocaleString('fr-DZ')} <span style={{fontSize:10,color:tx3,fontWeight:300}}>DA</span></div>
-                          {a.is_available&&<div style={{display:'flex',alignItems:'center',gap:3,justifyContent:'flex-end',marginTop:2}}>
-                            <div style={{width:5,height:5,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 6px #10b98155'}}/>
-                            <span style={{fontSize:10,color:'#10b981',fontWeight:500}}>En ligne</span>
+                        {/* Price */}
+                        <div style={{textAlign:'end',flexShrink:0}}>
+                          <div className="num" style={{fontSize:15,fontWeight:700,color:tx}}>{a.hourly_rate.toLocaleString('fr-DZ')} <span style={{fontSize:10.5,color:tx3,fontWeight:400}}>{t('common.da')}</span></div>
+                          {a.is_available&&<div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end',marginTop:3}}>
+                            <span aria-hidden style={{width:6,height:6,borderRadius:'50%',background:'var(--success)'}}/>
+                            <span style={{fontSize:11,color:'var(--success)',fontWeight:600}}>{t('common.online')}</span>
                           </div>}
                         </div>
                       </div>
@@ -232,7 +259,7 @@ export default function MapPage() {
                   {/* Show more */}
                   {!sheetFull&&filtered.length>3&&(
                     <button onClick={()=>setSheetFull(true)} className="btn-ghost btn-block" style={{marginTop:4}}>
-                      Voir les {filtered.length-3} autres artisans
+                      {tr('seeMore').replace('{n}',String(filtered.length-3))}
                     </button>
                   )}
                 </>
@@ -243,61 +270,59 @@ export default function MapPage() {
 
         {/* ═══ SELECTED ARTISAN CARD (floating) ═══ */}
         {selected&&(
-          <div style={{position:'absolute',bottom:sheetOpen?(sheetFull?'72%':'268px'):'8px',left:16,right:16,zIndex:25,animation:'fadeUp 0.3s ease'}}>
-            <div className="card" style={{background:'var(--glass-bg)',padding:'18px 20px'}}>
+          <div style={{position:'absolute',bottom:sheetOpen?(sheetFull?'calc(70vh + 8px)':'268px'):'8px',left:12,right:12,zIndex:25,maxWidth:560,marginInline:'auto',animation:'fadeUp 0.3s ease'}}>
+            <div className="card" role="dialog" aria-label={selected.full_name} style={{padding:'16px 18px',boxShadow:'0 18px 40px -16px rgba(14,25,34,0.5)'}}>
               <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:14}}>
                 {selected.avatar_url?(
-                  <img src={selected.avatar_url} alt="" style={{width:52,height:52,borderRadius:14,objectFit:'cover',border:`2px solid ${cc(selected.category)}33`}}/>
+                  <img src={selected.avatar_url} alt="" style={{width:52,height:52,borderRadius:14,objectFit:'cover',border:`2px solid ${cc(selected.category)}55`}}/>
                 ):(
-                  <div style={{width:52,height:52,borderRadius:14,background:`linear-gradient(135deg,${cc(selected.category)}30,${cc(selected.category)}15)`,border:`2px solid ${cc(selected.category)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:cc(selected.category)}}>{selected.full_name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+                  <div aria-hidden style={{width:52,height:52,borderRadius:14,background:`${cc(selected.category)}1F`,border:`2px solid ${cc(selected.category)}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:categoryInk(selected.category),flexShrink:0}}>{initials(selected.full_name)}</div>
                 )}
-                <div style={{flex:1}}>
-                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
-                    <span style={{fontSize:16,fontWeight:800,color:tx}}>{selected.full_name}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#175CC4"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+                    <span style={{fontSize:16,fontWeight:800,color:tx,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{selected.full_name}</span>
+                    <BadgeCheck size={15} color="var(--accent)" strokeWidth={2.2} style={{flexShrink:0}}/>
                   </div>
-                  <div style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:tx2}}>
-                    <span style={{color:cc(selected.category),fontWeight:700}}>{cl(selected.category)}</span>
-                    <span>·</span>
+                  <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12.5,color:tx2,flexWrap:'wrap'}}>
+                    <span style={{color:categoryInk(selected.category),fontWeight:700}}>{cl(selected.category)}</span>
+                    <span aria-hidden>·</span>
                     <Stars r={selected.rating_avg} s={11}/>
-                    <span style={{fontWeight:700,color:'#f59e0b'}}>{selected.rating_avg.toFixed(1)}</span>
+                    <span className="num" style={{fontWeight:700,color:'var(--laiton)'}}>{selected.rating_avg.toFixed(1)}</span>
                     <span>({selected.rating_count})</span>
                   </div>
                 </div>
-                <button onClick={()=>{setSelected(null);setSent(false)}} style={{background:'transparent',border:'none',color:tx3,cursor:'pointer',display:'flex',padding:4}}><X size={18}/></button>
+                <button onClick={()=>{setSelected(null);setSent(false)}} aria-label={tr('close')} className="icon-btn"><X size={19}/></button>
               </div>
 
               {/* Quick stats */}
               <div style={{display:'flex',gap:8,marginBottom:14}}>
                 {[
-                  {v:selected.distance_km!=null?`${selected.distance_km.toFixed(1)} km`:'—',c:'#10b981'},
-                  {v:`${selected.total_missions} missions`,c:tx2},
-                  {v:`${selected.hourly_rate.toLocaleString('fr-DZ')} DA`,c:'#175CC4'},
+                  {v:selected.distance_km!=null?`${selected.distance_km.toFixed(1)} km`:'—'},
+                  {v:`${selected.total_missions} ${tr('missions')}`},
+                  {v:`${selected.hourly_rate.toLocaleString('fr-DZ')} ${t('common.da')}`,strong:true},
                 ].map(s=>(
-                  <div key={s.v} style={{flex:1,padding:'8px',borderRadius:10,background:'var(--bg3)',border:`0.5px solid ${brd}`,textAlign:'center',fontSize:12,color:s.c,fontWeight:500}}>{s.v}</div>
+                  <div key={s.v} className="num" style={{flex:1,padding:'9px 6px',borderRadius:10,background:'var(--bg3)',border:`1px solid ${brd}`,textAlign:'center',fontSize:12.5,color:s.strong?tx:tx2,fontWeight:s.strong?700:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.v}</div>
                 ))}
               </div>
 
               {/* Action buttons */}
               {contactErr&&(
-                <div style={{padding:'10px 14px',borderRadius:10,marginBottom:8,background:'#ef444412',border:'1px solid #ef444422',fontSize:12,color:'#ef4444'}}>{contactErr}</div>
+                <div role="alert" className="tone-danger" style={{padding:'10px 14px',borderRadius:'var(--r-field)',marginBottom:8,fontSize:13}}>{contactErr}</div>
               )}
               {sent?(
-                <div style={{padding:'12px',borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
-                  <span style={{fontSize:13,color:'#10b981',fontWeight:700}}>Demande envoyée</span>
+                <div role="status" className="tone-success" style={{padding:12,borderRadius:'var(--r-card)',textAlign:'center',fontSize:14,fontWeight:700}}>
+                  {t('profile.requestSent')}
                 </div>
               ):(
                 <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>contact(selected,'message')} className="btn-primary" style={{flex:1}}>
-                    Envoyer un message
+                  <button onClick={()=>contact(selected,'message')} className="btn-primary" style={{flex:1,minWidth:0,padding:'12px 14px'}}>
+                    {t('home.sendMessage')}
                   </button>
-                  <button onClick={()=>contact(selected,'call')} className="btn-ghost" style={{color:'#10b981',borderColor:'#10b98155'}}>
-                    Appeler
+                  <button onClick={()=>contact(selected,'call')} className="btn-ghost btn-call" style={{padding:'12px 14px'}}>
+                    {t('home.call')}
                   </button>
-                  <a href={`/artisan/${selected.id}`} style={{textDecoration:'none'}}>
-                    <button className="btn-ghost">
-                      Profil
-                    </button>
+                  <a href={`/artisan/${selected.id}`} className="btn-ghost" style={{padding:'12px 14px'}}>
+                    {tr('profile')}
                   </a>
                 </div>
               )}
