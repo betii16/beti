@@ -111,10 +111,13 @@ export default function Navigation() {
         <div className="desktop-only" style={{ display: 'flex', gap: 30, alignItems: 'center', justifySelf: 'center' }}>
           {LINKS.map(l => {
             const active = l.href === pathname
-            const base = l.gold ? 'var(--accent, #175CC4)' : 'var(--tx2)'
+            // Couleur d'accent = page ACTIVE uniquement (avant : « Carte » toujours en bleu,
+            // lu comme l'onglet courant sur toutes les pages).
+            const base = active ? 'var(--accent)' : 'var(--tx2)'
             return (
               <a key={l.href} href={l.href}
                 className={`nav-link${active ? ' nav-link-active' : ''}`}
+                aria-current={active ? 'page' : undefined}
                 onClick={e => {
                   if (l.href.startsWith('/#')) {
                     const id = l.href.replace('/#', '')
@@ -122,8 +125,8 @@ export default function Navigation() {
                     if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
                   }
                 }}
-                style={{ fontSize: 13, fontWeight: 500, fontFamily: 'Nexa, sans-serif', color: base, textDecoration: 'none', transition: 'color 0.2s', letterSpacing: '0.01em' }}
-                onMouseEnter={e => (e.currentTarget.style.color = l.gold ? 'var(--accent, #175CC4)' : 'var(--tx)')}
+                style={{ fontSize: 14, fontWeight: 500, color: base, textDecoration: 'none', transition: 'color 0.2s', letterSpacing: '0.01em' }}
+                onMouseEnter={e => (e.currentTarget.style.color = active ? 'var(--accent)' : 'var(--tx)')}
                 onMouseLeave={e => (e.currentTarget.style.color = base)}
               >{l.label}</a>
             )

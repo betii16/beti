@@ -14,20 +14,22 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   }, [error])
 
   return (
-    <main style={{
-      minHeight: '70vh', display: 'flex', flexDirection: 'column',
+    <main role="alert" className="page-pad-m" style={{
+      minHeight: '78vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-      padding: '40px 24px', gap: 18,
+      padding: '96px 24px 48px', gap: 16,
     }}>
-      <div style={{
-        width: 72, height: 72, borderRadius: '50%', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', fontSize: 34,
-        background: 'rgba(239,68,68,0.12)', color: 'var(--danger)', fontWeight: 800,
+      <div aria-hidden style={{
+        width: 68, height: 68, borderRadius: 'var(--r-card)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', fontSize: 32,
+        background: 'color-mix(in srgb, var(--danger) 10%, var(--bg2))',
+        border: '1px solid color-mix(in srgb, var(--danger) 28%, transparent)',
+        color: 'var(--danger)', fontWeight: 800,
       }}>!</div>
-      <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: 'var(--tx)' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, color: 'var(--tx)' }}>
         Une erreur est survenue
       </h1>
-      <p style={{ fontSize: 15, color: 'var(--tx2)', maxWidth: 360, margin: 0, fontWeight: 300 }}>
+      <p style={{ fontSize: 15.5, color: 'var(--tx2)', maxWidth: 380, margin: 0, lineHeight: 1.65 }}>
         Quelque chose s'est mal passé de notre côté. Réessayez — si le problème
         persiste, revenez un peu plus tard.
       </p>

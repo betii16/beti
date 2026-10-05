@@ -358,6 +358,22 @@ textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
 .tone-accent  { color: var(--accent);  background: color-mix(in srgb, var(--accent) 10%, transparent);  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
 .tone-muted   { color: var(--tx2);     background: var(--bg3); border: 1px solid var(--border); }
 
+/* ── Pages SEO /artisans/[wilaya]/… : liens-pastilles, cartes, fil d'Ariane ── */
+.seo-wrap { max-width: 1100px; margin: 0 auto; padding-left: 40px; padding-right: 40px; }
+@media (max-width: 767px) { .seo-wrap { padding-left: 20px; padding-right: 20px; } }
+.seo-pill {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px;
+  border-radius: var(--r-pill); background: var(--bg2); border: 1px solid var(--border);
+  color: var(--tx2); font-size: 13.5px; text-decoration: none;
+  transition: border-color .2s ease, color .2s ease;
+}
+.seo-pill:hover { border-color: var(--accent); color: var(--accent); }
+.seo-pill.is-small { min-height: 36px; padding: 6px 13px; font-size: 13px; }
+.seo-card { display: block; text-decoration: none; padding: 18px; }
+.seo-crumbs { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--tx2); margin-bottom: 16px; }
+.seo-crumbs a { color: var(--tx2); text-decoration: none; }
+.seo-crumbs a:hover { color: var(--accent); text-decoration: underline; }
+
 /* ── Étiquette de section — mono + carreau de zellige (signature) ── */
 .section-label {
   display: inline-flex; align-items: center; gap: 8px;
