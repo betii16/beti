@@ -8,14 +8,21 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useLang } from '@/lib/LangContext'
 import { ChevronLeft } from 'lucide-react'
 
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
+
+const PILL: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 8, borderRadius: 'var(--r-btn)',
+  background: 'var(--bg2)', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)',
+}
 
 export default function SuiviPage() {
   const params = useParams()
   const id = params?.id as string
   const router = useRouter()
+  const { isAr } = useLang()
   const [lat, setLat] = useState(36.7538)
   const [lng, setLng] = useState(3.0588)
   const [name, setName] = useState('')
@@ -35,13 +42,17 @@ export default function SuiviPage() {
     <div style={{ position: 'fixed', inset: 0, zIndex: 250 }}>
       <BetiMap trackingArtisanId={id} clientLat={lat} clientLng={lng} showAllArtisans={false} />
 
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1100, padding: 'calc(env(safe-area-inset-top) + 12px) 16px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => router.back()} aria-label="Retour"
-          style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-          <ChevronLeft size={20} color="#fff" />
+      {/* Surfaces « carreau posé » (tokens) au lieu de l'ancien verre noir-violet */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1100, padding: 'calc(env(safe-area-inset-top) + 12px) 16px 12px', display: 'flex', alignItems: 'center', gap: 10, direction: isAr ? 'rtl' : 'ltr', pointerEvents: 'none' }}>
+        <button onClick={() => router.back()} aria-label={isAr ? 'رجوع' : 'Retour'}
+          style={{ ...PILL, width: 44, height: 44, padding: 0, justifyContent: 'center', cursor: 'pointer', flexShrink: 0, pointerEvents: 'auto' }}>
+          <ChevronLeft size={22} color="var(--tx)" style={{ transform: isAr ? 'scaleX(-1)' : undefined }} />
         </button>
-        <div style={{ padding: '9px 16px', borderRadius: 12, background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.12)', fontSize: 14, fontWeight: 800, color: '#fff', fontFamily: 'Nexa, sans-serif' }}>
-          {name ? `Suivi de ${name}` : 'Suivi en direct'}
+        <div role="status" style={{ ...PILL, minHeight: 44, padding: '0 16px', fontSize: 14, fontWeight: 700, color: 'var(--tx)', minWidth: 0, pointerEvents: 'auto' }}>
+          <span aria-hidden className="anim-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {isAr ? (name ? `تتبع ${name}` : 'تتبع مباشر') : (name ? `Suivi de ${name}` : 'Suivi en direct')}
+          </span>
         </div>
       </div>
     </div>
