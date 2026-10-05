@@ -69,6 +69,7 @@ h1, h2, h3, h4, .display {
   --zellige:   #0E877A;
   --brique:    #B9512F;
   --laiton:    #8C6A1E;   /* laiton bruni : notes ★ & prix lisibles sur chaux */
+  --star:      #D29A1C;   /* remplissage des étoiles (graphique, pas du texte) */
   /* Anciennes vars « verre » recyclées en surfaces SOLIDES (compat .card, .btn…) */
   --glass-surface:   #FBF9F4;
   --glass-surface-2: #F3EFE6;
@@ -121,6 +122,7 @@ h1, h2, h3, h4, .display {
   --zellige:   #2BB39E;
   --brique:    #D6714E;
   --laiton:    #D6A64A;
+  --star:      #E2AE48;
   --glass-surface:   #14212C;
   --glass-surface-2: #0F1B24;
   --glass-edge:      #243645;
@@ -412,6 +414,16 @@ select:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent) !important;
   outline: none;
 }
+
+/* Champ « nu » posé dans une pilule de recherche : c'est la pilule qui
+   porte l'anneau de focus (sinon double anneau à l'intérieur). */
+.bare-input:focus { box-shadow: none !important; border-color: transparent !important; }
+.search-pill { transition: border-color .2s ease, box-shadow .25s ease; }
+.search-pill:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent), var(--card-shadow) !important;
+}
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
 
 /* ═══════════════════════════════════════════════════════════════
    MOTION LAYER — animations & micro-interactions globales.
