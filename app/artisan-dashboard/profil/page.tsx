@@ -7,7 +7,7 @@ import { ArtisanAvatar } from '@/components/ReviewPhotos'
 import { PortfolioManager } from '@/components/Portfolio'
 import { effectivePlan } from '@/lib/subscription'
 import { CategoryIcon } from '@/components/icons'
-import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles } from 'lucide-react'
+import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles, Search, MapPin } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 
 // ── Types ──
@@ -42,6 +42,15 @@ const POPULAR_TAGS = [
 ]
 
 // ── Page ──
+
+// Styles partagés de la page (tokens « Chaux & Zellige »)
+const LBL: React.CSSProperties = { fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }
+const HINT: React.CSSProperties = { fontSize: 13, color: 'var(--tx2)', marginTop: 6, lineHeight: 1.5 }
+const ERR_TXT: React.CSSProperties = { fontSize: 13, color: 'var(--danger)', marginTop: 6, fontWeight: 600 }
+const COUNTER: React.CSSProperties = { fontSize: 12, color: 'var(--tx2)', textAlign: 'end', marginTop: 4 }
+const RANGE_LEGEND: React.CSSProperties = { fontSize: 12, color: 'var(--tx2)' }
+const NOTE_BOX: React.CSSProperties = { padding: '10px 14px', borderRadius: 'var(--r-field)', background: 'var(--bg)', border: '1px solid var(--border)' }
+const ICON: React.CSSProperties = { verticalAlign: 'middle', marginInlineEnd: 5 }
 
 export default function ArtisanProfileConfig() {
   const router = useRouter()
@@ -302,31 +311,42 @@ export default function ArtisanProfileConfig() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ fontSize: 14, color: 'var(--tx3)' }}>{t('common.loading')}</div>
+        <div role="status" aria-label={t('common.loading')} className="loader-ring" />
       </div>
     )
   }
 
   return (
     <>
-      <style suppressHydrationWarning>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Nexa', sans-serif; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        input[type=range] { accent-color: #175CC4; cursor: pointer; }
-        textarea:focus, input:focus { border-color: #175CC466 !important; }
+      <style>{`
+        @keyframes profFadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+        .prof-scope input[type=range] { accent-color: var(--accent); cursor: pointer; min-height: 32px; }
+        .prof-scope :is(a,button,[role=tab]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .prof-tag { display:inline-flex; align-items:center; gap:4px; padding:4px 4px 4px 12px; border-radius:var(--r-chip);
+          background: color-mix(in srgb, var(--accent) 12%, var(--bg2)); border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+          color: var(--tx); font-size:13px; font-weight:600; }
+        [dir=rtl] .prof-tag { padding:4px 12px 4px 4px; }
+        .prof-tag-x { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px;
+          background:transparent; border:none; cursor:pointer; color: var(--tx2); transition: background .15s, color .15s; }
+        .prof-tag-x:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+        .prof-sugg { display:flex; align-items:center; gap:5px; min-height:36px; padding:6px 13px; border-radius:var(--r-chip);
+          background: var(--bg2); border:1px solid var(--border2); color: var(--tx2); font-size:13px; cursor:pointer;
+          transition: background .15s, border-color .15s, color .15s; }
+        .prof-sugg:hover { background: color-mix(in srgb, var(--accent) 10%, var(--bg2)); border-color: var(--accent); color: var(--accent); }
+        .prof-cat { transition: border-color .15s, background .15s; }
+        .prof-cat:hover { border-color: var(--accent) !important; background: color-mix(in srgb, var(--accent) 8%, var(--bg2)) !important; }
       `}</style>
 
-      <div style={{ minHeight: '100vh', paddingTop: 64, fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px' }}>
+      <div className="prof-scope" style={{ minHeight: '100vh', paddingTop: 64, direction: isAr ? 'rtl' : 'ltr' }}>
+        <div className="page-x" style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 200px' }}>
 
           {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-            <div>
-              <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '.1em', fontWeight: 800, marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28 }}>
+            <div style={{ minWidth: 0 }}>
+              <div className="section-label">
                 {isNewProfile ? t('artisanProfile.newConfig') : t('artisanProfile.editProfile')}
               </div>
-              <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pageTitle')}</h1>
+              <h1 style={{ fontSize: 'clamp(24px, 6vw, 30px)', lineHeight: 1.15, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pageTitle')}</h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {user && (
@@ -343,27 +363,27 @@ export default function ArtisanProfileConfig() {
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: 'var(--bg2)', borderRadius: 12, padding: 4 }}>
+          <div role="tablist" className="no-scrollbar" style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r-btn)', padding: 4, overflowX: 'auto' }}>
             {([
               { id: 'services'  as const, label: t('artisanProfile.tabServices'),  Icon: Wrench,  badge: services.length },
               { id: 'info'      as const, label: t('artisanProfile.tabInfo'),       Icon: User },
               { id: 'tags'      as const, label: t('artisanProfile.tabTags'),       Icon: Tag,    badge: tags.length },
               { id: 'portfolio' as const, label: t('artisanProfile.tabPortfolio'),  Icon: Hammer },
             ]).map(tab => (
-              <button key={tab.id} onClick={() => setActiveSection(tab.id)}
+              <button key={tab.id} role="tab" aria-selected={activeSection === tab.id} onClick={() => setActiveSection(tab.id)}
                 style={{
-                  flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none',
-                  background: activeSection === tab.id ? '#175CC40d' : 'transparent',
-                  color: activeSection === tab.id ? '#175CC4' : 'var(--tx3)',
-                  fontSize: 13, fontWeight: activeSection === tab.id ? 800 : 300,
-                  cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  transition: 'all 0.2s',
+                  flex: '1 0 auto', minHeight: 44, padding: '10px 14px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
+                  background: activeSection === tab.id ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
+                  color: activeSection === tab.id ? 'var(--accent)' : 'var(--tx2)',
+                  fontSize: 14, fontWeight: activeSection === tab.id ? 700 : 500,
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  transition: 'background .2s, color .2s',
                 }}
               >
-                <tab.Icon size={15}/> {tab.label}
+                <tab.Icon size={16} aria-hidden/> {tab.label}
                 {'badge' in tab && (tab as any).badge > 0 && (
-                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', color: '#fff', fontSize: 10, fontWeight: 800 }}>{(tab as any).badge}</span>
+                  <span className="num" style={{ padding: '1px 7px', borderRadius: 'var(--r-pill)', background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700 }}>{(tab as any).badge}</span>
                 )}
               </button>
             ))}
@@ -376,34 +396,35 @@ export default function ArtisanProfileConfig() {
 
           {/* ═══ SECTION : MES MÉTIERS ═══ */}
           {activeSection === 'services' && (
-            <div style={{ animation: 'fadeIn 0.3s ease' }}>
+            <div style={{ animation: 'profFadeIn 0.3s ease' }}>
 
               {services.map((service, i) => {
                 const cat = getCat(service.category)
                 const catLabel = t(`categories.${service.category}`)
                 const PtIcon = PRICE_TYPE_ICONS[service.price_type] || Clock
                 return (
-                  <div key={i} className="card" style={{ borderColor: cat?.color ? cat.color + '55' : undefined, padding: '24px', marginBottom: 16 }}>
+                  <div key={i} className="card" style={{ padding: 'clamp(18px, 5vw, 24px)', marginBottom: 16 }}>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 10, background: (cat?.color || '#175CC4') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={service.category} size={18} color={cat?.color || '#175CC4'}/></div>
-                        <div>
-                          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{catLabel}</div>
-                          <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{t('artisanProfile.serviceNum')} {i + 1}{i === 0 ? ` ${t('artisanProfile.servicePrimary')}` : ''}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                        <div aria-hidden style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 10, background: `color-mix(in srgb, ${cat?.color || 'var(--accent)'} 14%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CategoryIcon id={service.category} size={18} color={cat?.color || 'var(--accent)'}/></div>
+                        <div style={{ minWidth: 0 }}>
+                          <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--tx)' }}>{catLabel}</h2>
+                          <div style={{ fontSize: 12.5, color: 'var(--tx2)' }}>{t('artisanProfile.serviceNum')} {i + 1}{i === 0 ? ` ${t('artisanProfile.servicePrimary')}` : ''}</div>
                         </div>
                       </div>
                       <button onClick={() => removeService(i)}
-                        style={{ padding: '4px 12px', borderRadius: 8, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                        style={{ flexShrink: 0, minHeight: 40, padding: '6px 14px', borderRadius: 'var(--r-btn)', background: 'color-mix(in srgb, var(--danger) 9%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 30%, transparent)', color: 'var(--danger)', fontSize: 13, cursor: 'pointer', fontWeight: 700 }}>
                         {t('artisanProfile.remove')}
                       </button>
                     </div>
 
                     <div style={{ marginBottom: 20 }}>
-                      <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>
+                      <label htmlFor={`svc-desc-${i}`} style={LBL}>
                         {t('artisanProfile.descSection')} {catLabel.toUpperCase()}
                       </label>
                       <textarea
+                        id={`svc-desc-${i}`}
                         value={service.description}
                         onChange={e => updateService(i, { description: e.target.value })}
                         placeholder={`${t('artisanProfile.bioPh')} ${catLabel.toLowerCase()}...`}
@@ -412,29 +433,29 @@ export default function ArtisanProfileConfig() {
                         className="field"
                         style={{ resize: 'none' }}
                       />
-                      <div style={{ fontSize: 10, color: 'var(--tx3)', textAlign: 'right', marginTop: 4 }}>{service.description.length}/300</div>
+                      <div className="num" style={COUNTER}>{service.description.length}/300</div>
                     </div>
 
                     <div style={{ marginBottom: 16 }}>
-                      <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 10 }}>
+                      <div id={`svc-pt-${i}`} style={{ ...LBL, marginBottom: 10 }}>
                         {t('artisanProfile.priceType')}
-                      </label>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                      </div>
+                      <div role="radiogroup" aria-labelledby={`svc-pt-${i}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                         {PRICE_TYPE_IDS.map(ptId => {
                           const PIcon = PRICE_TYPE_ICONS[ptId]
                           return (
-                            <button key={ptId} onClick={() => updateService(i, { price_type: ptId as any })}
+                            <button key={ptId} type="button" role="radio" aria-checked={service.price_type === ptId} onClick={() => updateService(i, { price_type: ptId as any })}
                               style={{
-                                padding: '10px 14px', borderRadius: 10,
-                                border: `0.5px solid ${service.price_type === ptId ? '#175CC4' : 'var(--border)'}`,
-                                background: service.price_type === ptId ? '#175CC40d' : 'var(--bg)',
-                                color: service.price_type === ptId ? '#175CC4' : 'var(--tx3)',
-                                fontSize: 12, fontWeight: service.price_type === ptId ? 800 : 300,
-                                cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
-                                display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
+                                minHeight: 44, padding: '10px 12px', borderRadius: 'var(--r-field)', textAlign: 'start',
+                                border: `1.5px solid ${service.price_type === ptId ? 'var(--accent)' : 'var(--border)'}`,
+                                background: service.price_type === ptId ? 'color-mix(in srgb, var(--accent) 9%, var(--bg2))' : 'var(--bg2)',
+                                color: service.price_type === ptId ? 'var(--accent)' : 'var(--tx2)',
+                                fontSize: 13, fontWeight: service.price_type === ptId ? 700 : 500,
+                                cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: 8, transition: 'border-color .15s, background .15s',
                               }}
                             >
-                              <PIcon size={15}/> {priceTypeLabel(ptId)}
+                              <PIcon size={16} aria-hidden style={{ flexShrink: 0 }}/> {priceTypeLabel(ptId)}
                             </button>
                           )
                         })}
@@ -443,34 +464,34 @@ export default function ArtisanProfileConfig() {
 
                     {(service.price_type === 'hour' || service.price_type === 'service') && (
                       <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+                          <label htmlFor={`svc-price-${i}`} style={{ ...LBL, marginBottom: 0 }}>
                             {service.price_type === 'hour' ? t('artisanProfile.tariffHour') : t('artisanProfile.tariffService')}
                           </label>
-                          <div style={{ fontSize: 22, fontWeight: 800, color: '#175CC4' }}>
-                            {service.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{priceTypeSuffix(service.price_type)}</span>
+                          <div className="num" style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>
+                            {service.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 400 }}>{priceTypeSuffix(service.price_type)}</span>
                           </div>
                         </div>
-                        <input type="range" min={500} max={30000} step={500}
+                        <input id={`svc-price-${i}`} type="range" min={500} max={30000} step={500}
                           value={service.price}
                           onChange={e => updateService(i, { price: Number(e.target.value) })}
                           style={{ width: '100%' }}
                         />
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                          <span style={{ fontSize: 10, color: 'var(--tx3)' }}>500 {t('common.da')}</span>
-                          <span style={{ fontSize: 10, color: 'var(--tx3)' }}>30 000 {t('common.da')}</span>
+                          <span style={RANGE_LEGEND}>500 {t('common.da')}</span>
+                          <span style={RANGE_LEGEND}>30 000 {t('common.da')}</span>
                         </div>
                       </div>
                     )}
 
                     {service.price_type === 'quote' && (
-                      <div style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--bg)', border: '0.5px solid var(--border)' }}>
-                        <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 300 }}><FileText size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{t('artisanProfile.quoteNote')}</span>
+                      <div style={NOTE_BOX}>
+                        <span style={{ fontSize: 13, color: 'var(--tx2)' }}><FileText size={14} aria-hidden style={ICON}/>{t('artisanProfile.quoteNote')}</span>
                       </div>
                     )}
                     {service.price_type === 'negotiable' && (
-                      <div style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--bg)', border: '0.5px solid var(--border)' }}>
-                        <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 300 }}><Handshake size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{t('artisanProfile.negoNote')}</span>
+                      <div style={NOTE_BOX}>
+                        <span style={{ fontSize: 13, color: 'var(--tx2)' }}><Handshake size={14} aria-hidden style={ICON}/>{t('artisanProfile.negoNote')}</span>
                       </div>
                     )}
                   </div>
@@ -480,10 +501,10 @@ export default function ArtisanProfileConfig() {
               {!addingService ? (
                 <button onClick={() => setAddingService(true)}
                   style={{
-                    width: '100%', padding: '16px', borderRadius: 14,
-                    background: 'transparent', border: '1px dashed #175CC444',
-                    color: '#175CC4', fontSize: 14, fontWeight: 800,
-                    cursor: 'pointer', fontFamily: 'Nexa, sans-serif',
+                    width: '100%', minHeight: 52, padding: '14px 16px', borderRadius: 'var(--r-card)',
+                    background: 'color-mix(in srgb, var(--accent) 5%, transparent)', border: '1.5px dashed color-mix(in srgb, var(--accent) 55%, transparent)',
+                    color: 'var(--accent)', fontSize: 15, fontWeight: 700,
+                    cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     transition: 'all 0.2s',
                   }}
@@ -491,30 +512,27 @@ export default function ArtisanProfileConfig() {
                   {t('artisanProfile.addService')} {services.length === 0 && t('artisanProfile.addRequired')}
                 </button>
               ) : (
-                <div className="card" style={{ borderColor: '#175CC455', padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pickService')}</div>
-                    <button onClick={() => setAddingService(false)} style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', display: 'flex', padding: 2 }}><X size={16}/></button>
+                <div className="card" style={{ borderColor: 'color-mix(in srgb, var(--accent) 40%, var(--border))', padding: 'clamp(16px, 5vw, 24px)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{t('artisanProfile.pickService')}</h2>
+                    <button onClick={() => setAddingService(false)} aria-label="Fermer" style={{ width: 44, height: 44, background: 'transparent', border: 'none', borderRadius: 'var(--r-btn)', color: 'var(--tx2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginInlineEnd: -10 }}><X size={20}/></button>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: 8 }}>
                     {CATEGORIES.filter(c => !services.find(s => s.category === c.id)).map(cat => (
-                      <button key={cat.id} onClick={() => addService(cat.id)}
+                      <button key={cat.id} onClick={() => addService(cat.id)} className="prof-cat"
                         style={{
-                          padding: '14px 10px', borderRadius: 12, border: '0.5px solid var(--border)',
-                          background: 'var(--bg)', cursor: 'pointer', display: 'flex',
-                          flexDirection: 'column', alignItems: 'center', gap: 8,
-                          fontFamily: 'Nexa, sans-serif', transition: 'all 0.15s',
+                          minHeight: 76, padding: '12px 8px', borderRadius: 'var(--r-field)', border: '1px solid var(--border)',
+                          background: 'var(--bg2)', cursor: 'pointer', display: 'flex',
+                          flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = cat.color; e.currentTarget.style.background = cat.color + '12' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)' }}
                       >
                         <CategoryIcon id={cat.id} size={22} color={cat.color}/>
-                        <span style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 300 }}>{t(`categories.${cat.id}`)}</span>
+                        <span style={{ fontSize: 12.5, color: 'var(--tx)', fontWeight: 500, textAlign: 'center' }}>{t(`categories.${cat.id}`)}</span>
                       </button>
                     ))}
                   </div>
                   {services.length === 0 && (
-                    <p style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300, marginTop: 12, textAlign: 'center' }}>
+                    <p style={{ fontSize: 13, color: 'var(--tx2)', marginTop: 12, textAlign: 'center' }}>
                       {t('artisanProfile.multipleHint')}
                     </p>
                   )}
@@ -522,7 +540,7 @@ export default function ArtisanProfileConfig() {
               )}
 
               {services.length === 0 && (
-                <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 300, marginTop: 8, textAlign: 'center' }}>
+                <p role="alert" style={{ fontSize: 13, color: 'var(--danger)', fontWeight: 600, marginTop: 10, textAlign: 'center' }}>
                   {t('artisanProfile.requireHint')}
                 </p>
               )}
@@ -531,52 +549,53 @@ export default function ArtisanProfileConfig() {
 
           {/* ═══ SECTION : INFORMATIONS ═══ */}
           {activeSection === 'info' && (
-            <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <div className="card" style={{ padding: '24px' }}>
+            <div style={{ animation: 'profFadeIn 0.3s ease' }}>
+              <div className="card" style={{ padding: 'clamp(18px, 5vw, 24px)' }}>
 
                 {/* Nom */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>{t('artisanProfile.fullName')}</label>
-                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="field"/>
+                  <label htmlFor="pf-name" style={LBL}>{t('artisanProfile.fullName')}</label>
+                  <input id="pf-name" type="text" autoComplete="name" value={fullName} onChange={e => setFullName(e.target.value)} className="field"/>
                 </div>
 
                 {/* Téléphone */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>
-                    {t('artisanProfile.phoneNum')} <span style={{ color: '#ef4444' }}>*</span>
+                  <label htmlFor="pf-phone" style={LBL}>
+                    {t('artisanProfile.phoneNum')} <span aria-hidden style={{ color: 'var(--danger)' }}>*</span>
                   </label>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <div style={{ padding: '13px 14px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx2)', fontSize: 14, fontWeight: 300, flexShrink: 0 }}>
+                    <div aria-hidden className="num" style={{ display: 'flex', alignItems: 'center', padding: '0 14px', background: 'var(--bg3)', border: '1px solid var(--border2)', borderRadius: 'var(--r-field)', color: 'var(--tx2)', fontSize: 14, flexShrink: 0 }} dir="ltr">
                       +213
                     </div>
-                    <input type="tel" value={phone} placeholder="0555 12 34 56"
+                    <input id="pf-phone" type="tel" inputMode="tel" autoComplete="tel-national" required value={phone} placeholder="0555 12 34 56"
+                      aria-invalid={!!phoneError} aria-describedby="pf-phone-hint"
                       onChange={e => { setPhone(e.target.value); setPhoneError('') }}
                       onBlur={() => checkPhone(phone)}
-                      className="field" style={{ flex: 1, borderColor: phoneError ? '#ef4444' : undefined }}/>
+                      className="field" style={{ flex: 1, minWidth: 0, borderColor: phoneError ? 'var(--danger)' : undefined }}/>
                   </div>
-                  {phoneError && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 6, fontWeight: 300 }}>{phoneError}</p>}
-                  <p style={{ fontSize: 11, color: 'var(--tx3)', marginTop: 6, fontWeight: 300 }}>
-                    <Lock size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>{t('artisanProfile.phoneHint')}
+                  {phoneError && <p role="alert" style={ERR_TXT}>{phoneError}</p>}
+                  <p id="pf-phone-hint" style={HINT}>
+                    <Lock size={13} aria-hidden style={ICON}/>{t('artisanProfile.phoneHint')}
                   </p>
                 </div>
 
                 {/* Bio */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>{t('artisanProfile.bioLabel')}</label>
-                  <textarea value={bio} onChange={e => setBio(e.target.value)}
+                  <label htmlFor="pf-bio" style={LBL}>{t('artisanProfile.bioLabel')}</label>
+                  <textarea id="pf-bio" value={bio} onChange={e => setBio(e.target.value)}
                     placeholder={t('artisanProfile.bioPh')}
                     rows={4} maxLength={500}
                     className="field" style={{ resize: 'none' }}/>
-                  <div style={{ fontSize: 10, color: 'var(--tx3)', textAlign: 'right', marginTop: 4 }}>{bio.length}/500</div>
+                  <div className="num" style={COUNTER}>{bio.length}/500</div>
                 </div>
 
                 {/* Expérience */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 10 }}>{t('artisanProfile.expLabel')}</label>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <div id="pf-exp" style={{ ...LBL, marginBottom: 10 }}>{t('artisanProfile.expLabel')}</div>
+                  <div role="radiogroup" aria-labelledby="pf-exp" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {[1, 2, 3, 5, 7, 10, 15, 20].map(y => (
-                      <button key={y} onClick={() => setExperience(y)}
-                        style={{ padding: '8px 16px', borderRadius: 10, border: `0.5px solid ${experience === y ? '#175CC4' : 'var(--border)'}`, background: experience === y ? '#175CC40d' : 'var(--bg)', color: experience === y ? '#175CC4' : 'var(--tx3)', fontSize: 13, fontWeight: experience === y ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                      <button key={y} type="button" role="radio" aria-checked={experience === y} onClick={() => setExperience(y)}
+                        className={experience === y ? 'chip chip-active' : 'chip'} style={{ minHeight: 44 }}>
                         {y} {y === 1 ? t('common.years').replace('s','') : t('common.years')}
                       </button>
                     ))}
@@ -585,56 +604,57 @@ export default function ArtisanProfileConfig() {
 
                 {/* Adresse */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>
-                    {t('artisanProfile.addrLabel')} <span style={{ color: '#ef4444' }}>*</span>
+                  <label htmlFor="pf-addr" style={LBL}>
+                    {t('artisanProfile.addrLabel')} <span aria-hidden style={{ color: 'var(--danger)' }}>*</span>
                   </label>
-                  <p style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300, marginBottom: 10 }}>
+                  <p id="pf-addr-hint" style={{ ...HINT, marginTop: 0, marginBottom: 10 }}>
                     {t('artisanProfile.addrHint')}
                   </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <input
+                      id="pf-addr" aria-describedby="pf-addr-hint" autoComplete="street-address"
                       type="text"
                       value={artisanAddress}
                       onChange={e => { setArtisanAddress(e.target.value); setAddressError('') }}
                       onBlur={() => geocodeAddress(artisanAddress)}
                       placeholder="Ex: 12 Rue Didouche Mourad, Alger"
-                      className="field" style={{ flex: 1, borderColor: addressError ? '#ef4444' : undefined }}
+                      className="field" style={{ flex: '1 1 220px', minWidth: 0, borderColor: addressError ? 'var(--danger)' : undefined }}
                     />
-                    <button onClick={detectPosition} disabled={detectingAddr}
-                      style={{ padding: '13px 16px', background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 10, color: 'var(--tx2)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300, flexShrink: 0, transition: 'all 0.2s' }}
+                    <button onClick={detectPosition} disabled={detectingAddr} aria-busy={detectingAddr}
+                      className="btn-ghost" style={{ minHeight: 46, padding: '0 16px', fontSize: 13, flexShrink: 0 }}
                     >
-                      {detectingAddr ? '...' : t('artisanProfile.myPosition')}
+                      <MapPin size={16} aria-hidden/> {detectingAddr ? '…' : t('artisanProfile.myPosition')}
                     </button>
                   </div>
-                  {addressError && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6, fontWeight: 300 }}>{addressError}</p>}
+                  {addressError && <p role="alert" style={ERR_TXT}>{addressError}</p>}
                   {artisanLat && artisanLng && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981' }}/>
-                      <span style={{ fontSize: 11, color: '#10b981', fontWeight: 300 }}>{t('artisanProfile.posRecorded')}</span>
+                    <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                      <div aria-hidden style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--success)' }}/>
+                      <span style={{ fontSize: 13, color: 'color-mix(in srgb, var(--success) 72%, var(--tx))', fontWeight: 600 }}>{t('artisanProfile.posRecorded')}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Rayon d'intervention */}
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>{t('artisanProfile.radiusLabel')}</label>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: '#175CC4' }}>{radiusKm} {t('common.km')}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                    <label htmlFor="pf-radius" style={{ ...LBL, marginBottom: 0 }}>{t('artisanProfile.radiusLabel')}</label>
+                    <span className="num" style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>{radiusKm} {t('common.km')}</span>
                   </div>
-                  <input type="range" min={5} max={100} step={5}
+                  <input id="pf-radius" type="range" min={5} max={100} step={5}
                     value={radiusKm}
                     onChange={e => setRadiusKm(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#175CC4', cursor: 'pointer' }}
+                    style={{ width: '100%' }}
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                    <span style={{ fontSize: 10, color: 'var(--tx3)' }}>5 {t('common.km')}</span>
-                    <span style={{ fontSize: 10, color: 'var(--tx3)' }}>100 {t('common.km')}</span>
+                    <span style={RANGE_LEGEND}>5 {t('common.km')}</span>
+                    <span style={RANGE_LEGEND}>100 {t('common.km')}</span>
                   </div>
                 </div>
 
                 {/* Photo de profil */}
                 <div>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 12 }}>{t('artisanProfile.photoLabel')}</label>
+                  <div style={{ ...LBL, marginBottom: 12 }}>{t('artisanProfile.photoLabel')}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     {user && (
                       <ArtisanAvatar
@@ -647,8 +667,8 @@ export default function ArtisanProfileConfig() {
                       />
                     )}
                     <div>
-                      <p style={{ fontSize: 13, color: 'var(--tx2)', fontWeight: 300, marginBottom: 4 }}>{t('artisanProfile.photoHint')}</p>
-                      <p style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{t('artisanProfile.photoFormat')}</p>
+                      <p style={{ fontSize: 14, color: 'var(--tx)', marginBottom: 4 }}>{t('artisanProfile.photoHint')}</p>
+                      <p style={{ fontSize: 12.5, color: 'var(--tx2)' }}>{t('artisanProfile.photoFormat')}</p>
                     </div>
                   </div>
                 </div>
@@ -658,55 +678,24 @@ export default function ArtisanProfileConfig() {
 
           {/* ═══ SECTION : MOTS-CLÉS ═══ */}
           {activeSection === 'tags' && (
-            <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              <div className="card" style={{ padding: '24px' }}>
+            <div style={{ animation: 'profFadeIn 0.3s ease' }}>
+              <div className="card" style={{ padding: 'clamp(18px, 5vw, 24px)' }}>
 
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{t('artisanProfile.tagTitle')}</div>
-                  <p style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, lineHeight: 1.6 }}>
+                  <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{t('artisanProfile.tagTitle')}</h2>
+                  <p style={{ fontSize: 14, color: 'var(--tx2)', lineHeight: 1.6 }}>
                     {t('artisanProfile.tagDesc')}
-                    {services.length === 0 && <><br/><span style={{ color: '#175CC4' }}>{t('artisanProfile.tagDescExtra')}</span></>}
+                    {services.length === 0 && <><br/><span style={{ color: 'var(--accent)', fontWeight: 600 }}>{t('artisanProfile.tagDescExtra')}</span></>}
                   </p>
                 </div>
 
-                {/* Tags actifs — effet neon-button (cybergaz / 21st.dev) */}
-                <style suppressHydrationWarning>{`
-                  @keyframes neon-pulse {
-                    0%, 100% { box-shadow: 0 0 6px #1E6FD6, 0 0 14px #1E6FD666, 0 0 28px #175CC444, inset 0 0 8px #1E6FD618; }
-                    50%       { box-shadow: 0 0 10px #6BA3E6, 0 0 22px #1E6FD688, 0 0 42px #175CC455, inset 0 0 12px #1E6FD628; }
-                  }
-                  .neon-tag {
-                    display: inline-flex; align-items: center; gap: 7px;
-                    padding: 7px 15px; border-radius: 10px;
-                    background: transparent;
-                    border: 1.5px solid #1E6FD6;
-                    color: #6BA3E6;
-                    font-size: 13px; font-weight: 700; font-family: Nexa, sans-serif;
-                    letter-spacing: 0.03em;
-                    box-shadow: 0 0 6px #1E6FD6, 0 0 14px #1E6FD666, 0 0 28px #175CC444, inset 0 0 8px #1E6FD618;
-                    animation: neon-pulse 2.8s ease-in-out infinite;
-                    transition: border-color .2s, color .2s;
-                  }
-                  .neon-tag:hover {
-                    border-color: #6BA3E6;
-                    color: #fff;
-                    box-shadow: 0 0 12px #6BA3E6, 0 0 26px #1E6FD6aa, 0 0 50px #175CC466, inset 0 0 16px #1E6FD633;
-                    animation: none;
-                  }
-                  .neon-tag-x {
-                    background: transparent; border: none; cursor: pointer;
-                    color: #1E6FD6; font-size: 13px; font-weight: 800;
-                    padding: 0 2px; line-height: 1; transition: color .15s, text-shadow .15s;
-                  }
-                  .neon-tag-x:hover { color: #ff6b9d; text-shadow: 0 0 8px #ff6b9d; }
-                  @media (prefers-reduced-motion: reduce) { .neon-tag { animation: none; } }
-                `}</style>
+                {/* Tags actifs — pastilles « carreau » aux couleurs du thème (styles .prof-tag en tête de page) */}
                 {tags.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
                     {tags.map(tag => (
-                      <div key={tag} className="neon-tag">
+                      <div key={tag} className="prof-tag">
                         {tag}
-                        <button className="neon-tag-x" onClick={() => removeTag(tag)} style={{ display: 'inline-flex', alignItems: 'center' }}><X size={11} strokeWidth={2.5}/></button>
+                        <button className="prof-tag-x" onClick={() => removeTag(tag)} aria-label={`Retirer « ${tag} »`}><X size={14} strokeWidth={2.5}/></button>
                       </div>
                     ))}
                   </div>
@@ -715,28 +704,24 @@ export default function ArtisanProfileConfig() {
                 {/* Champ de saisie */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 16px', borderRadius: 14,
-                  background: 'var(--bg)', border: '1px solid var(--border)',
+                  minHeight: 52, paddingTop: 6, paddingBottom: 6, paddingInlineStart: 14, paddingInlineEnd: 6, borderRadius: 'var(--r-field)',
+                  background: 'var(--bg2)', border: '1px solid var(--border2)',
                   marginBottom: 16, transition: 'border-color 0.2s',
                 }}
-                  onFocusCapture={e => (e.currentTarget.style.borderColor = '#175CC4')}
-                  onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                  onFocusCapture={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                  onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border2)')}
                 >
-                  <span style={{ fontSize: 16 }}>🔍</span>
+                  <Search size={18} color="var(--tx2)" aria-hidden style={{ flexShrink: 0 }}/>
                   <input
+                    aria-label={t('artisanProfile.tagTitle')}
                     value={tagInput}
                     onChange={e => setTagInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
                     placeholder={tags.length === 0 ? t('artisanProfile.tagPh1') : t('artisanProfile.tagPh2')}
-                    style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--tx)', fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
+                    style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', boxShadow: 'none', outline: 'none', color: 'var(--tx)', fontSize: 15 }}
                   />
                   {tagInput.trim() && (
-                    <button onClick={() => addTag(tagInput)} style={{
-                      padding: '5px 14px', borderRadius: 10,
-                      background: 'linear-gradient(135deg,#175CC4,#1E6FD6)',
-                      border: 'none', color: '#fff', fontSize: 11, fontWeight: 800,
-                      cursor: 'pointer', fontFamily: 'Nexa, sans-serif', flexShrink: 0,
-                    }}>
+                    <button onClick={() => addTag(tagInput)} className="btn-primary btn-sm" style={{ minHeight: 40, flexShrink: 0 }}>
                       {t('artisanProfile.tagAdd')}
                     </button>
                   )}
@@ -744,12 +729,12 @@ export default function ArtisanProfileConfig() {
 
                 {/* Compteur */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{tags.length}/15 {t('artisanProfile.tagCount')}</span>
-                  <div style={{ display: 'flex', gap: 3 }}>
+                  <span style={{ fontSize: 13, color: 'var(--tx2)' }}><span className="num">{tags.length}/15</span> {t('artisanProfile.tagCount')}</span>
+                  <div aria-hidden style={{ display: 'flex', gap: 3 }}>
                     {Array.from({ length: 15 }).map((_, i) => (
                       <div key={i} style={{
                         width: i < tags.length ? 14 : 6, height: 6, borderRadius: 3,
-                        background: i < tags.length ? 'linear-gradient(90deg,#175CC4,#6BA3E6)' : 'var(--border)',
+                        background: i < tags.length ? 'var(--accent)' : 'var(--border2)',
                         transition: 'all 0.25s ease',
                       }}/>
                     ))}
@@ -759,36 +744,17 @@ export default function ArtisanProfileConfig() {
                 {/* Suggestions */}
                 {tags.length < 15 && (
                   <div style={{
-                    padding: '16px', borderRadius: 14,
-                    background: 'color-mix(in srgb,#175CC4 4%,var(--bg2))',
-                    border: '1px solid color-mix(in srgb,#175CC4 12%,transparent)',
+                    padding: '16px', borderRadius: 'var(--r-field)',
+                    background: 'color-mix(in srgb, var(--accent) 5%, var(--bg))',
+                    border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)',
                   }}>
-                    <div style={{ fontSize: 10, color: '#175CC4', fontWeight: 800, letterSpacing: '.1em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Sparkles size={11}/> {t('artisanProfile.tagSuggestions')}
+                    <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Sparkles size={13} aria-hidden/> {t('artisanProfile.tagSuggestions')}
                     </div>
                     <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                       {POPULAR_TAGS.filter(tag => !tags.includes(tag)).slice(0, 10).map(tag => (
-                        <button key={tag} onClick={() => addTag(tag)} style={{
-                          padding: '6px 14px', borderRadius: 10,
-                          background: 'var(--bg)',
-                          border: '1px solid var(--border)',
-                          color: 'var(--tx2)', fontSize: 12,
-                          cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300,
-                          transition: 'all 0.15s',
-                          display: 'flex', alignItems: 'center', gap: 5,
-                        }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.background = 'color-mix(in srgb,#175CC4 10%,var(--bg))'
-                            e.currentTarget.style.borderColor = '#175CC4'
-                            e.currentTarget.style.color = '#175CC4'
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.background = 'var(--bg)'
-                            e.currentTarget.style.borderColor = 'var(--border)'
-                            e.currentTarget.style.color = 'var(--tx2)'
-                          }}
-                        >
-                          <span style={{ color: '#175CC4', fontWeight: 800 }}>+</span> {tag}
+                        <button key={tag} onClick={() => addTag(tag)} className="prof-sugg">
+                          <span aria-hidden style={{ color: 'var(--accent)', fontWeight: 800 }}>+</span> {tag}
                         </button>
                       ))}
                     </div>
@@ -799,12 +765,12 @@ export default function ArtisanProfileConfig() {
           )}
 
           {/* ── Bouton Sauvegarder (fixe en bas) ── */}
-          <div className="above-tabbar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, var(--bg) 30%)', padding: '40px 24px 24px', zIndex: 50 }}>
+          <div className="above-tabbar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, var(--bg) 30%)', padding: '32px 16px calc(16px + env(safe-area-inset-bottom))', zIndex: 50 }}>
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
               {saveError && (
-                <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 10, background: '#ef444410', border: '0.5px solid #ef444420', fontSize: 12, color: '#ef4444', fontWeight: 300 }}>{saveError}</div>
+                <div role="alert" style={{ padding: '10px 14px', borderRadius: 'var(--r-field)', marginBottom: 10, background: 'color-mix(in srgb, var(--danger) 10%, var(--bg2))', border: '1px solid color-mix(in srgb, var(--danger) 30%, transparent)', fontSize: 13, color: 'var(--danger)', fontWeight: 600, lineHeight: 1.5 }}>{saveError}</div>
               )}
-              <button onClick={handleSave} disabled={saving}
+              <button onClick={handleSave} disabled={saving} aria-live="polite"
                 className={saved ? 'btn-success btn-block btn-lg' : 'btn-primary btn-block btn-lg'}
               >
                 {saving ? t('artisanProfile.saving') : saved ? t('artisanProfile.savedMsg') : isNewProfile ? t('artisanProfile.createBtn') : t('artisanProfile.saveBtn')}
