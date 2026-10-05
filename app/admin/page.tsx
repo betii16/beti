@@ -79,27 +79,76 @@ type SubRow = {
 
 // ── Helpers ──
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  active:      { label: 'Actif',       bg: '#10b98112', color: '#10b981', border: '#10b98122' },
-  pending:     { label: 'En attente',  bg: '#175CC418', color: '#175CC4', border: '#3a3010' },
-  suspended:   { label: 'Suspendu',    bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
-  completed:   { label: 'Terminé',     bg: '#10b98112', color: '#10b981', border: '#10b98122' },
-  confirmed:   { label: 'Confirmé',    bg: 'rgba(96,165,250,0.08)',  color: '#60a5fa', border: 'rgba(96,165,250,0.2)'  },
-  in_progress: { label: 'En cours',    bg: 'rgba(107,163,230,0.08)', color: '#6BA3E6', border: 'rgba(107,163,230,0.2)' },
-  refused:     { label: 'Refusé',      bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
-  cancelled:   { label: 'Annulé',      bg: 'var(--bg3)', color: 'var(--tx2)', border: 'var(--border)' },
-  rejected:    { label: 'Refusé',      bg: '#ef444410', color: '#ef4444', border: '#ef444420' },
-  expired:     { label: 'Expiré',      bg: 'var(--bg3)', color: 'var(--tx2)', border: 'var(--border)' },
+// Statuts → tokens de l'identité (lisibles en clair comme en sombre)
+const STATUS_CONFIG: Record<string, { label: string; c: string }> = {
+  active:      { label: 'Actif',       c: 'var(--success)' },
+  pending:     { label: 'En attente',  c: 'var(--warning)' },
+  suspended:   { label: 'Suspendu',    c: 'var(--danger)' },
+  completed:   { label: 'Terminé',     c: 'var(--success)' },
+  confirmed:   { label: 'Confirmé',    c: 'var(--accent)' },
+  in_progress: { label: 'En cours',    c: 'var(--accent)' },
+  refused:     { label: 'Refusé',      c: 'var(--danger)' },
+  cancelled:   { label: 'Annulé',      c: 'var(--tx2)' },
+  rejected:    { label: 'Refusé',      c: 'var(--danger)' },
+  expired:     { label: 'Expiré',      c: 'var(--tx2)' },
 }
 
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending
   return (
-    <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: cfg.bg, color: cfg.color, border: `0.5px solid ${cfg.border}`, fontFamily: 'Nexa, sans-serif' }}>
+    <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 'var(--r-pill)', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', background: `color-mix(in srgb, ${cfg.c} 13%, transparent)`, color: `color-mix(in srgb, ${cfg.c} 72%, var(--tx))`, border: `1px solid color-mix(in srgb, ${cfg.c} 25%, transparent)` }}>
       {cfg.label}
     </span>
   )
 }
+
+// Styles de l'admin, scopés sous .adm (l'ancien <style> écrasait margin/padding,
+// la police et TOUTES les balises table/th/td de l'app tant que la page était montée).
+// Mise en page responsive : barre latérale → onglets défilants sous 900px,
+// tableaux défilables horizontalement au lieu d'écraser les colonnes.
+const ADMIN_CSS = `
+.adm{display:flex;min-height:100vh;padding-top:64px}
+.adm-aside{width:220px;border-inline-end:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);flex-shrink:0;background:var(--bg)}
+.adm-nav{padding:16px 12px;flex:1;display:flex;flex-direction:column;gap:4px}
+.adm-nav-btn{width:100%;min-height:42px;padding:10px 12px;display:flex;align-items:center;gap:10px;background:transparent;border:1px solid transparent;border-radius:var(--r-btn);cursor:pointer;color:var(--tx2);font-size:14px;font-weight:500;text-align:start;white-space:nowrap;transition:background .15s,color .15s}
+.adm-nav-btn:hover{background:var(--bg3);color:var(--tx)}
+.adm-nav-btn[aria-current=page]{background:color-mix(in srgb,var(--accent) 11%,transparent);border-color:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent);font-weight:700}
+.adm-main{flex:1;min-width:0}
+.adm-head{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg);position:sticky;top:64px;z-index:10}
+.adm-body{padding:28px 32px 48px}
+.adm-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden;box-shadow:var(--card-shadow)}
+.adm-panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.adm-panel-title{font-size:16px;font-weight:800;color:var(--tx)}
+.adm-pill{padding:3px 10px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);font-size:12px;font-weight:700}
+.adm-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.adm table{border-collapse:collapse;width:100%;min-width:640px}
+.adm th{font-size:11.5px;font-weight:700;color:var(--tx2);letter-spacing:.06em;padding:12px 16px;text-align:start;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg3) 45%,transparent);white-space:nowrap}
+.adm td{font-size:14px;color:var(--tx);padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.adm tbody tr:last-child td{border-bottom:none}
+.adm tbody tr:hover td{background:color-mix(in srgb,var(--bg3) 50%,transparent)}
+.adm td.muted{color:var(--tx2)}
+.adm td.num-cell{font-weight:700;white-space:nowrap}
+.adm-btn{min-height:34px;padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;border:1px solid}
+.adm-btn-ok{background:color-mix(in srgb,var(--success) 11%,transparent);border-color:color-mix(in srgb,var(--success) 32%,transparent);color:color-mix(in srgb,var(--success) 75%,var(--tx))}
+.adm-btn-no{background:color-mix(in srgb,var(--danger) 9%,transparent);border-color:color-mix(in srgb,var(--danger) 30%,transparent);color:var(--danger)}
+.adm-btn-ghost{background:var(--bg2);border-color:var(--border2);color:var(--tx)}
+.adm :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (pointer:coarse){.adm-btn{min-height:44px;padding:8px 14px}}
+@media (max-width:900px){
+  .adm{flex-direction:column}
+  .adm-aside{width:auto;height:auto;position:static;border-inline-end:none;border-bottom:1px solid var(--border)}
+  .adm-brand,.adm-back{display:none!important}
+  .adm-nav{flex-direction:row;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+  .adm-nav::-webkit-scrollbar{display:none}
+  .adm-nav-btn{width:auto;flex-shrink:0}
+  .adm-head{position:static;padding:16px}
+  .adm-body{padding:16px 16px calc(110px + env(safe-area-inset-bottom))}
+  .adm-panel-head{padding:14px 16px}
+}
+@keyframes admFadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+`
+
+const EMPTY: React.CSSProperties = { padding: '32px 16px', textAlign: 'center', color: 'var(--tx2)', fontSize: 14 }
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -304,31 +353,21 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <style suppressHydrationWarning>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Nexa', sans-serif; -webkit-font-smoothing: antialiased; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-        table { border-collapse: collapse; width: 100%; }
-        th { font-size: 11px; font-weight: 800; color: var(--tx3); letter-spacing: 0.06em; padding: 12px 16px; text-align: left; border-bottom: 0.5px solid var(--border); font-family: Nexa, sans-serif; }
-        td { font-size: 13px; color: var(--tx); padding: 14px 16px; border-bottom: 0.5px solid var(--border); font-family: Nexa, sans-serif; font-weight: 300; }
-        tr:hover td { background: var(--bg3); }
-      `}</style>
+      <style>{ADMIN_CSS}</style>
 
-      <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <div className="adm" dir="ltr">
 
         {/* ── Sidebar ── */}
-        <aside style={{ width: 220, borderRight: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', flexShrink: 0 }}>
-          <div style={{ padding: '24px 20px', borderBottom: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff' }}>B</div>
+        <aside className="adm-aside">
+          <div className="adm-brand" style={{ padding: '22px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div aria-hidden style={{ width: 34, height: 34, background: 'var(--accent)', boxShadow: '0 2px 0 var(--accent-ink)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff' }}>B</div>
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.06em' }}>BETI</div>
-              <div style={{ fontSize: 9, color: '#175CC4', letterSpacing: '0.08em', fontWeight: 800 }}>ADMIN</div>
+              <div className="mono" style={{ fontSize: 10, color: 'var(--accent)', letterSpacing: '0.12em', fontWeight: 600 }}>ADMIN</div>
             </div>
           </div>
 
-          <nav style={{ padding: '16px 12px', flex: 1 }}>
+          <nav aria-label="Administration" className="adm-nav">
             {([
               { id: 'overview', Icon: LayoutDashboard, label: 'Vue d\'ensemble' },
               { id: 'artisans', Icon: HardHat, label: 'Artisans', badge: stats.pendingArtisans },
@@ -337,21 +376,11 @@ export default function AdminDashboard() {
               { id: 'users',    Icon: User, label: 'Utilisateurs' },
               { id: 'reviews',  Icon: Star, label: 'Avis' },
             ] as const).map(item => (
-              <button key={item.id} onClick={() => setTab(item.id as Tab)}
-                style={{
-                  width: '100%', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10,
-                  background: tab === item.id ? '#175CC40d' : 'transparent',
-                  border: tab === item.id ? '0.5px solid #175CC418' : '0.5px solid transparent',
-                  borderRadius: 8, cursor: 'pointer', marginBottom: 4,
-                  color: tab === item.id ? '#175CC4' : 'var(--tx3)',
-                  fontSize: 13, fontFamily: 'Nexa, sans-serif', fontWeight: tab === item.id ? 800 : 300,
-                  transition: 'all 0.15s',
-                }}
-              >
-                <item.Icon size={15}/>
-                <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
+              <button key={item.id} onClick={() => setTab(item.id as Tab)} aria-current={tab === item.id ? 'page' : undefined} className="adm-nav-btn">
+                <item.Icon size={16} aria-hidden/>
+                <span style={{ flex: 1 }}>{item.label}</span>
                 {'badge' in item && (item as any).badge > 0 && (
-                  <span style={{ padding: '1px 7px', borderRadius: 10, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', color: '#fff', fontSize: 10, fontWeight: 800 }}>
+                  <span className="num" style={{ padding: '1px 7px', borderRadius: 'var(--r-pill)', background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700 }}>
                     {(item as any).badge}
                   </span>
                 )}
@@ -359,72 +388,71 @@ export default function AdminDashboard() {
             ))}
           </nav>
 
-          <div style={{ padding: '16px 20px', borderTop: '0.5px solid var(--border)' }}>
-            <a href="/" style={{ fontSize: 12, color: 'var(--tx3)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+          <div className="adm-back" style={{ padding: '12px 20px', borderTop: '1px solid var(--border)' }}>
+            <a href="/" style={{ fontSize: 13, color: 'var(--tx2)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, minHeight: 40 }}>
               ← Retour au site
             </a>
           </div>
         </aside>
 
         {/* ── Contenu principal ── */}
-        <main style={{ flex: 1, overflow: 'auto' }}>
+        <main className="adm-main">
           {/* Header */}
-          <div style={{ padding: '24px 32px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div className="adm-head">
             <div>
-              <div style={{ fontSize: 10, color: 'var(--tx3)', letterSpacing: '0.08em', marginBottom: 4, fontWeight: 800 }}>TABLEAU DE BORD</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', fontFamily: 'Nexa, sans-serif' }}>
+              <div className="section-label" style={{ marginBottom: 4 }}>Tableau de bord</div>
+              <h1 style={{ fontSize: 'clamp(22px, 5vw, 26px)', lineHeight: 1.2, fontWeight: 800, color: 'var(--tx)' }}>
                 {{ overview: 'Vue d\'ensemble', artisans: 'Gestion des artisans', bookings: 'Réservations', users: 'Utilisateurs', reviews: 'Avis & Modération', subscriptions: 'Abonnements' }[tab]}
               </h1>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button onClick={() => { setLoading(true); loadAll().then(() => setLoading(false)) }}
-                style={{ padding: '6px 14px', background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 8, color: 'var(--tx2)', fontSize: 12, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <button onClick={() => { setLoading(true); loadAll().then(() => setLoading(false)) }} className="adm-btn adm-btn-ghost">
                 ↻ Actualiser
               </button>
-              <div style={{ fontSize: 12, color: 'var(--tx3)', padding: '6px 12px', background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 8, fontWeight: 300 }}>
+              <div style={{ fontSize: 13, color: 'var(--tx2)', padding: '6px 12px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8 }}>
                 {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
             </div>
           </div>
 
-          <div style={{ padding: '32px' }}>
+          <div className="adm-body">
 
             {/* ═══ ABONNEMENTS ═══ */}
             {tab === 'subscriptions' && (
-              <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Demandes d’abonnement</span>
-                    <span style={{ padding: '3px 10px', borderRadius: 20, background: '#175CC418', color: '#175CC4', border: '0.5px solid #3a3010', fontSize: 11, fontWeight: 800 }}>
+              <div style={{ animation: 'admFadeUp 0.4s ease' }}>
+                <div className="adm-panel">
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Demandes d’abonnement</span>
+                    <span className="adm-pill">
                       {subs.filter(s => s.status === 'pending').length} en attente
                     </span>
                   </div>
                   {subs.length === 0 ? (
-                    <div style={{ padding: '32px', textAlign: 'center', color: 'var(--tx3)', fontSize: 13, fontWeight: 300 }}>Aucune demande d’abonnement pour le moment.</div>
+                    <div style={EMPTY}>Aucune demande d’abonnement pour le moment.</div>
                   ) : (
-                    <table>
+                    <div className="adm-table-wrap"><table>
                       <thead><tr><th>ARTISAN</th><th>FORMULE</th><th>MONTANT</th><th>RÉF.</th><th>DATE</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
                       <tbody>
                         {subs.map(s => (
                           <tr key={s.id}>
-                            <td style={{ fontWeight: 800 }}>{s.profiles?.full_name || '—'}<div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{s.profiles?.phone || ''}</div></td>
+                            <td style={{ fontWeight: 700 }}>{s.profiles?.full_name || '—'}<div style={{ fontSize: 12.5, color: 'var(--tx2)', fontWeight: 400 }}>{s.profiles?.phone || ''}</div></td>
                             <td>{s.plan === 'premium' ? 'Premium' : 'Basic'} · {s.cycle === 'yearly' ? 'Annuel' : 'Mensuel'}</td>
-                            <td style={{ color: '#175CC4', fontWeight: 800 }}>{(s.amount || 0).toLocaleString('fr-DZ')} DA</td>
-                            <td style={{ color: 'var(--tx3)' }}>{s.payment_ref || '—'}</td>
-                            <td style={{ color: 'var(--tx3)' }}>{formatDate(s.created_at)}</td>
+                            <td className="num num-cell">{(s.amount || 0).toLocaleString('fr-DZ')} DA</td>
+                            <td className="muted mono">{s.payment_ref || '—'}</td>
+                            <td className="muted">{formatDate(s.created_at)}</td>
                             <td><StatusBadge status={s.status} /></td>
                             <td>
                               {s.status === 'pending' ? (
                                 <div style={{ display: 'flex', gap: 6 }}>
-                                  <button onClick={() => approveSub(s)} style={{ padding: '4px 12px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Valider</button>
-                                  <button onClick={() => rejectSub(s)} style={{ padding: '4px 12px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Refuser</button>
+                                  <button onClick={() => approveSub(s)} className="adm-btn adm-btn-ok">Valider</button>
+                                  <button onClick={() => rejectSub(s)} className="adm-btn adm-btn-no">Refuser</button>
                                 </div>
-                              ) : <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>—</span>}
+                              ) : <span style={{ color: 'var(--tx2)' }}>—</span>}
                             </td>
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                    </table></div>
                   )}
                 </div>
               </div>
@@ -432,57 +460,57 @@ export default function AdminDashboard() {
 
             {/* ═══ VUE D'ENSEMBLE ═══ */}
             {tab === 'overview' && (
-              <div style={{ animation: 'fadeUp 0.4s ease' }}>
+              <div style={{ animation: 'admFadeUp 0.4s ease' }}>
                 {/* Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
                   {[
-                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, Icon: Wallet, color: '#175CC4' },
-                    { label: 'Réservations', value: stats.totalBookings.toString(), Icon: ClipboardList, color: '#60a5fa', sub: `${stats.completedBookings} terminées` },
-                    { label: 'Utilisateurs', value: stats.totalUsers.toString(), Icon: User, color: '#6BA3E6' },
-                    { label: 'Artisans', value: stats.totalArtisans.toString(), Icon: HardHat, color: '#10b981', sub: `${stats.activeArtisans} actifs` },
-                    { label: 'Avis', value: stats.totalReviews.toString(), Icon: Star, color: '#f59e0b' },
-                    { label: 'En attente', value: stats.pendingBookings.toString(), Icon: Clock, color: '#ef4444' },
+                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, Icon: Wallet, color: 'var(--success)' },
+                    { label: 'Réservations', value: stats.totalBookings.toString(), Icon: ClipboardList, color: 'var(--accent)', sub: `${stats.completedBookings} terminées` },
+                    { label: 'Utilisateurs', value: stats.totalUsers.toString(), Icon: User, color: 'var(--accent)' },
+                    { label: 'Artisans', value: stats.totalArtisans.toString(), Icon: HardHat, color: 'var(--zellige)', sub: `${stats.activeArtisans} actifs` },
+                    { label: 'Avis', value: stats.totalReviews.toString(), Icon: Star, color: 'var(--laiton)' },
+                    { label: 'En attente', value: stats.pendingBookings.toString(), Icon: Clock, color: 'var(--warning)' },
                   ].map(s => (
-                    <div key={s.label} style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '20px 22px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <span style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{s.label}</span>
-                        <s.Icon size={18} color={s.color}/>
+                    <div key={s.label} className="card" style={{ padding: '16px 18px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{s.label}</span>
+                        <span aria-hidden style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: s.color, background: `color-mix(in srgb, ${s.color} 13%, transparent)` }}><s.Icon size={16}/></span>
                       </div>
-                      <div style={{ fontSize: 32, fontWeight: 800, color: s.color, fontFamily: 'Nexa, sans-serif', lineHeight: 1 }}>{s.value}</div>
-                      {s.sub && <div style={{ fontSize: 11, color: 'var(--tx3)', marginTop: 6, fontWeight: 300 }}>{s.sub}</div>}
+                      <div className="num" style={{ fontSize: 'clamp(22px, 5vw, 30px)', fontWeight: 800, color: 'var(--tx)', lineHeight: 1, whiteSpace: 'nowrap' }}>{s.value}</div>
+                      {s.sub && <div style={{ fontSize: 13, color: 'var(--tx2)', marginTop: 8 }}>{s.sub}</div>}
                     </div>
                   ))}
                 </div>
 
                 {/* Réservations en attente */}
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Réservations en attente</span>
-                    <span style={{ padding: '3px 10px', borderRadius: 20, background: '#175CC418', color: '#175CC4', border: '0.5px solid #3a3010', fontSize: 11, fontWeight: 800 }}>
+                <div className="adm-panel" style={{ marginBottom: 24 }}>
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Réservations en attente</span>
+                    <span className="adm-pill">
                       {bookings.filter(b => b.status === 'pending').length}
                     </span>
                   </div>
                   {bookings.filter(b => b.status === 'pending').length === 0 ? (
-                    <div style={{ padding: '32px', textAlign: 'center', color: 'var(--tx3)', fontSize: 13, fontWeight: 300 }}>Aucune réservation en attente ✓</div>
+                    <div style={EMPTY}>Aucune réservation en attente ✓</div>
                   ) : (
-                    <table>
+                    <div className="adm-table-wrap"><table>
                       <thead><tr><th>CLIENT</th><th>ARTISAN</th><th>SERVICE</th><th>MONTANT</th><th>DATE</th><th>ACTIONS</th></tr></thead>
                       <tbody>
                         {bookings.filter(b => b.status === 'pending').slice(0, 5).map(b => (
                           <tr key={b.id}>
-                            <td style={{ fontWeight: 800 }}>{b.client?.full_name || '—'}</td>
+                            <td style={{ fontWeight: 700 }}>{b.client?.full_name || '—'}</td>
                             <td>{b.artisan?.full_name || '—'}</td>
                             <td>{b.title}</td>
-                            <td style={{ color: '#175CC4', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
-                            <td style={{ color: 'var(--tx3)' }}>{formatDate(b.scheduled_at)}</td>
+                            <td className="num num-cell">{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
+                            <td className="muted">{formatDate(b.scheduled_at)}</td>
                             <td>
                               <div style={{ display: 'flex', gap: 6 }}>
                                 <button onClick={() => updateBookingStatus(b.id, 'confirmed')}
-                                  style={{ padding: '4px 12px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  className="adm-btn adm-btn-ok">
                                   Accepter
                                 </button>
                                 <button onClick={() => updateBookingStatus(b.id, 'cancelled')}
-                                  style={{ padding: '4px 12px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  className="adm-btn adm-btn-no">
                                   Annuler
                                 </button>
                               </div>
@@ -490,23 +518,23 @@ export default function AdminDashboard() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                    </table></div>
                   )}
                 </div>
 
                 {/* Dernières inscriptions artisans */}
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Derniers artisans inscrits</span>
+                <div className="adm-panel">
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Derniers artisans inscrits</span>
                   </div>
-                  <table>
+                  <div className="adm-table-wrap"><table>
                     <thead><tr><th>ARTISAN</th><th>CATÉGORIE</th><th>VILLE</th><th>NOTE</th><th>STATUT</th></tr></thead>
                     <tbody>
                       {artisans.slice(0, 5).map(a => (
                         <tr key={a.id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#175CC418', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#175CC4', fontWeight: 800 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: 'color-mix(in srgb, var(--accent) 13%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--accent)', fontWeight: 800 }}>
                                 {(a.profiles?.full_name || 'A').split(' ').map(n => n[0]).join('').slice(0, 2)}
                               </div>
                               <span style={{ fontWeight: 800 }}>{a.profiles?.full_name || '—'}</span>
@@ -514,137 +542,137 @@ export default function AdminDashboard() {
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#175CC4' : 'var(--tx3)' }}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={11} fill="#f59e0b" strokeWidth={0}/>{a.rating_avg.toFixed(1)}</span> : '—'}</td>
+                          <td className={a.rating_avg > 0 ? 'num' : 'muted'}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/>{a.rating_avg.toFixed(1)}</span> : '—'}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'pending'}/></td>
                         </tr>
                       ))}
-                      {artisans.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32 }}>Aucun artisan inscrit</td></tr>}
+                      {artisans.length === 0 && <tr><td colSpan={5} style={EMPTY}>Aucun artisan inscrit</td></tr>}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             )}
 
             {/* ═══ ARTISANS ═══ */}
             {tab === 'artisans' && (
-              <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Tous les artisans ({filteredArtisans.length})</span>
-                    <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ animation: 'admFadeUp 0.4s ease' }}>
+                <div className="adm-panel">
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Tous les artisans ({filteredArtisans.length})</span>
+                    <div role="group" aria-label="Filtrer les artisans" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {([['all', 'Tous'], ['active', 'Actifs'], ['pending', 'En attente'], ['suspended', 'Inactifs']] as const).map(([id, label]) => (
-                        <button key={id} onClick={() => setArtisanFilter(id)}
-                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: artisanFilter === id ? '#175CC418' : 'transparent', border: `0.5px solid ${artisanFilter === id ? '#3a3010' : 'var(--border)'}`, color: artisanFilter === id ? '#175CC4' : 'var(--tx3)', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: artisanFilter === id ? 800 : 300 }}>
+                        <button key={id} onClick={() => setArtisanFilter(id)} aria-pressed={artisanFilter === id}
+                          className={artisanFilter === id ? 'chip chip-active' : 'chip'} style={{ padding: '7px 12px', minHeight: 36 }}>
                           {label}
                         </button>
                       ))}
                     </div>
                   </div>
-                  <table>
+                  <div className="adm-table-wrap"><table>
                     <thead><tr><th>ARTISAN</th><th>CATÉGORIE</th><th>VILLE</th><th>TARIF</th><th>NOTE</th><th>MISSIONS</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
                     <tbody>
                       {filteredArtisans.map(a => (
                         <tr key={a.id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#175CC418', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#175CC4', fontWeight: 800 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: 'color-mix(in srgb, var(--accent) 13%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--accent)', fontWeight: 800 }}>
                                 {(a.profiles?.full_name || 'A').split(' ').map(n => n[0]).join('').slice(0, 2)}
                               </div>
                               <div>
-                                <div style={{ fontWeight: 800 }}>{a.profiles?.full_name || '—'}</div>
-                                <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{a.profiles?.phone || ''}</div>
+                                <div style={{ fontWeight: 700 }}>{a.profiles?.full_name || '—'}</div>
+                                <div style={{ fontSize: 12.5, color: 'var(--tx2)' }}>{a.profiles?.phone || ''}</div>
                               </div>
                             </div>
                           </td>
                           <td>{a.category}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td style={{ color: '#175CC4', fontWeight: 800 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: a.rating_avg > 0 ? '#175CC4' : 'var(--tx3)' }}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={11} fill="#f59e0b" strokeWidth={0}/>{a.rating_avg.toFixed(1)} ({a.rating_count})</span> : '—'}</td>
-                          <td>{a.total_missions || 0}</td>
+                          <td className="num num-cell">{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
+                          <td className={a.rating_avg > 0 ? 'num' : 'muted'} style={{ whiteSpace: 'nowrap' }}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/>{a.rating_avg.toFixed(1)} <span style={{ color: 'var(--tx2)' }}>({a.rating_count})</span></span> : '—'}</td>
+                          <td className="num">{a.total_missions || 0}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'suspended'}/></td>
                           <td>
                             <div style={{ display: 'flex', gap: 6 }}>
                               {!a.is_available ? (
                                 <button onClick={() => toggleArtisanAvailability(a.id, true)}
-                                  style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  className="adm-btn adm-btn-ok">
                                   Activer
                                 </button>
                               ) : (
                                 <button onClick={() => toggleArtisanAvailability(a.id, false)}
-                                  style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>
+                                  className="adm-btn adm-btn-no">
                                   Désactiver
                                 </button>
                               )}
-                              <a href={`/artisan/${a.id}`} style={{ padding: '4px 10px', borderRadius: 6, background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx2)', fontSize: 11, textDecoration: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>
+                              <a href={`/artisan/${a.id}`} className="adm-btn adm-btn-ghost">
                                 Voir
                               </a>
                             </div>
                           </td>
                         </tr>
                       ))}
-                      {filteredArtisans.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32, fontWeight: 300 }}>Aucun artisan trouvé</td></tr>}
+                      {filteredArtisans.length === 0 && <tr><td colSpan={8} style={EMPTY}>Aucun artisan trouvé</td></tr>}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             )}
 
             {/* ═══ RÉSERVATIONS ═══ */}
             {tab === 'bookings' && (
-              <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Réservations ({filteredBookings.length})</span>
-                    <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ animation: 'admFadeUp 0.4s ease' }}>
+                <div className="adm-panel">
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Réservations ({filteredBookings.length})</span>
+                    <div role="group" aria-label="Filtrer les réservations" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {([['all', 'Toutes'], ['pending', 'En attente'], ['completed', 'Terminées'], ['cancelled', 'Annulées']] as const).map(([id, label]) => (
-                        <button key={id} onClick={() => setBookingFilter(id)}
-                          style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, background: bookingFilter === id ? '#175CC418' : 'transparent', border: `0.5px solid ${bookingFilter === id ? '#3a3010' : 'var(--border)'}`, color: bookingFilter === id ? '#175CC4' : 'var(--tx3)', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: bookingFilter === id ? 800 : 300 }}>
+                        <button key={id} onClick={() => setBookingFilter(id)} aria-pressed={bookingFilter === id}
+                          className={bookingFilter === id ? 'chip chip-active' : 'chip'} style={{ padding: '7px 12px', minHeight: 36 }}>
                           {label}
                         </button>
                       ))}
                     </div>
                   </div>
-                  <table>
+                  <div className="adm-table-wrap"><table>
                     <thead><tr><th>CLIENT</th><th>ARTISAN</th><th>SERVICE</th><th>MONTANT</th><th>DATE PRÉVUE</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
                     <tbody>
                       {filteredBookings.map(b => (
                         <tr key={b.id}>
-                          <td style={{ fontWeight: 800 }}>{b.client?.full_name || '—'}</td>
+                          <td style={{ fontWeight: 700 }}>{b.client?.full_name || '—'}</td>
                           <td>{b.artisan?.full_name || '—'}</td>
                           <td>{b.title}</td>
-                          <td style={{ color: '#175CC4', fontWeight: 800 }}>{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
-                          <td style={{ color: 'var(--tx3)' }}>{formatDate(b.scheduled_at)}</td>
+                          <td className="num num-cell">{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
+                          <td className="muted">{formatDate(b.scheduled_at)}</td>
                           <td><StatusBadge status={b.status}/></td>
                           <td>
                             <div style={{ display: 'flex', gap: 6 }}>
                               {b.status === 'pending' && (
                                 <>
-                                  <button onClick={() => updateBookingStatus(b.id, 'confirmed')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Accepter</button>
-                                  <button onClick={() => updateBookingStatus(b.id, 'cancelled')} style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Annuler</button>
+                                  <button onClick={() => updateBookingStatus(b.id, 'confirmed')} className="adm-btn adm-btn-ok">Accepter</button>
+                                  <button onClick={() => updateBookingStatus(b.id, 'cancelled')} className="adm-btn adm-btn-no">Annuler</button>
                                 </>
                               )}
                               {b.status === 'confirmed' && (
-                                <button onClick={() => updateBookingStatus(b.id, 'completed')} style={{ padding: '4px 10px', borderRadius: 6, background: '#10b98112', border: '0.5px solid #10b98122', color: '#10b981', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800 }}>Terminer</button>
+                                <button onClick={() => updateBookingStatus(b.id, 'completed')} className="adm-btn adm-btn-ok">Terminer</button>
                               )}
                             </div>
                           </td>
                         </tr>
                       ))}
-                      {filteredBookings.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32, fontWeight: 300 }}>Aucune réservation</td></tr>}
+                      {filteredBookings.length === 0 && <tr><td colSpan={7} style={EMPTY}>Aucune réservation</td></tr>}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             )}
 
             {/* ═══ UTILISATEURS ═══ */}
             {tab === 'users' && (
-              <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Utilisateurs ({users.length})</span>
+              <div style={{ animation: 'admFadeUp 0.4s ease' }}>
+                <div className="adm-panel">
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Utilisateurs ({users.length})</span>
                   </div>
-                  <table>
+                  <div className="adm-table-wrap"><table>
                     <thead><tr><th>NOM</th><th>TÉLÉPHONE</th><th>RÔLE</th><th>INSCRIT LE</th></tr></thead>
                     <tbody>
                       {users.map(u => (
@@ -658,58 +686,57 @@ export default function AdminDashboard() {
                                   {(u.full_name || 'U')[0].toUpperCase()}
                                 </div>
                               )}
-                              <span style={{ fontWeight: 800 }}>{u.full_name || '—'}</span>
+                              <span style={{ fontWeight: 700 }}>{u.full_name || '—'}</span>
                             </div>
                           </td>
                           <td>{u.phone || '—'}</td>
                           <td>
                             <span style={{
-                              padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800,
-                              background: u.role === 'artisan' ? 'rgba(23,92,196,0.08)' : u.role === 'admin' ? 'rgba(107,163,230,0.08)' : 'var(--bg3)',
-                              color: u.role === 'artisan' ? '#175CC4' : u.role === 'admin' ? '#6BA3E6' : 'var(--tx2)',
-                              border: `0.5px solid ${u.role === 'artisan' ? 'rgba(23,92,196,0.15)' : u.role === 'admin' ? 'rgba(107,163,230,0.15)' : 'var(--border)'}`,
+                              padding: '3px 10px', borderRadius: 'var(--r-pill)', fontSize: 12, fontWeight: 700,
+                              background: u.role === 'artisan' ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : u.role === 'admin' ? 'color-mix(in srgb, var(--brique) 13%, transparent)' : 'var(--bg3)',
+                              color: u.role === 'artisan' ? 'var(--accent)' : u.role === 'admin' ? 'color-mix(in srgb, var(--brique) 75%, var(--tx))' : 'var(--tx2)',
                             }}>
                               {u.role === 'artisan' ? 'Artisan' : u.role === 'admin' ? 'Admin' : 'Client'}
                             </span>
                           </td>
-                          <td style={{ color: 'var(--tx3)' }}>{formatDate(u.created_at)}</td>
+                          <td className="muted">{formatDate(u.created_at)}</td>
                         </tr>
                       ))}
-                      {users.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--tx3)', padding: 32, fontWeight: 300 }}>Aucun utilisateur</td></tr>}
+                      {users.length === 0 && <tr><td colSpan={4} style={EMPTY}>Aucun utilisateur</td></tr>}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             )}
 
             {/* ═══ AVIS & MODÉRATION ═══ */}
             {tab === 'reviews' && (
-              <div style={{ animation: 'fadeUp 0.4s ease' }}>
-                <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
-                  <div style={{ padding: '18px 24px', borderBottom: '0.5px solid var(--border)' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>Tous les avis ({reviews.length})</span>
+              <div style={{ animation: 'admFadeUp 0.4s ease' }}>
+                <div className="adm-panel">
+                  <div className="adm-panel-head">
+                    <span className="adm-panel-title">Tous les avis ({reviews.length})</span>
                   </div>
                   {reviews.length === 0 ? (
-                    <div style={{ padding: '48px', textAlign: 'center', color: 'var(--tx3)', fontSize: 13, fontWeight: 300 }}>Aucun avis pour l'instant</div>
+                    <div style={EMPTY}>Aucun avis pour l'instant</div>
                   ) : (
                     <div style={{ padding: '16px' }}>
                       {reviews.map(r => (
-                        <div key={r.id} style={{ background: 'var(--bg)', border: '0.5px solid var(--border)', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                                <div style={{ display: 'flex', gap: 2 }}>
-                                  {[1,2,3,4,5].map(i => <Star key={i} size={12} fill={i <= r.rating ? '#f59e0b' : 'var(--border)'} strokeWidth={0}/>)}
+                        <div key={r.id} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--r-field)', padding: '14px 16px', marginBottom: 10 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+                            <div style={{ flex: '1 1 240px', minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px 12px', flexWrap: 'wrap', marginBottom: 8 }}>
+                                <div role="img" aria-label={`${r.rating}/5`} style={{ display: 'flex', gap: 2 }}>
+                                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= r.rating ? 'var(--laiton)' : 'var(--border2)'} strokeWidth={0}/>)}
                                 </div>
-                                <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 300 }}>
+                                <span style={{ fontSize: 13.5, color: 'var(--tx)', fontWeight: 600 }}>
                                   {r.client?.full_name || 'Client'} → {r.artisan_profile?.full_name || 'Artisan'}
                                 </span>
-                                <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>{timeAgo(r.created_at)}</span>
+                                <span style={{ fontSize: 12.5, color: 'var(--tx2)' }}>{timeAgo(r.created_at)}</span>
                               </div>
-                              {r.comment && <p style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.6, fontWeight: 300 }}>{r.comment}</p>}
+                              {r.comment && <p style={{ fontSize: 14, color: 'var(--tx)', lineHeight: 1.6, overflowWrap: 'anywhere' }}>{r.comment}</p>}
                             </div>
                             <button onClick={() => deleteReview(r.id)}
-                              style={{ padding: '4px 10px', borderRadius: 6, background: '#ef444410', border: '0.5px solid #ef444420', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 800, flexShrink: 0, marginLeft: 12 }}>
+                              className="adm-btn adm-btn-no" style={{ flexShrink: 0 }}>
                               Supprimer
                             </button>
                           </div>
