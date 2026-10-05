@@ -13,13 +13,17 @@ import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, useAnimations, ContactShadows } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
-import { MODEL_URL, BOT_URL, CINE_VIOLET, type CamState } from '@/lib/cinematic'
+import { MODEL_URL, BOT_URL, type CamState } from '@/lib/cinematic'
+
+// Teinte d'accent de la scène 3D : bleu d'Alger (remplace l'ancien CINE_ACCENT
+// de lib/cinematic, vestige de l'identité violette abandonnée).
+const CINE_ACCENT = '#2B74D9'
 
 type Mouse = MutableRefObject<{ x: number; y: number }>
 
 const _pos = new THREE.Vector3()
 const _look = new THREE.Vector3()
-const _violet = new THREE.Color(CINE_VIOLET)
+const _accent = new THREE.Color(CINE_ACCENT)
 
 /* ── Rig caméra : suit CamState avec amortissement + parallaxe souris ── */
 function CameraRig({ cam, mouse }: { cam: CamState; mouse: Mouse }) {
@@ -47,7 +51,7 @@ function ApartmentModel({ cam }: { cam: CamState }) {
   const group = useRef<THREE.Group>(null)
 
   // Recentrage sur l'origine + collecte des matériaux (couleur d'origine
-  // mémorisée pour pouvoir interpoler vers le violet final).
+  // mémorisée pour pouvoir interpoler vers l'accent final).
   const mats = useMemo(() => {
     const box = new THREE.Box3().setFromObject(scene)
     const center = box.getCenter(new THREE.Vector3())
@@ -75,9 +79,9 @@ function ApartmentModel({ cam }: { cam: CamState }) {
       group.current.position.y = Math.sin(t * 0.4) * 0.05
       group.current.rotation.y = Math.sin(t * 0.12) * 0.1 * cam.spin
     }
-    // Embrasement violet final (matériaux unlit → on teinte la couleur de base)
+    // Embrasement bleu d'Alger final (matériaux unlit → on teinte la couleur de base)
     for (const { mat, orig } of mats) {
-      mat.color!.copy(orig).lerp(_violet, cam.tint * 0.85)
+      mat.color!.copy(orig).lerp(_accent, cam.tint * 0.85)
     }
   })
 
@@ -93,7 +97,7 @@ function HighlightPulse({ cam }: { cam: CamState }) {
   const group = useRef<THREE.Group>(null)
   const ringMat = useRef<THREE.MeshBasicMaterial>(null)
   const discMat = useRef<THREE.MeshBasicMaterial>(null)
-  const color = useRef(new THREE.Color(CINE_VIOLET))
+  const color = useRef(new THREE.Color(CINE_ACCENT))
 
   useFrame(state => {
     const t = state.clock.elapsedTime
@@ -214,7 +218,7 @@ function ArtisanBot({ cam }: { cam: CamState }) {
         </mesh>
         <mesh position={[0, 0.85, 0]}>
           <boxGeometry args={[0.5, 0.28, 0.24]} />
-          <meshBasicMaterial ref={toolMat} color={CINE_VIOLET} />
+          <meshBasicMaterial ref={toolMat} color={CINE_ACCENT} />
         </mesh>
       </group>
       {/* Ombre portée simple sous les pieds */}
@@ -235,7 +239,7 @@ const ZONE_COUNT = 90
 function ZoneParticles({ cam }: { cam: CamState }) {
   const points = useRef<THREE.Points>(null)
   const mat = useRef<THREE.PointsMaterial>(null)
-  const color = useRef(new THREE.Color(CINE_VIOLET))
+  const color = useRef(new THREE.Color(CINE_ACCENT))
   // seeds[i] = phase/rayon/vitesse propres à chaque particule
   const { geo, seeds } = useMemo(() => {
     const arr = new Float32Array(ZONE_COUNT * 3)

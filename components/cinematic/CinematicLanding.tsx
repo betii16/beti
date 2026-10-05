@@ -4,7 +4,7 @@
 // Expérience cinématique de première visite (desktop uniquement) : l'appartement
 // 3D occupe tout l'écran, le scroll pilote la caméra (Lenis + GSAP ScrollTrigger),
 // chaque section met une pièce/un métier en avant avec une carte de verre.
-// Monde visuel volontairement CLAIR (blanc + violet), indépendant du thème du
+// Monde visuel volontairement CLAIR (blanc + bleu d'Alger), indépendant du thème du
 // site — aucune variable --bg/--tx ici pour ne pas hériter du thème sombre.
 //
 // NOTE framer-motion : volontairement absent — GSAP couvre tout et framer-motion
@@ -47,11 +47,11 @@ function Loader({ done }: { done: boolean }) {
   }, [done])
   return (
     <div ref={ref} style={{ position: 'absolute', inset: 0, zIndex: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 22, background: 'radial-gradient(120% 90% at 50% 0%, #EFEAFF 0%, #FFFFFF 60%)' }}>
-      <div style={{ width: 64, height: 64, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', boxShadow: '0 18px 50px rgba(90,61,240,0.35)', animation: 'cineFloat 2.6s ease-in-out infinite' }}>
+      <div style={{ width: 64, height: 64, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#0F3F86,#175CC4)', boxShadow: '0 18px 50px rgba(23,92,196,0.35)', animation: 'cineFloat 2.6s ease-in-out infinite' }}>
         <LogoMark size={32} variant="white" />
       </div>
-      <div style={{ width: 180, height: 3, borderRadius: 2, background: 'rgba(90,61,240,0.12)', overflow: 'hidden' }}>
-        <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: 'linear-gradient(90deg,#5A3DF0,#7C5CFF)', transition: 'width 0.25s ease' }} />
+      <div style={{ width: 180, height: 3, borderRadius: 2, background: 'rgba(23,92,196,0.12)', overflow: 'hidden' }}>
+        <div style={{ width: `${progress}%`, height: '100%', borderRadius: 2, background: 'linear-gradient(90deg,#0F3F86,#175CC4)', transition: 'width 0.25s ease' }} />
       </div>
       <div style={{ fontSize: 12, fontWeight: 600, color: INK2, letterSpacing: '0.06em' }}>
         {t('cine.loading')} {Math.round(progress)}%
@@ -64,12 +64,12 @@ function Loader({ done }: { done: boolean }) {
 function PhoneMockup() {
   const { t } = useLang()
   return (
-    <div style={{ width: 218, height: 440, borderRadius: 40, padding: 10, background: 'linear-gradient(160deg,#1a1526,#0b0b12)', boxShadow: '0 40px 90px -20px rgba(90,61,240,0.45), inset 0 1px 1px rgba(255,255,255,0.18)', flexShrink: 0 }}>
+    <div style={{ width: 218, height: 440, borderRadius: 40, padding: 10, background: 'linear-gradient(160deg,#1a1526,#0b0b12)', boxShadow: '0 40px 90px -20px rgba(23,92,196,0.45), inset 0 1px 1px rgba(255,255,255,0.18)', flexShrink: 0 }}>
       <div style={{ width: '100%', height: '100%', borderRadius: 31, overflow: 'hidden', position: 'relative', background: 'radial-gradient(130% 80% at 50% 0%, #2a1d63 0%, #0b0b12 62%)' }}>
         <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 74, height: 20, borderRadius: 12, background: '#000' }} />
         <div style={{ padding: '52px 16px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LogoMark size={14} variant="white" /></div>
+            <div style={{ width: 26, height: 26, borderRadius: 8, background: 'linear-gradient(135deg,#0F3F86,#175CC4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LogoMark size={14} variant="white" /></div>
             <span style={{ fontSize: 12, fontWeight: 800, color: '#fff', letterSpacing: '0.1em' }}>BETI</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', marginBottom: 14 }}>
@@ -78,14 +78,14 @@ function PhoneMockup() {
           </div>
           {[0.9, 0.7, 0.5].map((o, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 11, borderRadius: 14, background: `rgba(255,255,255,${0.07 * o + 0.03})`, border: '1px solid rgba(255,255,255,0.1)', marginBottom: 9, opacity: o }}>
-              <div style={{ width: 34, height: 34, borderRadius: 11, background: 'linear-gradient(135deg,rgba(124,92,255,0.5),rgba(90,61,240,0.25))' }} />
+              <div style={{ width: 34, height: 34, borderRadius: 11, background: 'linear-gradient(135deg,rgba(124,92,255,0.5),rgba(23,92,196,0.25))' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ width: '72%', height: 7, borderRadius: 4, background: 'rgba(255,255,255,0.3)', marginBottom: 6 }} />
                 <div style={{ width: '46%', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.16)' }} />
               </div>
             </div>
           ))}
-          <div style={{ marginTop: 16, padding: 12, borderRadius: 13, textAlign: 'center', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', color: '#fff', fontSize: 10.5, fontWeight: 800 }}>{t('cine.ctaFind')}</div>
+          <div style={{ marginTop: 16, padding: 12, borderRadius: 13, textAlign: 'center', background: 'linear-gradient(135deg,#0F3F86,#175CC4)', color: '#fff', fontSize: 10.5, fontWeight: 800 }}>{t('cine.ctaFind')}</div>
         </div>
       </div>
     </div>
@@ -271,12 +271,12 @@ export default function CinematicLanding({ onClose }: { onClose: () => void }) {
     maxWidth: 400, padding: '30px 32px', borderRadius: 24,
     background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.75)',
     backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-    boxShadow: '0 24px 70px -18px rgba(90,61,240,0.22), inset 0 1px 0 rgba(255,255,255,0.9)',
+    boxShadow: '0 24px 70px -18px rgba(23,92,196,0.22), inset 0 1px 0 rgba(255,255,255,0.9)',
   }
   const primaryBtn: React.CSSProperties = {
     padding: '16px 36px', borderRadius: 16, border: 'none', cursor: 'pointer',
-    background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', color: '#fff', fontSize: 15, fontWeight: 700,
-    boxShadow: '0 14px 34px -10px rgba(90,61,240,0.55)', transition: 'transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease',
+    background: 'linear-gradient(135deg,#0F3F86,#175CC4)', color: '#fff', fontSize: 15, fontWeight: 700,
+    boxShadow: '0 14px 34px -10px rgba(23,92,196,0.55)', transition: 'transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease',
   }
   const ghostBtn: React.CSSProperties = {
     padding: '16px 32px', borderRadius: 16, cursor: 'pointer',
@@ -306,7 +306,7 @@ export default function CinematicLanding({ onClose }: { onClose: () => void }) {
       {/* ── Barre haute ── */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '22px 32px', pointerEvents: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', boxShadow: '0 8px 22px rgba(90,61,240,0.3)' }}>
+          <div style={{ width: 34, height: 34, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#0F3F86,#175CC4)', boxShadow: '0 8px 22px rgba(23,92,196,0.3)' }}>
             <LogoMark size={18} variant="white" />
           </div>
           <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.1em', color: INK }}>BETI</span>
@@ -329,7 +329,7 @@ export default function CinematicLanding({ onClose }: { onClose: () => void }) {
           {/* HÉROS */}
           <section style={{ height: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '11vh' }}>
             <div ref={heroRef} style={{ textAlign: 'center', maxWidth: 780, padding: '0 32px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 18px', borderRadius: 999, background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(90,61,240,0.16)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#5A3DF0', marginBottom: 26, opacity: 0 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 18px', borderRadius: 999, background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(23,92,196,0.16)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#175CC4', marginBottom: 26, opacity: 0 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b98188' }} />
                 {t('home.badge')}
               </div>
@@ -371,9 +371,9 @@ export default function CinematicLanding({ onClose }: { onClose: () => void }) {
           {/* FINAL */}
           <section data-cine-section style={{ height: '175vh', position: 'relative' }}>
             <div style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div data-cine-card style={{ display: 'flex', alignItems: 'center', gap: 'clamp(36px, 6vw, 90px)', padding: '46px 56px', borderRadius: 32, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.7)', backdropFilter: 'blur(24px) saturate(160%)', WebkitBackdropFilter: 'blur(24px) saturate(160%)', boxShadow: '0 30px 90px -20px rgba(90,61,240,0.3)', opacity: 0 }}>
+              <div data-cine-card style={{ display: 'flex', alignItems: 'center', gap: 'clamp(36px, 6vw, 90px)', padding: '46px 56px', borderRadius: 32, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.7)', backdropFilter: 'blur(24px) saturate(160%)', WebkitBackdropFilter: 'blur(24px) saturate(160%)', boxShadow: '0 30px 90px -20px rgba(23,92,196,0.3)', opacity: 0 }}>
                 <div style={{ maxWidth: 480, textAlign: isAr ? 'right' : 'left' }}>
-                  <div style={{ width: 62, height: 62, borderRadius: 19, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#5A3DF0,#7C5CFF)', boxShadow: '0 18px 50px rgba(90,61,240,0.4)', marginBottom: 26 }}>
+                  <div style={{ width: 62, height: 62, borderRadius: 19, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#0F3F86,#175CC4)', boxShadow: '0 18px 50px rgba(23,92,196,0.4)', marginBottom: 26 }}>
                     <LogoMark size={30} variant="white" />
                   </div>
                   <h2 style={{ fontSize: 'clamp(2rem, 3.6vw, 3rem)', fontWeight: 800, lineHeight: 1.12, letterSpacing: '-0.025em', margin: '0 0 16px', color: INK }}>

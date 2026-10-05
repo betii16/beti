@@ -89,7 +89,7 @@ export default function TrustButton({
               direction: isAr ? 'rtl' : 'ltr',
             }}
           >
-            {/* Header violet dégradé */}
+            {/* En-tête bleu d'Alger */}
             <div style={{
               background: 'linear-gradient(135deg,#175CC4,#1E6FD6)',
               padding: '28px 28px 24px',
@@ -97,7 +97,7 @@ export default function TrustButton({
             }}>
               <button
                 onClick={() => setOpen(false)}
-                style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
+                aria-label="Fermer" style={{ position: 'absolute', top: 12, insetInlineEnd: 12, background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
               >
                 <X size={15} />
               </button>
@@ -134,11 +134,11 @@ export default function TrustButton({
                     border: '1px solid color-mix(in srgb,#175CC4 25%,transparent)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Icon size={17} color="#1E6FD6" strokeWidth={2} />
+                    <Icon size={17} color="var(--accent)" strokeWidth={2} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx,#fff)', fontFamily: 'Nexa,sans-serif', marginBottom: 2 }}>{t(tk)}</div>
-                    <div style={{ fontSize: 12, color: 'var(--tx3,#888)', fontWeight: 300, fontFamily: 'Nexa,sans-serif', lineHeight: 1.6 }}>{t(dk)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 2 }}>{t(tk)}</div>
+                    <div style={{ fontSize: 12, color: 'var(--tx2)', lineHeight: 1.6 }}>{t(dk)}</div>
                   </div>
                 </div>
               ))}

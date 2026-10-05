@@ -9,10 +9,10 @@ import { useLang } from '@/lib/LangContext'
 import PremiumBadge from '@/components/PremiumBadge'
 import TrustButton from '@/components/TrustButton'
 import { isPremium, isListed } from '@/lib/subscription'
+import { categoryColor, categoryInk } from '@/components/icons'
+import { Skeleton } from '@/components/Skeleton'
 
-function Stars({r,s=14}:{r:number;s?:number}){return<div style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'#f59e0b':'var(--border,#2a2a3a)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
-
-const COLORS:Record<string,string>={plomberie:'#3b82f6',electricite:'#f59e0b',menage:'#10b981',demenagement:'#1E6FD6',jardinage:'#22c55e',peinture:'#ef4444',serrurerie:'#f97316',informatique:'#175CC4',coiffure:'#ec4899',autre:'#6BA3E6'}
+function Stars({r,s=14}:{r:number;s?:number}){return<div role="img" aria-label={`${(r||0).toFixed(1)} / 5`} style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} aria-hidden width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'var(--star)':'var(--border2)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
 export default function ArtisanPage(){
   const params=useParams();const id=params?.id as string;const router=useRouter()
@@ -64,7 +64,24 @@ export default function ArtisanPage(){
     setSent(true)
   }
 
-  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div style={{fontSize:14,color:'var(--tx3)'}}>{t('common.loading')}</div></div>
+  // Squelette fidèle à la fiche (bandeau + carte profil + stats + onglets)
+  if(loading)return(
+    <div aria-busy="true" aria-label={t('common.loading')} style={{minHeight:'100vh',paddingTop:52}}>
+      <div style={{height:190,background:'linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent)'}}/>
+      <div style={{maxWidth:800,margin:'-100px auto 0',padding:'0 16px'}}>
+        <div className="card" style={{borderRadius:24,padding:'32px 24px',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
+          <Skeleton w={96} h={96} r={24}/>
+          <Skeleton w={220} h={26} r={8}/>
+          <Skeleton w={160} h={14}/>
+          <Skeleton w={130} h={14}/>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,width:'100%',marginTop:12}}>
+            {[0,1,2,3].map(i=><Skeleton key={i} h={68} r={14}/>)}
+          </div>
+          <div style={{display:'flex',gap:10,width:'100%',maxWidth:400,marginTop:8}}><Skeleton h={46} r={11}/><Skeleton w={110} h={46} r={11}/></div>
+        </div>
+      </div>
+    </div>
+  )
 
   // Paywall : hors période de lancement, le profil d'un artisan non abonné est
   // indisponible au public (le propriétaire garde l'accès pour se réabonner).
@@ -80,7 +97,7 @@ export default function ArtisanPage(){
 
   const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}
-  const c=COLORS[art.category]||'#175CC4'
+  const c=categoryColor(art.category)
   const init=prof.full_name?.split(' ').map((n:string)=>n[0]).join('').toUpperCase().slice(0,2)||'A'
   const avgR=revs.length>0?revs.reduce((s:number,r:any)=>s+r.rating,0)/revs.length:art.rating_avg||0
 
@@ -94,14 +111,22 @@ export default function ArtisanPage(){
   return(
     <>
       <style suppressHydrationWarning>{`
-        *{box-sizing:border-box;margin:0;padding:0}body{font-family:Nexa,system-ui,sans-serif}
+        *{box-sizing:border-box;margin:0;padding:0}
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+        .ap-tabs{display:flex;overflow-x:auto;scrollbar-width:none}
+        .ap-tabs::-webkit-scrollbar{display:none}
+        .ap-tab{flex:1 0 auto;min-height:50px;padding:14px 16px;background:transparent;border:none;border-bottom:2px solid transparent;
+          color:var(--tx2);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:color .2s ease,border-color .2s ease}
+        .ap-tab:hover{color:var(--tx)}
+        .ap-tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+        .ap-chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:var(--r-chip);font-size:12.5px;font-weight:600;
+          color:var(--tx2);background:var(--bg);border:1px solid var(--border2)}
+        @media (max-width:767px){.ap-card-pad{padding:24px 18px 20px !important}.ap-body{padding:22px 18px 26px !important}}
       `}</style>
 
       {/* ── APP BAR MOBILE : retour + nom artisan (remplace le header générique) ── */}
       <div className="mobile-only" style={{position:'fixed',top:0,left:0,right:0,zIndex:50,height:'calc(54px + env(safe-area-inset-top))',paddingTop:'env(safe-area-inset-top)',paddingLeft:12,paddingRight:12,alignItems:'center',gap:10,background:'var(--nav-bg)',backdropFilter:'blur(20px) saturate(180%)',WebkitBackdropFilter:'blur(20px) saturate(180%)',borderBottom:'0.5px solid var(--border)',direction:isAr?'rtl':'ltr'}}>
-        <button onClick={()=>router.back()} aria-label={t('common.back')} style={{width:34,height:34,borderRadius:12,background:'var(--bg2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,padding:0}}>
+        <button onClick={()=>router.back()} aria-label={t('common.back')} style={{width:40,height:40,borderRadius:12,background:'var(--bg2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,padding:0}}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--tx)" strokeWidth="2.2" style={{transform:isAr?'rotate(180deg)':'none'}}><path d="M15 18l-6-6 6-6"/></svg>
         </button>
         <span style={{flex:1,minWidth:0,fontSize:16,fontWeight:800,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{prof.full_name}</span>
@@ -111,42 +136,42 @@ export default function ArtisanPage(){
 
         {/* ── HERO BANNER ── */}
         <div style={{position:'relative',height:190,background:`linear-gradient(160deg, ${c}25, ${bg} 70%)`,overflow:'hidden'}}>
-          <div style={{position:'absolute',inset:0,background:`radial-gradient(circle at 40% 50%, ${c}12, transparent 60%)`}}/>
-          <div style={{position:'absolute',inset:0,backgroundImage:`radial-gradient(circle at 2px 2px, ${c}08 1px, transparent 0)`,backgroundSize:'24px 24px'}}/>
+          {/* Trame de carreaux (zellige) très discrète, teintée par le métier */}
+          <div aria-hidden style={{position:'absolute',inset:0,opacity:0.5,backgroundImage:`linear-gradient(45deg, ${c}10 25%, transparent 25%, transparent 75%, ${c}10 75%), linear-gradient(45deg, ${c}10 25%, transparent 25%, transparent 75%, ${c}10 75%)`,backgroundSize:'28px 28px',backgroundPosition:'0 0, 14px 14px'}}/>
           <div style={{position:'absolute',bottom:0,left:0,right:0,height:80,background:`linear-gradient(transparent,${bg})`}}/>
         </div>
 
         {/* ── PROFILE CARD overlapping banner ── */}
-        <div style={{maxWidth:800,margin:'-100px auto 0',padding:'0 24px',position:'relative',zIndex:2}}>
+        <div className="page-x" style={{maxWidth:800,margin:'-100px auto 0',padding:'0 24px',position:'relative',zIndex:2}}>
           <div style={{background:bg2,border:`1px solid ${brd}`,borderRadius:24,boxShadow:'var(--card-shadow)',overflow:'hidden',animation:'fadeUp 0.6s ease'}}>
 
             {/* Avatar + Name section */}
-            <div style={{padding:'32px 32px 24px',textAlign:'center'}}>
+            <div className="ap-card-pad" style={{padding:'32px 32px 24px',textAlign:'center'}}>
               {prof.avatar_url?(
                 <img src={prof.avatar_url} alt="" style={{width:96,height:96,borderRadius:24,objectFit:'cover',border:`4px solid ${bg2}`,boxShadow:`0 8px 32px ${c}22`,margin:'0 auto 16px',display:'block'}}/>
               ):(
                 <div style={{width:96,height:96,borderRadius:24,background:`linear-gradient(135deg, ${c}35, ${c}15)`,border:`4px solid ${bg2}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,fontWeight:800,color:c,boxShadow:`0 8px 32px ${c}22`,margin:'0 auto 16px'}}>{init}</div>
               )}
 
-              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,marginBottom:6}}>
-                <h1 style={{fontSize:28,fontWeight:800,color:tx}}>{prof.full_name}</h1>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#175CC4"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,marginBottom:8,flexWrap:'wrap'}}>
+                <h1 style={{fontSize:'clamp(22px,5.5vw,28px)',fontWeight:800,color:tx,lineHeight:1.15}}>{prof.full_name}</h1>
+                <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="var(--accent)"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 {isPremium(art)&&<PremiumBadge/>}
               </div>
 
-              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:12}}>
-                <span style={{padding:'4px 14px',borderRadius:20,background:`${c}12`,border:`1px solid ${c}22`,fontSize:12,color:c,fontWeight:700}}>{t(`categories.${art.category}`)}</span>
-                <span style={{fontSize:13,color:tx3}}>{art.location_city||'Algérie'}</span>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:12,flexWrap:'wrap'}}>
+                <span className="badge-tone" style={{background:`${c}14`,border:`1px solid ${c}33`,color:categoryInk(art.category),fontSize:12}}>{t(`categories.${art.category}`)}</span>
+                <span style={{fontSize:13,color:tx2}}>{art.location_city||'Algérie'}</span>
                 {art.is_available&&(
-                  <span style={{display:'flex',alignItems:'center',gap:5,padding:'4px 12px',borderRadius:20,background:'#10b98110',border:'1px solid #10b98120',fontSize:12,color:'#10b981',fontWeight:600}}>
-                    <div style={{width:5,height:5,borderRadius:'50%',background:'#10b981',boxShadow:'0 0 8px #10b98155'}}/>{t('common.online')}
+                  <span className="badge-tone tone-success" style={{fontSize:12}}>
+                    <span aria-hidden style={{width:6,height:6,borderRadius:'50%',background:'var(--success)'}}/>{t('common.online')}
                   </span>
                 )}
               </div>
 
               {/* Rating */}
               <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:20}}>
-                <Stars r={avgR} s={16}/><span style={{fontSize:16,fontWeight:800,color:'#f59e0b'}}>{avgR.toFixed(1)}</span>
+                <Stars r={avgR} s={16}/><span className="num" style={{fontSize:16,fontWeight:700,color:'var(--laiton)'}}>{avgR.toFixed(1)}</span>
                 <span style={{fontSize:13,color:tx3}}>({art.rating_count||revs.length} {t('common.reviews')})</span>
               </div>
 
@@ -156,16 +181,16 @@ export default function ArtisanPage(){
               </div>
 
               {/* Stats row */}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:24}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:24}}>
                 {[
                   {v:(art.hourly_rate||0).toLocaleString('fr-DZ'),u:t('common.da'),       l:t('profile.rates')     },
                   {v:art.total_missions||0,                        u:'',                   l:t('profile.missions')  },
                   {v:`${art.years_experience||0}`,                 u:t('common.years'),    l:t('profile.experience')},
                   {v:`${art.intervention_radius_km||20}`,          u:t('common.km'),       l:t('profile.radius')    },
                 ].map(s=>(
-                  <div key={s.l} style={{padding:'14px 8px',borderRadius:14,background:bg3,border:`1px solid ${brd}`,textAlign:'center'}}>
-                    <div style={{fontSize:20,fontWeight:800,color:tx}}>{s.v} <span style={{fontSize:11,fontWeight:300,color:tx3}}>{s.u}</span></div>
-                    <div style={{fontSize:11,color:tx3,marginTop:2}}>{s.l}</div>
+                  <div key={s.l} style={{padding:'14px 8px',borderRadius:'var(--r-card)',background:bg3,border:`1px solid ${brd}`,textAlign:'center'}}>
+                    <div className="num" style={{fontSize:20,fontWeight:700,color:tx}}>{s.v} <span style={{fontSize:11.5,fontWeight:400,color:tx3}}>{s.u}</span></div>
+                    <div style={{fontSize:12,color:tx2,marginTop:3}}>{s.l}</div>
                   </div>
                 ))}
               </div>
@@ -173,41 +198,35 @@ export default function ArtisanPage(){
               {/* Action buttons — desktop seulement (mobile = barre collée en bas) */}
               <div className="desktop-only" style={{display:'flex',gap:10,maxWidth:400,margin:'0 auto'}}>
                 {sent?(
-                  <div style={{flex:1,padding:14,borderRadius:12,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
-                    <span style={{fontSize:14,color:'#10b981',fontWeight:700}}>{t('profile.requestSent')}</span>
+                  <div role="status" className="tone-success" style={{flex:1,padding:14,borderRadius:'var(--r-card)',textAlign:'center',fontSize:14,fontWeight:700}}>
+                    {t('profile.requestSent')}
                   </div>
                 ):(
                   <>
                     <button onClick={()=>contact('message')} className="btn-primary" style={{flex:1}}>{t('home.sendMessage')}</button>
-                    <button onClick={()=>contact('call')} className="btn-ghost" style={{color:'#10b981',borderColor:'#10b98155'}}>{t('home.call')}</button>
+                    <button onClick={()=>contact('call')} className="btn-ghost btn-call">{t('home.call')}</button>
                   </>
                 )}
               </div>
-              {contactErr&&<div className="desktop-only" style={{display:'block',textAlign:'center',marginTop:10,fontSize:12,color:'#f87171',fontWeight:500}}>{contactErr}</div>}
+              {contactErr&&<div role="alert" className="desktop-only" style={{display:'block',textAlign:'center',marginTop:10,fontSize:13,color:'var(--danger)',fontWeight:500}}>{contactErr}</div>}
             </div>
 
-            {/* Tags — neon-button effect */}
+            {/* Tags — étiquettes sobres (ex-effet « néon » animé, hérité de l'ancien style) */}
             {art.tags&&art.tags.length>0&&(
-              <div style={{padding:'0 32px 20px',display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center'}}>
-                <style suppressHydrationWarning>{`
-                  @keyframes np{0%,100%{box-shadow:0 0 5px #1E6FD6,0 0 12px #1E6FD655,inset 0 0 6px #1E6FD614}50%{box-shadow:0 0 9px #6BA3E6,0 0 20px #1E6FD677,inset 0 0 10px #1E6FD622}}
-                  .ntag{display:inline-flex;align-items:center;padding:6px 14px;border-radius:10px;background:transparent;border:1.5px solid #1E6FD6;color:#6BA3E6;font-size:12px;font-weight:700;font-family:Nexa,sans-serif;letter-spacing:.03em;box-shadow:0 0 5px #1E6FD6,0 0 12px #1E6FD655,inset 0 0 6px #1E6FD614;animation:np 2.8s ease-in-out infinite;transition:all .2s}
-                  .ntag:hover{border-color:#6BA3E6;color:#fff;box-shadow:0 0 10px #6BA3E6,0 0 24px #1E6FD6aa,0 0 44px #175CC466,inset 0 0 14px #1E6FD62a;animation:none}
-                  @media(prefers-reduced-motion:reduce){.ntag{animation:none}}
-                `}</style>
-                {art.tags.map((tag:string)=><span key={tag} className="ntag">{tag}</span>)}
+              <div style={{padding:'0 24px 22px',display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center'}}>
+                {art.tags.map((tag:string)=><span key={tag} className="ap-chip">{tag}</span>)}
               </div>
             )}
 
             {/* ── TABS ── */}
-            <div style={{borderTop:`1px solid ${brd}`,display:'flex'}}>
+            <div role="tablist" className="ap-tabs" style={{borderTop:`1px solid ${brd}`}}>
               {TABS.map(item=>(
-                <button key={item.id} onClick={()=>setTab(item.id)} style={{flex:1,padding:'16px',background:'transparent',border:'none',borderBottom:tab===item.id?'2px solid #175CC4':'2px solid transparent',color:tab===item.id?'#175CC4':tx3,fontSize:13,fontWeight:tab===item.id?700:300,cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>{item.label}</button>
+                <button key={item.id} role="tab" aria-selected={tab===item.id} onClick={()=>setTab(item.id)} className="ap-tab">{item.label}</button>
               ))}
             </div>
 
             {/* ── TAB CONTENT ── */}
-            <div style={{padding:'28px 32px 32px'}}>
+            <div role="tabpanel" className="ap-body" style={{padding:'28px 32px 32px'}}>
 
               {/* About */}
               {tab==='about'&&(
@@ -232,7 +251,7 @@ export default function ArtisanPage(){
                   {revs.length>0&&(
                     <div style={{display:'flex',gap:24,alignItems:'center',padding:24,background:bg3,border:`1px solid ${brd}`,borderRadius:16,marginBottom:24,flexWrap:'wrap'}}>
                       <div style={{textAlign:'center',minWidth:80}}>
-                        <div style={{fontSize:44,fontWeight:800,color:'#f59e0b',lineHeight:1}}>{avgR.toFixed(1)}</div>
+                        <div className="num" style={{fontSize:44,fontWeight:700,color:'var(--laiton)',lineHeight:1,marginBottom:6}}>{avgR.toFixed(1)}</div>
                         <Stars r={avgR} s={14}/>
                         <div style={{fontSize:12,color:tx3,marginTop:4}}>{revs.length} {t('common.reviews')}</div>
                       </div>
@@ -244,7 +263,7 @@ export default function ArtisanPage(){
                             <div key={star} style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
                               <span style={{fontSize:12,color:tx3,width:10}}>{star}</span>
                               <div style={{flex:1,height:6,background:brd,borderRadius:3,overflow:'hidden'}}>
-                                <div style={{width:`${pct}%`,height:'100%',background:'#f59e0b',borderRadius:3,transition:'width 0.5s'}}/>
+                                <div style={{width:`${pct}%`,height:'100%',background:'var(--star)',borderRadius:3,transition:'width 0.5s'}}/>
                               </div>
                               <span style={{fontSize:11,color:tx3,width:32}}>{pct}%</span>
                             </div>
@@ -255,7 +274,7 @@ export default function ArtisanPage(){
                   )}
 
                   {revs.length===0?(
-                    <div style={{textAlign:'center',padding:48,color:tx3,fontSize:14,fontWeight:300}}>{t('profile.noReviewsYet')}</div>
+                    <div style={{textAlign:'center',padding:'40px 16px',color:tx2,fontSize:14,background:bg3,border:`1px dashed var(--border2)`,borderRadius:'var(--r-card)'}}>{t('profile.noReviewsYet')}</div>
                   ):(
                     <div style={{display:'flex',flexDirection:'column',gap:12}}>
                       {revs.map((r:any)=>(
@@ -294,8 +313,8 @@ export default function ArtisanPage(){
                       </div>
                       <div style={{display:'flex',flexDirection:'column',gap:4}}>
                         {(['CIB','Edahabia','Cash'] as const).map(m=>(
-                          <div key={m} style={{padding:'4px 10px',borderRadius:8,background:bg2,border:`0.5px solid ${brd}`,fontSize:11,color:tx3,fontWeight:300,display:'flex',alignItems:'center',gap:6}}>
-                            <div style={{width:5,height:5,borderRadius:'50%',background:'#10b981'}}/>
+                          <div key={m} style={{padding:'4px 10px',borderRadius:8,background:bg2,border:`1px solid ${brd}`,fontSize:12,color:tx2,display:'flex',alignItems:'center',gap:6}}>
+                            <div aria-hidden style={{width:6,height:6,borderRadius:'50%',background:'var(--success)'}}/>
                             {m}
                           </div>
                         ))}
@@ -317,16 +336,16 @@ export default function ArtisanPage(){
 
       {/* ── BARRE D'ACTION COLLÉE EN BAS (mobile) — au-dessus du dock ── */}
       <div className="mobile-only above-tabbar" style={{position:'fixed',left:0,right:0,bottom:0,zIndex:50,flexDirection:'column',gap:8,padding:'12px 16px 14px',background:'var(--nav-bg)',backdropFilter:'blur(20px) saturate(180%)',WebkitBackdropFilter:'blur(20px) saturate(180%)',borderTop:'0.5px solid var(--border)',direction:isAr?'rtl':'ltr'}}>
-        {contactErr&&<div style={{fontSize:12,color:'#f87171',fontWeight:500,textAlign:'center'}}>{contactErr}</div>}
+        {contactErr&&<div role="alert" style={{fontSize:13,color:'var(--danger)',fontWeight:500,textAlign:'center'}}>{contactErr}</div>}
         {sent?(
-          <div style={{padding:14,borderRadius:13,background:'#10b98112',border:'1px solid #10b98122',textAlign:'center'}}>
-            <span style={{fontSize:14,color:'#10b981',fontWeight:700}}>{t('profile.requestSent')}</span>
+          <div role="status" className="tone-success" style={{padding:14,borderRadius:'var(--r-card)',textAlign:'center',fontSize:14,fontWeight:700}}>
+            {t('profile.requestSent')}
           </div>
         ):(
           <div style={{display:'flex',gap:10,width:'100%'}}>
             <button onClick={()=>contact('message')} className="btn-primary btn-lg" style={{flex:1}}>{t('home.sendMessage')}</button>
-            <button onClick={()=>contact('call')} aria-label={t('home.call')} className="btn-ghost btn-lg" style={{color:'#10b981',borderColor:'#10b98155',flexShrink:0}}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <button onClick={()=>contact('call')} aria-label={t('home.call')} className="btn-ghost btn-lg btn-call" style={{flexShrink:0,padding:'0 20px'}}>
+              <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             </button>
           </div>
         )}

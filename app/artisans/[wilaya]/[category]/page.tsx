@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Metadata } from 'next'
-import { CategoryIcon } from '@/components/icons'
+import { CategoryIcon, categoryColor, categoryInk } from '@/components/icons'
 import { isListed } from '@/lib/subscription'
 
 import { notFound } from 'next/navigation'
@@ -104,49 +104,45 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
 
-      <div style={{ minHeight: '100vh', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
-        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 40px' }}>
+      <div style={{ minHeight: '100vh', paddingTop: 80 }}>
+        <section className="seo-wrap" style={{ paddingTop: 48, paddingBottom: 40 }}>
           {/* Fil d'ariane */}
-          <div style={{ fontSize: 12, color: '#555', marginBottom: 16, display: 'flex', gap: 6, alignItems: 'center' }}>
-            <a href="/" style={{ color: '#555', textDecoration: 'none' }}>Accueil</a> /
-            <a href={`/artisans/${params.wilaya}`} style={{ color: '#555', textDecoration: 'none' }}>{w.name}</a> /
-            <span style={{ color: '#1E6FD6' }}>{c.label}</span>
-          </div>
+          <nav aria-label="Fil d'Ariane" className="seo-crumbs">
+            <a href="/">Accueil</a><span aria-hidden>/</span>
+            <a href={`/artisans/${params.wilaya}`}>{w.name}</a><span aria-hidden>/</span>
+            <span aria-current="page" style={{ color: 'var(--accent)' }}>{c.label}</span>
+          </nav>
 
-          <div style={{ fontSize: 11, color: '#1E6FD6', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <CategoryIcon id={params.category} size={14} color="#1E6FD6"/> {c.labelPlural.toUpperCase()}
+          <div className="mono" style={{ fontSize: 11.5, color: categoryInk(params.category), fontWeight: 600, letterSpacing: '0.12em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, textTransform: 'uppercase' }}>
+            <CategoryIcon id={params.category} size={15} color={categoryColor(params.category)}/> {c.labelPlural}
           </div>
           <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
             {c.label} à {w.name}
           </h1>
-          <p style={{ fontSize: 15, color: '#555', maxWidth: 600, lineHeight: 1.7, fontWeight: 300, marginBottom: 32 }}>
-            Trouvez un {c.label.toLowerCase()} certifié BETI à {w.name} (wilaya {w.num}). 
+          <p style={{ fontSize: 16, color: 'var(--tx2)', maxWidth: 600, lineHeight: 1.7, marginBottom: 32 }}>
+            Trouvez un {c.label.toLowerCase()} certifié BETI à {w.name} (wilaya {w.num}).
             Spécialisé en {c.desc}. Intervention rapide, devis gratuit, paiement en cash.
           </p>
 
-          <a href={`/?wilaya=${params.wilaya}&category=${params.category}`}>
-            <button style={{ padding: '12px 28px', borderRadius: 12, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 24px rgba(23,92,196,0.32)' }}>
-              Trouver un {c.label.toLowerCase()} maintenant
-            </button>
+          <a href={`/?wilaya=${params.wilaya}&category=${params.category}`} className="btn-primary btn-lg">
+            Trouver un {c.label.toLowerCase()} maintenant
           </a>
         </section>
 
         {/* Artisans */}
         {artisans && artisans.length > 0 && (
-          <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 48px' }}>
+          <section className="seo-wrap" style={{ paddingBottom: 48 }}>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>
               {c.labelPlural} disponibles à {w.name}
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
               {artisans.map((a: any) => (
-                <a key={a.id} href={`/artisan/${a.id}`} style={{ textDecoration: 'none' }}>
-                  <div style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{a.profiles?.full_name}</div>
-                    <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, marginBottom: 10 }}>{c.label} certifié BETI</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 12, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade8066' }}/>Disponible</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#175CC4' }}>{a.hourly_rate} DA/h</span>
-                    </div>
+                <a key={a.id} href={`/artisan/${a.id}`} className="card is-clickable seo-card">
+                  <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{a.profiles?.full_name}</div>
+                  <div style={{ fontSize: 12.5, color: categoryInk(params.category), fontWeight: 700, marginBottom: 10 }}>{c.label} certifié BETI</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="badge-tone tone-success"><span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }}/>Disponible</span>
+                    <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)' }}>{a.hourly_rate} <span style={{ fontSize: 11.5, color: 'var(--tx3)', fontWeight: 400 }}>DA/h</span></span>
                   </div>
                 </a>
               ))}
@@ -155,13 +151,13 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
         )}
 
         {/* Autres catégories dans cette wilaya */}
-        <section style={{ background: 'var(--bg)', borderTop: '0.5px solid var(--border)', padding: '40px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <section style={{ borderTop: '1px solid var(--border)', padding: '40px 0', background: 'var(--bg3)' }}>
+          <div className="seo-wrap">
             <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)', marginBottom: 16 }}>Autres services à {w.name}</h2>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {Object.entries(CATEGORIES).filter(([id]) => id !== params.category).map(([id, cat]) => (
-                <a key={id} href={`/artisans/${params.wilaya}/${id}`} style={{ fontSize: 12, color: '#444', textDecoration: 'none', padding: '4px 12px', borderRadius: 20, border: '0.5px solid var(--border)' }}>
-                  {cat.label} {w.name}
+                <a key={id} href={`/artisans/${params.wilaya}/${id}`} className="seo-pill is-small" style={{ gap: 7 }}>
+                  <CategoryIcon id={id} size={14} color={categoryColor(id)}/>{cat.label} {w.name}
                 </a>
               ))}
             </div>

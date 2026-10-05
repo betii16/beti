@@ -4,23 +4,59 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
-import { CategoryIcon } from '@/components/icons'
-import { Search, Frown, LayoutGrid, SlidersHorizontal, Check, Star } from 'lucide-react'
+import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
+import { Search, SearchX, LayoutGrid, SlidersHorizontal, Check, Star, X, BadgeCheck } from 'lucide-react'
 import PremiumBadge from '@/components/PremiumBadge'
 import { fetchPlans, isListed } from '@/lib/subscription'
+import { useLang } from '@/lib/LangContext'
+import { artisanAvatar } from '@/lib/avatar'
 
-const CATEGORIES = [
-  { id: '',             label: 'Tous',          color: 'var(--tx2)' },
-  { id: 'plomberie',    label: 'Plomberie',     color: '#3b82f6' },
-  { id: 'electricite',  label: 'Électricité',   color: '#f59e0b' },
-  { id: 'menage',       label: 'Ménage',        color: '#10b981' },
-  { id: 'demenagement', label: 'Déménagement',  color: '#1E6FD6' },
-  { id: 'jardinage',    label: 'Jardinage',     color: '#22c55e' },
-  { id: 'peinture',     label: 'Peinture',      color: '#ef4444' },
-  { id: 'serrurerie',   label: 'Serrurerie',    color: '#f97316' },
-  { id: 'informatique', label: 'Informatique',  color: '#175CC4' },
-  { id: 'coiffure',     label: 'Coiffure',      color: '#ec4899' },
-]
+const CATEGORY_IDS = ['', 'plomberie', 'electricite', 'menage', 'demenagement', 'jardinage', 'peinture', 'serrurerie', 'informatique', 'coiffure']
+
+// Libellés propres à la page (FR / AR) — la page était 100 % en français codé en dur.
+const L = {
+  filters:      { fr: 'Filtres',                    ar: 'الفلاتر' },
+  close:        { fr: 'Fermer',                     ar: 'إغلاق' },
+  kicker:       { fr: 'Recherche',                  ar: 'البحث' },
+  title1:       { fr: 'Trouvez votre',              ar: 'اعثر على' },
+  title2:       { fr: 'artisan idéal.',             ar: 'الحرفي المثالي.' },
+  keywords:     { fr: 'Mots-clés',                  ar: 'كلمات مفتاحية' },
+  kwPh:         { fr: 'Ex : hafaf, soudure…',       ar: 'مثال: حفاف، تلحيم…' },
+  add:          { fr: 'Ajouter',                    ar: 'إضافة' },
+  clearAll:     { fr: 'Tout effacer',               ar: 'مسح الكل' },
+  kwHint:       { fr: 'Tapez un mot puis « Ajouter » (ou Entrée).', ar: 'اكتب كلمة ثم «إضافة» (أو Enter).' },
+  remove:       { fr: 'Retirer',                    ar: 'إزالة' },
+  city:         { fr: 'Ville',                      ar: 'المدينة' },
+  cityPh:       { fr: 'Votre ville…',               ar: 'مدينتك…' },
+  category:     { fr: 'Catégorie',                  ar: 'الفئة' },
+  all:          { fr: 'Tous',                       ar: 'الكل' },
+  radius:       { fr: 'Rayon',                      ar: 'النطاق' },
+  minRating:    { fr: 'Note minimum',               ar: 'أدنى تقييم' },
+  maxPrice:     { fr: 'Prix max',                   ar: 'السعر الأقصى' },
+  unlimited:    { fr: 'Illimité',                   ar: 'بلا حد' },
+  daH:          { fr: 'DA/h',                       ar: 'دج/سا' },
+  availableNow: { fr: 'Disponible maintenant',      ar: 'متاح الآن' },
+  search:       { fr: 'Rechercher',                 ar: 'ابحث' },
+  searching:    { fr: 'Recherche…',                 ar: 'جارٍ البحث…' },
+  searchingLong:{ fr: 'Recherche en cours…',        ar: 'جارٍ البحث…' },
+  found1:       { fr: 'artisan trouvé',             ar: 'حرفي' },
+  foundN:       { fr: 'artisans trouvés',           ar: 'حرفيين' },
+  sortDistance: { fr: 'Distance',                   ar: 'المسافة' },
+  sortRating:   { fr: 'Mieux notés',                ar: 'الأعلى تقييماً' },
+  sortPriceAsc: { fr: 'Prix ↑',                     ar: 'السعر ↑' },
+  sortPriceDesc:{ fr: 'Prix ↓',                     ar: 'السعر ↓' },
+  idleTitle:    { fr: 'Lancez une recherche',       ar: 'ابدأ البحث' },
+  idleSubDesk:  { fr: 'Réglez les filtres puis cliquez sur « Rechercher ».', ar: 'اضبط الفلاتر ثم اضغط «ابحث».' },
+  idleSubMob:   { fr: 'Ouvrez les filtres pour choisir un métier, une ville, un budget.', ar: 'افتح الفلاتر لاختيار مهنة ومدينة وميزانية.' },
+  emptyTitle:   { fr: 'Aucun artisan trouvé',       ar: 'لم يتم العثور على أي حرفي' },
+  emptySub:     { fr: "Élargissez le rayon ou assouplissez les filtres.", ar: 'وسّع النطاق أو خفف الفلاتر.' },
+  widen:        { fr: 'Élargir à 100 km',           ar: 'توسيع إلى 100 كم' },
+  certified:    { fr: 'Certifié',                   ar: 'موثّق' },
+  newA:         { fr: 'Nouveau',                    ar: 'جديد' },
+  missions:     { fr: 'missions',                   ar: 'مهمة' },
+  available:    { fr: 'Disponible',                 ar: 'متاح' },
+  busy:         { fr: 'Occupé',                     ar: 'مشغول' },
+} as const
 
 type Artisan = {
   artisan_id: string; full_name: string; avatar_url: string | null
@@ -32,9 +68,9 @@ type Artisan = {
 
 function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
   return (
-    <div style={{ display: 'flex', gap: 2 }}>
+    <div role="img" aria-label={`${(rating || 0).toFixed(1)} / 5`} style={{ display: 'flex', gap: 2 }}>
       {[1,2,3,4,5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= Math.round(rating) ? '#175CC4' : 'var(--border)'}>
+        <svg key={i} aria-hidden width={size} height={size} viewBox="0 0 24 24" fill={i <= Math.round(rating) ? 'var(--star)' : 'var(--border2)'}>
           <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
         </svg>
       ))}
@@ -44,6 +80,8 @@ function Stars({ rating, size = 11 }: { rating: number; size?: number }) {
 
 export default function RecherchePage() {
   const router = useRouter()
+  const { t, isAr, lang } = useLang()
+  const tr = (k: keyof typeof L) => L[k][lang === 'ar' ? 'ar' : 'fr']
   const [artisans, setArtisans] = useState<Artisan[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -82,6 +120,14 @@ export default function RecherchePage() {
       )
     }
   }, [])
+
+  // Sheet de filtres mobile : fermeture à Échap
+  useEffect(() => {
+    if (!filtersOpen) return
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setFiltersOpen(false) }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [filtersOpen])
 
   // Filtres actifs (≠ valeurs par défaut) → badge sur le déclencheur mobile
   const activeCount =
@@ -133,167 +179,184 @@ export default function RecherchePage() {
     setLoading(false)
   }
 
-  const catColor = CATEGORIES.find(c => c.id === category)?.color || 'var(--tx2)'
+  const catLabel = (id: string) => id ? t(`categories.${id}`) : tr('all')
 
   return (
     <>
       <style suppressHydrationWarning>{`
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:Nexa,sans-serif}
+        .rq-opt{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:9px 14px;border-radius:var(--r-field);
+          border:1px solid var(--border);background:var(--bg2);color:var(--tx2);font-size:14px;font-weight:500;cursor:pointer;text-align:start;
+          transition:border-color .2s ease,background .2s ease,color .2s ease}
+        .rq-opt:hover{border-color:var(--border2);color:var(--tx)}
+        .rq-opt[aria-pressed="true"]{color:var(--tx);font-weight:700}
+        .rq-seg{flex:1;min-height:40px;padding:8px 4px;border-radius:var(--r-chip);border:1px solid var(--border);background:var(--bg2);
+          color:var(--tx2);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+        .rq-seg[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg2));color:var(--accent);font-weight:700}
+        .rq-range{width:100%;accent-color:var(--accent-fill);cursor:pointer;height:28px}
+        .rq-kw{display:inline-flex;align-items:center;gap:2px;padding:2px 2px 2px 12px;border-radius:var(--r-pill);font-size:13px;font-weight:600;
+          color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 26%,transparent)}
+        [dir="rtl"] .rq-kw,.rq-rtl .rq-kw{padding:2px 12px 2px 2px}
+        .rq-kw button{width:28px;height:28px;border-radius:50%;border:none;background:transparent;color:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+        .rq-kw button:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
       `}</style>
-      <div style={{ minHeight: '100vh', fontFamily: 'Nexa, sans-serif', paddingTop: 84 }}>
-        <div className="grid-collapse page-pad-m" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
+      <div className={isAr ? 'rq-rtl' : undefined} style={{ minHeight: '100vh', paddingTop: 84, direction: isAr ? 'rtl' : 'ltr' }}>
+        <div className="grid-collapse page-pad-m" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px 80px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: 40, alignItems: 'start' }}>
 
           {/* ── PANNEAU FILTRES (sidebar desktop / bottom-sheet mobile) ── */}
-          <div className={`filters-panel${filtersOpen ? ' open' : ''}`} style={{ position: 'sticky', top: 84 }}>
+          <div className={`filters-panel${filtersOpen ? ' open' : ''}`} style={{ position: 'sticky', top: 84 }} aria-label={tr('filters')}>
             {/* En-tête du sheet (mobile uniquement) */}
             <div className="mobile-only" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-              <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--tx)' }}>Filtres</span>
-              <button onClick={() => setFiltersOpen(false)} aria-label="Fermer" style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', fontSize: 24, lineHeight: 1, cursor: 'pointer', padding: 4 }}>×</button>
+              <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)' }}>{tr('filters')}</span>
+              <button onClick={() => setFiltersOpen(false)} aria-label={tr('close')} className="icon-btn"><X size={20}/></button>
             </div>
             <div className="desktop-only">
-              <div style={{ fontSize: 10, color: '#175CC4', fontWeight: 800, letterSpacing: '.12em', marginBottom: 8 }}>RECHERCHE</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--tx)', marginBottom: 24, lineHeight: 1.2 }}>Trouvez votre<br/>artisan idéal.</h1>
+              <div className="section-label">{tr('kicker')}</div>
+              <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--tx)', marginBottom: 26, lineHeight: 1.15 }}>{tr('title1')}<br/>{tr('title2')}</h1>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
               {/* Mots-clés */}
               <div>
-                <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>MOTS-CLÉS</label>
+                <label htmlFor="rq-kw" className="field-label">{tr('keywords')}</label>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                   <input
+                    id="rq-kw"
                     type="text"
-                    placeholder="Ex: hafaf, soudure..."
+                    placeholder={tr('kwPh')}
                     value={keywordInput}
                     onChange={e => setKeywordInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && addKeyword()}
-                    className="field" style={{ flex: 1 }}
+                    className="field" style={{ flex: 1, minWidth: 0 }}
                   />
                   <button
                     onClick={addKeyword}
                     disabled={!keywordInput.trim()}
-                    className="btn-primary btn-sm"
-                  >+ Ajouter</button>
+                    className="btn-soft"
+                    style={{ padding: '0 14px' }}
+                  >+ {tr('add')}</button>
                 </div>
                 {/* Tags ajoutés */}
-                {keywords.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {keywords.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                     {keywords.map(kw => (
-                      <div key={kw} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', background: '#175CC40d', border: '0.5px solid #175CC444', borderRadius: 20 }}>
-                        <span style={{ fontSize: 12, color: '#175CC4', fontWeight: 300 }}>{kw}</span>
-                        <button onClick={() => removeKeyword(kw)} style={{ background: 'transparent', border: 'none', color: '#175CC4', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
-                      </div>
+                      <span key={kw} className="rq-kw">
+                        {kw}
+                        <button onClick={() => removeKeyword(kw)} aria-label={`${tr('remove')} ${kw}`}><X size={13}/></button>
+                      </span>
                     ))}
-                    <button onClick={() => setKeywords([])} style={{ padding: '4px 10px', background: 'transparent', border: '0.5px solid #ef444420', borderRadius: 20, color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Tout effacer</button>
+                    <button onClick={() => setKeywords([])} style={{ padding: '6px 8px', background: 'transparent', border: 'none', color: 'var(--danger)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{tr('clearAll')}</button>
                   </div>
-                )}
-                {keywords.length === 0 && (
-                  <div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Tapez un mot et cliquez <strong style={{ color: '#175CC4' }}>+ Ajouter</strong></div>
+                ) : (
+                  <div style={{ fontSize: 12.5, color: 'var(--tx3)' }}>{tr('kwHint')}</div>
                 )}
               </div>
 
               {/* Ville */}
               <div>
-                <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>VILLE</label>
+                <span className="field-label">{tr('city')}</span>
                 <AlgeriaCitySearch
                   defaultCity={ALGERIA_CITIES.find(c => c.id === 'alger-centre')}
                   onSelect={city => setUserLocation({ lat: city.lat, lng: city.lng })}
-                  placeholder="Votre ville..."
+                  placeholder={tr('cityPh')}
                 />
               </div>
 
               {/* Catégorie */}
-              <div>
-                <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>CATÉGORIE</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {CATEGORIES.map(cat => (
-                    <button key={cat.id} onClick={() => setCategory(cat.id)}
-                      style={{ padding: '9px 14px', borderRadius: 9, border: `0.5px solid ${category === cat.id ? cat.color : 'var(--border)'}`, background: category === cat.id ? cat.color + '12' : 'transparent', color: category === cat.id ? cat.color : 'var(--tx2)', fontSize: 13, fontWeight: category === cat.id ? 800 : 300, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}
-                    >
-                      {cat.id ? <CategoryIcon id={cat.id} size={15}/> : <LayoutGrid size={15}/>}{cat.label}
-                      {category === cat.id && <Check size={14} strokeWidth={2.5} style={{ marginLeft: 'auto', flexShrink: 0 }}/>}
-                    </button>
-                  ))}
+              <div role="group" aria-label={tr('category')}>
+                <span className="field-label">{tr('category')}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {CATEGORY_IDS.map(id => {
+                    const on = category === id
+                    const c = id ? categoryColor(id) : 'var(--accent)'
+                    return (
+                      <button key={id || 'all'} onClick={() => setCategory(id)} aria-pressed={on} className="rq-opt"
+                        style={on ? { borderColor: c, background: `color-mix(in srgb, ${c} 9%, var(--bg2))` } : undefined}>
+                        <span aria-hidden style={{ display: 'inline-flex', color: id ? c : 'var(--tx2)' }}>{id ? <CategoryIcon id={id} size={16} color={c}/> : <LayoutGrid size={16}/>}</span>
+                        <span style={{ color: on && id ? categoryInk(id) : undefined }}>{catLabel(id)}</span>
+                        {on && <Check size={15} strokeWidth={2.5} color={id ? c : 'var(--accent)'} style={{ marginInlineStart: 'auto', flexShrink: 0 }}/>}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
               {/* Rayon */}
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>RAYON</label>
-                  <span style={{ fontSize: 11, color: '#175CC4', fontWeight: 800 }}>{radius} km</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <label htmlFor="rq-radius" className="field-label">{tr('radius')}</label>
+                  <span className="num" style={{ fontSize: 12.5, color: 'var(--accent)', fontWeight: 600 }}>{radius} km</span>
                 </div>
-                <input type="range" min={5} max={100} step={5} value={radius} onChange={e => setRadius(Number(e.target.value))} style={{ width: '100%', accentColor: '#175CC4', cursor: 'pointer' }}/>
+                <input id="rq-radius" type="range" min={5} max={100} step={5} value={radius} onChange={e => setRadius(Number(e.target.value))} className="rq-range"/>
               </div>
 
               {/* Note minimum */}
-              <div>
-                <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em', display: 'block', marginBottom: 8 }}>NOTE MINIMUM</label>
+              <div role="group" aria-label={tr('minRating')}>
+                <span className="field-label">{tr('minRating')}</span>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[0, 3, 4, 4.5].map(r => (
-                    <button key={r} onClick={() => setMinRating(r)}
-                      style={{ flex: 1, padding: '7px 4px', borderRadius: 8, border: `0.5px solid ${minRating === r ? '#175CC4' : 'var(--border)'}`, background: minRating === r ? '#175CC40d' : 'var(--bg2)', color: minRating === r ? '#175CC4' : 'var(--tx3)', fontSize: 11, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: minRating === r ? 800 : 300 }}
-                    >{r === 0 ? 'Tous' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{r}+ <Star size={10} fill="currentColor" strokeWidth={0}/></span>}</button>
+                    <button key={r} onClick={() => setMinRating(r)} aria-pressed={minRating === r} className="rq-seg">
+                      {r === 0 ? tr('all') : <>{r}+ <Star size={11} fill="var(--star)" color="var(--star)" strokeWidth={0}/></>}
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Prix max */}
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 800, letterSpacing: '.06em' }}>PRIX MAX</label>
-                  <span style={{ fontSize: 11, color: '#175CC4', fontWeight: 800 }}>{maxPrice === 15000 ? 'Illimité' : `${maxPrice.toLocaleString('fr-DZ')} DA/h`}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <label htmlFor="rq-price" className="field-label">{tr('maxPrice')}</label>
+                  <span className="num" style={{ fontSize: 12.5, color: 'var(--accent)', fontWeight: 600 }}>{maxPrice === 15000 ? tr('unlimited') : `${maxPrice.toLocaleString('fr-DZ')} ${tr('daH')}`}</span>
                 </div>
-                <input type="range" min={500} max={15000} step={500} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', accentColor: '#175CC4', cursor: 'pointer' }}/>
+                <input id="rq-price" type="range" min={500} max={15000} step={500} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} className="rq-range"/>
               </div>
 
-              {/* Disponible maintenant */}
-              <div onClick={() => setAvailableOnly(!availableOnly)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 10, border: `0.5px solid ${availableOnly ? '#10b981' : 'var(--border)'}`, background: availableOnly ? '#10b98112' : 'var(--bg2)', cursor: 'pointer', transition: 'all 0.15s' }}
+              {/* Disponible maintenant — vraie case à cocher (rôle switch) */}
+              <button type="button" role="switch" aria-checked={availableOnly} onClick={() => setAvailableOnly(!availableOnly)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', minHeight: 48, borderRadius: 'var(--r-field)', border: `1px solid ${availableOnly ? 'var(--success)' : 'var(--border)'}`, background: availableOnly ? 'color-mix(in srgb, var(--success) 9%, var(--bg2))' : 'var(--bg2)', cursor: 'pointer', textAlign: 'start', width: '100%' }}
               >
-                <div style={{ width: 20, height: 20, borderRadius: 5, border: `1.5px solid ${availableOnly ? '#10b981' : 'var(--tx3)'}`, background: availableOnly ? '#10b981' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-                  {availableOnly && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
-                </div>
-                <span style={{ fontSize: 13, color: availableOnly ? '#10b981' : 'var(--tx2)', fontWeight: availableOnly ? 800 : 300 }}>Disponible maintenant</span>
-              </div>
+                <span aria-hidden style={{ width: 20, height: 20, borderRadius: 6, border: `1.5px solid ${availableOnly ? 'var(--success)' : 'var(--border2)'}`, background: availableOnly ? 'var(--success)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                  {availableOnly && <Check size={13} color="#fff" strokeWidth={3}/>}
+                </span>
+                <span style={{ fontSize: 14, color: availableOnly ? 'var(--success)' : 'var(--tx2)', fontWeight: availableOnly ? 700 : 500 }}>{tr('availableNow')}</span>
+              </button>
 
               {/* Bouton rechercher */}
-              <button onClick={search} disabled={loading} className="btn-primary btn-block">
-                {loading ? 'Recherche...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Search size={15}/>Rechercher</span>}
+              <button onClick={search} disabled={loading} className="btn-primary btn-block btn-lg">
+                {loading ? tr('searching') : <><Search size={16}/>{tr('search')}</>}
               </button>
             </div>
           </div>
 
           {/* ── RÉSULTATS ── */}
-          <div>
+          <div aria-live="polite">
             {/* Déclencheur du sheet de filtres (mobile) */}
-            <button onClick={() => setFiltersOpen(true)} className="filters-trigger press" style={{
+            <button onClick={() => setFiltersOpen(true)} className="filters-trigger press" aria-expanded={filtersOpen} style={{
               width: '100%', alignItems: 'center', justifyContent: 'space-between',
-              padding: '13px 16px', marginBottom: 16, borderRadius: 14,
-              background: 'var(--bg2)', border: '1px solid var(--border)', cursor: 'pointer',
-              color: 'var(--tx)', fontSize: 14, fontWeight: 700, fontFamily: 'Nexa, sans-serif',
+              padding: '13px 16px', minHeight: 50, marginBottom: 16, borderRadius: 'var(--r-card)',
+              background: 'var(--bg2)', border: '1px solid var(--border)', cursor: 'pointer', boxShadow: 'var(--card-shadow)',
+              color: 'var(--tx)', fontSize: 15, fontWeight: 700,
             }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><SlidersHorizontal size={16} color="#175CC4"/>Filtres</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><SlidersHorizontal size={17} color="var(--accent)"/>{tr('filters')}</span>
               {activeCount > 0 && (
-                <span style={{ minWidth: 20, height: 20, padding: '0 6px', borderRadius: 10, background: '#175CC4', color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{activeCount}</span>
+                <span style={{ minWidth: 22, height: 22, padding: '0 7px', borderRadius: 11, background: 'var(--accent-fill)', color: 'var(--on-accent)', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{activeCount}</span>
               )}
             </button>
             {searched && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-                <div style={{ fontSize: 14, color: 'var(--tx2)', fontWeight: 300 }}>
-                  {loading ? 'Recherche en cours...' : <><strong style={{ color: 'var(--tx)', fontWeight: 800 }}>{artisans.length}</strong> artisan{artisans.length !== 1 ? 's' : ''} trouvé{artisans.length !== 1 ? 's' : ''}</>}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ fontSize: 15, color: 'var(--tx2)' }}>
+                  {loading ? tr('searchingLong') : <><strong className="num" style={{ color: 'var(--tx)', fontWeight: 700 }}>{artisans.length}</strong> {artisans.length === 1 ? tr('found1') : tr('foundN')}</>}
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {[
-                    { id: 'distance',   label: 'Distance' },
-                    { id: 'rating',     label: 'Mieux notés' },
-                    { id: 'price_asc',  label: '↑ Prix' },
-                    { id: 'price_desc', label: '↓ Prix' },
-                  ].map(s => (
-                    <button key={s.id} onClick={() => setSortBy(s.id as any)} className={sortBy === s.id ? 'chip chip-active' : 'chip'} style={{ padding: '6px 12px', fontSize: 11 }}
+                <div className="no-scrollbar" style={{ display: 'flex', gap: 6, overflowX: 'auto', maxWidth: '100%' }}>
+                  {([
+                    { id: 'distance',   label: tr('sortDistance') },
+                    { id: 'rating',     label: tr('sortRating') },
+                    { id: 'price_asc',  label: tr('sortPriceAsc') },
+                    { id: 'price_desc', label: tr('sortPriceDesc') },
+                  ] as const).map(s => (
+                    <button key={s.id} onClick={() => setSortBy(s.id)} aria-pressed={sortBy === s.id} className={sortBy === s.id ? 'chip chip-active' : 'chip'} style={{ padding: '7px 13px', fontSize: 12.5, flexShrink: 0 }}
                     >{s.label}</button>
                   ))}
                 </div>
@@ -301,74 +364,77 @@ export default function RecherchePage() {
             )}
 
             {!searched && !loading && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', textAlign: 'center' }}>
-                <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--tx3)' }}><Search size={44}/></div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx3)', marginBottom: 8 }}>Lancez une recherche</div>
-                <div style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>Utilisez les filtres à gauche pour trouver votre artisan</div>
+              <div className="empty-state" style={{ padding: '72px 20px' }}>
+                <div className="empty-icon"><Search size={26}/></div>
+                <div className="empty-title">{tr('idleTitle')}</div>
+                <div className="empty-sub desktop-only">{tr('idleSubDesk')}</div>
+                <div className="empty-sub mobile-only">{tr('idleSubMob')}</div>
               </div>
             )}
 
             {loading && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[1,2,3,4].map(i => (
-                  <div key={i} className="card" style={{ padding: '20px', display: 'flex', gap: 16 }}>
-                    <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--border)', animation: 'pulse 1.5s infinite', flexShrink: 0 }}/>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ height: 14, background: 'var(--border)', borderRadius: 4, marginBottom: 8, width: '40%', animation: 'pulse 1.5s infinite' }}/>
-                      <div style={{ height: 10, background: 'var(--border)', borderRadius: 4, width: '60%', animation: 'pulse 1.5s infinite' }}/>
+                  <div key={i} className="card" style={{ padding: 20, display: 'flex', gap: 16, alignItems: 'center' }}>
+                    <div className="skeleton" style={{ width: 60, height: 60, borderRadius: 16, flexShrink: 0 }}/>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div className="skeleton" style={{ height: 14, width: '42%' }}/>
+                      <div className="skeleton" style={{ height: 10, width: '22%' }}/>
+                      <div className="skeleton" style={{ height: 10, width: '60%' }}/>
                     </div>
+                    <div className="skeleton" style={{ width: 70, height: 28, flexShrink: 0 }}/>
                   </div>
                 ))}
               </div>
             )}
 
             {searched && !loading && artisans.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '80px 0' }}>
-                <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--tx3)' }}><Frown size={44}/></div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx3)', marginBottom: 8 }}>Aucun artisan trouvé</div>
-                <div style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>Essayez d'élargir votre rayon ou de changer les filtres</div>
+              <div className="empty-state" style={{ padding: '72px 20px' }}>
+                <div className="empty-icon"><SearchX size={26}/></div>
+                <div className="empty-title">{tr('emptyTitle')}</div>
+                <div className="empty-sub">{tr('emptySub')}</div>
               </div>
             )}
 
+            {!loading && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {artisans.map((a, idx) => {
-                const col = CATEGORIES.find(c => a.category?.toLowerCase().includes(c.id.slice(0, 5)))?.color || '#175CC4'
-                const initials = a.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'A'
+                const col = categoryColor(a.category)
+                const open = () => router.push(`/artisan/${a.artisan_id}`)
                 return (
-                  <div key={a.artisan_id} className="acard"
-                    style={{ padding: '20px', display: 'flex', gap: 16, alignItems: 'center', animation: `fadeIn 0.3s ease ${idx * 0.05}s both` }}
-                    onClick={() => router.push(`/artisan/${a.artisan_id}`)}
+                  <div key={a.artisan_id} className="acard" {...pressable(open)}
+                    style={{ padding: '18px 20px', display: 'flex', gap: 16, alignItems: 'center', animation: `fadeIn 0.3s ease ${Math.min(idx, 8) * 0.05}s both` }}
+                    onClick={open}
                   >
-                    <div style={{ width: 60, height: 60, borderRadius: '50%', background: col + '22', border: `2px solid ${col}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: col, flexShrink: 0 }}>
-                      {a.avatar_url ? <img src={a.avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}/> : initials}
-                    </div>
-                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>{a.full_name}</span>
+                    <img src={artisanAvatar(a.avatar_url, a.artisan_id)} alt="" loading="lazy" style={{ width: 60, height: 60, borderRadius: 16, objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${col}`, flexShrink: 0 }}/>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{a.full_name}</span>
                         {a.plan === 'premium' && <PremiumBadge size="sm" />}
-                        <span style={{ fontSize: 9, background: '#175CC40d', border: '0.5px solid #175CC418', color: '#175CC4', padding: '2px 7px', borderRadius: 20, fontWeight: 800 }}>CERTIFIÉ</span>
+                        <BadgeCheck size={15} color="var(--accent)" strokeWidth={2.2} aria-label={tr('certified')}/>
                       </div>
-                      <div style={{ fontSize: 10, color: col, letterSpacing: '.06em', fontWeight: 800, marginBottom: 6 }}>{a.category?.toUpperCase()}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: 12.5, color: categoryInk(a.category), fontWeight: 700, marginBottom: 6 }}>{t(`categories.${a.category}`)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--tx2)' }}>
                         <Stars rating={a.rating_avg || 0}/>
-                        <span style={{ fontSize: 11, color: 'var(--tx3)' }}>{a.rating_avg ? a.rating_avg.toFixed(1) : 'Nouveau'} ({a.rating_count || 0})</span>
-                        <span style={{ color: 'var(--border)' }}>·</span>
-                        <span style={{ fontSize: 11, color: 'var(--tx3)' }}>{a.distance_km?.toFixed(1)} km</span>
-                        <span style={{ color: 'var(--border)' }}>·</span>
-                        <span style={{ fontSize: 11, color: 'var(--tx3)' }}>{a.total_missions || 0} missions</span>
+                        <span>{a.rating_avg ? <span className="num" style={{ color: 'var(--laiton)', fontWeight: 700 }}>{a.rating_avg.toFixed(1)}</span> : tr('newA')} ({a.rating_count || 0})</span>
+                        <span aria-hidden style={{ color: 'var(--tx3)' }}>·</span>
+                        <span>{a.distance_km?.toFixed(1)} km</span>
+                        <span aria-hidden style={{ color: 'var(--tx3)' }}>·</span>
+                        <span>{a.total_missions || 0} {tr('missions')}</span>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: '#175CC4', marginBottom: 6 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end' }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.is_available ? '#10b981' : 'var(--tx3)', boxShadow: a.is_available ? '0 0 6px #10b981' : 'none' }}/>
-                        <span style={{ fontSize: 11, color: a.is_available ? '#10b981' : 'var(--tx3)', fontWeight: 300 }}>{a.is_available ? 'Disponible' : 'Occupé'}</span>
-                      </div>
+                    <div style={{ textAlign: 'end', flexShrink: 0 }}>
+                      <div className="num" style={{ fontSize: 19, fontWeight: 700, color: 'var(--tx)', marginBottom: 6 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} <span style={{ fontSize: 11.5, color: 'var(--tx3)', fontWeight: 400 }}>{tr('daH')}</span></div>
+                      <span className={`badge-tone ${a.is_available ? 'tone-success' : 'tone-muted'}`}>
+                        <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: a.is_available ? 'var(--success)' : 'var(--tx3)' }}/>
+                        {a.is_available ? tr('available') : tr('busy')}
+                      </span>
                     </div>
                   </div>
                 )
               })}
             </div>
+            )}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound, useParams } from 'next/navigation'
 import PremiumBadge from '@/components/PremiumBadge'
 import { effectivePlan, isListed } from '@/lib/subscription'
+import { CategoryIcon, categoryColor, categoryInk } from '@/components/icons'
 
 const WILAYAS: Record<string, { name: string; nameAr: string; lat: number; lng: number; num: number }> = {
   'alger':          { name: 'Alger',          nameAr: 'الجزائر',      lat: 36.7538, lng: 3.0588,  num: 16 },
@@ -65,90 +66,73 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
   if (!w) return notFound()
 
   return (
-    <>
-      <style suppressHydrationWarning>{`
-        .cat-link:hover { border-color: #175CC4 !important; color: #175CC4 !important; }
-        .art-card:hover { border-color: #175CC444 !important; transform: translateY(-2px); }
-        .wilaya-link:hover { color: #175CC4 !important; }
-        .cta-btn:hover { background: #d4b55a !important; }
-      `}</style>
+    <div style={{ minHeight: '100vh', paddingTop: 80 }}>
 
-      <div style={{ minHeight: '100vh', paddingTop: 80, fontFamily: 'Nexa, sans-serif' }}>
+      {/* Hero SEO */}
+      <section className="seo-wrap" style={{ paddingTop: 48, paddingBottom: 32 }}>
+        <div className="section-label">Wilaya {w.num} · <span lang="ar">{w.nameAr}</span></div>
+        <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
+          Artisans à {w.name}
+        </h1>
+        <p style={{ fontSize: 16, color: 'var(--tx2)', maxWidth: 600, lineHeight: 1.7, marginBottom: 32 }}>
+          Trouvez un artisan certifié BETI à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Disponibles maintenant, paiement en cash.
+        </p>
+        <a href={`/?wilaya=${params.wilaya}`} className="btn-primary btn-lg">
+          Trouver un artisan à {w.name}
+        </a>
+      </section>
 
-        {/* Hero SEO */}
-        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 40px 32px' }}>
-          <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 8 }}>
-            WILAYA {w.num} · {w.nameAr}
-          </div>
-          <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: 800, color: 'var(--tx)', marginBottom: 16, lineHeight: 1.1 }}>
-            Artisans à {w.name}
-          </h1>
-          <p style={{ fontSize: 15, color: 'var(--tx3)', maxWidth: 600, lineHeight: 1.7, fontWeight: 300, marginBottom: 32 }}>
-            Trouvez un artisan certifié BETI à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Disponibles maintenant, paiement en cash.
-          </p>
-          <a href={`/?wilaya=${params.wilaya}`}>
-            <button className="cta-btn" style={{ padding: '12px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
-              Trouver un artisan à {w.name}
-            </button>
-          </a>
-        </section>
+      {/* Liens par catégorie */}
+      <section className="seo-wrap" style={{ paddingBottom: 48 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>
+          Par spécialité à {w.name}
+        </h2>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {Object.entries(CATEGORIES_LABELS).map(([id, label]) => (
+            <a key={id} href={`/artisans/${params.wilaya}/${id}`} className="seo-pill" style={{ gap: 8 }}>
+              <CategoryIcon id={id} size={15} color={categoryColor(id)}/>{label} {w.name}
+            </a>
+          ))}
+        </div>
+      </section>
 
-        {/* Liens par catégorie */}
-        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 48px' }}>
+      {/* Artisans disponibles */}
+      {artisans.length > 0 && (
+        <section className="seo-wrap" style={{ paddingBottom: 80 }}>
           <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>
-            Par spécialité à {w.name}
+            Artisans disponibles à {w.name}
           </h2>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {Object.entries(CATEGORIES_LABELS).map(([id, label]) => (
-              <a key={id} href={`/artisans/${params.wilaya}/${id}`} style={{ textDecoration: 'none' }}>
-                <div className="cat-link" style={{ padding: '8px 16px', borderRadius: 20, background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx2)', fontSize: 13, fontWeight: 300, transition: 'all 0.2s', cursor: 'pointer' }}>
-                  {label} {w.name}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+            {artisans.map((a: any) => (
+              <a key={a.id} href={`/artisan/${a.id}`} className="card is-clickable seo-card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)' }}>{a.profiles?.full_name || 'Artisan'}</span>
+                  {effectivePlan(a) === 'premium' && <PremiumBadge size="sm" />}
+                </div>
+                <div style={{ fontSize: 12.5, color: categoryInk(a.category), fontWeight: 700, marginBottom: 10 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="badge-tone tone-success"><span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }}/>Disponible</span>
+                  <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)' }}>{a.hourly_rate} <span style={{ fontSize: 11.5, color: 'var(--tx3)', fontWeight: 400 }}>DA/h</span></span>
                 </div>
               </a>
             ))}
           </div>
         </section>
+      )}
 
-        {/* Artisans disponibles */}
-        {artisans.length > 0 && (
-          <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px 80px' }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>
-              Artisans disponibles à {w.name}
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-              {artisans.map((a: any) => (
-                <a key={a.id} href={`/artisan/${a.id}`} style={{ textDecoration: 'none' }}>
-                  <div className="art-card" style={{ background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '18px', transition: 'all 0.2s', cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{a.profiles?.full_name || 'Artisan'}</span>
-                      {effectivePlan(a) === 'premium' && <PremiumBadge size="sm" />}
-                    </div>
-                    <div style={{ fontSize: 11, color: '#175CC4', fontWeight: 800, marginBottom: 8 }}>{CATEGORIES_LABELS[a.category] || a.category}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 12, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade8066' }}/>Disponible</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#175CC4' }}>{a.hourly_rate} DA/h</span>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Autres wilayas */}
-        <section style={{ background: 'var(--bg)', borderTop: '0.5px solid var(--border)', padding: '48px 40px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>Autres wilayas</h2>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {Object.entries(WILAYAS).filter(([id]) => id !== params.wilaya).map(([id, data]) => (
-                <a key={id} href={`/artisans/${id}`} className="wilaya-link" style={{ fontSize: 12, color: 'var(--tx3)', textDecoration: 'none', padding: '4px 10px', borderRadius: 20, border: '0.5px solid var(--border)', transition: 'color 0.2s' }}>
-                  {data.name}
-                </a>
-              ))}
-            </div>
+      {/* Autres wilayas */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: '48px 0', background: 'var(--bg3)' }}>
+        <div className="seo-wrap">
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--tx)', marginBottom: 20 }}>Autres wilayas</h2>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {Object.entries(WILAYAS).filter(([id]) => id !== params.wilaya).map(([id, data]) => (
+              <a key={id} href={`/artisans/${id}`} className="seo-pill is-small">
+                {data.name}
+              </a>
+            ))}
           </div>
-        </section>
-      </div>
-    </>
+        </div>
+      </section>
+    </div>
   )
 }
