@@ -271,14 +271,12 @@ export default function AdminDashboard() {
     else exp.setMonth(exp.getMonth() + 1)
     await supabase.from('subscriptions').update({ status: 'active', started_at: now.toISOString(), expires_at: exp.toISOString(), reviewed_at: now.toISOString() }).eq('id', s.id)
     await supabase.from('artisans').update({ plan: s.plan, plan_until: exp.toISOString() }).eq('id', s.artisan_id)
-    await supabase.from('notifications').insert({ user_id: s.artisan_id, type: 'subscription_active', title: 'Abonnement activé', message: `Votre abonnement ${s.plan === 'premium' ? 'Premium' : 'Basic'} est actif.` })
     await loadSubscriptions()
   }
 
   const rejectSub = async (s: SubRow) => {
     const reason = prompt('Motif du refus (optionnel) :') || null
     await supabase.from('subscriptions').update({ status: 'rejected', reviewed_at: new Date().toISOString(), note: reason }).eq('id', s.id)
-    await supabase.from('notifications').insert({ user_id: s.artisan_id, type: 'subscription_rejected', title: 'Demande refusée', message: reason || 'Votre demande d’abonnement a été refusée.' })
     await loadSubscriptions()
   }
 

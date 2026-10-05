@@ -55,8 +55,6 @@ export default function ArtisanDashboard(){
 
   const respond=async(bookingId:string,accept:boolean)=>{
     await supabase.from('bookings').update({status:accept?'confirmed':'refused'}).eq('id',bookingId)
-    const b=bookings.find(x=>x.id===bookingId)
-    if(b)await supabase.from('notifications').insert({user_id:b.client_id,type:accept?'booking_confirmed':'booking_refused',title:accept?'Demande acceptée':'Demande refusée',message:`${profile?.full_name||'L\'artisan'} a ${accept?'accepté':'refusé'} votre demande.`})
     setBookings(prev=>prev.map(x=>x.id===bookingId?{...x,status:accept?'confirmed':'refused'}:x))
     if(accept)setStats(p=>({...p,pending:p.pending-1}))
   }

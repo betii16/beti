@@ -63,13 +63,7 @@ export async function contactArtisan(opts: {
 
   if (!bookingId) return { ok: false, reason: 'error', message: "Impossible d'ouvrir la conversation, réessaie." }
 
-  // Notification (fire & forget)
-  supabase.from('notifications').insert({
-    user_id: artisanId,
-    type: type === 'call' ? 'call_request' : 'new_message',
-    title: type === 'call' ? "Demande d'appel" : 'Nouveau message',
-    message: 'Un client souhaite vous contacter.',
-  }).then(() => {})
+  // La notification artisan est créée par le trigger SQL trg_notify_on_booking.
 
   return { ok: true, bookingId }
 }
