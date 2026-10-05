@@ -608,8 +608,13 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; a
 }
 
 /* Squelette de chargement */
+/* Teintes dérivées de l'encre (et non bg2/bg3) : visibles sur fond de page
+   comme à l'intérieur d'une carte bg2, dans les deux thèmes. */
 .skeleton {
-  background: linear-gradient(90deg, var(--bg2) 25%, var(--bg3) 50%, var(--bg2) 75%);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--tx) 6%, transparent) 25%,
+    color-mix(in srgb, var(--tx) 11%, transparent) 50%,
+    color-mix(in srgb, var(--tx) 6%, transparent) 75%);
   background-size: 200% 100%;
   animation: shimmerBg 1.4s linear infinite;
   border-radius: 10px;
