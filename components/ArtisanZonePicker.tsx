@@ -298,9 +298,9 @@ export function ArtisanZonePicker({
       {/* Carte */}
       <div style={{ borderRadius: 12, overflow: 'hidden', border: '0.5px solid var(--border)', marginBottom: 16, position: 'relative' }}>
         <div ref={mapRef} style={{ width: '100%', height: 260 }}/>
-        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '5px 12px', zIndex: 1000, whiteSpace: 'nowrap' }}>
-          <span style={{ fontSize: 11, color: '#888', fontWeight: 300 }}>
-            Zone couverte : <strong style={{ color: '#175CC4', fontWeight: 800 }}>{radius} km</strong> autour de votre position
+        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'var(--bg2)', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border)', borderRadius: 20, padding: '5px 12px', zIndex: 1000, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 12, color: 'var(--tx2)' }}>
+            Zone couverte : <strong style={{ color: 'var(--accent)', fontWeight: 800 }}>{radius} km</strong> autour de votre position
           </span>
         </div>
         <style>{`

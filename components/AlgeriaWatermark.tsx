@@ -1,5 +1,5 @@
 // components/AlgeriaWatermark.tsx
-// Filigrane de marque : contour de l'Algérie, tracé fin en violet (var --accent),
+// Filigrane de marque : contour de l'Algérie, tracé fin en bleu d'Alger (var --accent),
 // très discret, en fond des écrans « vitrine » (accueil, auth, intro).
 // - Silhouette potrace (mapsicon, domaine public) rendue en OUTLINE (fill:none)
 //   → on ne voit que la frontière = l'effet « contour » voulu.

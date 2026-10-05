@@ -320,11 +320,11 @@ export function AddressPicker({
         {/* Instruction */}
         <div style={{
           position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(9,9,15,0.85)', backdropFilter: 'blur(8px)',
-          border: '0.5px solid var(--border)', borderRadius: 20,
+          background: 'var(--bg2)', boxShadow: 'var(--card-shadow)',
+          border: '1px solid var(--border)', borderRadius: 20,
           padding: '6px 14px', zIndex: 1000, whiteSpace: 'nowrap',
         }}>
-          <span style={{ fontSize: 11, color: '#888', fontWeight: 300, fontFamily: 'Nexa, sans-serif' }}>
+          <span style={{ fontSize: 12, color: 'var(--tx2)' }}>
             Glissez le curseur devant votre porte
           </span>
         </div>
