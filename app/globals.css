@@ -589,7 +589,11 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; a
 
 /* Transition de page (app/template.tsx) — fondu d'opacité PUR (aucun transform,
    pour ne pas casser les enfants position:fixed plein écran comme la carte). */
-.route-fade { animation: routeFade 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* fill-mode BACKWARDS (et non both) : une fois l'animation finie, plus aucune
+   opacité animée → plus de contexte d'empilement. Avec « both », les overlays
+   des pages (sheet filtres z300, panneau artisan…) restaient coincés SOUS le
+   dock mobile (z250) monté hors du template. */
+.route-fade { animation: routeFade 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 @keyframes routeFade { from { opacity: 0; } to { opacity: 1; } }
 
 /* Spinner */
