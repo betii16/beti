@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { SkeletonPage } from '@/components/Skeleton'
-import { AlertTriangle, Banknote, Check } from 'lucide-react'
+import { AlertTriangle, Banknote, Check, ArrowLeft, Printer } from 'lucide-react'
 function pad(n: number) { return String(n).padStart(2, '0') }
 
 function formatDate(dateStr: string) {
@@ -58,10 +58,13 @@ export default function FacturePage() {
   if (loading) return <SkeletonPage rows={4} paddingTop={48} />
 
   if (error) return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Nexa, sans-serif', gap: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'center', color: '#ef4444' }}><AlertTriangle size={40}/></div>
-      <div style={{ fontSize: 16, color: '#ef4444', fontWeight: 800 }}>{error}</div>
-      <button onClick={() => router.back()} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>Retour</button>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div role="alert" className="card" style={{ maxWidth: 420, width: '100%', padding: '28px 22px', textAlign: 'center' }}>
+        <div aria-hidden style={{ width: 52, height: 52, borderRadius: 14, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)', background: 'color-mix(in srgb, var(--danger) 11%, transparent)' }}><AlertTriangle size={24}/></div>
+        <div style={{ fontSize: 17, color: 'var(--tx)', fontWeight: 800, marginBottom: 8 }}>{error}</div>
+        <p style={{ fontSize: 14, color: 'var(--tx2)', lineHeight: 1.55, marginBottom: 20 }}>La facture est disponible une fois la mission terminée et confirmée par le client.</p>
+        <button onClick={() => router.back()} className="btn-primary" style={{ minHeight: 44 }}><ArrowLeft size={16} aria-hidden/> Retour</button>
+      </div>
     </div>
   )
 
@@ -80,34 +83,29 @@ export default function FacturePage() {
   return (
     <>
       <style suppressHydrationWarning>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-          background: var(--bg);
-          font-family: 'Inter', sans-serif;
-          color: #111;
-        }
+        /* Styles scopés (préfixe fac-/inv-) : plus de body{color:#111}, de police
+           Inter externe ni de reset global * qui fuyaient sur toute la webapp. */
 
         /* ── BARRE D'ACTION (cachée à l'impression) ── */
-        .action-bar {
+        .fac-bar {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           z-index: 100;
           background: var(--bg2);
-          border-bottom: 0.5px solid var(--border);
-          padding: 14px 40px;
+          border-bottom: 1px solid var(--border);
+          padding: 10px 24px;
+          padding-top: calc(10px + env(safe-area-inset-top));
           display: flex;
           align-items: center;
           justify-content: space-between;
-          font-family: 'Nexa', sans-serif;
+          gap: 12px;
         }
+        .fac-bar :is(a,button):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-        .page-wrap {
-          padding: 80px 40px 40px;
+        .fac-wrap {
+          padding: 88px 40px 40px;
           display: flex;
           justify-content: center;
         }
@@ -117,10 +115,28 @@ export default function FacturePage() {
           width: 210mm;
           min-height: 297mm;
           background: #fff;
+          color: #17242F;
           padding: 16mm 18mm;
           position: relative;
-          box-shadow: 0 8px 64px rgba(0,0,0,0.5);
+          box-shadow: 0 12px 40px -12px rgba(23,36,47,0.35);
+          border-radius: 4px;
         }
+
+        /* ── Écran étroit : la feuille A4 s'adapte (plus de scroll horizontal) ── */
+        @media screen and (max-width: 860px) {
+          .fac-bar { padding-left: 12px; padding-right: 12px; }
+          .fac-wrap { padding: 76px 10px 24px; }
+          .invoice { width: 100%; min-height: 0; padding: 22px 18px; }
+          .inv-header { flex-direction: column; gap: 16px; }
+          .inv-meta { text-align: start !important; }
+          .inv-parties { grid-template-columns: 1fr !important; gap: 18px !important; }
+          .inv-table-wrap { overflow-x: auto; }
+          .inv-table { min-width: 520px; }
+          .inv-totals-box { width: 100% !important; }
+          .inv-footer { flex-direction: column; align-items: flex-start !important; gap: 14px; }
+          .inv-watermark { font-size: 72px !important; }
+        }
+        @media screen and (max-width: 520px) { .fac-print-label { display: none; } }
 
         /* Header */
         .inv-header {
@@ -141,12 +157,12 @@ export default function FacturePage() {
           font-size: 22px; font-weight: 700; color: #fff;
         }
         .inv-logo-name { font-size: 22px; font-weight: 700; color: #111; letter-spacing: .05em; }
-        .inv-logo-sub { font-size: 11px; color: #8585a0; font-weight: 400; margin-top: 2px; }
+        .inv-logo-sub { font-size: 11px; color: #55636D; font-weight: 400; margin-top: 2px; }
 
         .inv-meta { text-align: right; }
         .inv-title { font-size: 28px; font-weight: 700; color: #175CC4; letter-spacing: .05em; }
-        .inv-num { font-size: 13px; color: #8585a0; margin-top: 4px; font-weight: 400; }
-        .inv-date { font-size: 12px; color: #8585a0; margin-top: 2px; }
+        .inv-num { font-size: 13px; color: #55636D; margin-top: 4px; font-weight: 400; font-family: var(--font-mono, ui-monospace, monospace) !important; }
+        .inv-date { font-size: 12px; color: #55636D; margin-top: 2px; }
 
         /* Parties */
         .inv-parties {
@@ -166,7 +182,7 @@ export default function FacturePage() {
         }
 
         .inv-party-name { font-size: 16px; font-weight: 600; color: #111; margin-bottom: 4px; }
-        .inv-party-info { font-size: 12px; color: #8585a0; line-height: 1.6; }
+        .inv-party-info { font-size: 12px; color: #55636D; line-height: 1.6; }
 
         /* Badge statut */
         .inv-status {
@@ -174,12 +190,12 @@ export default function FacturePage() {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          background: #f0fdf4;
-          border: 1px solid #86efac;
+          background: #E6F3F1;
+          border: 1px solid #9FD3CB;
           border-radius: 20px;
           font-size: 12px;
           font-weight: 600;
-          color: #16a34a;
+          color: #0B6B61;
           margin-bottom: 8mm;
         }
 
@@ -191,24 +207,24 @@ export default function FacturePage() {
         }
 
         .inv-table th {
-          background: #fafafa;
-          border-bottom: 1px solid #e5e5e5;
+          background: #F5F2EB;
+          border-bottom: 1px solid #E2DBCC;
           padding: 10px 14px;
-          text-align: left;
+          text-align: start;
           font-size: 10px;
           font-weight: 600;
-          color: #8585a0;
+          color: #55636D;
           letter-spacing: .08em;
           text-transform: uppercase;
         }
 
-        .inv-table th:last-child, .inv-table td:last-child { text-align: right; }
+        .inv-table th:last-child, .inv-table td:last-child { text-align: end; }
 
         .inv-table td {
           padding: 14px;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid #EFEAE0;
           font-size: 13px;
-          color: #333;
+          color: #33414B;
           vertical-align: top;
         }
 
@@ -228,8 +244,8 @@ export default function FacturePage() {
           justify-content: space-between;
           padding: 8px 0;
           font-size: 13px;
-          color: #4a4a65;
-          border-bottom: 1px solid #f0f0f0;
+          color: #33414B;
+          border-bottom: 1px solid #EFEAE0;
         }
 
         .inv-total-final {
@@ -238,8 +254,8 @@ export default function FacturePage() {
           padding: 12px 0 8px;
           font-size: 17px;
           font-weight: 700;
-          color: #111;
-          border-top: 2px solid #111;
+          color: #17242F;
+          border-top: 2px solid #17242F;
           margin-top: 4px;
         }
 
@@ -247,8 +263,8 @@ export default function FacturePage() {
 
         /* Paiement */
         .inv-payment {
-          background: #fffbeb;
-          border: 1px solid #fde68a;
+          background: #FBF5E8;
+          border: 1px solid #E8D3A6;
           border-radius: 10px;
           padding: 14px 18px;
           margin-bottom: 8mm;
@@ -258,19 +274,19 @@ export default function FacturePage() {
         }
 
         .inv-payment-icon { font-size: 22px; flex-shrink: 0; }
-        .inv-payment-title { font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 2px; }
-        .inv-payment-desc { font-size: 11px; color: #b45309; }
+        .inv-payment-title { font-size: 13px; font-weight: 600; color: #6E4F12; margin-bottom: 2px; }
+        .inv-payment-desc { font-size: 11px; color: #7A5A1C; }
 
         /* Footer */
         .inv-footer {
-          border-top: 1px solid #e5e5e5;
+          border-top: 1px solid #E2DBCC;
           padding-top: 6mm;
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
-        .inv-footer-left { font-size: 11px; color: #aaa; line-height: 1.6; }
+        .inv-footer-left { font-size: 11px; color: #6B767E; line-height: 1.6; }
         .inv-footer-brand { font-size: 12px; font-weight: 600; color: #175CC4; }
 
         /* Filigrane */
@@ -290,9 +306,9 @@ export default function FacturePage() {
 
         /* ── IMPRESSION ── */
         @media print {
-          body { background: #fff !important; }
-          .action-bar { display: none !important; }
-          .page-wrap { padding: 0 !important; }
+          html, body { background: #fff !important; }
+          .fac-bar { display: none !important; }
+          .fac-wrap { padding: 0 !important; }
           .invoice {
             box-shadow: none !important;
             width: 100% !important;
@@ -307,27 +323,23 @@ export default function FacturePage() {
       `}</style>
 
       {/* Barre d'action — cachée à l'impression */}
-      <div className="action-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => router.back()}
-            style={{ background: 'transparent', border: 'none', color: 'var(--tx3)', cursor: 'pointer', fontSize: 18, padding: 4 }}>←</button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff' }}>B</div>
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#e0dfe5' }}>Facture {factureNum}</span>
+      <div className="fac-bar" dir="ltr">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <button onClick={() => router.back()} aria-label="Retour"
+            style={{ width: 44, height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 'var(--r-btn)', color: 'var(--tx)', cursor: 'pointer' }}><ArrowLeft size={20}/></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <div aria-hidden style={{ width: 28, height: 28, flexShrink: 0, background: 'var(--accent)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff' }}>B</div>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Facture <span className="num">{factureNum}</span></span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={handlePrint}
-            style={{ padding: '10px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-            Imprimer / Télécharger PDF
-          </button>
-        </div>
+        <button onClick={handlePrint} className="btn-primary" aria-label="Imprimer ou télécharger en PDF" style={{ minHeight: 44, flexShrink: 0 }}>
+          <Printer size={16} aria-hidden/>
+          <span className="fac-print-label">Imprimer / Télécharger PDF</span>
+        </button>
       </div>
 
       {/* Facture */}
-      <div className="page-wrap">
+      <div className="fac-wrap" dir="ltr">
         <div className="invoice">
           <div className="inv-watermark">BETI</div>
 
@@ -376,7 +388,7 @@ export default function FacturePage() {
           </div>
 
           {/* Tableau prestations */}
-          <table className="inv-table">
+          <div className="inv-table-wrap"><table className="inv-table">
             <thead>
               <tr>
                 <th>Prestation</th>
@@ -389,13 +401,13 @@ export default function FacturePage() {
             <tbody>
               <tr>
                 <td>
-                  <div style={{ fontWeight: 600, color: '#111', marginBottom: 3 }}>{booking.title || `Intervention ${category}`}</div>
-                  {booking.description && <div style={{ fontSize: 12, color: '#8585a0', fontWeight: 400, lineHeight: 1.5 }}>{booking.description}</div>}
+                  <div style={{ fontWeight: 600, color: '#17242F', marginBottom: 3 }}>{booking.title || `Intervention ${category}`}</div>
+                  {booking.description && <div style={{ fontSize: 12, color: '#55636D', fontWeight: 400, lineHeight: 1.5 }}>{booking.description}</div>}
                 </td>
-                <td style={{ color: 'var(--tx3)' }}>{formatDate(booking.booking_date || booking.created_at)}</td>
-                <td style={{ color: 'var(--tx3)' }}>{hours}h</td>
-                <td style={{ color: 'var(--tx3)' }}>{hourlyRate.toLocaleString('fr-DZ')} DA/h</td>
-                <td style={{ fontWeight: 600, color: '#111' }}>{subtotal.toLocaleString('fr-DZ')} DA</td>
+                <td style={{ color: '#55636D' }}>{formatDate(booking.booking_date || booking.created_at)}</td>
+                <td style={{ color: '#55636D' }}>{hours}h</td>
+                <td style={{ color: '#55636D', whiteSpace: 'nowrap' }}>{hourlyRate.toLocaleString('fr-DZ')} DA/h</td>
+                <td style={{ fontWeight: 600, color: '#17242F', whiteSpace: 'nowrap' }}>{subtotal.toLocaleString('fr-DZ')} DA</td>
               </tr>
               {booking.travel_fee > 0 && (
                 <tr>
@@ -407,7 +419,7 @@ export default function FacturePage() {
                 </tr>
               )}
             </tbody>
-          </table>
+          </table></div>
 
           {/* Totaux */}
           <div className="inv-totals">
@@ -449,10 +461,10 @@ export default function FacturePage() {
               <div>beti.dz · contact@beti.dz · Algérie 🇩🇿</div>
               <div style={{ marginTop: 4 }}>Document généré le {formatDate(new Date().toISOString())} · Facture non soumise à TVA (artisan individuel)</div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>Certifié par</div>
+            <div style={{ textAlign: 'end' }}>
+              <div style={{ fontSize: 11, color: '#6B767E', marginBottom: 6 }}>Certifié par</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                <div style={{ width: 24, height: 24, background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>B</div>
+                <div style={{ width: 24, height: 24, background: '#175CC4', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>B</div>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#175CC4' }}>BETI CERTIFIÉ</span>
               </div>
             </div>

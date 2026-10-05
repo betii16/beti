@@ -7,6 +7,12 @@ import { SkeletonPage } from '@/components/Skeleton'
 import { isPremium } from '@/lib/subscription'
 import { Lock } from 'lucide-react'
 
+const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var(--accent)',in_progress:'var(--accent)',completed:'var(--success)',refused:'var(--danger)',cancelled:'var(--tx2)'}
+const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c} 13%, transparent)`,color:`color-mix(in srgb, ${c} 72%, var(--tx))`})
+const SCOPE_CSS=`.rev-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
+const KPI_LBL:React.CSSProperties={fontSize:11.5,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase',marginBottom:10}
+const KPI_VAL:React.CSSProperties={fontSize:'clamp(22px,6vw,28px)',lineHeight:1.1,fontWeight:800,color:'var(--tx)',whiteSpace:'nowrap'}
+
 export default function RevenusPage(){
   const router=useRouter()
   const { t, isAr } = useLang()
@@ -48,20 +54,21 @@ export default function RevenusPage(){
   })
   const maxWeek=Math.max(...weekData.map(w=>w.value),1)
 
-  const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?"Aujourd'hui":x===1?'Hier':x<7?`${x}j`:x<30?`${Math.floor(x/7)} sem.`:`${Math.floor(x/30)} mois`}
+  const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/86400000);return x===0?t('common.today'):x===1?t('common.yesterday'):x<7?`${x}${t('common.daysShort')}`:x<30?`${Math.floor(x/7)} ${isAr?'أسبوع':'sem.'}`:`${Math.floor(x/30)} ${isAr?'شهر':'mois'}`}
 
   if(loading)return<SkeletonPage stats rows={5}/>
 
   const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),pending:t('dashExtra.statusPending'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
 
   return(
-    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif',direction:isAr?'rtl':'ltr'}}>
-      <div style={{maxWidth:900,margin:'0 auto',padding:24}}>
+    <div className="rev-scope" style={{minHeight:'100vh',paddingTop:64,direction:isAr?'rtl':'ltr'}}>
+      <style>{SCOPE_CSS}</style>
+      <div className="page-pad-m" style={{maxWidth:900,margin:'0 auto',padding:'28px 24px 48px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24,flexWrap:'wrap',gap:12}}>
-          <div><h1 style={{fontSize:26,fontWeight:800,color:'var(--tx)'}}>{t('revenus.title')}</h1><p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>{t('revenus.subtitle')}</p></div>
-          <div style={{display:'flex',gap:4}}>
+          <div><h1 style={{fontSize:'clamp(24px,6vw,30px)',lineHeight:1.15,fontWeight:800,color:'var(--tx)',marginBottom:6}}>{t('revenus.title')}</h1><p style={{fontSize:14,color:'var(--tx2)'}}>{t('revenus.subtitle')}</p></div>
+          <div role="group" aria-label={t('revenus.title')} style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {(['week','month','all'] as const).map(p=>(
-              <button key={p} onClick={()=>setPeriod(p)} className={period===p?'chip chip-active':'chip'}>
+              <button key={p} aria-pressed={period===p} onClick={()=>setPeriod(p)} className={period===p?'chip chip-active':'chip'} style={{minHeight:44}}>
                 {p==='week'?t('revenus.week'):p==='month'?t('revenus.month'):t('revenus.all')}
               </button>
             ))}
@@ -69,64 +76,71 @@ export default function RevenusPage(){
         </div>
 
         {/* KPI row */}
-        <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:24}}>
-          <div className="card" style={{padding:'20px'}}>
-            <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>{t('revenus.totalRevenue')}</div>
-            <div style={{fontSize:28,fontWeight:800,color:'#10b981'}}>{totalRev.toLocaleString('fr-DZ')} DA</div>
+        {/* auto-fit : 3 colonnes sur desktop, 1-2 sur mobile (avant : 3 colonnes fixes qui débordaient à 390px) */}
+        <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:24}}>
+          <div className="card" style={{padding:'16px 18px',borderInlineStart:'3px solid var(--success)'}}>
+            <div style={KPI_LBL}>{t('revenus.totalRevenue')}</div>
+            <div className="num" style={KPI_VAL}>{totalRev.toLocaleString('fr-DZ')} DA</div>
           </div>
-          <div className="card" style={{padding:'20px'}}>
-            <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>{t('revenus.missions')}</div>
-            <div style={{fontSize:28,fontWeight:800,color:'#175CC4'}}>{completed.length}</div>
+          <div className="card" style={{padding:'16px 18px',borderInlineStart:'3px solid var(--accent)'}}>
+            <div style={KPI_LBL}>{t('revenus.missions')}</div>
+            <div className="num" style={KPI_VAL}>{completed.length}</div>
           </div>
-          <div className="card" style={{padding:'20px'}}>
-            <div style={{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8}}>{t('revenus.avgBasket')}</div>
-            <div style={{fontSize:28,fontWeight:800,color:'var(--tx)'}}>{avgRev.toLocaleString('fr-DZ')} DA</div>
+          <div className="card" style={{padding:'16px 18px',borderInlineStart:'3px solid var(--laiton)'}}>
+            <div style={KPI_LBL}>{t('revenus.avgBasket')}</div>
+            <div className="num" style={KPI_VAL}>{avgRev.toLocaleString('fr-DZ')} DA</div>
           </div>
         </div>
 
         {/* Chart — statistiques détaillées réservées Premium */}
         {premium?(
         <div className="card" style={{padding:'24px',marginBottom:24}}>
-          <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:20}}>{t('revenus.chartTitle')}</div>
-          <div style={{display:'flex',alignItems:'flex-end',gap:8,height:140}}>
+          <h2 style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:20}}>{t('revenus.chartTitle')}</h2>
+          <div role="img" aria-label={`${t('revenus.chartTitle')} : ${weekData.map(w=>`${w.label} ${w.value.toLocaleString('fr-DZ')} DA`).join(', ')}`} style={{display:'flex',alignItems:'flex-end',gap:'clamp(4px,1.5vw,8px)',height:150}}>
             {weekData.map((w,i)=>(
-              <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
-                <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300}}>{w.value>0?`${(w.value/1000).toFixed(0)}k`:''}</div>
-                <div style={{width:'100%',background:`linear-gradient(180deg,#175CC4,#1E6FD6)`,borderRadius:'6px 6px 0 0',height:`${Math.max((w.value/maxWeek)*100,4)}%`,minHeight:4,transition:'height 0.5s ease',opacity:w.value>0?1:0.2}}/>
-                <div style={{fontSize:10,color:'var(--tx3)'}}>{w.label}</div>
+              <div key={i} title={`${w.label} · ${w.value.toLocaleString('fr-DZ')} DA`} style={{flex:1,minWidth:0,height:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+                <div className="num" style={{fontSize:11,color:'var(--tx2)',minHeight:14}}>{w.value>0?`${(w.value/1000).toFixed(0)}k`:''}</div>
+                <div style={{flex:1,minHeight:0,width:'100%',display:'flex',alignItems:'flex-end'}}>
+                  <div style={{width:'100%',background:'var(--accent)',borderRadius:'5px 5px 0 0',height:`${Math.max((w.value/maxWeek)*100,4)}%`,minHeight:4,transition:'height 0.5s ease',opacity:w.value>0?1:0.25}}/>
+                </div>
+                <div className="num" style={{fontSize:11,color:'var(--tx2)'}}>{w.label}</div>
               </div>
             ))}
           </div>
         </div>
         ):(
         <div className="card" style={{padding:'32px 24px',marginBottom:24,textAlign:'center',position:'relative',overflow:'hidden'}}>
-          <div style={{display:'flex',justifyContent:'center',color:'#175CC4',marginBottom:12}}><Lock size={26}/></div>
+          <div aria-hidden style={{width:52,height:52,borderRadius:14,margin:'0 auto 14px',display:'flex',alignItems:'center',justifyContent:'center',...tone('var(--accent)')}}><Lock size={24}/></div>
           <div style={{fontSize:15,fontWeight:800,color:'var(--tx)',marginBottom:6}}>{t('revenus.premiumTitle')}</div>
-          <p style={{fontSize:13,color:'var(--tx2)',fontWeight:300,lineHeight:1.6,maxWidth:380,margin:'0 auto 18px'}}>
+          <p style={{fontSize:14,color:'var(--tx2)',lineHeight:1.6,maxWidth:380,margin:'0 auto 18px'}}>
             {t('revenus.premiumDesc')} <strong style={{color:'var(--tx)'}}>Premium</strong>.
           </p>
-          <button onClick={()=>router.push('/artisan-dashboard/abonnement')} className="btn-primary" style={{padding:'10px 22px'}}>{t('revenus.premiumCta')}</button>
+          <button onClick={()=>router.push('/artisan-dashboard/abonnement')} className="btn-primary" style={{minHeight:44}}>{t('revenus.premiumCta')}</button>
         </div>
         )}
 
         {/* Mission history */}
         <div>
-          <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>{t('revenus.historyTitle')} ({filtered.length})</h2>
+          <h2 style={{fontSize:19,fontWeight:800,color:'var(--tx)',marginBottom:14}}>{t('revenus.historyTitle')} <span className="num" style={{color:'var(--tx2)',fontWeight:600}}>({filtered.length})</span></h2>
           {filtered.length===0?(
-            <div className="card" style={{padding:'40px',textAlign:'center'}}><p style={{color:'var(--tx3)',fontSize:14}}>{t('revenus.noMissions')}</p></div>
+            <div className="card" style={{padding:'36px 24px',textAlign:'center'}}><p style={{color:'var(--tx2)',fontSize:15}}>{t('revenus.noMissions')}</p></div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {filtered.map(b=>(
-                <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':b.status==='pending'?'#f59e0b':'#ef4444',flexShrink:0}}/>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||t('revenus.clientFallback')}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||t('revenus.missionFallback')} · {timeAgo(b.created_at)}</div>
+              {filtered.map(b=>{
+                const sc=STATUS_TONE[b.status]||'var(--danger)'
+                return(
+                <div key={b.id} className="card" style={{padding:'14px 16px',display:'flex',alignItems:'center',gap:12}}>
+                  <div aria-hidden style={{width:8,height:8,borderRadius:'50%',background:sc,flexShrink:0}}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.profiles?.full_name||t('revenus.clientFallback')}</div>
+                    <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.title||t('revenus.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
-                  <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
-                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#175CC412':b.status==='pending'?'#f59e0b12':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':b.status==='pending'?'#f59e0b':'#ef4444'}}>{statusLabel(b.status)}</span>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,flexShrink:0}}>
+                    <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                    <span style={{padding:'3px 9px',borderRadius:'var(--r-chip)',fontSize:11,fontWeight:700,whiteSpace:'nowrap',...tone(sc)}}>{statusLabel(b.status)}</span>
+                  </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

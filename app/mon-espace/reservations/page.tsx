@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Package, MapPin, Calendar, Banknote, Star } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
@@ -18,20 +19,22 @@ type Booking = {
   artisans: { full_name: string; category: string; rating_avg: number } | null
 }
 
-const STATUS: Record<string, { bg: string; color: string; border: string }> = {
-  pending:     { bg: 'rgba(23,92,196,0.08)',  color: '#175CC4', border: 'rgba(23,92,196,0.2)' },
-  confirmed:   { bg: 'rgba(96,165,250,0.08)',  color: '#60a5fa', border: 'rgba(96,165,250,0.2)' },
-  in_progress: { bg: 'rgba(107,163,230,0.08)', color: '#6BA3E6', border: 'rgba(107,163,230,0.2)' },
-  completed:   { bg: 'rgba(16,185,129,0.07)',  color: '#10b981', border: 'rgba(16,185,129,0.2)' },
-  refused:     { bg: 'rgba(239,68,68,0.06)',   color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
-  cancelled:   { bg: 'var(--bg3)',             color: 'var(--tx2)', border: 'var(--border)' },
+// Statuts → tokens de l'identité (lisibles en clair comme en sombre).
+const STATUS: Record<string, string> = {
+  pending:     'var(--warning)',
+  confirmed:   'var(--accent)',
+  in_progress: 'var(--accent)',
+  completed:   'var(--success)',
+  refused:     'var(--danger)',
+  cancelled:   'var(--tx2)',
 }
+const SCOPE_CSS = `.res-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
 function StatusBadge({ status }: { status: string }) {
   const { t } = useLang()
-  const s = STATUS[status] || STATUS.pending
+  const c = STATUS[status] || STATUS.pending
   return (
-    <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, background: s.bg, color: s.color, border: `0.5px solid ${s.border}` }}>
+    <span style={{ padding: '4px 10px', borderRadius: 'var(--r-chip)', fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0, background: `color-mix(in srgb, ${c} 13%, transparent)`, color: `color-mix(in srgb, ${c} 72%, var(--tx))`, border: `1px solid color-mix(in srgb, ${c} 25%, transparent)` }}>
       {t(`status.${STATUS[status] ? status : 'pending'}`)}
     </span>
   )
@@ -90,42 +93,44 @@ export default function MesReservations() {
   })
 
   const cancelBooking = async (id: string) => {
+    if (!window.confirm(isAr ? 'هل تريد إلغاء هذا الطلب؟' : 'Annuler cette demande ? L’artisan en sera informé.')) return
     await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('common.loading')}</div>
+    <div role="status" aria-label={t('common.loading')} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 64 }}>
+      <div className="loader-ring" />
     </div>
   )
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
+    <div className="res-scope" style={{ paddingTop: 64, minHeight: '100vh', direction: isAr ? 'rtl' : 'ltr' }}>
+      <style>{SCOPE_CSS}</style>
 
       {/* Header */}
-      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+      <div className="page-x" style={{ borderBottom: '1px solid var(--border)', padding: '32px 40px 24px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, color: '#175CC4', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('mySpace.title')}</div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{t('nav.myBookings')}</h1>
-          <p style={{ fontSize: 13, color: 'var(--tx3)', fontWeight: 300 }}>{bookings.length} {t('mySpace.totalCount')}</p>
+          <div className="section-label">{t('mySpace.title')}</div>
+          <h1 style={{ fontSize: 'clamp(24px, 6vw, 30px)', lineHeight: 1.15, fontWeight: 800, color: 'var(--tx)', marginBottom: 6 }}>{t('nav.myBookings')}</h1>
+          <p style={{ fontSize: 14, color: 'var(--tx2)' }}><span className="num">{bookings.length}</span> {t('mySpace.totalCount')}</p>
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px' }}>
+      <div className="page-pad-m" style={{ maxWidth: 900, margin: '0 auto', padding: '24px 40px 48px' }}>
 
         {/* Onglets */}
-        <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)', marginBottom: 28 }}>
+        <div role="tablist" className="no-scrollbar" style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 24, overflowX: 'auto' }}>
           {[
             { id: 'all',       label: t('mySpace.tabAll'),    count: bookings.length },
             { id: 'active',    label: t('mySpace.tabActive'), count: bookings.filter(b => ['pending','confirmed','in_progress'].includes(b.status)).length },
             { id: 'completed', label: t('mySpace.tabDone'),   count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
           ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
-              style={{ padding: '12px 20px', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? '#175CC4' : 'transparent'}`, color: activeTab === tab.id ? '#175CC4' : 'var(--tx3)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button key={tab.id} role="tab" aria-selected={activeTab === tab.id} onClick={() => setActiveTab(tab.id as any)}
+              style={{ padding: '12px 16px', minHeight: 46, background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? 'var(--accent)' : 'transparent'}`, marginBottom: -1, color: activeTab === tab.id ? 'var(--accent)' : 'var(--tx2)', fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
               {tab.label}
               {tab.count > 0 && (
-                <span style={{ background: activeTab === tab.id ? '#175CC4' : 'var(--border)', color: activeTab === tab.id ? '#fff' : 'var(--tx2)', fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 20 }}>{tab.count}</span>
+                <span className="num" style={{ background: activeTab === tab.id ? 'var(--accent)' : 'var(--bg3)', color: activeTab === tab.id ? '#fff' : 'var(--tx2)', fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 'var(--r-pill)' }}>{tab.count}</span>
               )}
             </button>
           ))}
@@ -133,55 +138,52 @@ export default function MesReservations() {
 
         {/* Liste */}
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '64px 0', color: '#333' }}>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: 'var(--tx3)' }}><Package size={40}/></div>
-            <div style={{ fontSize: 14, fontWeight: 300 }}>{t('mySpace.emptyHere')}</div>
-            <a href="/#services" className="btn-primary btn-sm" style={{ marginTop: 20 }}>
+          <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <div aria-hidden style={{ width: 56, height: 56, borderRadius: 14, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}><Package size={26}/></div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--tx)', marginBottom: 18 }}>{t('mySpace.emptyHere')}</div>
+            <Link href="/#services" className="btn-primary" style={{ minHeight: 44 }}>
               {t('mySpace.findArtisan')}
-            </a>
+            </Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {filtered.map(b => (
-              <div key={b.id} className="card" style={{ borderColor: b.status === 'pending' ? '#175CC455' : undefined, padding: 0 }}>
-                {b.status === 'pending' && <div style={{ height: 2, background: 'linear-gradient(90deg, #175CC4, #f59e0b)' }}/>}
-                <div style={{ padding: '18px 20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{b.title}</div>
+              <div key={b.id} className="card" style={{ borderColor: b.status === 'pending' ? 'color-mix(in srgb, var(--warning) 45%, var(--border))' : undefined, padding: 0 }}>
+                <div style={{ padding: '18px 18px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)', marginBottom: 4, overflowWrap: 'anywhere' }}>{b.title}</div>
                       {b.artisans && (
-                        <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 5 }}>
-                          {t(`categories.${b.artisans.category}`)} · <Star size={11} fill="#f59e0b" strokeWidth={0}/> {b.artisans.rating_avg?.toFixed(1) || 'N/A'}
+                        <div style={{ fontSize: 13, color: 'var(--tx2)', display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                          {b.artisans.full_name} · {t(`categories.${b.artisans.category}`)} · <Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/> {b.artisans.rating_avg?.toFixed(1) || '—'}
                         </div>
                       )}
                     </div>
                     <StatusBadge status={b.status}/>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: b.status === 'pending' ? 14 : 0 }}>
+                  <div style={{ display: 'flex', gap: '8px 16px', flexWrap: 'wrap', marginBottom: (b.status === 'pending' || b.status === 'completed') ? 14 : 0 }}>
                     {[
                       { Icon: MapPin,   text: b.address },
                       { Icon: Calendar, text: fmt(b.scheduled_at) },
                       { Icon: Banknote, text: b.price_agreed ? `${b.price_agreed} ${t('common.da')}${t('common.perHour')}` : t('mySpace.priceTbd') },
                     ].map((item, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>
-                        <item.Icon size={13}/>{item.text}
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--tx2)', minWidth: 0 }}>
+                        <item.Icon size={14} aria-hidden style={{ flexShrink: 0 }}/>{item.text}
                       </div>
                     ))}
                   </div>
 
                   {b.status === 'pending' && (
-                    <button onClick={() => cancelBooking(b.id)} className="btn-ghost btn-sm" style={{ color: '#ef4444', borderColor: '#ef444455' }}>
+                    <button onClick={() => cancelBooking(b.id)} className="btn-ghost btn-sm" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, transparent)', minHeight: 44 }}>
                       {t('mySpace.cancelRequest')}
                     </button>
                   )}
 
                   {b.status === 'completed' && (
-                    <a href={`/mon-espace/avis?booking=${b.id}`} style={{ textDecoration: 'none' }}>
-                      <button className="btn-soft btn-sm">
-                        <Star size={13} fill="currentColor" strokeWidth={0}/> {t('mySpace.leaveReview')}
-                      </button>
-                    </a>
+                    <Link href={`/mon-espace/avis?booking=${b.id}`} className="btn-soft btn-sm" style={{ minHeight: 44 }}>
+                      <Star size={13} fill="currentColor" strokeWidth={0} aria-hidden/> {t('mySpace.leaveReview')}
+                    </Link>
                   )}
                 </div>
               </div>

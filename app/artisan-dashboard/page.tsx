@@ -1,11 +1,16 @@
 ﻿'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map, Sparkles } from 'lucide-react'
 import { isLaunchFree, SUB_FREE_UNTIL } from '@/lib/plans'
 import NavigateButton from '@/components/NavigateButton'
+
+const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var(--accent)',in_progress:'var(--accent)',completed:'var(--success)',refused:'var(--danger)',cancelled:'var(--tx2)'}
+const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c} 13%, transparent)`,color:`color-mix(in srgb, ${c} 72%, var(--tx))`})
+const SCOPE_CSS=`.dash-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
 export default function ArtisanDashboard(){
   const router=useRouter();const{t,isAr}=useLang()
@@ -56,7 +61,7 @@ export default function ArtisanDashboard(){
   const respond=async(bookingId:string,accept:boolean)=>{
     await supabase.from('bookings').update({status:accept?'confirmed':'refused'}).eq('id',bookingId)
     setBookings(prev=>prev.map(x=>x.id===bookingId?{...x,status:accept?'confirmed':'refused'}:x))
-    if(accept)setStats(p=>({...p,pending:p.pending-1}))
+    setStats(p=>({...p,pending:Math.max(0,p.pending-1)}))
   }
 
   // Complétion profil
@@ -85,72 +90,71 @@ export default function ArtisanDashboard(){
   const subFree=isLaunchFree()
   const subUntil=SUB_FREE_UNTIL.toLocaleDateString('fr-DZ',{day:'numeric',month:'long',year:'numeric'})
 
-  if(loading)return<div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
+  if(loading)return<div role="status" aria-label={t('common.loading')} style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
 
   const statusLabel=(s:string)=>({completed:t('dashExtra.statusDone'),confirmed:t('dashExtra.statusConfirmed'),refused:t('dashExtra.statusRefused')}[s]||t('dashExtra.statusCancelled'))
 
   return(
-    <div style={{minHeight:'100vh',paddingTop:64,fontFamily:'Nexa,system-ui,sans-serif',direction:isAr?'rtl':'ltr'}}>
-      <div style={{maxWidth:1000,margin:'0 auto',padding:'24px'}}>
+    <div className="dash-scope" style={{minHeight:'100vh',paddingTop:64,direction:isAr?'rtl':'ltr'}}>
+      <style>{SCOPE_CSS}</style>
+      <div className="page-pad-m" style={{maxWidth:1000,margin:'0 auto',padding:'28px 24px 48px'}}>
 
         {/* Header */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28,flexWrap:'wrap',gap:16}}>
           <div>
-            <h1 style={{fontSize:28,fontWeight:800,color:'var(--tx)',marginBottom:4}}>👋 {profile?.full_name?.split(' ')[0] || 'Artisan'}</h1>
-            <p style={{fontSize:13,color:'var(--tx2)',fontWeight:300}}>{t('dashExtra.activityToday')}</p>
+            <h1 style={{fontSize:'clamp(24px,6vw,30px)',lineHeight:1.15,fontWeight:800,color:'var(--tx)',marginBottom:6}}>👋 {profile?.full_name?.split(' ')[0] || 'Artisan'}</h1>
+            <p style={{fontSize:14,color:'var(--tx2)'}}>{t('dashExtra.activityToday')}</p>
           </div>
-          <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
             {/* Disponibilité toggle */}
-            <button onClick={toggleAvail} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 20px',borderRadius:12,border:'1px solid var(--border)',background:isAvailable?'#10b98112':'var(--bg2)',cursor:'pointer',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>
-              <div style={{width:8,height:8,borderRadius:'50%',background:isAvailable?'#10b981':'var(--tx3)',boxShadow:isAvailable?'0 0 8px #10b98155':'none',transition:'all 0.3s'}}/>
-              <span style={{fontSize:13,fontWeight:700,color:isAvailable?'#10b981':'var(--tx3)'}}>{isAvailable?t('dashExtra.online'):t('dashExtra.offline')}</span>
+            <button onClick={toggleAvail} aria-pressed={isAvailable} style={{display:'flex',alignItems:'center',gap:8,minHeight:44,padding:'10px 18px',borderRadius:'var(--r-btn)',border:`1px solid ${isAvailable?'color-mix(in srgb, var(--success) 40%, transparent)':'var(--border2)'}`,background:isAvailable?'color-mix(in srgb, var(--success) 12%, var(--bg2))':'var(--bg2)',cursor:'pointer',transition:'all 0.2s'}}>
+              <span aria-hidden className={isAvailable?'anim-pulse':undefined} style={{width:9,height:9,borderRadius:'50%',background:isAvailable?'var(--success)':'var(--tx2)',transition:'all 0.3s'}}/>
+              <span style={{fontSize:14,fontWeight:700,color:isAvailable?'color-mix(in srgb, var(--success) 72%, var(--tx))':'var(--tx2)'}}>{isAvailable?t('dashExtra.online'):t('dashExtra.offline')}</span>
             </button>
-            <a href="/artisan-dashboard/profil"><button className="btn-primary btn-sm">{t('dashExtra.myProfile')}</button></a>
+            <Link href="/artisan-dashboard/profil" className="btn-primary btn-sm" style={{minHeight:44}}>{t('dashExtra.myProfile')}</Link>
           </div>
         </div>
 
         {/* Abonnement */}
-        <a href="/artisan-dashboard/abonnement" style={{textDecoration:'none'}}>
-          <div className="acard" style={{padding:'16px 20px',marginBottom:20,display:'flex',alignItems:'center',gap:14}}>
-            <div style={{width:40,height:40,borderRadius:12,background:'var(--gradient)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><Sparkles size={20}/></div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',marginBottom:2}}>{subFree?`${t('dashExtra.launchFree')} ${subUntil}`:t('dashExtra.yourSub')}</div>
-              <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{t('dashExtra.seePlans')}</div>
-            </div>
+        <Link href="/artisan-dashboard/abonnement" className="acard" style={{padding:'16px 18px',marginBottom:20,display:'flex',alignItems:'center',gap:14,textDecoration:'none'}}>
+          <div aria-hidden style={{width:40,height:40,borderRadius:11,background:'var(--accent)',boxShadow:'0 2px 0 var(--accent-ink)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><Sparkles size={20}/></div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:15,fontWeight:800,color:'var(--tx)',marginBottom:2}}>{subFree?`${t('dashExtra.launchFree')} ${subUntil}`:t('dashExtra.yourSub')}</div>
+            <div style={{fontSize:13,color:'var(--tx2)'}}>{t('dashExtra.seePlans')}</div>
           </div>
-        </a>
+        </Link>
 
         {/* Complétion profil */}
         {completion<100&&(
-          <div className="card" style={{padding:'20px 24px',marginBottom:20}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-              <span style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{t('dashExtra.profileComplete')} {completion}%</span>
-              <a href="/artisan-dashboard/profil" style={{fontSize:12,color:'#175CC4',textDecoration:'none',fontWeight:700}}>{t('dashExtra.completeLink')}</a>
+          <div className="card" style={{padding:'18px 20px',marginBottom:20}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:10}}>
+              <span style={{fontSize:15,fontWeight:700,color:'var(--tx)'}}>{t('dashExtra.profileComplete')} <span className="num">{completion}%</span></span>
+              <Link href="/artisan-dashboard/profil" style={{fontSize:13,color:'var(--accent)',textDecoration:'none',fontWeight:700,padding:'10px 2px'}}>{t('dashExtra.completeLink')}</Link>
             </div>
-            <div style={{height:6,background:'var(--border)',borderRadius:3,overflow:'hidden',marginBottom:12}}>
-              <div style={{height:'100%',width:`${completion}%`,background:'linear-gradient(90deg,#175CC4,#1E6FD6)',borderRadius:3,transition:'width 0.5s'}}/>
+            <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completion} aria-label={t('dashExtra.profileComplete')} style={{height:8,background:'var(--bg3)',borderRadius:4,overflow:'hidden',marginBottom:12}}>
+              <div style={{height:'100%',width:`${completion}%`,background:'var(--accent)',borderRadius:4,transition:'width 0.5s'}}/>
             </div>
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-              {missing.map(m=><span key={m} style={{padding:'4px 12px',borderRadius:8,background:'#f59e0b12',border:'1px solid #f59e0b22',fontSize:11,color:'#f59e0b'}}>{m}</span>)}
+              {missing.map(m=><span key={m} style={{padding:'5px 11px',borderRadius:'var(--r-chip)',fontSize:12.5,fontWeight:600,...tone('var(--warning)')}}>{m}</span>)}
             </div>
           </div>
         )}
 
         {/* KPIs */}
-        <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginBottom:24}}>
+        <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12,marginBottom:28}}>
           {[
-            {label:t('dashExtra.kpiRevenue'),value:`${stats.revenue.toLocaleString('fr-DZ')} DA`,Icon:Wallet,color:'#10b981',sub:t('dashExtra.kpiRevenueSub')},
-            {label:t('dashExtra.kpiMissions'),value:stats.missions,Icon:CheckCircle2,color:'#175CC4',sub:t('dashExtra.kpiMissionsSub')},
-            {label:t('dashExtra.kpiPending'),value:stats.pending,Icon:Clock,color:'#f59e0b',sub:t('dashExtra.kpiPendingSub')},
-            {label:t('dashExtra.kpiRating'),value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'#f59e0b',sub:`${stats.ratingCount} ${t('dashExtra.ratingUnit')}`},
+            {label:t('dashExtra.kpiRevenue'),value:`${stats.revenue.toLocaleString('fr-DZ')} DA`,Icon:Wallet,color:'var(--success)',sub:t('dashExtra.kpiRevenueSub')},
+            {label:t('dashExtra.kpiMissions'),value:stats.missions,Icon:CheckCircle2,color:'var(--accent)',sub:t('dashExtra.kpiMissionsSub')},
+            {label:t('dashExtra.kpiPending'),value:stats.pending,Icon:Clock,color:'var(--warning)',sub:t('dashExtra.kpiPendingSub')},
+            {label:t('dashExtra.kpiRating'),value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'var(--laiton)',sub:`${stats.ratingCount} ${t('dashExtra.ratingUnit')}`},
           ].map(k=>(
-            <div key={k.label} className="card" style={{padding:'20px'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
-                <span style={{fontSize:11,color:'var(--tx3)',fontWeight:700,letterSpacing:'0.06em'}}>{k.label.toUpperCase()}</span>
-                <k.Icon size={18} color={k.color}/>
+            <div key={k.label} className="card" style={{padding:'16px 18px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8,marginBottom:10}}>
+                <span style={{fontSize:11.5,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase'}}>{k.label}</span>
+                <span aria-hidden style={{width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,...tone(k.color)}}><k.Icon size={15}/></span>
               </div>
-              <div style={{fontSize:28,fontWeight:800,color:k.color,marginBottom:4}}>{k.value}</div>
-              <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>{k.sub}</div>
+              <div className="num" style={{fontSize:'clamp(21px,5.6vw,28px)',lineHeight:1.1,fontWeight:800,color:'var(--tx)',marginBottom:6,whiteSpace:'nowrap'}}>{k.value}</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)'}}>{k.sub}</div>
             </div>
           ))}
         </div>
@@ -158,21 +162,21 @@ export default function ArtisanDashboard(){
         {/* Demandes en attente — réponse rapide */}
         {pendingBookings.length>0&&(
           <div style={{marginBottom:24}}>
-            <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)',marginBottom:14}}>{t('dashExtra.pendingTitle')} ({pendingBookings.length})</h2>
+            <h2 style={{fontSize:19,fontWeight:800,color:'var(--tx)',marginBottom:14}}>{t('dashExtra.pendingTitle')} <span className="num" style={{color:'var(--tx2)',fontWeight:600}}>({pendingBookings.length})</span></h2>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {pendingBookings.map(b=>(
-                <div key={b.id} className="card" style={{borderColor:'#f59e0b55',padding:'18px 20px',display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
-                  <div style={{width:40,height:40,borderRadius:10,background:'#f59e0b15',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><Clock size={18} color="#f59e0b"/></div>
+                <div key={b.id} className="card" style={{borderColor:'color-mix(in srgb, var(--warning) 45%, var(--border))',padding:'16px 18px',display:'flex',alignItems:'center',gap:'12px 16px',flexWrap:'wrap'}}>
+                  <div aria-hidden style={{width:40,height:40,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,...tone('var(--warning)')}}><Clock size={18}/></div>
                   <div style={{flex:1,minWidth:180}}>
-                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
-                    <div style={{fontSize:12,color:'var(--tx2)',fontWeight:300}}>{b.title||b.description||t('dashExtra.requestFallback')}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',marginTop:4}}>{timeAgo(b.created_at)} · {b.address||t('dashExtra.addrFallback')}</div>
+                    <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
+                    <div style={{fontSize:13.5,color:'var(--tx)'}}>{b.title||b.description||t('dashExtra.requestFallback')}</div>
+                    <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:4}}>{timeAgo(b.created_at)} · {b.address||t('dashExtra.addrFallback')}</div>
                   </div>
-                  <div style={{fontSize:16,fontWeight:800,color:'var(--tx)',marginRight:8}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
-                  <div style={{display:'flex',gap:8}}>
-                    <button onClick={()=>respond(b.id,true)} className="btn-success btn-sm">{t('dashExtra.accept')}</button>
-                    <button onClick={()=>respond(b.id,false)} className="btn-ghost btn-sm" style={{color:'#ef4444',borderColor:'#ef444455'}}>{t('dashExtra.refuse')}</button>
-                    <a href={`/chat/${b.id}`}><button className="btn-ghost btn-sm">{t('dashExtra.message')}</button></a>
+                  <div className="num" style={{fontSize:17,fontWeight:800,color:'var(--tx)',marginInlineEnd:8,whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    <button onClick={()=>respond(b.id,true)} className="btn-success btn-sm" style={{minHeight:44}}>{t('dashExtra.accept')}</button>
+                    <button onClick={()=>respond(b.id,false)} className="btn-ghost btn-sm" style={{minHeight:44,color:'var(--danger)',borderColor:'color-mix(in srgb, var(--danger) 40%, transparent)'}}>{t('dashExtra.refuse')}</button>
+                    <Link href={`/chat/${b.id}`} className="btn-ghost btn-sm" style={{minHeight:44}}>{t('dashExtra.message')}</Link>
                   </div>
                 </div>
               ))}
@@ -182,48 +186,50 @@ export default function ArtisanDashboard(){
 
         {/* Historique récent */}
         <div style={{marginBottom:24}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-            <h2 style={{fontSize:18,fontWeight:800,color:'var(--tx)'}}>{t('dashExtra.recentHistory')}</h2>
-            <a href="/artisan-dashboard/revenus" style={{fontSize:12,color:'#175CC4',textDecoration:'none',fontWeight:700}}>{t('dashExtra.seeAll')}</a>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:10}}>
+            <h2 style={{fontSize:19,fontWeight:800,color:'var(--tx)'}}>{t('dashExtra.recentHistory')}</h2>
+            <Link href="/artisan-dashboard/revenus" style={{fontSize:13,color:'var(--accent)',textDecoration:'none',fontWeight:700,padding:'12px 4px'}}>{t('dashExtra.seeAll')}</Link>
           </div>
           {recentBookings.length===0?(
-            <div className="card" style={{padding:'40px',textAlign:'center'}}>
-              <p style={{fontSize:14,color:'var(--tx3)',fontWeight:300}}>{t('dashExtra.noMission')}</p>
-              <p style={{fontSize:12,color:'var(--tx3)',marginTop:8}}>{t('dashExtra.activateHint')}</p>
+            <div className="card" style={{padding:'36px 24px',textAlign:'center'}}>
+              <p style={{fontSize:15,color:'var(--tx)',fontWeight:600}}>{t('dashExtra.noMission')}</p>
+              <p style={{fontSize:13.5,color:'var(--tx2)',marginTop:8,lineHeight:1.5}}>{t('dashExtra.activateHint')}</p>
             </div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {recentBookings.map(b=>(
-                <div key={b.id} className="card" style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:14}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':'#ef4444',flexShrink:0}}/>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{b.title||t('dashExtra.missionFallback')} · {timeAgo(b.created_at)}</div>
+              {recentBookings.map(b=>{
+                const sc=STATUS_TONE[b.status]||'var(--danger)'
+                return(
+                <div key={b.id} className="card" style={{padding:'14px 16px',display:'flex',alignItems:'center',gap:12}}>
+                  <div aria-hidden style={{width:8,height:8,borderRadius:'50%',background:sc,flexShrink:0}}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.profiles?.full_name||t('dashExtra.clientFallback')}</div>
+                    <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.title||t('dashExtra.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
-                  <div style={{fontSize:14,fontWeight:700,color:b.status==='completed'?'#10b981':'var(--tx)'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
                   {(b.status==='confirmed'||b.status==='in_progress')&&<NavigateButton lat={b.lat} lng={b.lng} compact/>}
-                  <span style={{padding:'3px 10px',borderRadius:6,fontSize:10,fontWeight:700,background:b.status==='completed'?'#10b98112':b.status==='confirmed'?'#175CC412':'#ef444412',color:b.status==='completed'?'#10b981':b.status==='confirmed'?'#175CC4':'#ef4444'}}>{statusLabel(b.status)}</span>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,flexShrink:0}}>
+                    <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                    <span style={{padding:'3px 9px',borderRadius:'var(--r-chip)',fontSize:11,fontWeight:700,whiteSpace:'nowrap',...tone(sc)}}>{statusLabel(b.status)}</span>
+                  </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
 
         {/* Quick links */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:10}}>
           {[
             {label:t('dashExtra.qlProfile'),href:'/artisan-dashboard/profil',Icon:User,desc:t('dashExtra.qlEditInfo')},
             {label:t('dashExtra.qlPlanning'),href:'/artisan-dashboard/planning',Icon:Calendar,desc:t('dashExtra.qlDispo')},
             {label:t('dashExtra.qlRevenus'),href:'/artisan-dashboard/revenus',Icon:BarChart3,desc:t('dashExtra.qlStats')},
             {label:t('dashExtra.qlMap'),href:'/map',Icon:Map,desc:t('dashExtra.qlNearClients')},
           ].map(l=>(
-            <a key={l.label} href={l.href} style={{textDecoration:'none'}}>
-              <div className="acard" style={{padding:'18px'}}>
-                <div style={{marginBottom:10}}><l.Icon size={22} color="var(--accent)"/></div>
-                <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:2}}>{l.label}</div>
-                <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>{l.desc}</div>
-              </div>
-            </a>
+            <Link key={l.label} href={l.href} className="acard" style={{padding:'16px',textDecoration:'none',display:'block'}}>
+              <div aria-hidden style={{marginBottom:10}}><l.Icon size={22} color="var(--accent)"/></div>
+              <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',marginBottom:3}}>{l.label}</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',lineHeight:1.4}}>{l.desc}</div>
+            </Link>
           ))}
         </div>
 

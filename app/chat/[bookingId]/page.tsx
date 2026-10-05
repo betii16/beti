@@ -3,6 +3,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { ArrowLeft, Send, MessageCircle, AlertTriangle } from 'lucide-react'
+
+// Statut de la réservation → token couleur ; focus clavier visible.
+const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var(--accent)',in_progress:'var(--accent)',completed:'var(--success)',refused:'var(--danger)',cancelled:'var(--tx2)'}
+const SCOPE_CSS=`.chat-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
 type Msg = { id:string; booking_id:string; sender_id:string; sender_name:string; sender_role:string; content:string; created_at:string }
 
@@ -35,7 +40,7 @@ export default function ChatPage(){
     const fetchMsgs=async()=>{
       const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
       if(!alive)return
-      if(error){setLoadErr('Impossible de charger les messages : '+error.message);return}
+      if(error){setLoadErr('Impossible de charger les messages. Vérifiez votre connexion puis réessayez. ('+error.message+')');return}
       if(data)mergeMsgs(data as any)
     }
     const init=async()=>{
@@ -44,7 +49,7 @@ export default function ChatPage(){
       const{data:p}=await supabase.from('profiles').select('full_name,role').eq('id',u.id).single()
       if(p)setProfile(p)
       const{data:b,error:bErr}=await supabase.from('bookings').select('*').eq('id',bookingId).single()
-      if(bErr){setLoadErr('Réservation introuvable : '+bErr.message);return}
+      if(bErr){setLoadErr('Cette conversation est introuvable ou vous n’y avez pas accès. ('+bErr.message+')');return}
       if(b){setBooking(b)
         const otherId=b.client_id===u.id?b.artisan_id:b.client_id
         const{data:op}=await supabase.from('profiles').select('full_name').eq('id',otherId).single()
@@ -82,7 +87,7 @@ export default function ChatPage(){
       sender_role:profile.role||'client',
       content
     }).select().single()
-    if(error){setSendErr(error.message);setSending(false);return}
+    if(error){setSendErr('Message non envoyé : '+error.message);setSending(false);return}
     if(data)mergeMsgs([data as any])
     setInput('')
     setSending(false)
@@ -111,43 +116,47 @@ export default function ChatPage(){
   let lastDate=''
 
   if(loadErr)return(
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,paddingTop:80}}>
-      <div style={{maxWidth:400,textAlign:'center'}}>
-        <div style={{fontSize:32,marginBottom:16}}>⚠</div>
-        <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:10}}>Erreur de chargement</div>
-        <div style={{fontSize:13,color:'#ef4444',background:'#ef444410',border:'1px solid #ef444420',borderRadius:10,padding:'12px 16px',marginBottom:20,textAlign:'left',wordBreak:'break-word'}}>{loadErr}</div>
-        <button onClick={()=>router.back()} style={{padding:'10px 24px',borderRadius:10,background:'#175CC4',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Nexa,sans-serif'}}>← Retour</button>
+    <div className="chat-scope" style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:16,paddingTop:80,direction:isAr?'rtl':'ltr'}}>
+      <style>{SCOPE_CSS}</style>
+      <div role="alert" className="card" style={{maxWidth:420,width:'100%',textAlign:'center',padding:'28px 22px'}}>
+        <div aria-hidden style={{width:52,height:52,borderRadius:14,margin:'0 auto 14px',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--danger)',background:'color-mix(in srgb, var(--danger) 11%, transparent)'}}><AlertTriangle size={24}/></div>
+        <div style={{fontSize:17,fontWeight:800,color:'var(--tx)',marginBottom:10}}>Erreur de chargement</div>
+        <div style={{fontSize:14,color:'var(--tx2)',lineHeight:1.55,marginBottom:20,overflowWrap:'anywhere'}}>{loadErr}</div>
+        <button onClick={()=>router.back()} className="btn-primary" style={{minHeight:44}}><ArrowLeft size={16} aria-hidden style={{transform:isAr?'scaleX(-1)':undefined}}/> Retour</button>
       </div>
     </div>
   )
 
-  const doneBtn:React.CSSProperties={padding:'8px 13px',borderRadius:10,background:'#10b981',border:'none',color:'#fff',fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:'Nexa,sans-serif',whiteSpace:'nowrap',flexShrink:0}
+  const doneBtn:React.CSSProperties={minHeight:40,padding:'9px 14px',fontSize:13,flexShrink:0}
+  const st=booking?STATUS_TONE[booking.status]||'var(--tx2)':'var(--tx2)'
 
   return(
-    <div className="chat-screen" style={{height:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column',paddingTop:52,overflow:'hidden',direction:isAr?'rtl':'ltr'}}>
+    <div className="chat-screen chat-scope" style={{height:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column',paddingTop:52,overflow:'hidden',direction:isAr?'rtl':'ltr'}}>
+      <style>{SCOPE_CSS}</style>
       {/* Header */}
-      <div style={{background:'var(--bg2)',borderBottom:'1px solid var(--border)',padding:'14px 24px',display:'flex',alignItems:'center',gap:14}}>
-        <button onClick={()=>router.back()} style={{background:'transparent',border:'none',color:'var(--tx2)',fontSize:20,cursor:'pointer'}}>←</button>
-        <div style={{width:36,height:36,borderRadius:10,background:'#175CC415',border:'1px solid #175CC422',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:800,color:'#175CC4'}}>{(otherName||'?')[0]}</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:700,color:'var(--tx)'}}>{otherName||t('common.loading')}</div>
-          <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300}}>{booking?.title||t('chat.conversation')}</div>
+      <div style={{background:'var(--bg2)',borderBottom:'1px solid var(--border)',paddingTop:8,paddingBottom:8,paddingInlineStart:8,paddingInlineEnd:16,display:'flex',alignItems:'center',gap:10}}>
+        <button onClick={()=>router.back()} aria-label="Retour" style={{width:44,height:44,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'none',borderRadius:12,color:'var(--tx)',cursor:'pointer'}}><ArrowLeft size={22} style={{transform:isAr?'scaleX(-1)':undefined}}/></button>
+        <div aria-hidden style={{width:40,height:40,borderRadius:11,flexShrink:0,background:'color-mix(in srgb, var(--accent) 13%, transparent)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,fontWeight:800,color:'var(--accent)'}}>{(otherName||'?')[0].toUpperCase()}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{otherName||t('common.loading')}</div>
+          <div style={{fontSize:12.5,color:'var(--tx2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{booking?.title||t('chat.conversation')}</div>
         </div>
-        {booking&&<span style={{padding:'4px 12px',borderRadius:8,fontSize:10,fontWeight:700,background:booking.status==='confirmed'?'#175CC412':booking.status==='completed'?'#10b98112':'#f59e0b12',color:booking.status==='confirmed'?'#175CC4':booking.status==='completed'?'#10b981':'#f59e0b'}}>{t(`status.${booking.status}`)}</span>}
+        {booking&&<span style={{padding:'4px 10px',borderRadius:'var(--r-chip)',fontSize:11.5,fontWeight:700,flexShrink:0,whiteSpace:'nowrap',background:`color-mix(in srgb, ${st} 13%, transparent)`,color:`color-mix(in srgb, ${st} 72%, var(--tx))`}}>{t(`status.${booking.status}`)}</span>}
       </div>
 
       {/* Messages */}
-      <div style={{flex:1,overflowY:'auto',padding:'16px 24px'}}>
+      <div role="log" aria-live="polite" style={{flex:1,overflowY:'auto',padding:'12px 14px 16px',overscrollBehavior:'contain'}}>
         {timeline.length===0&&(
-          <div style={{textAlign:'center',padding:'48px 0'}}>
-            <div style={{fontSize:14,color:'var(--tx3)',fontWeight:300,marginBottom:8}}>{t('chat.start')}</div>
-            <div style={{fontSize:12,color:'var(--tx3)',fontWeight:300}}>{t('chat.startSub')}</div>
+          <div style={{textAlign:'center',padding:'56px 16px'}}>
+            <div aria-hidden style={{width:56,height:56,borderRadius:16,margin:'0 auto 14px',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--accent)',background:'color-mix(in srgb, var(--accent) 12%, transparent)'}}><MessageCircle size={26}/></div>
+            <div style={{fontSize:15,color:'var(--tx)',fontWeight:700,marginBottom:6}}>{t('chat.start')}</div>
+            <div style={{fontSize:13.5,color:'var(--tx2)',lineHeight:1.5,maxWidth:300,margin:'0 auto'}}>{t('chat.startSub')}</div>
           </div>
         )}
         {timeline.map((item)=>{
           const dateStr=formatDate(item.at)
           let showDate=false;if(dateStr!==lastDate){showDate=true;lastDate=dateStr}
-          const dateSep=showDate&&<div style={{textAlign:'center',margin:'16px 0 8px'}}><span style={{padding:'4px 14px',borderRadius:10,background:'var(--bg2)',border:'1px solid var(--border)',fontSize:11,color:'var(--tx3)'}}>{dateStr}</span></div>
+          const dateSep=showDate&&<div style={{textAlign:'center',margin:'16px 0 8px'}}><span style={{padding:'4px 12px',borderRadius:'var(--r-pill)',background:'var(--bg2)',border:'1px solid var(--border)',fontSize:12,fontWeight:600,color:'var(--tx2)'}}>{dateStr}</span></div>
 
           const m=item.m
           const mine=m.sender_id===user?.id
@@ -155,10 +164,10 @@ export default function ChatPage(){
             <div key={m.id}>
               {dateSep}
               <div style={{display:'flex',justifyContent:mine?'flex-end':'flex-start',marginBottom:6}}>
-                <div className="anim-msg-in" style={{maxWidth:'75%',padding:'10px 14px',borderRadius:mine?'14px 14px 4px 14px':'14px 14px 14px 4px',background:mine?'linear-gradient(135deg,#175CC4,#1E6FD6)':'var(--bg2)',border:mine?'none':'1px solid var(--border)',color:mine?'#fff':'var(--tx)'}}>
-                  {!mine&&<div style={{fontSize:10,color:'#175CC4',fontWeight:700,marginBottom:4}}>{m.sender_name}</div>}
-                  <div style={{fontSize:13,lineHeight:1.6,fontWeight:300}}>{m.content}</div>
-                  <div style={{fontSize:9,marginTop:4,textAlign:'right',color:mine?'rgba(255,255,255,0.6)':'var(--tx3)'}}>{formatTime(m.created_at)}</div>
+                <div className="anim-msg-in" style={{maxWidth:'min(80%, 520px)',padding:'9px 13px 7px',borderRadius:16,...(mine?{borderEndEndRadius:5}:{borderEndStartRadius:5}),background:mine?'var(--accent)':'var(--bg2)',border:mine?'1px solid transparent':'1px solid var(--border)',color:mine?'#fff':'var(--tx)',boxShadow:mine?'0 1px 0 var(--accent-ink)':'none'}}>
+                  {!mine&&<div style={{fontSize:12,color:'var(--accent)',fontWeight:700,marginBottom:3}}>{m.sender_name}</div>}
+                  <div dir="auto" style={{fontSize:15,lineHeight:1.5,fontWeight:400,whiteSpace:'pre-wrap',overflowWrap:'anywhere',textAlign:'start'}}>{m.content}</div>
+                  <time dateTime={m.created_at} className="num" style={{display:'block',fontSize:11,marginTop:3,textAlign:'end',color:mine?'rgba(255,255,255,0.82)':'var(--tx2)'}}>{formatTime(m.created_at)}</time>
                 </div>
               </div>
             </div>
@@ -168,30 +177,32 @@ export default function ChatPage(){
       </div>
 
       {/* Erreur d'envoi */}
-      {sendErr&&<div style={{padding:'8px 16px',background:'#ef444412',borderTop:'1px solid #ef444422',fontSize:12,color:'#ef4444',fontWeight:300}}>{sendErr}</div>}
+      {sendErr&&<div role="alert" style={{padding:'10px 16px',background:'color-mix(in srgb, var(--danger) 10%, var(--bg2))',borderTop:'1px solid color-mix(in srgb, var(--danger) 30%, transparent)',fontSize:13,color:'var(--danger)',fontWeight:600,lineHeight:1.45}}>{sendErr}</div>}
 
       {/* Clôture de la prestation (cash, en deux temps artisan → client) */}
       {booking&&!['completed','cancelled','refused'].includes(booking.status)&&(
-        <div style={{padding:'10px 16px',background:'var(--bg2)',borderTop:'1px solid var(--border)',display:'flex',alignItems:'center',gap:10}}>
-          <div style={{flex:1,minWidth:0,fontSize:11.5,color:'var(--tx3)',fontWeight:300,lineHeight:1.5}}>
+        <div style={{padding:'10px 16px',background:'var(--bg2)',borderTop:'1px solid var(--border)',display:'flex',alignItems:'center',gap:12}}>
+          <div style={{flex:1,minWidth:0,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5}}>
             {booking.status==='in_progress'
               ? (isClient?t('done.awaitingClient'):t('done.awaitingArtisan'))
               : t('done.cashHint')}
           </div>
-          {isArtisan&&booking.status==='confirmed'&&<button onClick={markDone} style={doneBtn}>{t('done.markDone')}</button>}
-          {isClient&&booking.status==='in_progress'&&<button onClick={confirmDone} style={doneBtn}>{t('done.confirm')}</button>}
+          {isArtisan&&booking.status==='confirmed'&&<button onClick={markDone} className="btn-success btn-sm" style={doneBtn}>{t('done.markDone')}</button>}
+          {isClient&&booking.status==='in_progress'&&<button onClick={confirmDone} className="btn-success btn-sm" style={doneBtn}>{t('done.confirm')}</button>}
         </div>
       )}
 
       {/* Input */}
-      <div style={{background:'var(--bg2)',borderTop:'1px solid var(--border)',padding:'12px 16px calc(12px + env(safe-area-inset-bottom))',display:'flex',gap:10}}>
-        <input value={input} onChange={e=>{setInput(e.target.value);setSendErr('')}} onKeyDown={e=>e.key==='Enter'&&send()}
-          placeholder={t('chat.inputPh')} style={{flex:1,padding:'12px 16px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:12,color:'var(--tx)',fontSize:14,outline:'none',fontFamily:'Nexa,sans-serif',fontWeight:300}}/>
-        <button onClick={send} disabled={sending||!input.trim()}
-          style={{padding:'12px 20px',borderRadius:12,background:input.trim()?'linear-gradient(135deg,#175CC4,#1E6FD6)':'var(--border)',border:'none',color:input.trim()?'#fff':'var(--tx3)',fontSize:13,fontWeight:700,cursor:input.trim()?'pointer':'not-allowed',fontFamily:'Nexa,sans-serif',transition:'all 0.2s'}}>
-          {sending?'...':t('chat.send')}
+      <form onSubmit={e=>{e.preventDefault();send()}} style={{background:'var(--bg2)',borderTop:'1px solid var(--border)',padding:'10px 12px calc(10px + env(safe-area-inset-bottom))',display:'flex',alignItems:'center',gap:8}}>
+        <input value={input} onChange={e=>{setInput(e.target.value);setSendErr('')}}
+          aria-label={t('chat.inputPh')} enterKeyHint="send" autoComplete="off" maxLength={2000}
+          placeholder={t('chat.inputPh')} className="field" style={{flex:1,minWidth:0,minHeight:46,padding:'11px 16px',borderRadius:'var(--r-pill)',background:'var(--bg)',fontSize:16}}/>
+        <button type="submit" disabled={sending||!input.trim()} aria-label={t('chat.send')} aria-busy={sending}
+          className="btn-primary" style={{minHeight:46,minWidth:46,padding:'0 18px',borderRadius:'var(--r-pill)'}}>
+          <Send size={18} aria-hidden style={{transform:isAr?'scaleX(-1)':undefined}}/>
+          <span className="desktop-only">{sending?'…':t('chat.send')}</span>
         </button>
-      </div>
+      </form>
     </div>
   )
 }
