@@ -6,6 +6,22 @@ import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { User, Lock, Bell, LogOut } from 'lucide-react'
 
+const SCOPE_CSS = `.set-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
+const OK_BOX: React.CSSProperties = { background: 'color-mix(in srgb, var(--success) 11%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 32%, transparent)', borderRadius: 'var(--r-field)', padding: '11px 14px', marginBottom: 16, fontSize: 14, color: 'var(--tx)', fontWeight: 600 }
+
+// Interrupteur accessible (role=switch), zone tactile 44px, couleurs du thème.
+// Défini hors du composant (l'ancien Toggle était recréé à chaque rendu).
+function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)}
+      style={{ flexShrink: 0, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 12, cursor: 'pointer', padding: 0 }}>
+      <span style={{ width: 44, height: 26, borderRadius: 13, position: 'relative', background: on ? 'var(--success)' : 'var(--bg3)', border: `1px solid ${on ? 'transparent' : 'var(--border2)'}`, transition: 'background .25s ease' }}>
+        <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)', position: 'absolute', top: 2, insetInlineStart: on ? 21 : 2, transition: 'inset-inline-start .25s ease' }}/>
+      </span>
+    </button>
+  )
+}
+
 export default function Parametres() {
   const router = useRouter()
   const { t, isAr } = useLang()
@@ -28,6 +44,7 @@ export default function Parametres() {
   const [notifEmail, setNotifEmail] = useState(true)
   const [notifSms, setNotifSms] = useState(false)
   const [savingNotifs, setSavingNotifs] = useState(false)
+  const [notifsOk, setNotifsOk] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -81,26 +98,15 @@ export default function Parametres() {
     setSavingNotifs(true)
     await supabase.from('profiles').update({ notif_email: notifEmail, notif_sms: notifSms }).eq('id', user.id)
     setSavingNotifs(false)
+    setNotifsOk(true)
+    setTimeout(() => setNotifsOk(false), 3000)
   }
 
-  const inputStyle = {
-    width: '100%', background: 'var(--bg)', border: '0.5px solid var(--border)',
-    borderRadius: 10, padding: '12px 14px', color: 'var(--tx)', fontSize: 13,
-    fontFamily: 'Nexa, sans-serif', fontWeight: 300, outline: 'none',
-  } as React.CSSProperties
-
-  const labelStyle = { fontSize: 12, color: 'var(--tx3)', fontWeight: 300, marginBottom: 8, display: 'block' } as React.CSSProperties
-
-  const Toggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
-    <div onClick={() => onChange(!value)}
-      style={{ width: 44, height: 24, borderRadius: 12, background: value ? '#0a3020' : 'var(--bg3)', border: `0.5px solid ${value ? '#10b981' : 'var(--border)'}`, cursor: 'pointer', position: 'relative', transition: 'all 0.3s', flexShrink: 0 }}>
-      <div style={{ width: 18, height: 18, borderRadius: '50%', background: value ? '#10b981' : 'var(--tx3)', position: 'absolute', top: 2, left: value ? 22 : 3, transition: 'all 0.3s', boxShadow: value ? '0 0 8px #10b98188' : 'none' }}/>
-    </div>
-  )
+  const labelStyle = { fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 8, display: 'block' } as React.CSSProperties
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: 14, color: 'var(--tx3)', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>{t('common.loading')}</div>
+    <div role="status" aria-label={t('common.loading')} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 64 }}>
+      <div className="loader-ring" />
     </div>
   )
 
@@ -111,70 +117,73 @@ export default function Parametres() {
   ]
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', fontFamily: 'Nexa, sans-serif', direction: isAr ? 'rtl' : 'ltr' }}>
+    <div className="set-scope" style={{ paddingTop: 64, minHeight: '100vh', direction: isAr ? 'rtl' : 'ltr' }}>
+      <style>{SCOPE_CSS}</style>
 
-      <div style={{ borderBottom: '0.5px solid var(--border)', padding: '32px 40px' }}>
+      <div className="page-x" style={{ borderBottom: '1px solid var(--border)', padding: '32px 40px 24px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, color: 'var(--accent)', letterSpacing: '0.12em', fontWeight: 800, marginBottom: 6 }}>{t('settings.myAccount')}</div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--tx)' }}>{t('settings.title')}</h1>
+          <div className="section-label">{t('settings.myAccount')}</div>
+          <h1 style={{ fontSize: 'clamp(24px, 6vw, 30px)', lineHeight: 1.15, fontWeight: 800, color: 'var(--tx)' }}>{t('settings.title')}</h1>
         </div>
       </div>
 
       <div className="grid-collapse page-pad-m" style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }}>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {sections.map(s => (
-            <button key={s.id} onClick={() => setActiveSection(s.id as any)}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: activeSection === s.id ? 'var(--bg3)' : 'transparent', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', textAlign: isAr ? 'right' : 'left', transition: 'background 0.15s' }}>
-              <s.Icon size={16} color={activeSection === s.id ? 'var(--tx)' : 'var(--tx3)'}/>
-              <span style={{ fontSize: 13, color: activeSection === s.id ? 'var(--tx)' : 'var(--tx3)', fontWeight: activeSection === s.id ? 800 : 300 }}>{s.label}</span>
+        <nav aria-label={t('settings.title')} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {sections.map(s => {
+            const on = activeSection === s.id
+            return (
+            <button key={s.id} aria-current={on ? 'page' : undefined} onClick={() => setActiveSection(s.id as any)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 46, padding: '12px 14px', background: on ? 'color-mix(in srgb, var(--accent) 10%, var(--bg2))' : 'transparent', border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer', textAlign: 'start', transition: 'background 0.15s' }}>
+              <s.Icon size={17} color={on ? 'var(--accent)' : 'var(--tx2)'} aria-hidden/>
+              <span style={{ fontSize: 14, color: on ? 'var(--accent)' : 'var(--tx2)', fontWeight: on ? 700 : 500 }}>{s.label}</span>
             </button>
-          ))}
+          )})}
 
-          <div style={{ height: '0.5px', background: 'var(--border)', margin: '8px 0' }}/>
+          <div aria-hidden style={{ height: 1, background: 'var(--border)', margin: '8px 0' }}/>
 
           <button onClick={handleSignOut}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'transparent', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', textAlign: isAr ? 'right' : 'left' }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#ef444410')}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 46, padding: '12px 14px', background: 'transparent', border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer', textAlign: 'start' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'color-mix(in srgb, var(--danger) 9%, transparent)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <LogOut size={16} color="#ef4444"/>
-            <span style={{ fontSize: 13, color: '#ef4444', fontWeight: 300 }}>{t('settings.logout')}</span>
+            <LogOut size={17} color="var(--danger)" aria-hidden/>
+            <span style={{ fontSize: 14, color: 'var(--danger)', fontWeight: 600 }}>{t('settings.logout')}</span>
           </button>
-        </div>
+        </nav>
 
-        <div className="card" style={{ padding: '28px' }}>
+        <div className="card" style={{ padding: 'clamp(20px, 5vw, 28px)' }}>
 
           {activeSection === 'profil' && (
             <div>
-              <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 24 }}>{t('settings.personalInfo')}</div>
+              <h2 className="section-label" style={{ marginBottom: 20 }}>{t('settings.personalInfo')}</h2>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-                <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', border: '1.5px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>
-                  {(user.email || 'U')[0].toUpperCase()}
+                <div aria-hidden style={{ width: 60, height: 60, flexShrink: 0, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', border: '1.5px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>
+                  {(fullName || user.email || 'U')[0].toUpperCase()}
                 </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{fullName || user.email}</div>
-                  <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{t('settings.clientAccount')}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', overflowWrap: 'anywhere' }}>{fullName || user.email}</div>
+                  <div style={{ fontSize: 13, color: 'var(--tx2)' }}>{t('settings.clientAccount')}</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
                 <div>
-                  <label style={labelStyle}>{t('settings.fullName')}</label>
-                  <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t('settings.fullNamePh')} className="field"/>
+                  <label htmlFor="acc-name" style={labelStyle}>{t('settings.fullName')}</label>
+                  <input id="acc-name" autoComplete="name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t('settings.fullNamePh')} className="field"/>
                 </div>
                 <div>
-                  <label style={labelStyle}>{t('settings.phone')}</label>
-                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('settings.phonePh')} className="field"/>
+                  <label htmlFor="acc-phone" style={labelStyle}>{t('settings.phone')}</label>
+                  <input id="acc-phone" type="tel" autoComplete="tel" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('settings.phonePh')} className="field"/>
                 </div>
               </div>
 
               {profilOk && (
-                <div style={{ background: '#10b98112', border: '0.5px solid #10b98144', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#10b981', fontWeight: 300 }}>{t('settings.saved')} ✓</div>
+                <div role="status" style={OK_BOX}>{t('settings.saved')} ✓</div>
               )}
 
               <button onClick={saveProfil} disabled={savingProfil}
-                className="btn-primary">
+                className="btn-primary" style={{ minHeight: 46 }}>
                 {savingProfil ? t('settings.saving') : t('settings.save')}
               </button>
             </div>
@@ -182,33 +191,33 @@ export default function Parametres() {
 
           {activeSection === 'securite' && (
             <div>
-              <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 24 }}>{t('settings.securityTitle')}</div>
+              <h2 className="section-label" style={{ marginBottom: 20 }}>{t('settings.securityTitle')}</h2>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
                 <div>
-                  <label style={labelStyle}>{t('settings.emailAddress')}</label>
-                  <input value={newEmail} onChange={e => setNewEmail(e.target.value)} type="email" className="field"/>
+                  <label htmlFor="acc-email" style={labelStyle}>{t('settings.emailAddress')}</label>
+                  <input id="acc-email" autoComplete="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} type="email" className="field"/>
                 </div>
-                <div style={{ height: '0.5px', background: 'var(--border)' }}/>
+                <div aria-hidden style={{ height: 1, background: 'var(--border)' }}/>
                 <div>
-                  <label style={labelStyle}>{t('settings.newPassword')}</label>
-                  <input value={newPassword} onChange={e => setNewPassword(e.target.value)} type="password" placeholder={t('settings.newPasswordPh')} className="field"/>
+                  <label htmlFor="acc-pw" style={labelStyle}>{t('settings.newPassword')}</label>
+                  <input id="acc-pw" autoComplete="new-password" value={newPassword} onChange={e => setNewPassword(e.target.value)} type="password" placeholder={t('settings.newPasswordPh')} className="field"/>
                 </div>
                 <div>
-                  <label style={labelStyle}>{t('settings.confirmPassword')}</label>
-                  <input value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} type="password" placeholder={t('settings.confirmPasswordPh')} className="field"/>
+                  <label htmlFor="acc-pw2" style={labelStyle}>{t('settings.confirmPassword')}</label>
+                  <input id="acc-pw2" autoComplete="new-password" aria-invalid={passwordError} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} type="password" placeholder={t('settings.confirmPasswordPh')} className="field"/>
                 </div>
               </div>
 
               {passwordError && (
-                <div style={{ background: '#ef444410', border: '0.5px solid #ef444444', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444', fontWeight: 300 }}>{t('settings.passwordMismatch')}</div>
+                <div role="alert" style={{ background: 'color-mix(in srgb, var(--danger) 9%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 30%, transparent)', borderRadius: 'var(--r-field)', padding: '11px 14px', marginBottom: 16, fontSize: 14, color: 'var(--danger)', fontWeight: 600 }}>{t('settings.passwordMismatch')}</div>
               )}
               {securiteOk && (
-                <div style={{ background: '#10b98112', border: '0.5px solid #10b98144', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#10b981', fontWeight: 300 }}>{t('settings.updated')} ✓</div>
+                <div role="status" style={OK_BOX}>{t('settings.updated')} ✓</div>
               )}
 
               <button onClick={saveSecurite} disabled={savingSecurite}
-                className="btn-primary">
+                className="btn-primary" style={{ minHeight: 46 }}>
                 {savingSecurite ? t('settings.updating') : t('settings.update')}
               </button>
             </div>
@@ -216,25 +225,26 @@ export default function Parametres() {
 
           {activeSection === 'notifications' && (
             <div>
-              <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.08em', marginBottom: 24 }}>{t('settings.notifTitle')}</div>
+              <h2 className="section-label" style={{ marginBottom: 20 }}>{t('settings.notifTitle')}</h2>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {[
                   { label: t('settings.notifEmail'), sub: t('settings.notifEmailSub'), value: notifEmail, set: setNotifEmail },
                   { label: t('settings.notifSms'),   sub: t('settings.notifSmsSub'),   value: notifSms,   set: setNotifSms   },
                 ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg)', borderRadius: 12, border: '0.5px solid var(--border)' }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)', marginBottom: 3 }}>{item.label}</div>
-                      <div style={{ fontSize: 12, color: 'var(--tx3)', fontWeight: 300 }}>{item.sub}</div>
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, paddingTop: 12, paddingBottom: 12, paddingInlineStart: 16, paddingInlineEnd: 8, background: 'var(--bg)', borderRadius: 'var(--r-field)', border: '1px solid var(--border)' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>{item.label}</div>
+                      <div style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.45 }}>{item.sub}</div>
                     </div>
-                    <Toggle value={item.value} onChange={item.set}/>
+                    <Switch on={item.value} onChange={item.set} label={item.label}/>
                   </div>
                 ))}
               </div>
 
+              {notifsOk && <div role="status" style={{ ...OK_BOX, marginTop: 18, marginBottom: 0 }}>{t('settings.saved')} ✓</div>}
               <button onClick={saveNotifs} disabled={savingNotifs}
-                style={{ marginTop: 24, padding: '11px 28px', background: 'var(--gradient)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif' }}>
+                className="btn-primary" style={{ marginTop: 20, minHeight: 46 }}>
                 {savingNotifs ? t('settings.saving') : t('settings.save')}
               </button>
             </div>
