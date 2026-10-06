@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { Metadata } from 'next'
 import { CategoryIcon, categoryColor, categoryInk } from '@/components/icons'
 import { isListed } from '@/lib/subscription'
+import { haversineKm } from '@/lib/distance'
 
 import { notFound } from 'next/navigation'
 
@@ -64,6 +65,12 @@ export async function generateMetadata({ params }: { params: { wilaya: string; c
   }
 }
 
+// Données Supabase rafraîchies toutes les 5 min (sinon figées au build).
+export const revalidate = 300
+
+// Rayon autour du centre de la wilaya pour considérer un artisan comme local.
+const WILAYA_RADIUS_KM = 60
+
 export async function generateStaticParams() {
   return Object.keys(WILAYAS).flatMap(w =>
     Object.keys(CATEGORIES).map(c => ({ wilaya: w, category: c }))
@@ -77,12 +84,16 @@ export default async function WilayaCategoryPage({ params }: { params: { wilaya:
 
   const { data: rawArtisans } = await supabase
     .from('artisans')
-    .select('id, hourly_rate, is_available, rating_avg, rating_count, total_missions, plan, plan_until, profiles(full_name)')
+    .select('id, hourly_rate, is_available, rating_avg, rating_count, total_missions, plan, plan_until, lat, lng, profiles(full_name)')
     .eq('category', params.category)
     .eq('is_available', true)
-    .limit(12)
+    .limit(100)
   // Paywall : hors période de lancement, on masque les non-abonnés.
-  const artisans = (rawArtisans || []).filter(a => isListed(a))
+  // Seuls les artisans situés dans la wilaya sont listés.
+  const artisans = (rawArtisans || [])
+    .filter(a => isListed(a))
+    .filter(a => a.lat != null && a.lng != null && haversineKm(w.lat, w.lng, a.lat, a.lng) <= WILAYA_RADIUS_KM)
+    .slice(0, 12)
 
   // Schema.org
   const schema = {

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { notFound, useParams } from 'next/navigation'
 import PremiumBadge from '@/components/PremiumBadge'
 import { effectivePlan, isListed } from '@/lib/subscription'
+import { haversineKm } from '@/lib/distance'
 import { CategoryIcon, categoryColor, categoryInk } from '@/components/icons'
 
 const WILAYAS: Record<string, { name: string; nameAr: string; lat: number; lng: number; num: number }> = {
@@ -51,15 +52,17 @@ export default function WilayaPage({ params }: { params: { wilaya: string } }) {
     if (!w) return
     supabase
       .from('artisans')
-      .select('id, category, hourly_rate, is_available, rating_avg, rating_count, plan, plan_until, profiles(full_name)')
+      .select('id, category, hourly_rate, is_available, rating_avg, rating_count, plan, plan_until, lat, lng, profiles(full_name)')
       .eq('is_available', true)
-      .limit(12)
+      .limit(100)
       .then(({ data }) => {
         // Paywall : hors période de lancement, on masque les non-abonnés.
-        const list = ((data || []) as any[]).filter(a => isListed(a))
+        const list = ((data || []) as any[])
+          .filter(a => isListed(a))
+          .filter(a => a.lat != null && a.lng != null && haversineKm(w.lat, w.lng, a.lat, a.lng) <= 60)
         // Premium en tête (mise en avant promise dans la grille tarifaire).
         list.sort((a, b) => (effectivePlan(b) === 'premium' ? 1 : 0) - (effectivePlan(a) === 'premium' ? 1 : 0))
-        setArtisans(list)
+        setArtisans(list.slice(0, 12))
       })
   }, [params.wilaya])
 
