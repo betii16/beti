@@ -26,8 +26,9 @@ export default function MobileHeader() {
   const [dark, setDark] = useState(true)
 
   useEffect(() => {
+    const applied = document.documentElement.getAttribute('data-theme')
     const s = localStorage.getItem('beti-theme')
-    if (s === 'light') setDark(false)
+    setDark((applied || s) === 'dark')
   }, [])
 
   useEffect(() => {
@@ -35,10 +36,12 @@ export default function MobileHeader() {
     let channel: ReturnType<typeof supabase.channel> | null = null
     const init = async () => {
       const { data } = await supabase.auth.getUser()
-      if (!alive || !data.user) return
+      if (!alive) return
+      if (!data.user) { setLogged(false); setNotifCount(0); return }
       setLogged(true)
       const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', data.user.id).eq('is_read', false)
-      if (alive) setNotifCount(count || 0)
+      if (!alive) return
+      setNotifCount(count || 0)
       channel = supabase.channel(`mh-notif-${data.user.id}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${data.user.id}` }, () => setNotifCount(p => p + 1))
         .subscribe()

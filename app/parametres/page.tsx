@@ -149,16 +149,26 @@ export default function ParametresPage() {
         {activeTab === 'securite' && (
           <div className="card" style={{ padding: '24px' }}>
             <h2 style={H2}>{t('settings.changePass')}</h2>
-            <p style={{ fontSize: 14, color: 'var(--tx2)', marginBottom: 20, lineHeight: 1.6 }}>
+            {email && <p style={{ fontSize: 14, color: 'var(--tx2)', marginBottom: 20, lineHeight: 1.6 }}>
               {t('settings.passwordResetSub')} <strong style={{ color: 'var(--tx)', overflowWrap: 'anywhere' }}>{email}</strong>
-            </p>
+            </p>}
             {resetSent && (
               <div role="status" style={{ background: 'color-mix(in srgb, var(--success) 11%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 32%, transparent)', borderRadius: 'var(--r-field)', padding: '11px 14px', marginBottom: 16, fontSize: 14, color: 'var(--tx)', fontWeight: 600 }}>{t('settings.resetSent')}</div>
             )}
-            <button onClick={async () => { await supabase.auth.resetPasswordForEmail(email); setResetSent(true) }}
-              className="btn-primary btn-sm" style={{ minHeight: 44 }}>
-              {t('settings.changePass')}
-            </button>
+            {email ? (
+              <button onClick={async () => {
+                const { error } = await supabase.auth.resetPasswordForEmail(email)
+                if (error) { alert(error.message); return }
+                setResetSent(true)
+              }}
+                className="btn-primary btn-sm" style={{ minHeight: 44 }}>
+                {t('settings.changePass')}
+              </button>
+            ) : (
+              <p style={{ fontSize: 14, color: 'var(--tx2)', lineHeight: 1.6 }}>
+                {isAr ? 'حسابك مرتبط برقم هاتفك ويتم الدخول عبر رمز واتساب، لا توجد كلمة مرور لتغييرها.' : 'Ton compte est lié à ton numéro de téléphone et se connecte par code WhatsApp : il n’y a pas de mot de passe à changer.'}
+              </p>
+            )}
           </div>
         )}
 

@@ -85,7 +85,8 @@ export default function ArtisanPage(){
 
   // Paywall : hors période de lancement, le profil d'un artisan non abonné est
   // indisponible au public (le propriétaire garde l'accès pour se réabonner).
-  if(a&&!isListed(a)&&uid!==id)return(
+  // Identifiant réel (UUID) sans fiche artisan (ex. un client) : jamais de faux profil réservable.
+  if((!a&&!isDemoArtisan(id))||(a&&!isListed(a)&&uid!==id))return(
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24,paddingTop:64,textAlign:'center',direction:isAr?'rtl':'ltr'}}>
       <div style={{maxWidth:380}}>
         <div style={{fontSize:20,fontWeight:800,color:'var(--tx)',marginBottom:10}}>{t('profile.unavailableTitle')}</div>

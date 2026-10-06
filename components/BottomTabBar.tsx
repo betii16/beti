@@ -29,13 +29,15 @@ export default function BottomTabBar() {
 
     const init = async () => {
       const { data } = await supabase.auth.getUser()
-      if (!alive || !data.user) return
+      if (!alive) return
+      if (!data.user) { setLogged(false); setRole(null); setNotifCount(0); return }
       setLogged(true)
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
       if (!alive) return
       if (profile) setRole(profile.role)
       const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', data.user.id).eq('is_read', false)
-      if (alive) setNotifCount(count || 0)
+      if (!alive) return
+      setNotifCount(count || 0)
       channel = supabase.channel(`tab-notif-${data.user.id}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${data.user.id}` }, () => setNotifCount(p => p + 1))
         .subscribe()

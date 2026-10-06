@@ -21,8 +21,10 @@ export default function Navigation() {
 
   useEffect(() => {
     setMounted(true)
+    // Reflète le thème réellement affiché (le layout l'applique avant l'hydratation).
+    const applied = document.documentElement.getAttribute('data-theme')
     const saved = localStorage.getItem('beti-theme')
-    if (saved === 'light') setDark(false)
+    setDark((applied || saved) === 'dark')
   }, [])
 
   const toggleTheme = () => {
@@ -39,25 +41,39 @@ export default function Navigation() {
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll)
 
-    const initAuth = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!alive || !data.user) return
-      setUser(data.user)
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+    const stopChannel = () => {
+      if (notifChannel) { supabase.removeChannel(notifChannel); notifChannel = null }
+    }
+
+    // Applique l'état de session (connexion, déconnexion, rafraîchissement).
+    const applyUser = async (u: any) => {
+      stopChannel()
+      if (!alive) return
+      if (!u) { setUser(null); setRole(null); setNotifCount(0); return }
+      setUser(u)
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', u.id).single()
       if (!alive) return
       if (profile) setRole(profile.role)
-      const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', data.user.id).eq('is_read', false)
+      const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', u.id).eq('is_read', false)
+      if (!alive) return
       setNotifCount(count || 0)
-      notifChannel = supabase.channel(`nav-notif-${data.user.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${data.user.id}` }, () => setNotifCount(p => p + 1))
+      notifChannel = supabase.channel(`nav-notif-${u.id}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, () => setNotifCount(p => p + 1))
         .subscribe()
     }
 
-    initAuth()
+    supabase.auth.getUser().then(({ data }) => applyUser(data.user))
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        // différé : pas d'appel Supabase directement dans le callback d'auth
+        setTimeout(() => applyUser(session?.user ?? null), 0)
+      }
+    })
     return () => {
       alive = false
       window.removeEventListener('scroll', onScroll)
-      if (notifChannel) supabase.removeChannel(notifChannel)
+      sub.subscription.unsubscribe()
+      stopChannel()
     }
   }, [])
 
