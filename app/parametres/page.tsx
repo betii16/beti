@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { fetchMyPhone } from '@/lib/phones'
 
 const SCOPE_CSS = `.set-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 const H2: React.CSSProperties = { fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 18 }
@@ -40,7 +41,7 @@ export default function ParametresPage() {
       if (!user) { router.push('/auth/login'); return }
       setUser(user); setEmail(user.email || '')
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data) { setFullName(data.full_name || ''); setPhone(data.phone || '') }
+      if (data) { setFullName(data.full_name || ''); setPhone(await fetchMyPhone(user.id, data.phone)) }
     }
     init()
   }, [])

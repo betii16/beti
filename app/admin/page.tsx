@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { fetchPhones } from '@/lib/phones'
 import { SkeletonPage } from '@/components/Skeleton'
 import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock } from 'lucide-react'
 
@@ -247,7 +248,10 @@ export default function AdminDashboard() {
       .select('id, category, is_available, rating_avg, rating_count, total_missions, hourly_rate, location_city, created_at, profiles!inner(full_name, phone, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(100)
-    if (data) setArtisans(data as any)
+    if (data) {
+      const ph = await fetchPhones(data.map((a: any) => a.id))
+      setArtisans(data.map((a: any) => ({ ...a, profiles: a.profiles ? { ...a.profiles, phone: ph[a.id] || a.profiles.phone || '' } : a.profiles })) as any)
+    }
   }
 
   const loadBookings = async () => {
@@ -265,7 +269,10 @@ export default function AdminDashboard() {
       .select('id, full_name, phone, role, created_at, avatar_url')
       .order('created_at', { ascending: false })
       .limit(100)
-    if (data) setUsers(data as any)
+    if (data) {
+      const ph = await fetchPhones(data.map((u: any) => u.id))
+      setUsers(data.map((u: any) => ({ ...u, phone: ph[u.id] || u.phone || '' })) as any)
+    }
   }
 
   const loadReviews = async () => {
@@ -284,7 +291,10 @@ export default function AdminDashboard() {
         .select('id, artisan_id, plan, cycle, amount, status, payment_ref, created_at, profiles!subscriptions_artisan_id_fkey(full_name, phone)')
         .order('created_at', { ascending: false })
         .limit(100)
-      if (!error && data) setSubs(data as any)
+      if (!error && data) {
+        const ph = await fetchPhones(data.map((s: any) => s.artisan_id))
+        setSubs(data.map((s: any) => ({ ...s, profiles: s.profiles ? { ...s.profiles, phone: ph[s.artisan_id] || s.profiles.phone || '' } : s.profiles })) as any)
+      }
     } catch { /* table subscriptions pas encore créée */ }
   }
 

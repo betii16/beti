@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { fetchPhones } from '@/lib/phones'
 import { useLang } from '@/lib/LangContext'
 import { SkeletonPage } from '@/components/Skeleton'
 import { Calendar, ClipboardList, Inbox, Clock, User, Phone, MapPin, Banknote, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -61,7 +62,10 @@ export default function Planning() {
         .in('status', ['confirmed', 'in_progress', 'completed'])
         .order('scheduled_at', { ascending: true })
 
-      if (data) setMissions(data)
+      if (data) {
+        const ph = await fetchPhones(data.map((m: any) => m.client_id))
+        setMissions(data.map((m: any) => ({ ...m, profiles: m.profiles ? { ...m.profiles, phone: ph[m.client_id] || m.profiles.phone || null } : m.profiles })))
+      }
       setLoading(false)
     }
     init()

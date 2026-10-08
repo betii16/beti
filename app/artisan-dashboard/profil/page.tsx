@@ -9,6 +9,7 @@ import { effectivePlan } from '@/lib/subscription'
 import { CategoryIcon } from '@/components/icons'
 import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles, Search, MapPin } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
+import { fetchMyPhone, phoneTaken } from '@/lib/phones'
 
 // ── Types ──
 
@@ -138,7 +139,7 @@ export default function ArtisanProfileConfig() {
 
     if (prof) {
       setFullName(prof.full_name || '')
-      setPhone(prof.phone || '')
+      setPhone(await fetchMyPhone(u.id, prof.phone))
       setAvatarUrl(prof.avatar_url || null)
     }
 
@@ -175,13 +176,7 @@ export default function ArtisanProfileConfig() {
   const checkPhone = async (phoneVal: string) => {
     if (!phoneVal || phoneVal.length < 9) return
     setPhoneError('')
-    const { data } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('phone', phoneVal)
-      .neq('id', user?.id || '')
-      .limit(1)
-    if (data && data.length > 0) {
+    if (await phoneTaken(phoneVal, user?.id)) {
       setPhoneError(t('artisanProfile.errPhone'))
     }
   }

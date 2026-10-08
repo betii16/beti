@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { fetchPhones } from '@/lib/phones'
 import { SkeletonPage } from '@/components/Skeleton'
 import { AlertTriangle, Banknote, Check, ArrowLeft, Printer } from 'lucide-react'
 function pad(n: number) { return String(n).padStart(2, '0') }
@@ -46,7 +47,10 @@ export default function FacturePage() {
       if (data.status !== 'completed') { setError("La mission n'est pas encore terminée"); setLoading(false); return }
       // bookings.artisan_id référence profiles : la fiche métier est lue à part.
       const { data: art } = await supabase.from('artisans').select('id, category, hourly_rate').eq('id', data.artisan_id).maybeSingle()
-      setBooking({ ...data, artisan: { ...(art || {}), profiles: data.artisan_profile } })
+      const ph = await fetchPhones([data.client_id, data.artisan_id])
+      const client = data.client ? { ...data.client, phone: ph[data.client_id] || data.client.phone || null } : data.client
+      const artisanProfile = data.artisan_profile ? { ...data.artisan_profile, phone: ph[data.artisan_id] || data.artisan_profile.phone || null } : data.artisan_profile
+      setBooking({ ...data, client, artisan: { ...(art || {}), profiles: artisanProfile } })
       setLoading(false)
     }
     load()

@@ -7,6 +7,7 @@ import { useLang } from '@/lib/LangContext'
 import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map, Sparkles } from 'lucide-react'
 import { isLaunchFree, SUB_FREE_UNTIL } from '@/lib/plans'
 import NavigateButton from '@/components/NavigateButton'
+import { fetchPhones, fetchMyPhone } from '@/lib/phones'
 
 const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var(--accent)',in_progress:'var(--accent)',completed:'var(--success)',refused:'var(--danger)',cancelled:'var(--tx2)'}
 const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c} 13%, transparent)`,color:`color-mix(in srgb, ${c} 72%, var(--tx))`})
@@ -36,22 +37,34 @@ export default function ArtisanDashboard(){
       supabase.from('bookings').select('*,profiles!bookings_client_id_fkey(full_name,phone)').eq('artisan_id',u.id).order('created_at',{ascending:false}).limit(20),
       supabase.from('bookings').select('price_agreed').eq('artisan_id',u.id).eq('status','completed'),
     ])
-    if(p)setProfile(p);if(a){setArtisan(a);setIsAvailable(a.is_available)}
-    if(b)setBookings(b)
+    if(p){const mp=await fetchMyPhone(u.id,p.phone);setProfile({...p,phone:mp})}
+    if(a){setArtisan(a);setIsAvailable(a.is_available)}
+    if(b){const ph=await fetchPhones(b.map((x:any)=>x.client_id));setBookings(b.map((x:any)=>({...x,profiles:{...(x.profiles||{}),phone:ph[x.client_id]||x.profiles?.phone||null}})))}
     const rev=(completed||[]).reduce((s:number,x:any)=>s+(x.price_agreed||0),0)
     const pending=(b||[]).filter((x:any)=>x.status==='pending').length
     setStats({revenue:rev,missions:(completed||[]).length,pending,rating:a?.rating_avg||0,ratingCount:a?.rating_count||0})
     setLoading(false)
   }
 
+  // Position exacte -> artisan_live_location ; repli artisans.lat/lng (arrondi par trigger) si la table n'existe pas encore
+  const pushLive=async(pos:GeolocationPosition)=>{
+    if(!user)return
+    const lat=pos.coords.latitude,lng=pos.coords.longitude
+    try{
+      const{error}=await supabase.from('artisan_live_location').upsert({artisan_id:user.id,lat,lng,updated_at:new Date().toISOString()},{onConflict:'artisan_id'})
+      if(!error){if(!artisan?.lat||!artisan?.lng)await supabase.from('artisans').update({lat,lng}).eq('id',user.id);return}
+    }catch{}
+    await supabase.from('artisans').update({lat,lng}).eq('id',user.id)
+  }
+
   const toggleAvail=async()=>{
     if(!user)return;const nv=!isAvailable;setIsAvailable(nv)
     if(nv&&navigator.geolocation){
       navigator.geolocation.getCurrentPosition(async pos=>{
-        await supabase.from('artisans').update({is_available:true,lat:pos.coords.latitude,lng:pos.coords.longitude}).eq('id',user.id)
+        await supabase.from('artisans').update({is_available:true}).eq('id',user.id);await pushLive(pos)
       },()=>{supabase.from('artisans').update({is_available:true}).eq('id',user.id)})
       gpsRef.current=navigator.geolocation.watchPosition(async pos=>{
-        await supabase.from('artisans').update({lat:pos.coords.latitude,lng:pos.coords.longitude}).eq('id',user.id)
+        await pushLive(pos)
       },()=>{},{enableHighAccuracy:true,maximumAge:10000})
     }else{
       if(gpsRef.current!==null){navigator.geolocation.clearWatch(gpsRef.current);gpsRef.current=null}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { fetchMyPhone } from '@/lib/phones'
 import { User, Lock, Bell, LogOut } from 'lucide-react'
 
 const SCOPE_CSS = `.set-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
@@ -61,7 +62,7 @@ export default function Parametres() {
 
       if (profile) {
         setFullName(profile.full_name || '')
-        setPhone(profile.phone || '')
+        setPhone(await fetchMyPhone(user.id, profile.phone))
         setNotifEmail(profile.notif_email ?? true)
         setNotifSms(profile.notif_sms ?? false)
       }

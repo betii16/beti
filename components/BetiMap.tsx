@@ -202,12 +202,31 @@ export default function BetiMap({
       } else {
         setRouteFrom(curr.lat, curr.lng)
         let lastRouteAt = { ...curr }
+        // Position exacte : artisan_live_location (RLS : client d'une réservation active).
+        // Repli : artisans.lat/lng (arrondi) si la table est absente / vide / inaccessible.
+        let liveSeen = false
+        const onPos = (lat: number, lng: number) => {
+          animateTo(lng, lat)
+          if (calcDist(lastRouteAt.lat, lastRouteAt.lng, lat, lng) > 0.12) { lastRouteAt = { lng, lat }; setRouteFrom(lat, lng) }
+        }
+        ;(async () => {
+          try {
+            const { data } = await supabase.from('artisan_live_location').select('lat, lng').eq('artisan_id', trackingArtisanId).maybeSingle()
+            if (!aborted && data && data.lat && data.lng) { liveSeen = true; onPos(data.lat, data.lng) }
+          } catch { /* table absente -> repli */ }
+        })()
         const channel = supabase.channel(`track-${trackingArtisanId}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'artisan_live_location', filter: `artisan_id=eq.${trackingArtisanId}` }, (payload: any) => {
+            const { lat, lng } = payload.new || {}
+            if (!lat || !lng) return
+            liveSeen = true
+            onPos(lat, lng)
+          })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'artisans', filter: `id=eq.${trackingArtisanId}` }, (payload: any) => {
+            if (liveSeen) return
             const { lat, lng } = payload.new
             if (!lat || !lng) return
-            animateTo(lng, lat)
-            if (calcDist(lastRouteAt.lat, lastRouteAt.lng, lat, lng) > 0.12) { lastRouteAt = { lng, lat }; setRouteFrom(lat, lng) }
+            onPos(lat, lng)
           })
           .subscribe()
         cleanupChannel = () => supabase.removeChannel(channel)

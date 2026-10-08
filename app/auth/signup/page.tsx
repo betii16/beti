@@ -8,6 +8,7 @@ import { CountryPicker } from '@/components/CountryPicker'
 import { LogoMark } from '@/components/Logo'
 import OtpInput from '@/components/OtpInput'
 import { UserRound, Hammer, Check } from 'lucide-react'
+import { phoneTaken } from '@/lib/phones'
 
 const race = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
   Promise.race([Promise.resolve(p), new Promise<T>((_, r) => setTimeout(() => r(new Error('Délai dépassé')), ms))])
@@ -44,8 +45,7 @@ export default function SignupPage() {
     if (phone.replace(/\D/g, '').length < 6) return
     setPhoneErr('')
     try {
-      const { data } = await race(supabase.from('profiles').select('id').eq('phone', fullPhone).limit(1))
-      if (data && data.length > 0) setPhoneErr(t('auth.phoneUsed'))
+      if (await race(phoneTaken(fullPhone))) setPhoneErr(t('auth.phoneUsed'))
     } catch {}
   }
 
