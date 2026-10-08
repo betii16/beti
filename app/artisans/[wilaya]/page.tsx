@@ -44,7 +44,8 @@ const CATEGORIES_LABELS: Record<string, string> = {
   serrurerie: 'Serrurier', informatique: 'Informaticien', coiffure: 'Coiffeur',
 }
 
-export default function WilayaPage({ params }: { params: { wilaya: string } }) {
+export default function WilayaPage() {
+  const params = useParams<{ wilaya: string }>()
   const w = WILAYAS[params.wilaya]
   const [artisans, setArtisans] = useState<any[]>([])
 

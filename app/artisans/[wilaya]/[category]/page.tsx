@@ -38,7 +38,8 @@ const CATEGORIES: Record<string, { label: string; labelPlural: string; icon: str
   coiffure:     { label: 'Coiffeur',      labelPlural: 'Coiffeurs',      icon: '✂', desc: 'coiffure à domicile, coupe, coloration, brushing' },
 }
 
-export async function generateMetadata({ params }: { params: { wilaya: string; category: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ wilaya: string; category: string }> }): Promise<Metadata> {
+  const params = await props.params
   const w = WILAYAS[params.wilaya]
   const c = CATEGORIES[params.category]
   if (!w || !c) return {}
@@ -77,7 +78,8 @@ export async function generateStaticParams() {
   )
 }
 
-export default async function WilayaCategoryPage({ params }: { params: { wilaya: string; category: string } }) {
+export default async function WilayaCategoryPage(props: { params: Promise<{ wilaya: string; category: string }> }) {
+  const params = await props.params
   const w = WILAYAS[params.wilaya]
   const c = CATEGORIES[params.category]
   if (!w || !c) notFound()
