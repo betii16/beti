@@ -13,7 +13,7 @@ export default function NotFound() {
       alignItems: 'center', justifyContent: 'center', textAlign: 'center',
       padding: '96px 24px 48px', gap: 16,
     }}>
-      <div className="section-label" style={{ marginBottom: 0 }}>Erreur 404 · <span lang="ar">الصفحة غير موجودة</span></div>
+      <div className="section-label" style={{ marginBottom: 0 }}>Erreur 404 · <bdi lang="ar" dir="rtl">الصفحة غير موجودة</bdi></div>
       <div className="num" aria-hidden style={{
         fontSize: 'clamp(72px, 18vw, 112px)', fontWeight: 600, lineHeight: 1, color: 'var(--tx)',
         letterSpacing: '-0.04em',

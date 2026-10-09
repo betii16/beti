@@ -235,7 +235,7 @@ export default function MapPage() {
                             <span style={{fontSize:14.5,fontWeight:700,color:tx,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.full_name}</span>
                             <span style={{fontSize:11.5,color:categoryInk(a.category),fontWeight:700,whiteSpace:'nowrap'}}>{cl(a.category)}</span>
                           </div>
-                          <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:tx2,whiteSpace:'nowrap',overflow:'hidden'}}>
+                          <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',columnGap:6,rowGap:2,fontSize:12,color:tx2}}>
                             <Stars r={a.rating_avg} s={10}/><span className="num" style={{color:'var(--laiton)',fontWeight:700}}>{a.rating_avg.toFixed(1)}</span>
                             <span aria-hidden style={{color:tx3}}>·</span>
                             <span>{a.distance_km!=null?`${a.distance_km.toFixed(1)} km`:'—'}</span>
