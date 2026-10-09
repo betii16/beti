@@ -6,7 +6,6 @@
 // Le contenu est passé en props depuis chaque page (server component → SEO).
 
 import { useRouter } from 'next/navigation'
-import { useLang } from '@/lib/LangContext'
 import { ChevronLeft } from 'lucide-react'
 
 export type LegalSection = { h: string; body: string[] }
@@ -27,10 +26,9 @@ export default function LegalPage({
   note?: string
 }) {
   const router = useRouter()
-  const { isAr } = useLang()
 
   return (
-    <div style={{ minHeight: '100vh', paddingTop: 72, direction: isAr ? 'rtl' : 'ltr' }}>
+    <div style={{ minHeight: '100vh', paddingTop: 72, direction: 'ltr' }} lang="fr">
       <div className="page-pad-m" style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px 72px' }}>
 
         <button
@@ -42,7 +40,7 @@ export default function LegalPage({
             fontSize: 14, fontWeight: 500, padding: '8px 0', minHeight: 40,
           }}
         >
-          <ChevronLeft size={16} style={{ transform: isAr ? 'rotate(180deg)' : 'none' }} />
+          <ChevronLeft size={16} style={{ transform: 'none' }} />
           BETI
         </button>
 
