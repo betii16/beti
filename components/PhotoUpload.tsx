@@ -55,7 +55,7 @@ export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userI
           {loading ? '...' : 'Modifier'}
         </div>
       </div>
-      <div onClick={()=>ref.current?.click()} style={{ position:'absolute', bottom:-2, right:-2, width:26, height:26, borderRadius:'50%', background:'linear-gradient(135deg,#175CC4,#1E6FD6)', border:'2px solid var(--bg,#0b0b12)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:11, color:'#fff' }}>+</div>
+      <div onClick={()=>ref.current?.click()} style={{ position:'absolute', bottom:-2, insetInlineEnd:-2, width:26, height:26, borderRadius:'50%', background:'linear-gradient(135deg,#175CC4,#1E6FD6)', border:'2px solid var(--bg,#0b0b12)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:11, color:'#fff' }}>+</div>
       <input ref={ref} type="file" accept="image/*" onChange={handleFile} style={{ display:'none' }}/>
       {err && <div style={{ position:'absolute', top:'100%', left:0, right:0, marginTop:6, padding:'6px 10px', borderRadius:8, background:'#ef444418', border:'1px solid #ef444433', fontSize:10, color:'#ef4444', whiteSpace:'nowrap' }}>{err}</div>}
     </div>
@@ -91,7 +91,7 @@ export function ProblemPhotosUpload({ bookingId, onUpload }: { bookingId:string;
         {photos.map(url => (
           <div key={url} style={{ position:'relative', width:80, height:80 }}>
             <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:8, border:'1px solid var(--border)' }}/>
-            <button onClick={()=>{const u=photos.filter(p=>p!==url);setPhotos(u);onUpload(u)}} style={{ position:'absolute', top:-6, right:-6, width:20, height:20, borderRadius:'50%', background:'#ef4444', border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={11}/></button>
+            <button onClick={()=>{const u=photos.filter(p=>p!==url);setPhotos(u);onUpload(u)}} style={{ position:'absolute', top:-6, insetInlineEnd:-6, width:20, height:20, borderRadius:'50%', background:'#ef4444', border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={11}/></button>
           </div>
         ))}
         {photos.length<5 && (
@@ -135,7 +135,7 @@ export function PortfolioUpload({ artisanId, existingPhotos }: { artisanId:strin
         {photos.map((url,i) => (
           <div key={i} style={{ position:'relative', aspectRatio:'1', borderRadius:10, overflow:'hidden', border:'1px solid var(--border)' }}>
             <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-            <button onClick={async()=>{const u=photos.filter(p=>p!==url);setPhotos(u)}} style={{ position:'absolute', top:4, right:4, width:20, height:20, borderRadius:'50%', background:'rgba(0,0,0,0.7)', border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={11}/></button>
+            <button onClick={async()=>{const u=photos.filter(p=>p!==url);setPhotos(u)}} style={{ position:'absolute', top:4, insetInlineEnd:4, width:20, height:20, borderRadius:'50%', background:'rgba(0,0,0,0.7)', border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={11}/></button>
           </div>
         ))}
         {photos.length<12 && (

@@ -198,14 +198,14 @@ body { background: transparent; }
 }
 /* Encoche d'angle « carreau » — petit chevron d'accent en haut à droite. */
 .card::after, .acard::after {
-  content: ''; position: absolute; top: 0; right: 0; width: 14px; height: 14px; pointer-events: none; z-index: 2;
+  content: ''; position: absolute; top: 0; inset-inline-end: 0; width: 14px; height: 14px; pointer-events: none; z-index: 2;
   background: var(--accent);
   opacity: 0.14;
   clip-path: polygon(100% 0, 0 0, 100% 100%);
   transition: opacity .3s ease;
 }
 [dir="rtl"] .card::after, [dir="rtl"] .acard::after {
-  right: auto; left: 0; clip-path: polygon(0 0, 100% 0, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 /* ── Cliquable uniquement : soulèvement + bord accent ── */
 .acard, .card.is-clickable { cursor: pointer; }
@@ -359,8 +359,8 @@ textarea.field { resize: vertical; min-height: 96px; line-height: 1.6; }
 .tone-muted   { color: var(--tx2);     background: var(--bg3); border: 1px solid var(--border); }
 
 /* ── Pages SEO /artisans/[wilaya]/… : liens-pastilles, cartes, fil d'Ariane ── */
-.seo-wrap { max-width: 1100px; margin: 0 auto; padding-left: 40px; padding-right: 40px; }
-@media (max-width: 767px) { .seo-wrap { padding-left: 20px; padding-right: 20px; } }
+.seo-wrap { max-width: 1100px; margin: 0 auto; padding-inline: 40px; }
+@media (max-width: 767px) { .seo-wrap { padding-inline: 20px; } }
 .seo-pill {
   display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px;
   border-radius: var(--r-pill); background: var(--bg2); border: 1px solid var(--border);

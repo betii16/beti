@@ -84,7 +84,7 @@ export function ReviewPhotoUpload({
             <button
               onClick={() => removePhoto(i)}
               style={{
-                position: 'absolute', top: 4, right: 4,
+                position: 'absolute', top: 4, insetInlineEnd: 4,
                 width: 20, height: 20, borderRadius: '50%',
                 background: 'rgba(0,0,0,0.7)', border: 'none',
                 color: '#fff', cursor: 'pointer',
@@ -197,7 +197,7 @@ export function WorkGallery({
             </div>
             {/* Badge vérifié */}
             <div style={{
-              position: 'absolute', top: 6, left: 6,
+              position: 'absolute', top: 6, insetInlineStart: 6,
               padding: '2px 8px', borderRadius: 10,
               background: 'rgba(10,32,16,0.9)', border: '0.5px solid #0a3a20',
               fontSize: 9, color: '#4ade80', fontWeight: 800,
@@ -258,7 +258,7 @@ export function WorkGallery({
             {/* Close */}
             <button
               onClick={() => setSelectedPhoto(null)}
-              style={{ position: 'absolute', top: -16, right: -16, width: 36, height: 36, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ position: 'absolute', top: -16, insetInlineEnd: -16, width: 36, height: 36, borderRadius: '50%', background: 'var(--bg2)', border: '0.5px solid var(--border)', color: 'var(--tx)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             ><X size={16}/></button>
           </div>
         </div>
@@ -362,7 +362,7 @@ export function ArtisanAvatar({
             onClick={() => inputRef.current?.click()}
             disabled={loading}
             style={{
-              position: 'absolute', bottom: -2, right: -2,
+              position: 'absolute', bottom: -2, insetInlineEnd: -2,
               width: 28, height: 28, borderRadius: '50%',
               background: '#175CC4', border: '2px solid #fff',
               color: '#fff', fontSize: 12, cursor: 'pointer',

@@ -283,7 +283,7 @@ export function AlgeriaCitySearch({
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         {/* Input */}
         <div style={{ position: 'relative', flex: 1 }}>
-          <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: selected ? '#175CC4' : '#555', display: 'flex' }}><MapPin size={14}/></div>
+          <div style={{ position: 'absolute', insetInlineStart: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: selected ? '#175CC4' : '#555', display: 'flex' }}><MapPin size={14}/></div>
           <input
             ref={inputRef}
             type="text"
@@ -292,7 +292,7 @@ export function AlgeriaCitySearch({
             onFocus={() => setOpen(results.length > 0 || query.length === 0)}
             placeholder={detecting ? 'Détection...' : placeholder}
             style={{
-              width: '100%', padding: '11px 36px 11px 34px',
+              width: '100%', padding: '11px 0', paddingInlineStart: 34, paddingInlineEnd: 36,
               background: 'var(--bg2)', border: `0.5px solid ${selected ? '#175CC444' : 'var(--border)'}`,
               borderRadius: 10, color: 'var(--tx)', fontSize: 13, outline: 'none',
               fontFamily: 'Nexa, sans-serif', fontWeight: 300, transition: 'border-color 0.2s',
@@ -303,7 +303,7 @@ export function AlgeriaCitySearch({
             onClick={detectLocation}
             title="Détecter ma position"
             style={{
-              position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+              position: 'absolute', insetInlineEnd: 10, top: '50%', transform: 'translateY(-50%)',
               background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 14,
               opacity: detecting ? 0.5 : 0.8, transition: 'opacity 0.2s',
             }}

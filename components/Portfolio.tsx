@@ -171,7 +171,7 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
             {drafts.map((url, i) => (
               <div key={i} style={{ position: 'relative', width: 84, height: 84, borderRadius: 10, overflow: 'hidden', border: '0.5px solid var(--border)' }}>
                 <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <button onClick={() => removeDraft(i)} style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={11}/></button>
+                <button onClick={() => removeDraft(i)} style={{ position: 'absolute', top: 4, insetInlineEnd: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={11}/></button>
               </div>
             ))}
           </div>

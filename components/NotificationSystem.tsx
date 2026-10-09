@@ -128,14 +128,14 @@ export function NotificationBell() {
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={open ? '#175CC4' : '#888'} strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         {unread > 0 && (
-          <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#ef4444', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 800 }}>
+          <div style={{ position: 'absolute', top: -4, insetInlineEnd: -4, width: 18, height: 18, borderRadius: '50%', background: '#ef4444', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 800 }}>
             {unread > 9 ? '9+' : unread}
           </div>
         )}
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 340, background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 9999, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', insetInlineEnd: 0, width: 340, background: 'var(--bg2)', border: '0.5px solid var(--border)', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.7)', zIndex: 9999, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>Notifications</div>
             {unread > 0 && <button onClick={markAllRead} style={{ fontSize: 11, color: '#175CC4', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}>Tout marquer lu</button>}

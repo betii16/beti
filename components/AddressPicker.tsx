@@ -267,7 +267,7 @@ export function AddressPicker({
             onClick={handleGPS}
             style={{
               padding: '14px 16px', background: 'transparent', border: 'none',
-              borderLeft: '0.5px solid var(--border)', color: loading ? '#555' : '#175CC4',
+              borderInlineStart: '0.5px solid var(--border)', color: loading ? '#555' : '#175CC4',
               cursor: 'pointer', fontSize: 16, flexShrink: 0,
               transition: 'color 0.2s',
             }}

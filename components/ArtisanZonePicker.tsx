@@ -238,7 +238,7 @@ export function ArtisanZonePicker({
             placeholder="Votre adresse (rue, quartier, ville)..."
             style={{ flex: 1, padding: '13px 0', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 13, outline: 'none', fontFamily: 'Nexa, sans-serif', fontWeight: 300 }}
           />
-          <button onClick={handleGPS} style={{ padding: '0 16px', background: 'transparent', border: 'none', borderLeft: '0.5px solid var(--border)', color: detecting ? '#555' : '#175CC4', cursor: 'pointer', fontSize: 16, flexShrink: 0 }} title="Ma position">
+          <button onClick={handleGPS} style={{ padding: '0 16px', background: 'transparent', border: 'none', borderInlineStart: '0.5px solid var(--border)', color: detecting ? '#555' : '#175CC4', cursor: 'pointer', fontSize: 16, flexShrink: 0 }} title="Ma position">
             {detecting ? '…' : <Crosshair size={16}/>}
           </button>
         </div>
