@@ -117,7 +117,7 @@ export default async function WilayaCategoryPage(props: { params: Promise<{ wila
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/>
 
-      <div style={{ minHeight: '100vh', paddingTop: 80 }}>
+      <div dir="ltr" lang="fr" style={{ minHeight: '100vh', paddingTop: 80 }}>
         <section className="seo-wrap" style={{ paddingTop: 48, paddingBottom: 40 }}>
           {/* Fil d'ariane */}
           <nav aria-label="Fil d'Ariane" className="seo-crumbs">

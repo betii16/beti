@@ -70,7 +70,7 @@ export default function WilayaPage() {
   if (!w) return notFound()
 
   return (
-    <div style={{ minHeight: '100vh', paddingTop: 80 }}>
+    <div dir="ltr" lang="fr" style={{ minHeight: '100vh', paddingTop: 80 }}>
 
       {/* Hero SEO */}
       <section className="seo-wrap" style={{ paddingTop: 48, paddingBottom: 32 }}>
