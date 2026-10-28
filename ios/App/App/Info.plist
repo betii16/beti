@@ -30,7 +30,7 @@
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -55,5 +55,7 @@
 	<string>BETI utilise la caméra pour ajouter des photos à votre profil, portfolio et avis.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>BETI accède à vos photos pour les ajouter à votre profil, portfolio et avis.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

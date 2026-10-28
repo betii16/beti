@@ -9,22 +9,23 @@ const config: CapacitorConfig = {
     url: 'https://beti-ten.vercel.app',
     androidScheme: 'https',
     cleartext: false,
+    // Page locale affichée si le site distant est injoignable
+    errorPath: 'index.html',
   },
   android: {
     allowMixedContent: false,
-    backgroundColor: '#0b0b12',
+    backgroundColor: '#0E1922',
   },
   ios: {
-    backgroundColor: '#0b0b12',
+    backgroundColor: '#0E1922',
     contentInset: 'automatic',
   },
   plugins: {
     SplashScreen: {
-      // Splash sombre BETI au lancement puis masqué automatiquement
-      // (coquille distante : aucun JS local pour appeler hide()).
-      launchShowDuration: 1500,
-      launchAutoHide: true,
-      backgroundColor: '#0b0b12',
+      // Splash BETI masqué par components/NativeBridge.tsx (ou www/index.html en secours).
+      launchShowDuration: 0,
+      launchAutoHide: false, // masqué par NativeBridge quand la page est chargée
+      backgroundColor: '#0E1922',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
       splashFullScreen: true,

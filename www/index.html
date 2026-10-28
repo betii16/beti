@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>BETI</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#0b0b12;color:#e0dfe5;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;text-align:center;padding:24px}
-    .logo{width:64px;height:64px;background:linear-gradient(135deg,#5A3DF0,#7C5CFF);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#fff}
-    h1{font-size:18px;letter-spacing:0.1em}
-    p{font-size:14px;color:#8585a0;line-height:1.6;max-width:280px}
-    button{margin-top:8px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#5A3DF0,#7C5CFF);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BETI</title>
+<style>
+:root{--bg:#F0ECE3;--tx:#17242F;--mute:#5b6a75;--ac:#175CC4;--on:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#0E1922;--tx:#E9E4D8;--mute:#9aa7b1;--ac:#4E9BE8;--on:#0E1922}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom))}
+h1{font-size:22px;letter-spacing:.12em}
+p{font-size:15px;color:var(--mute);line-height:1.6;max-width:280px}
+button{margin-top:6px;min-width:160px;padding:13px 28px;border-radius:12px;background:var(--ac);border:0;color:var(--on);font-size:15px;font-weight:700;cursor:pointer}
+[lang=ar]{direction:rtl}
+</style>
 </head>
 <body>
-  <div class="logo">B</div>
-  <h1>BETI</h1>
-  <p>Connexion impossible. Vérifie ta connexion internet puis réessaie.</p>
-  <button onclick="location.reload()">Réessayer</button>
+<h1>BETI</h1>
+<p id="m">Connexion impossible. Vérifie ta connexion internet puis réessaie.</p>
+<button id="b" onclick="location.reload()">Réessayer</button>
+<script>
+try{
+  var ar=(navigator.language||'').toLowerCase().indexOf('ar')===0;
+  if(ar){document.documentElement.lang='ar';document.body.lang='ar';
+    document.getElementById('m').textContent='تعذّر الاتصال. تحقق من الإنترنت ثم أعد المحاولة.';
+    document.getElementById('b').textContent='إعادة المحاولة';}
+  var C=window.Capacitor;if(C&&C.Plugins&&C.Plugins.SplashScreen)C.Plugins.SplashScreen.hide();
+}catch(e){}
+</script>
 </body>
 </html>
