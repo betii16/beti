@@ -1,6 +1,6 @@
 'use client'
 import { supabase } from '@/lib/supabase'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { haversineKm } from '@/lib/distance'
 import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
@@ -10,7 +10,7 @@ import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
-import { LayoutGrid, Users, Heart, Clock, MapPinned, Search, CalendarCheck, CheckCircle2, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
+import { LayoutGrid, MapPinned, Search, CalendarCheck, CheckCircle2, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
 import { LogoMark } from '@/components/Logo'
 import CinematicGate from '@/components/cinematic/CinematicGate'
@@ -32,12 +32,6 @@ const SVC = [
   {id:'coiffure'},
 ].map(s=>({...s,color:categoryColor(s.id)}))
 const NEED_KEYS = ['need1','need2','need3','need4','need5','need6','need7','need8']
-const TESTI = [
-  {name:'Samira B.',city:'Alger',k:'testi1',r:5,s:'plomberie'},
-  {name:'Mehdi K.',city:'Oran',k:'testi2',r:5,s:'demenagement'},
-  {name:'Fatima Z.',city:'Constantine',k:'testi3',r:4,s:'menage'},
-  {name:'Youcef A.',city:'Blida',k:'testi4',r:5,s:'electricite'},
-]
 const DEMO:Artisan[] = [
   {artisan_id:'d1',full_name:'Karim Benali',avatar_url:null,category:'plomberie',rating_avg:4.9,rating_count:84,hourly_rate:3500,distance_km:1.2,is_available:true,total_missions:312},
   {artisan_id:'d2',full_name:'Sofiane Amrani',avatar_url:null,category:'electricite',rating_avg:4.8,rating_count:127,hourly_rate:4000,distance_km:2.8,is_available:true,total_missions:198},
@@ -73,8 +67,6 @@ export default function Home(){
   const [loadR,setLoadR]=useState(false)
   const [user,setUser]=useState<any>(null)
   const [sent,setSent]=useState(false)
-  const [cnt,setCnt]=useState({a:0,b:0,c:0,d:0})
-  const sr=useRef<HTMLDivElement>(null);const sa=useRef(false)
 
   // Theme — dark par défaut
   useEffect(()=>{
@@ -145,7 +137,6 @@ export default function Home(){
   // (Le halo « verre liquide » qui suit le curseur est géré globalement par
   //  components/GlassHover, monté dans le layout → actif sur toutes les pages.)
 
-  useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting&&!sa.current){sa.current=true;const t={a:12000,b:98,c:30,d:50};const s=Date.now();const tick=()=>{const p=Math.min((Date.now()-s)/1800,1);const e=1-Math.pow(1-p,3);setCnt({a:Math.floor(e*t.a),b:Math.floor(e*t.b),c:Math.floor(e*t.c),d:Math.floor(e*t.d)});if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:0.3});if(sr.current)o.observe(sr.current);return()=>o.disconnect()},[])
 
   const cc=(id:string)=>categoryColor(id)
   const cl=(id:string)=>t(`categories.${id}`)
@@ -219,7 +210,8 @@ export default function Home(){
               </p>
               <div style={{display:'flex',alignItems:'center',gap:18,flexWrap:'wrap'}}>
                 <button onClick={()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}}
-                  className="btn-primary" style={{padding:'15px 26px',fontSize:15}}>{t('home.heroCta')}</button>
+                  className="btn-primary" style={{padding:'15px 26px',fontSize:15}}>{t('mhome.ctaFind')}</button>
+                <a href="/auth/signup" className="btn-ghost" style={{padding:'15px 26px',fontSize:15}}>{t('mhome.ctaArtisan')}</a>
                 <a href="/map" style={{fontSize:14,fontWeight:600,color:'var(--tx)',textDecoration:'none',borderBottom:'2px solid var(--accent)',paddingBottom:2}}>{t('nav.map')}</a>
               </div>
             </div>
@@ -336,7 +328,6 @@ export default function Home(){
                 {vis.map((a,i)=>{const c=cc(a.category);const init=a.full_name?.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'A'
                   // Temps de réponse indicatif STABLE (dérivé de l'id — pas de Math.random
                   // qui changerait à chaque re-render sous les yeux de l'utilisateur)
-                  const rt=5+(Array.from(a.artisan_id).reduce((h,ch)=>((h*31+ch.charCodeAt(0))|0),7)>>>0)%20
                   return(
                     <div key={a.artisan_id} onClick={()=>openA(a)} {...pressable(()=>openA(a))} aria-label={`${a.full_name} — ${cl(a.category)}`} className="acard"
                       style={{borderRadius:20,cursor:'pointer',overflow:'hidden',opacity:a.is_available?1:0.62,position:'relative',animation:`fadeUp 0.5s ease ${Math.min(i,8)*0.06}s both`}}>
@@ -364,8 +355,7 @@ export default function Home(){
                         </div>
                         <div style={{display:'flex',justifyContent:'center',gap:10,marginBottom:18,fontSize:12.5,color:'var(--tx2)',flexWrap:'wrap'}}>
                           <span>{a.distance_km!=null?`${a.distance_km.toFixed(1)} ${t('common.km')}`:'—'}</span><span aria-hidden style={{color:'var(--tx3)'}}>·</span>
-                          <span>{a.total_missions} {t('common.missions')}</span><span aria-hidden style={{color:'var(--tx3)'}}>·</span>
-                          <span style={{color:'var(--accent)',display:'inline-flex',alignItems:'center',gap:4}}><Clock size={12} strokeWidth={2.2}/>~{rt} min</span>
+                          <span>{a.total_missions} {t('common.missions')}</span>
                         </div>
                         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:16,borderTop:'1px solid var(--border)'}}>
                           <div style={{textAlign:'start'}}>
@@ -383,32 +373,6 @@ export default function Home(){
             </>
           )}
         </section>
-
-        {/* ── STATS ── */}
-        <div ref={sr} className="reveal-on-scroll" style={{padding:'56px 24px 44px'}}>
-          {/* Un seul bandeau de verre : les 4 chiffres se lisent comme une unité,
-              séparés par de simples filets — fini les 4 rectangles flottants. */}
-          <div className="card" style={{maxWidth:980,margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(4,1fr)',padding:'6px 0'}}>
-            {[
-              {v:cnt.a.toLocaleString('fr-FR'),x:'+',l:t('home.statsA'),Icon:Users},
-              {v:cnt.b,x:'%',l:t('home.statsB'),Icon:Heart},
-              {v:cnt.c,p:'<',x:'min',l:t('home.statsC'),Icon:Clock},
-              {v:cnt.d,x:'+',l:t('home.statsD'),Icon:MapPinned},
-            ].map((s:any,i)=>(
-              <div key={i} style={{padding:'26px 18px',textAlign:'center',borderInlineStart:i>0?'1px solid var(--border)':'none'}}>
-                <div style={{display:'inline-flex',width:40,height:40,borderRadius:12,marginBottom:12,alignItems:'center',justifyContent:'center',background:'color-mix(in srgb, var(--accent) 12%, transparent)',color:'var(--accent)'}}>
-                  <s.Icon size={20} strokeWidth={2}/>
-                </div>
-                <div className="num" style={{fontSize:'clamp(1.7rem,2.6vw,2.3rem)',fontWeight:700,lineHeight:1,marginBottom:8,display:'flex',alignItems:'baseline',justifyContent:'center',gap:2,color:'var(--tx)',direction:'ltr'}}>
-                  {s.p&&<span style={{fontSize:'0.5em',fontWeight:400,color:'var(--accent)'}}>{s.p}</span>}
-                  <span>{s.v}</span>
-                  <span style={{fontSize:'0.42em',fontWeight:400,color:'var(--tx3)'}}>{s.x}</span>
-                </div>
-                <div style={{fontSize:12.5,color:'var(--tx2)'}}>{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* ── COMMENT ÇA MARCHE ── */}
         <section id="comment" className="reveal-on-scroll" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
@@ -452,23 +416,6 @@ export default function Home(){
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── TÉMOIGNAGES ── */}
-        <section className="reveal-on-scroll" style={{padding:'72px 24px',maxWidth:1100,margin:'0 auto'}}>
-          <div style={{textAlign:'center',marginBottom:40}}><div className="section-label">{t('home.testiTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.testiTitle')}</h2></div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(230px,1fr))',gap:14}}>
-            {TESTI.map((x,i)=>(
-              <figure key={i} className="card" style={{padding:24,margin:0,display:'flex',flexDirection:'column'}}>
-                <Stars r={x.r} s={14}/>
-                <blockquote style={{fontSize:14,color:'var(--tx2)',lineHeight:1.7,margin:'14px 0 20px',flex:1}}>« {t(`home.${x.k}`)} »</blockquote>
-                <figcaption style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10}}>
-                  <div><div style={{fontSize:13.5,fontWeight:800}}>{x.name}</div><div style={{fontSize:12,color:'var(--tx3)'}}>{x.city}</div></div>
-                  <span className="tag">{cl(x.s)}</span>
-                </figcaption>
-              </figure>
-            ))}
           </div>
         </section>
 

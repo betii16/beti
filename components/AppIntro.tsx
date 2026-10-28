@@ -40,7 +40,12 @@ export default function AppIntro() {
   useEffect(() => {
     // Tous écrans (comportement d'origine — l'expérience cinématique desktop
     // a été désactivée, voir components/cinematic/CinematicGate).
-    try { if (!localStorage.getItem(DONE_KEY)) setShow(true) } catch {}
+    // Uniquement dans l'app installée (Capacitor) : un visiteur web venant de
+    // TikTok doit voir la page d'accueil tout de suite, pas 4 écrans d'intro.
+    try {
+      const native = !!(window as any).Capacitor?.isNativePlatform?.()
+      if (native && !localStorage.getItem(DONE_KEY)) setShow(true)
+    } catch {}
   }, [])
 
   // Préchargement : une photo n'est utilisée qu'après chargement réussi → pas
@@ -86,14 +91,14 @@ export default function AppIntro() {
   return (
     <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{
       position: 'fixed', inset: 0, zIndex: 100000, direction: isAr ? 'rtl' : 'ltr', overflow: 'hidden',
-      background: 'radial-gradient(120% 80% at 50% 0%, #2a1d63 0%, #0b0b12 62%)',
+      background: 'radial-gradient(120% 80% at 50% 0%, #10264d 0%, #0b0b12 62%)',
       display: 'flex', flexDirection: 'column',
       paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       <style>{`@keyframes introIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes introFade{from{opacity:0}to{opacity:1}}@keyframes introNext{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}@keyframes introPrev{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}`}</style>
 
       {/* Filigrane carte d'Algérie sur le dégradé (masqué par les photos plein écran) */}
-      <AlgeriaWatermark position="absolute" zIndex={0} color="#8B6DFF" opacity={0.1} blur={0.8} size="min(80vh, 115vw)" />
+      <AlgeriaWatermark position="absolute" zIndex={0} color="#5B8FE0" opacity={0.1} blur={0.8} size="min(80vh, 115vw)" />
 
       {/* Photo plein écran (slides) — derrière le contenu, avec dégradé lisibilité */}
       {photo && slide && (
