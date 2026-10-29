@@ -12,7 +12,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { X, Zap, CalendarDays, CalendarClock, ChevronLeft, BadgeCheck, Banknote } from 'lucide-react'
+import { X, Zap, CalendarDays, CalendarClock, ChevronLeft, Banknote } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 import { AddressPicker } from '@/components/AddressPicker'
 
@@ -193,7 +193,6 @@ export default function BookingFlow({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artisan.name}</span>
-              <BadgeCheck size={14} color="var(--accent)" style={{ flexShrink: 0 }}/>
             </div>
             <div style={{ fontSize: 11.5, color: c, fontWeight: 700 }}>{cl(artisan.category)}</div>
           </div>
