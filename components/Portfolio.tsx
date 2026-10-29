@@ -5,6 +5,7 @@
 // PortfolioFeed    : affichage lecture seule sur le profil public.
 
 import { useState, useEffect, useRef } from 'react'
+import { imageExt } from '@/lib/uploads'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { Skeleton } from '@/components/Skeleton'
@@ -120,7 +121,8 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) { setErr(`${file.name} ${t('portfolio.errSizeLimit')}`); continue }
       if (!file.type.startsWith('image/')) { setErr(`${file.name} ${t('portfolio.errNotImage')}`); continue }
-      const ext = file.name.split('.').pop()
+      const ext = imageExt(file)
+      if (!ext) { setErr(`${file.name} ${t('portfolio.errNotImage')}`); continue }
       const path = `portfolio/${artisanId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
       if (error) { setErr(error.message.includes('security policy') ? t('portfolio.errStoragePolicy') : `${t('portfolio.errUploadFailed')} ${error.message}`); continue }

@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { X } from 'lucide-react'
+import { imageExt, IMAGE_ERR } from '@/lib/uploads'
 
 export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userId:string; currentUrl:string|null; initials:string; onUpload:(url:string)=>void }) {
   const [loading, setLoading] = useState(false)
@@ -13,7 +14,9 @@ export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userI
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 5*1024*1024) { setErr('Max 5MB'); return }
-    if (!file.type.startsWith('image/')) { setErr('Image uniquement'); return }
+    const EXT: Record<string,string> = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp' }
+    const safeExt = EXT[file.type]
+    if (!safeExt) { setErr('JPG, PNG ou WebP uniquement'); return }
     setLoading(true); setErr('')
     const oldPreview = preview
 
@@ -22,10 +25,9 @@ export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userI
     reader.onload = ev => setPreview(ev.target?.result as string)
     reader.readAsDataURL(file)
 
-    const ext = file.name.split('.').pop()
-    const path = `avatars/${userId}_${Date.now()}.${ext}`
+    const path = `avatars/${userId}_${Date.now()}.${safeExt}`
 
-    const { error: upErr } = await supabase.storage.from('beti-photos').upload(path, file, { upsert: true })
+    const { error: upErr } = await supabase.storage.from('beti-photos').upload(path, file, { upsert: false, contentType: file.type })
     if (upErr) {
       setPreview(oldPreview)
       setErr(upErr.message.includes('security policy') ? 'Upload refusé — policies Storage manquantes (voir supabase/storage_policies.sql)' : 'Upload échoué : ' + upErr.message)
@@ -76,8 +78,10 @@ export function ProblemPhotosUpload({ bookingId, onUpload }: { bookingId:string;
     let lastErr = ''
     for (const file of files) {
       if (file.size>10*1024*1024) { lastErr = 'Fichier > 10MB ignoré'; continue }
-      const path = `problems/${bookingId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`
-      const { error } = await supabase.storage.from('beti-photos').upload(path, file)
+      const ext = imageExt(file)
+      if (!ext) { lastErr = IMAGE_ERR; continue }
+      const path = `problems/${bookingId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
       if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); urls.push(data.publicUrl) }
       else lastErr = 'Upload échoué : ' + error.message
     }
@@ -120,8 +124,10 @@ export function PortfolioUpload({ artisanId, existingPhotos }: { artisanId:strin
     const urls:string[] = []
     let lastErr = ''
     for (const file of files) {
-      const path = `portfolio/${artisanId}/${Date.now()}_${file.name}`
-      const { error } = await supabase.storage.from('beti-photos').upload(path, file)
+      const ext = imageExt(file)
+      if (!ext) { lastErr = IMAGE_ERR; continue }
+      const path = `portfolio/${artisanId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
       if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); urls.push(data.publicUrl) }
       else lastErr = 'Upload échoué : ' + error.message
     }
@@ -159,9 +165,11 @@ export function BeforeAfterUpload({ bookingId, artisanId }: { bookingId:string; 
   const aRef = useRef<HTMLInputElement>(null)
 
   const upload = async (file:File, type:'before'|'after') => {
+    const ext = imageExt(file)
+    if (!ext) { alert(IMAGE_ERR); return }
     setLoading(type)
-    const path = `interventions/${bookingId}/${type}_${Date.now()}.${file.name.split('.').pop()}`
-    const { error } = await supabase.storage.from('beti-photos').upload(path, file, { upsert:true })
+    const path = `interventions/${bookingId}/${type}_${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('beti-photos').upload(path, file, { upsert:true, contentType: file.type })
     if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); if(type==='before')setBefore(data.publicUrl);else setAfter(data.publicUrl) }
     else alert('Upload échoué : ' + error.message)
     setLoading(null)

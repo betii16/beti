@@ -25,16 +25,16 @@ export async function POST(req: Request) {
   const { error: profErr } = await admin.from('profiles')
     .update({ full_name: 'Compte supprimé', phone: null, avatar_url: null })
     .eq('id', user.id)
-  if (profErr) return NextResponse.json({ error: profErr.message }, { status: 500 })
+  if (profErr) return NextResponse.json({ error: 'Suppression impossible, réessaie plus tard.' }, { status: 500 })
   const { error: artErr } = await admin.from('artisans').update({ is_available: false, plan: 'free', plan_until: null }).eq('id', user.id)
-  if (artErr) return NextResponse.json({ error: artErr.message }, { status: 500 })
+  if (artErr) return NextResponse.json({ error: 'Suppression impossible, réessaie plus tard.' }, { status: 500 })
   // Table absente avant privacy_hardening.sql : l'erreur est volontairement ignorée.
   await admin.from('profile_private').delete().eq('id', user.id)
 
   const { error: delErr } = await admin.auth.admin.deleteUser(user.id)
   if (delErr) {
     const { error: banErr } = await admin.auth.admin.updateUserById(user.id, { ban_duration: '876000h' })
-    if (banErr) return NextResponse.json({ error: banErr.message }, { status: 500 })
+    if (banErr) return NextResponse.json({ error: 'Suppression impossible, réessaie plus tard.' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })
