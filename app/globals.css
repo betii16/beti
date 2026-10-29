@@ -817,18 +817,125 @@ button, a {
   transform: scale(0.97);
 }
 
-/* Carte : l'UI flottante passe sous l'encoche iPhone (PWA) */
-.map-search { top: calc(60px + env(safe-area-inset-top)) !important; }
-.map-pills  { top: calc(120px + env(safe-area-inset-top)) !important; }
+/* ═══ Carte (/map) ═══════════════════════════════════════════════
+   Overlays flottants : les conteneurs sont transparents et ne captent pas
+   les clics (pointer-events: none), seuls leurs enfants les reçoivent. */
+body:has(.map-screen) { overflow: hidden; }
+.map-screen { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+.map-canvas { position: absolute; inset: 0; z-index: 1; }
+.map-float {
+  background: var(--bg2); border: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03), 0 10px 24px -14px rgba(14,25,34,0.5);
+}
+
+.map-top {
+  position: absolute; inset-inline: 0; z-index: 10;
+  top: calc(60px + env(safe-area-inset-top));
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none; background: none;
+}
+.map-top > * { pointer-events: auto; }
+.map-searchbox {
+  display: flex; align-items: center; gap: 10px; min-height: 48px;
+  margin-inline: 16px; padding-inline: 16px 6px; border-radius: var(--r-card);
+  max-width: 560px;
+}
+.map-input {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  color: var(--tx); font-size: 16px; padding: 12px 0;
+}
+.map-clear { margin: 0; width: 44px; height: 44px; }
+.map-chips {
+  display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 8px;
+  scroll-padding-inline: 16px; pointer-events: none; overscroll-behavior-x: contain;
+}
+.map-chip {
+  pointer-events: auto; flex-shrink: 0; min-height: 44px; padding: 0 16px;
+  display: inline-flex; align-items: center; gap: 7px; border-radius: var(--r-pill);
+  font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; color: var(--tx2);
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.map-chip:hover { border-color: var(--border2); color: var(--tx); }
+.map-chip.is-on {
+  background: var(--accent-fill); color: var(--on-accent); border: 1px solid transparent;
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent-fill) 55%, #000);
+}
+
+/* Panneau */
+.map-sheet {
+  position: absolute; z-index: 20; inset-inline: 0; bottom: 0;
+  max-width: 720px; margin-inline: auto;
+  display: flex; flex-direction: column; overflow: hidden;
+  border-radius: 20px 20px 0 0; border-bottom: none;
+  max-height: 252px; transition: max-height .35s cubic-bezier(0.4,0,0.2,1);
+}
+.map-sheet[data-full="true"] { max-height: min(72%, 640px); }
+.map-sheet[data-detail="true"] { max-height: 78%; }
+.map-handle {
+  flex-shrink: 0; width: 100%; height: 26px; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; cursor: pointer;
+}
+.map-handle span { width: 40px; height: 4px; border-radius: 2px; background: var(--border2); }
+.map-sheet-head {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 16px 8px 16px;
+}
+.map-toggle { width: 44px; height: 44px; }
+.map-sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 8px 14px; overscroll-behavior: contain; }
+.arow {
+  display: flex; align-items: center; gap: 12px; padding: 10px 10px; min-height: 64px;
+  border-radius: var(--r-card); cursor: pointer; border: 1px solid transparent;
+  transition: background .2s ease, border-color .2s ease;
+}
+.arow:hover { background: var(--bg3); border-color: var(--border); }
+.map-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-inline-end: 4px; }
+
+.map-detail { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 16px; overflow-y: auto; }
+.map-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.map-stats > div {
+  padding: 9px 10px; border-radius: 10px; background: var(--bg3); border: 1px solid var(--border);
+  font-size: 13px; color: var(--tx2); display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;
+}
+.map-stats b { color: var(--tx); font-weight: 700; }
+.map-stats .is-ok { color: var(--success); font-weight: 700; }
+.map-cta { display: flex; gap: 8px; }
+.map-cta-btn { flex: 1; min-height: 48px; justify-content: center; }
+.map-profile-link { align-self: center; font-size: 13.5px; font-weight: 600; color: var(--accent); padding: 6px 12px; }
+
+/* Contrôles zoom / localisation : au-dessus du panneau (mobile) */
+.map-screen .map-ctl { top: auto; left: auto; right: auto; bottom: auto; inset-inline-end: 12px; inset-block-end: calc(var(--map-sheet-h, 240px) + 14px); transition: inset-block-end .3s ease; }
+.map-ctl-group { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 24px -14px rgba(14,25,34,0.5); }
+.map-ctl-btn { width: 44px; height: 44px; color: var(--tx); background: transparent; cursor: pointer; transition: background .2s ease; }
+.map-ctl-btn:hover { background: var(--bg3); }
+.map-ctl-group > .map-ctl-btn:not(:last-child) { border-bottom: 1px solid var(--border); }
+.map-screen .maplibregl-ctrl-bottom-left, .map-screen .maplibregl-ctrl-bottom-right { z-index: 1; }
+
+/* Desktop : colonne latérale à la place du bottom-sheet */
+@media (min-width: 768px) {
+  .map-top { flex-direction: row; align-items: center; gap: 12px; padding-inline: 16px; }
+  .map-searchbox { margin-inline: 0; width: 380px; flex-shrink: 0; }
+  .map-chips { flex: 1; min-width: 0; padding: 4px 4px 8px; }
+  .map-sheet {
+    inset-inline: auto; inset-inline-start: 16px; top: calc(60px + 66px + env(safe-area-inset-top)); bottom: 16px;
+    width: 380px; max-width: none; margin: 0; max-height: none !important;
+    border-radius: 16px; border-bottom: 1px solid var(--border);
+  }
+  .map-sheet[data-detail="true"] { bottom: auto; }
+  .map-sheet[data-detail="true"] { bottom: auto; }
+  .map-handle, .map-toggle { display: none; }
+  .map-sheet-head { padding-top: 14px; }
+  .map-screen .map-ctl { inset-block-end: 28px; }
+}
 
 @media (max-width: 767px) {
   /* Carte immersive : pas de header mobile sur /map → l'UI remonte en haut */
-  .map-search { top: calc(12px + env(safe-area-inset-top)) !important; }
-  .map-pills  { top: calc(72px + env(safe-area-inset-top)) !important; }
+  .map-top { top: calc(12px + env(safe-area-inset-top)); }
+  .map-searchbox { max-width: none; }
 
   /* Chat : pas de header global sur /chat → on retire le bandeau fantôme */
   .chat-screen { padding-top: calc(env(safe-area-inset-top) + 4px) !important; }
 }
+@media (prefers-reduced-motion: reduce) { .map-sheet, .map-screen .map-ctl { transition: none; } }
 
 /* Écrans tactiles : pas d'effets de survol (ils « collent » au doigt) */
 @media (hover: none) {

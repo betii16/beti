@@ -62,7 +62,7 @@ type MapProps = {
 
 function DefaultLoader() {
   return (
-    <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-xs">
+    <div role="status" className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: "var(--bg)" }}>
       <div className="flex gap-1">
         <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full" />
         <span className="bg-muted-foreground/60 size-1.5 animate-pulse rounded-full [animation-delay:150ms]" />
@@ -310,18 +310,19 @@ type MapControlsProps = {
   showFullscreen?: boolean;
   className?: string;
   onLocate?: (coords: { longitude: number; latitude: number }) => void;
+  labels?: { zoomIn?: string; zoomOut?: string; locate?: string };
 };
 
 const positionClasses = {
   "top-left": "top-2 left-2",
   "top-right": "top-2 right-2",
   "bottom-left": "bottom-2 left-2",
-  "bottom-right": "bottom-24 right-3",
+  "bottom-right": "map-ctl bottom-24 right-3",
 };
 
 function ControlGroup({ children }: { children: ReactNode }) {
   return (
-    <div className="border-border bg-popover/80 [&>button:not(:last-child)]:border-border flex flex-col overflow-hidden rounded-xl border shadow-lg backdrop-blur-md [&>button:not(:last-child)]:border-b">
+    <div className="map-ctl-group flex flex-col overflow-hidden">
       {children}
     </div>
   );
@@ -344,8 +345,8 @@ function ControlButton({
       aria-label={label}
       type="button"
       className={cn(
-        "text-foreground flex size-9 items-center justify-center transition-all",
-        "hover:bg-accent disabled:pointer-events-none disabled:opacity-50",
+        "map-ctl-btn flex items-center justify-center",
+        "disabled:pointer-events-none disabled:opacity-50",
       )}
       disabled={disabled}
     >
@@ -361,6 +362,7 @@ function MapControls({
   showFullscreen = false,
   className,
   onLocate,
+  labels,
 }: MapControlsProps) {
   const { map } = useMap();
   const [waiting, setWaiting] = useState(false);
@@ -394,14 +396,14 @@ function MapControls({
     <div className={cn("absolute z-10 flex flex-col gap-2", positionClasses[position], className)}>
       {showZoom && (
         <ControlGroup>
-          <ControlButton onClick={zoomIn} label="Zoom avant"><Plus className="size-4" /></ControlButton>
-          <ControlButton onClick={zoomOut} label="Zoom arrière"><Minus className="size-4" /></ControlButton>
+          <ControlButton onClick={zoomIn} label={labels?.zoomIn ?? "Zoom avant"}><Plus size={20} /></ControlButton>
+          <ControlButton onClick={zoomOut} label={labels?.zoomOut ?? "Zoom arrière"}><Minus size={20} /></ControlButton>
         </ControlGroup>
       )}
       {showLocate && (
         <ControlGroup>
-          <ControlButton onClick={locate} label="Ma position" disabled={waiting}>
-            {waiting ? <Loader2 className="size-4 animate-spin" /> : <Locate className="size-4" />}
+          <ControlButton onClick={locate} label={labels?.locate ?? "Ma position"} disabled={waiting}>
+            {waiting ? <Loader2 size={20} className="animate-spin" /> : <Locate size={20} />}
           </ControlButton>
         </ControlGroup>
       )}

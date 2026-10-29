@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
@@ -10,33 +10,11 @@ import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
-import { LayoutGrid, X, Search, LocateFixed, SearchX } from 'lucide-react'
+import { LayoutGrid, X, Search, ChevronUp, ChevronDown, ArrowLeft } from 'lucide-react'
 
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
 
 const CAT_IDS = ['', 'plomberie', 'electricite', 'serrurerie', 'menage', 'peinture', 'demenagement', 'jardinage', 'informatique', 'coiffure']
-
-// Libellés propres à la carte (FR / AR) — étaient codés en dur en français.
-const L = {
-  all:       { fr: 'Tous',                ar: 'الكل' },
-  artisan:   { fr: 'artisan',             ar: 'حرفي' },
-  artisans:  { fr: 'artisans',            ar: 'حرفيين' },
-  nearby:    { fr: 'à proximité',         ar: 'بالقرب منك' },
-  hide:      { fr: 'Masquer',             ar: 'إخفاء' },
-  show:      { fr: 'Afficher',            ar: 'إظهار' },
-  loadErr:   { fr: 'Impossible de charger les artisans.', ar: 'تعذّر تحميل الحرفيين.' },
-  retry:     { fr: 'Réessayer',           ar: 'إعادة المحاولة' },
-  noneSub:   { fr: 'Aucun artisan inscrit pour le moment.', ar: 'لا يوجد حرفي مسجل حالياً.' },
-  imArtisan: { fr: 'Je suis artisan',     ar: 'أنا حرفي' },
-  none:      { fr: 'Aucun artisan dans cette zone', ar: 'لا يوجد حرفي في هذه المنطقة' },
-  seeMore:   { fr: 'Voir les {n} autres artisans', ar: 'عرض {n} حرفيين آخرين' },
-  missions:  { fr: 'missions',            ar: 'مهمة' },
-  profile:   { fr: 'Profil',              ar: 'الملف' },
-  locate:    { fr: 'Me localiser',        ar: 'تحديد موقعي' },
-  clear:     { fr: 'Effacer',             ar: 'مسح' },
-  close:     { fr: 'Fermer',              ar: 'إغلاق' },
-  expand:    { fr: 'Agrandir la liste',   ar: 'توسيع القائمة' },
-} as const
 
 type Art = {
   id:string; full_name:string; avatar_url:string|null; category:string
@@ -44,12 +22,23 @@ type Art = {
   is_available:boolean; total_missions:number
 }
 
-
 function Stars({r,s=11}:{r:number;s?:number}){return<div role="img" aria-label={`${(r||0).toFixed(1)} / 5`} style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(i=><svg key={i} aria-hidden width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'var(--star)':'var(--border2)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
+// Illustration sobre de l'état vide : repères de carte + pin.
+function EmptyArt(){
+  return(
+    <svg aria-hidden width="96" height="72" viewBox="0 0 96 72" fill="none" style={{color:'var(--accent)'}}>
+      <path d="M6 58 L30 44 L54 54 L90 34" stroke="var(--border2)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 22 L40 30 L66 16" stroke="var(--border)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="48" cy="62" r="7" fill="color-mix(in srgb, currentColor 14%, transparent)"/>
+      <path d="M48 56 C48 56 36 43 36 32 a12 12 0 0 1 24 0 C60 43 48 56 48 56Z" fill="currentColor"/>
+      <circle cx="48" cy="32" r="4.5" fill="var(--bg2)"/>
+    </svg>
+  )
+}
+
 export default function MapPage() {
-  const {t,isAr,lang}=useLang()
-  const tr=(k:keyof typeof L)=>L[k][lang==='ar'?'ar':'fr']
+  const {t,isAr}=useLang()
   const router=useRouter()
   const [cat,setCat]=useState('')
   const [lat,setLat]=useState(36.7538)
@@ -57,12 +46,15 @@ export default function MapPage() {
   const [artisans,setArtisans]=useState<Art[]>([])
   const [loading,setLoading]=useState(true)
   const [loadFailed,setLoadFailed]=useState(false)
-  const [sheetOpen,setSheetOpen]=useState(true)
   const [sheetFull,setSheetFull]=useState(false)
   const [selected,setSelected]=useState<Art|null>(null)
   const [search,setSearch]=useState('')
   const [user,setUser]=useState<any>(null)
   const [sent,setSent]=useState(false)
+  const [sheetH,setSheetH]=useState(0)
+  const [wide,setWide]=useState(false)
+  const screenRef=useRef<HTMLDivElement>(null)
+  const sheetRef=useRef<HTMLElement>(null)
 
   useEffect(()=>{
     supabase.auth.getUser().then(({data})=>{if(data.user)setUser(data.user)})
@@ -72,6 +64,24 @@ export default function MapPage() {
   },[])
 
   useEffect(()=>{loadArtisans()},[lat,lng,cat])
+
+  // Hauteur réelle du panneau : place les boutons de zoom juste au-dessus et cadre la sélection.
+  useEffect(()=>{
+    const mq=window.matchMedia('(min-width: 768px)')
+    const sync=()=>setWide(mq.matches)
+    sync();mq.addEventListener('change',sync)
+    const el=sheetRef.current
+    let ro:ResizeObserver|undefined
+    if(el){
+      ro=new ResizeObserver(()=>{
+        const h=el.getBoundingClientRect().height
+        setSheetH(h)
+        screenRef.current?.style.setProperty('--map-sheet-h',`${Math.round(h)}px`)
+      })
+      ro.observe(el)
+    }
+    return()=>{mq.removeEventListener('change',sync);ro?.disconnect()}
+  },[])
 
   const loadArtisans=async()=>{
     setLoading(true);setLoadFailed(false)
@@ -102,242 +112,186 @@ export default function MapPage() {
   }
 
   const cc=(id:string)=>categoryColor(id)
-  const cl=(id:string)=>id?t(`categories.${id}`):tr('all')
-  const filtered=search?artisans.filter(a=>a.full_name.toLowerCase().includes(search.toLowerCase())||a.category.includes(search.toLowerCase())||cl(a.category).toLowerCase().includes(search.toLowerCase())):artisans
-  const visibleInSheet=sheetFull?filtered:filtered.slice(0,3)
-
-  const bg2='var(--bg2)'
-  const tx='var(--tx)';const tx2='var(--tx2)';const tx3='var(--tx3)'
-  const brd='var(--border)'
-  // Surfaces flottantes MATES (plus de verre dépoli) : chaux/nuit opaques.
-  const surface='var(--bg2)'
+  const cl=(id:string)=>id?t(`categories.${id}`):t('map2.all')
+  const q=search.trim().toLowerCase()
+  const filtered=q?artisans.filter(a=>a.full_name.toLowerCase().includes(q)||a.category.includes(q)||cl(a.category).toLowerCase().includes(q)):artisans
   const initials=(n:string)=>n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2)
+  const pick=(a:Art|null)=>{setSelected(a);setSent(false);setContactErr('')}
+  const fromMap=(id:string|null)=>pick(id?(artisans.find(a=>a.id===id)||null):null)
+
+  const Avatar=({a,size}:{a:Art;size:number})=>{
+    const c=cc(a.category)
+    return a.avatar_url
+      ?<img src={a.avatar_url} alt="" style={{width:size,height:size,borderRadius:12,objectFit:'cover',border:`2px solid ${c}55`,flexShrink:0}}/>
+      :<div aria-hidden style={{width:size,height:size,borderRadius:12,background:`${c}1F`,border:`2px solid ${c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.34,fontWeight:800,color:categoryInk(a.category),flexShrink:0}}>{initials(a.full_name)}</div>
+  }
+
+  const count=filtered.length
 
   return(
-    <>
-      <style suppressHydrationWarning>{`
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{overflow:hidden}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-        .pill{min-height:40px;padding:8px 15px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
-          display:flex;align-items:center;gap:6px;flex-shrink:0;transition:background .2s ease,border-color .2s ease,color .2s ease}
-        .pill:hover{border-color:var(--border2)}
-        .arow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-card);cursor:pointer;transition:background .2s ease,border-color .2s ease;border:1px solid transparent}
-        .arow:hover{background:var(--bg3);border-color:var(--border)}
-        .map-float{background:${surface};border:1px solid ${brd};box-shadow:0 2px 0 rgba(0,0,0,0.03),0 12px 28px -14px rgba(14,25,34,0.45)}
-      `}</style>
+    <div ref={screenRef} className="map-screen" style={{direction:isAr?'rtl':'ltr'}}>
 
-      <div className="map-screen" style={{position:'fixed',inset:0,overflow:'hidden',background:'var(--bg)',direction:isAr?'rtl':'ltr'}}>
+      {/* Carte plein écran */}
+      <div className="map-canvas">
+        <BetiMap clientLat={lat} clientLng={lng} showAllArtisans={true} categoryFilter={cat}
+          selectedId={selected?.id??null} onSelect={fromMap} bottomInset={wide?0:sheetH}
+          onLocate={c=>{setLat(c.latitude);setLng(c.longitude)}}/>
+      </div>
 
-        {/* ═══ MAP — full screen ═══ */}
-        <div style={{position:'absolute',inset:0,zIndex:1}}>
-          <BetiMap clientLat={lat} clientLng={lng} showAllArtisans={true} categoryFilter={cat} focusOffsetY={80}/>
+      {/* Recherche + filtres : conteneur transparent, seuls les enfants captent les clics */}
+      <div className="map-top">
+        <div className="map-float map-searchbox">
+          <Search size={18} color="var(--tx3)" aria-hidden/>
+          <input type="search" enterKeyHint="search" value={search} onChange={e=>setSearch(e.target.value)}
+            placeholder={t('map.searchPlaceholder')} aria-label={t('map.searchPlaceholder')} className="bare-input map-input"/>
+          {search&&<button onClick={()=>setSearch('')} aria-label={t('map2.clear')} className="icon-btn map-clear"><X size={17}/></button>}
         </div>
-
-        {/* ═══ FLOATING SEARCH BAR ═══ */}
-        <div className="map-search" style={{position:'absolute',top:60,left:16,right:16,zIndex:10,animation:'fadeUp 0.4s ease',maxWidth:560,marginInline:'auto'}}>
-          <div className="map-float search-pill" style={{borderRadius:'var(--r-card)',paddingInlineStart:16,paddingInlineEnd:6,minHeight:50,display:'flex',alignItems:'center',gap:10}}>
-            <Search size={18} color="var(--tx3)" aria-hidden/>
-            <input type="search" enterKeyHint="search" value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder={t('map.searchPlaceholder')} aria-label={t('map.searchPlaceholder')} className="bare-input"
-              style={{flex:1,minWidth:0,background:'transparent',border:'none',outline:'none',color:tx,fontSize:16,padding:'12px 0'}}/>
-            {search&&<button onClick={()=>setSearch('')} aria-label={tr('clear')} className="icon-btn" style={{margin:0,width:40,height:40}}><X size={17}/></button>}
-          </div>
+        <div className="map-chips no-scrollbar" role="group" aria-label={t('map2.all')}>
+          {CAT_IDS.map(id=>{
+            const on=cat===id
+            return(
+              <button key={id||'all'} onClick={()=>setCat(id)} aria-pressed={on} className={`map-chip${on?' is-on':' map-float'}`}>
+                {id?<CategoryIcon id={id} size={16} color={on?'currentColor':cc(id)}/>:<LayoutGrid size={16}/>}{cl(id)}
+              </button>
+            )
+          })}
         </div>
+      </div>
 
-        {/* ═══ FLOATING CATEGORY PILLS ═══ */}
-        <div className="map-pills" style={{position:'absolute',top:120,left:0,right:0,zIndex:10,animation:'fadeUp 0.4s ease 0.1s both'}}>
-          <div className="no-scrollbar" style={{display:'flex',gap:6,overflowX:'auto',padding:'2px 16px 6px',scrollPaddingInline:16}}>
-            {CAT_IDS.map(id=>{
-              const on=cat===id
-              return(
-                <button key={id||'all'} onClick={()=>setCat(id)} aria-pressed={on} className={`pill${on?'':' map-float'}`}
-                  style={on
-                    ?{background:'var(--accent-fill)',color:'var(--on-accent)',border:'1px solid transparent',boxShadow:'0 2px 0 color-mix(in srgb, var(--accent-fill) 55%, #000), 0 10px 18px -10px var(--accent-fill)'}
-                    :{color:tx2}}>
-                  {id ? <CategoryIcon id={id} size={15} color={on?'currentColor':cc(id)}/> : <LayoutGrid size={15}/>}{cl(id)}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* ═══ LOCATE ME button ═══ */}
-        <button onClick={()=>{navigator.geolocation?.getCurrentPosition(p=>{setLat(p.coords.latitude);setLng(p.coords.longitude)})}}
-          aria-label={tr('locate')} title={tr('locate')} className="map-float"
-          style={{position:'absolute',insetInlineEnd:16,bottom:sheetOpen?(sheetFull?'calc(70vh + 12px)':'272px'):'84px',zIndex:10,width:48,height:48,borderRadius:'50%',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'bottom 0.3s ease',color:tx}}>
-          <LocateFixed size={20}/>
+      {/* Panneau : bottom-sheet sur mobile, colonne latérale sur desktop */}
+      <section ref={sheetRef} className="map-sheet map-float" data-full={sheetFull} data-detail={!!selected}>
+        <button className="map-handle" onClick={()=>setSheetFull(!sheetFull)} aria-label={sheetFull?t('map2.collapse'):t('map2.expand')} aria-expanded={sheetFull}>
+          <span/>
         </button>
 
-        {/* ═══ BOTTOM SHEET ═══ */}
-        <div className="map-float" style={{position:'absolute',bottom:0,left:0,right:0,zIndex:20,maxWidth:720,marginInline:'auto',maxHeight:sheetFull?'70vh':'260px',borderRadius:'20px 20px 0 0',borderBottom:'none',transition:'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',overflowY:'auto',animation:'slideUp 0.4s ease 0.2s both'}}>
-
-          {/* Handle */}
-          <button onClick={()=>setSheetFull(!sheetFull)} aria-label={tr('expand')} aria-expanded={sheetFull} style={{width:'100%',padding:'10px 0 8px',cursor:'pointer',display:'flex',justifyContent:'center',background:'transparent',border:'none'}}>
-            <span style={{width:40,height:4,borderRadius:2,background:'var(--border2)'}}/>
-          </button>
-
-          {/* Sheet header */}
-          <div style={{padding:'2px 20px 12px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
-            <div style={{minWidth:0}}>
-              <div style={{fontSize:17,fontWeight:800,color:tx}}><span className="num">{filtered.length}</span> {filtered.length>1?tr('artisans'):tr('artisan')}{cat?<span style={{color:categoryInk(cat)}}> · {cl(cat)}</span>:''}</div>
-              <div style={{fontSize:12.5,color:tx2}}>{tr('nearby')}</div>
+        {selected?(
+          <div className="map-detail" role="region" aria-label={selected.full_name}>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <button onClick={()=>pick(null)} aria-label={t('map2.back')} className="icon-btn" style={{margin:0,flexShrink:0}}>
+                <ArrowLeft size={20} style={{transform:isAr?'scaleX(-1)':undefined}}/>
+              </button>
+              <Avatar a={selected} size={52}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:17,fontWeight:800,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{selected.full_name}</div>
+                <div style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'var(--tx2)',flexWrap:'wrap'}}>
+                  <span style={{color:categoryInk(selected.category),fontWeight:700}}>{cl(selected.category)}</span>
+                  <span aria-hidden>·</span>
+                  <Stars r={selected.rating_avg} s={12}/>
+                  <span className="num" style={{fontWeight:700,color:'var(--laiton)'}}>{selected.rating_avg.toFixed(1)}</span>
+                  <span>({selected.rating_count})</span>
+                </div>
+              </div>
             </div>
-            <button onClick={()=>setSheetOpen(!sheetOpen)} aria-expanded={sheetOpen} className="btn-ghost btn-sm">
-              {sheetOpen?tr('hide'):tr('show')}
-            </button>
-          </div>
 
-          {/* Artisan list */}
-          {sheetOpen&&(
-            <div style={{padding:'0 12px 20px'}}>
+            <div className="map-stats">
+              <div><b className="num">{selected.distance_km!=null?`${selected.distance_km.toFixed(1)} km`:'—'}</b></div>
+              <div><b className="num">{selected.total_missions}</b> {t('map2.missions')}</div>
+              <div><b className="num">{selected.hourly_rate.toLocaleString('fr-DZ')}</b> {t('common.da')}</div>
+              <div className={selected.is_available?'is-ok':''}>
+                <span aria-hidden className="map-dot" style={{background:selected.is_available?'var(--success)':'var(--tx3)'}}/>{selected.is_available?t('map2.available'):t('map2.busy')}
+              </div>
+            </div>
+
+            {contactErr&&<div role="alert" className="tone-danger" style={{padding:'10px 14px',borderRadius:'var(--r-field)',fontSize:13}}>{contactErr}</div>}
+            {sent?(
+              <div role="status" className="tone-success" style={{padding:12,borderRadius:'var(--r-card)',textAlign:'center',fontSize:14,fontWeight:700}}>{t('profile.requestSent')}</div>
+            ):(
+              <div className="map-cta">
+                <button onClick={()=>contact(selected,'call')} className="btn-ghost map-cta-btn">{t('map2.contact')}</button>
+                <button onClick={()=>contact(selected,'message')} className="btn-primary map-cta-btn">{t('map2.book')}</button>
+              </div>
+            )}
+            <a href={`/artisan/${selected.id}`} className="map-profile-link">{t('map2.profile')}</a>
+          </div>
+        ):(
+          <>
+            <div className="map-sheet-head">
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:17,fontWeight:800,color:'var(--tx)'}}>
+                  {loading?<span className="skeleton" style={{display:'inline-block',width:110,height:16,verticalAlign:'middle'}}/>
+                    :<><span className="num">{count}</span> {count>1?t('map2.many'):t('map2.one')}{cat?<span style={{color:categoryInk(cat)}}> · {cl(cat)}</span>:''}</>}
+                </div>
+                <div style={{fontSize:12.5,color:'var(--tx2)'}}>{t('map2.nearby')}</div>
+              </div>
+              <button onClick={()=>setSheetFull(!sheetFull)} aria-label={sheetFull?t('map2.collapse'):t('map2.expand')} className="icon-btn map-toggle" style={{margin:0}}>
+                {sheetFull?<ChevronDown size={22}/>:<ChevronUp size={22}/>}
+              </button>
+            </div>
+
+            <div className="map-sheet-body">
               {loading?(
-                <div aria-busy="true" style={{display:'flex',flexDirection:'column',gap:6,padding:'0 4px'}}>
+                <div aria-busy="true" style={{display:'flex',flexDirection:'column',gap:4}}>
                   {[1,2,3].map(i=>(
-                    <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 4px'}}>
-                      <div className="skeleton" style={{width:44,height:44,borderRadius:12,flexShrink:0}}/>
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 8px'}}>
+                      <div className="skeleton" style={{width:48,height:48,borderRadius:12,flexShrink:0}}/>
                       <div style={{flex:1,display:'flex',flexDirection:'column',gap:7}}><div className="skeleton" style={{width:'50%',height:12}}/><div className="skeleton" style={{width:'70%',height:10}}/></div>
                       <div className="skeleton" style={{width:52,height:18}}/>
                     </div>
                   ))}
                 </div>
               ):loadFailed?(
-                <div className="empty-state" style={{padding:'18px 12px 10px'}}>
-                  <div className="empty-title" style={{fontSize:14.5}}>{tr('loadErr')}</div>
-                  <button type="button" className="btn-primary" style={{marginTop:12}} onClick={()=>loadArtisans()}>{tr('retry')}</button>
+                <div className="empty-state" style={{padding:'12px 12px 8px'}}>
+                  <div className="empty-title" style={{fontSize:15}}>{t('map2.loadErr')}</div>
+                  <div className="empty-sub">{t('map2.loadErrSub')}</div>
+                  <button type="button" className="btn-primary" style={{marginTop:8}} onClick={()=>loadArtisans()}>{t('map2.retry')}</button>
                 </div>
-              ):filtered.length===0?(
-                <div className="empty-state" style={{padding:'18px 12px 10px'}}>
-                  <div className="empty-icon" style={{width:48,height:48}}><SearchX size={20}/></div>
-                  <div className="empty-title" style={{fontSize:14.5}}>{search||cat?tr('none'):tr('noneSub')}</div>
-                  {!search&&!cat&&<a href="/auth/signup?role=artisan" className="btn-primary" style={{marginTop:12}}>{tr('imArtisan')}</a>}
-                </div>
+              ):count===0?(
+                search||cat?(
+                  <div className="empty-state" style={{padding:'12px 12px 8px'}}>
+                    <div className="empty-title" style={{fontSize:15}}>{t('map2.none')}</div>
+                    <div className="empty-sub">{t('map2.noneSub')}</div>
+                    <button type="button" className="btn-ghost" style={{marginTop:8}} onClick={()=>{setSearch('');setCat('')}}>{t('map2.reset')}</button>
+                  </div>
+                ):(
+                  <div className="empty-state" style={{padding:'4px 12px 8px'}}>
+                    <EmptyArt/>
+                    <div className="empty-title" style={{fontSize:15}}>{t('map2.emptyTitle')}</div>
+                    <div className="empty-sub">{t('map2.emptySub')}</div>
+                    <a href="/auth/signup?role=artisan" className="btn-primary" style={{marginTop:8}}>{t('map2.imArtisan')}</a>
+                  </div>
+                )
               ):(
-                <>
-                  {visibleInSheet.map(a=>{
-                    const c=cc(a.category)
-                    const isSelected=selected?.id===a.id
-                    const pick=()=>{setSelected(isSelected?null:a);setSent(false);setContactErr('')}
-                    return(
-                      <div key={a.id} className="arow" onClick={pick} {...pressable(pick)} aria-pressed={isSelected}
-                        style={{borderColor:isSelected?c+'55':undefined,background:isSelected?`${c}12`:undefined,marginBottom:4}}>
-
-                        {/* Avatar */}
-                        {a.avatar_url?(
-                          <img src={a.avatar_url} alt="" style={{width:44,height:44,borderRadius:12,objectFit:'cover',border:`2px solid ${c}55`,flexShrink:0}}/>
-                        ):(
-                          <div aria-hidden style={{width:44,height:44,borderRadius:12,background:`${c}1F`,border:`2px solid ${c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,fontWeight:800,color:categoryInk(a.category),flexShrink:0}}>{initials(a.full_name)}</div>
-                        )}
-
-                        {/* Info */}
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:3,minWidth:0}}>
-                            <span style={{fontSize:14.5,fontWeight:700,color:tx,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.full_name}</span>
-                            <span style={{fontSize:11.5,color:categoryInk(a.category),fontWeight:700,whiteSpace:'nowrap'}}>{cl(a.category)}</span>
-                          </div>
-                          <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',columnGap:6,rowGap:2,fontSize:12,color:tx2}}>
-                            <Stars r={a.rating_avg} s={10}/><span className="num" style={{color:'var(--laiton)',fontWeight:700}}>{a.rating_avg.toFixed(1)}</span>
-                            <span aria-hidden style={{color:tx3}}>·</span>
-                            <span>{a.distance_km!=null?`${a.distance_km.toFixed(1)} km`:'—'}</span>
-                            <span aria-hidden style={{color:tx3}}>·</span>
-                            <span style={{overflow:'hidden',textOverflow:'ellipsis'}}>{a.total_missions} {tr('missions')}</span>
-                          </div>
+                filtered.map(a=>{
+                  const c=cc(a.category)
+                  return(
+                    <div key={a.id} className="arow" onClick={()=>pick(a)} {...pressable(()=>pick(a))}
+                      style={{marginBottom:2}}>
+                      <Avatar a={a} size={48}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:3,minWidth:0}}>
+                          <span style={{fontSize:15,fontWeight:700,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.full_name}</span>
                         </div>
-
-                        {/* Price */}
-                        <div style={{textAlign:'end',flexShrink:0}}>
-                          <div className="num" style={{fontSize:15,fontWeight:700,color:tx}}>{a.hourly_rate.toLocaleString('fr-DZ')} <span style={{fontSize:10.5,color:tx3,fontWeight:400}}>{t('common.da')}</span></div>
-                          {a.is_available&&<div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end',marginTop:3}}>
-                            <span aria-hidden style={{width:6,height:6,borderRadius:'50%',background:'var(--success)'}}/>
-                            <span style={{fontSize:11,color:'var(--success)',fontWeight:600}}>{t('common.online')}</span>
-                          </div>}
+                        <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',columnGap:6,rowGap:2,fontSize:12.5,color:'var(--tx2)'}}>
+                          <span aria-hidden style={{width:8,height:8,borderRadius:'50%',background:c,flexShrink:0}}/>
+                          <span style={{color:categoryInk(a.category),fontWeight:700}}>{cl(a.category)}</span>
+                          <span aria-hidden style={{color:'var(--tx3)'}}>·</span>
+                          <svg aria-hidden width="11" height="11" viewBox="0 0 24 24" fill="var(--star)"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg><span className="num" style={{color:'var(--laiton)',fontWeight:700,marginInlineStart:-3}}>{a.rating_avg.toFixed(1)}</span>
+                          {a.distance_km!=null&&<><span aria-hidden style={{color:'var(--tx3)'}}>·</span><span className="num">{a.distance_km.toFixed(1)} km</span></>}
                         </div>
                       </div>
-                    )
-                  })}
-
-                  {/* Show more */}
-                  {!sheetFull&&filtered.length>3&&(
-                    <button onClick={()=>setSheetFull(true)} className="btn-ghost btn-block" style={{marginTop:4}}>
-                      {tr('seeMore').replace('{n}',String(filtered.length-3))}
-                    </button>
-                  )}
-                </>
+                      <div style={{textAlign:'end',flexShrink:0}}>
+                        <div className="num" style={{fontSize:15,fontWeight:700,color:'var(--tx)'}}>{a.hourly_rate.toLocaleString('fr-DZ')} <span style={{fontSize:11,color:'var(--tx3)',fontWeight:500}}>{t('common.da')}</span></div>
+                        {a.is_available&&<div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'flex-end',marginTop:3}}>
+                          <span aria-hidden className="map-dot" style={{background:'var(--success)'}}/>
+                          <span style={{fontSize:11.5,color:'var(--success)',fontWeight:600}}>{t('map2.available')}</span>
+                        </div>}
+                      </div>
+                    </div>
+                  )
+                })
               )}
             </div>
-          )}
-        </div>
-
-        {/* ═══ SELECTED ARTISAN CARD (floating) ═══ */}
-        {selected&&(
-          <div style={{position:'absolute',bottom:sheetOpen?(sheetFull?'calc(70vh + 8px)':'268px'):'8px',left:12,right:12,zIndex:25,maxWidth:560,marginInline:'auto',animation:'fadeUp 0.3s ease'}}>
-            <div className="card" role="dialog" aria-label={selected.full_name} style={{padding:'16px 18px',boxShadow:'0 18px 40px -16px rgba(14,25,34,0.5)'}}>
-              <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:14}}>
-                {selected.avatar_url?(
-                  <img src={selected.avatar_url} alt="" style={{width:52,height:52,borderRadius:14,objectFit:'cover',border:`2px solid ${cc(selected.category)}55`}}/>
-                ):(
-                  <div aria-hidden style={{width:52,height:52,borderRadius:14,background:`${cc(selected.category)}1F`,border:`2px solid ${cc(selected.category)}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:800,color:categoryInk(selected.category),flexShrink:0}}>{initials(selected.full_name)}</div>
-                )}
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
-                    <span style={{fontSize:16,fontWeight:800,color:tx,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{selected.full_name}</span>
-                  </div>
-                  <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12.5,color:tx2,flexWrap:'wrap'}}>
-                    <span style={{color:categoryInk(selected.category),fontWeight:700}}>{cl(selected.category)}</span>
-                    <span aria-hidden>·</span>
-                    <Stars r={selected.rating_avg} s={11}/>
-                    <span className="num" style={{fontWeight:700,color:'var(--laiton)'}}>{selected.rating_avg.toFixed(1)}</span>
-                    <span>({selected.rating_count})</span>
-                  </div>
-                </div>
-                <button onClick={()=>{setSelected(null);setSent(false)}} aria-label={tr('close')} className="icon-btn"><X size={19}/></button>
-              </div>
-
-              {/* Quick stats */}
-              <div style={{display:'flex',gap:8,marginBottom:14}}>
-                {[
-                  {v:selected.distance_km!=null?`${selected.distance_km.toFixed(1)} km`:'—'},
-                  {v:`${selected.total_missions} ${tr('missions')}`},
-                  {v:`${selected.hourly_rate.toLocaleString('fr-DZ')} ${t('common.da')}`,strong:true},
-                ].map(s=>(
-                  <div key={s.v} className="num" style={{flex:1,padding:'9px 6px',borderRadius:10,background:'var(--bg3)',border:`1px solid ${brd}`,textAlign:'center',fontSize:12.5,color:s.strong?tx:tx2,fontWeight:s.strong?700:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.v}</div>
-                ))}
-              </div>
-
-              {/* Action buttons */}
-              {contactErr&&(
-                <div role="alert" className="tone-danger" style={{padding:'10px 14px',borderRadius:'var(--r-field)',marginBottom:8,fontSize:13}}>{contactErr}</div>
-              )}
-              {sent?(
-                <div role="status" className="tone-success" style={{padding:12,borderRadius:'var(--r-card)',textAlign:'center',fontSize:14,fontWeight:700}}>
-                  {t('profile.requestSent')}
-                </div>
-              ):(
-                <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>contact(selected,'message')} className="btn-primary" style={{flex:1,minWidth:0,padding:'12px 14px'}}>
-                    {t('home.sendMessage')}
-                  </button>
-                  <button onClick={()=>contact(selected,'call')} className="btn-ghost btn-call" style={{padding:'12px 14px'}}>
-                    {t('home.call')}
-                  </button>
-                  <a href={`/artisan/${selected.id}`} className="btn-ghost" style={{padding:'12px 14px'}}>
-                    {tr('profile')}
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
+          </>
         )}
+      </section>
 
-        {booking&&user&&selected&&(
-          <BookingFlow
-            artisan={{id:selected.id,name:selected.full_name,category:selected.category,hourlyRate:selected.hourly_rate||0,color:cc(selected.category)}}
-            clientId={user.id}
-            onClose={()=>setBooking(false)}
-          />
-        )}
-      </div>
-    </>
+      {booking&&user&&selected&&(
+        <BookingFlow
+          artisan={{id:selected.id,name:selected.full_name,category:selected.category,hourlyRate:selected.hourly_rate||0,color:cc(selected.category)}}
+          clientId={user.id}
+          onClose={()=>setBooking(false)}
+        />
+      )}
+    </div>
   )
 }
