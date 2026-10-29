@@ -9,7 +9,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
-import { LayoutGrid, MapPin, Search, BadgeCheck, ChevronRight, Shapes, X, Navigation, SearchX } from 'lucide-react'
+import { LayoutGrid, MapPin, Search, BadgeCheck, ChevronRight, Shapes, X, Navigation, SearchX, CalendarCheck, CheckCircle2 } from 'lucide-react'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { artisanAvatar } from '@/lib/avatar'
 
@@ -77,10 +77,23 @@ export default function MobileHome({
 
       {/* ═══ Salutation + localisation ═══ */}
       <div className="anim-fade-up" style={{ padding: '16px 20px 0' }}>
-        <div style={{ fontSize: 25, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
-          {greet}{firstName ? <span style={{ color: 'var(--accent)' }}> {firstName}</span> : ''}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
+        {userName ? (
+          <div style={{ fontSize: 25, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+            {greet}{firstName ? <span style={{ color: 'var(--accent)' }}> {firstName}</span> : ''}
+          </div>
+        ) : (
+          <>
+            <h1 className="display" style={{ fontSize: 'clamp(1.7rem, 8vw, 2.1rem)', fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.03em', lineHeight: 1.12, margin: 0 }}>
+              {t('mhome.heroT1')} <span style={{ color: 'var(--accent)' }}>{t('mhome.heroT2')}</span>
+            </h1>
+            <p style={{ fontSize: 15, color: 'var(--tx2)', lineHeight: 1.55, margin: '10px 0 0' }}>{t('mhome.heroSub')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
+              <button onClick={() => router.push('/recherche')} className="btn-primary btn-lg btn-block">{t('mhome.ctaFind')}</button>
+              <button onClick={() => router.push('/auth/signup')} className="btn-ghost btn-lg btn-block">{t('mhome.ctaArtisan')}</button>
+            </div>
+          </>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: userName ? 6 : 16 }}>
           <MapPin size={13} color="var(--accent)" strokeWidth={2.2}/>
           <span style={{ fontSize: 13, color: 'var(--tx2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80vw' }}>
             {locating ? t('home.detecting') : (addr || 'Alger')}
@@ -177,6 +190,26 @@ export default function MobileHome({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ═══ Comment ça marche (visiteurs) ═══ */}
+      {!q && !userName && (
+        <div style={{ padding: '26px 20px 0' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.01em', margin: '0 0 12px' }}>{t('mhome.howTitle')}</h2>
+          <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[{ k: 'how1', Icon: Search }, { k: 'how2', Icon: CalendarCheck }, { k: 'how3', Icon: CheckCircle2 }].map((st, i) => (
+              <li key={st.k} style={{ display: 'flex', alignItems: 'flex-start', gap: 13, padding: '13px 14px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r-card)' }}>
+                <span aria-hidden style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 11, background: 'var(--accent-fill)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <st.Icon size={19} color="var(--on-accent)" strokeWidth={2}/>
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: 'block', fontSize: 14.5, fontWeight: 800, color: 'var(--tx)', marginBottom: 2 }}>{i + 1}. {t(`mhome.${st.k}t`)}</span>
+                  <span style={{ display: 'block', fontSize: 13, color: 'var(--tx2)', lineHeight: 1.5 }}>{t(`mhome.${st.k}d`)}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
 
