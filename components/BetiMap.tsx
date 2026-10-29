@@ -12,10 +12,12 @@ import { supabase } from '@/lib/supabase'
 import { isDemoArtisan } from '@/lib/contactArtisan'
 import { isPremium, isListed } from '@/lib/subscription'
 import PremiumBadge from '@/components/PremiumBadge'
-import { CATEGORY_COLOR } from '@/components/icons'
+import { CATEGORY_COLOR, CategoryIcon } from '@/components/icons'
+import { useLang } from '@/lib/LangContext'
+import { loadBetiStyle } from '@/components/betiMapStyle'
 import { Star, Navigation, Route } from 'lucide-react'
 import {
-  Map, MapMarker, MarkerContent, MarkerPopup, MapControls, MapRoute, type MapRef,
+  Map, MapMarker, MarkerContent, MarkerPopup, MapControls, MapRoute, useMap, type MapRef,
 } from '@/components/ui/mapcn-marker-popup'
 
 type ArtisanMarker = {
@@ -27,14 +29,6 @@ type ArtisanMarker = {
 
 // Palette unique « Chaux & Zellige » (components/icons)
 const CAT_COLORS: Record<string, string> = CATEGORY_COLOR
-
-const DEMO: ArtisanMarker[] = [
-  { id: 'd1', name: 'Karim Benali', initials: 'KB', avatar: null, category: 'plomberie', rating: 4.9, price: 3500, available: true, color: CATEGORY_COLOR.plomberie, lat: 36.7538, lng: 3.0588 },
-  { id: 'd2', name: 'Sofiane Amrani', initials: 'SA', avatar: null, category: 'electricite', rating: 4.8, price: 4000, available: true, color: CATEGORY_COLOR.electricite, lat: 36.7700, lng: 3.0310 },
-  { id: 'd3', name: 'Amina Kaci', initials: 'AK', avatar: null, category: 'menage', rating: 5.0, price: 2000, available: true, color: CATEGORY_COLOR.menage, lat: 36.7400, lng: 3.0900 },
-  { id: 'd4', name: 'Riad Hamdi', initials: 'RH', avatar: null, category: 'serrurerie', rating: 4.6, price: 4500, available: false, color: CATEGORY_COLOR.serrurerie, lat: 36.7200, lng: 3.0200 },
-  { id: 'd5', name: 'Nadia Bouzid', initials: 'NB', avatar: null, category: 'coiffure', rating: 4.9, price: 1500, available: true, color: CATEGORY_COLOR.coiffure, lat: 36.7600, lng: 3.1200 },
-]
 
 const calcDist = (lat1: number, lng1: number, lat2: number, lng2: number) => {
   const R = 6371
@@ -81,6 +75,10 @@ export default function BetiMap({
   clientLng = 3.0588,
   showAllArtisans = true,
   categoryFilter = '',
+  selectedId = null,
+  onSelect,
+  onLocate,
+  bottomInset = 0,
 }: {
   trackingArtisanId?: string
   clientLat?: number
@@ -88,10 +86,27 @@ export default function BetiMap({
   showAllArtisans?: boolean
   categoryFilter?: string
   focusOffsetY?: number
+  /** Artisan sélectionné (pin mis en avant, carte centrée au-dessus du panneau). */
+  selectedId?: string | null
+  /** Si fourni : un clic sur un pin appelle onSelect (la page affiche sa propre fiche) au lieu du popup. */
+  onSelect?: (id: string | null) => void
+  onLocate?: (c: { longitude: number; latitude: number }) => void
+  /** Hauteur (px) occupée en bas par le panneau, pour cadrer la sélection. */
+  bottomInset?: number
 }) {
+  const { t, lang } = useLang()
   const theme = useBetiTheme()
   const mapRef = useRef<MapRef | null>(null)
-  const [artisans, setArtisans] = useState<ArtisanMarker[]>(DEMO)
+  const [styles, setStyles] = useState<{ light?: any; dark?: any } | null>(null)
+  useEffect(() => {
+    let off = false
+    setStyles(null)
+    Promise.all([loadBetiStyle('light', lang === 'ar' ? 'ar' : 'fr'), loadBetiStyle('dark', lang === 'ar' ? 'ar' : 'fr')])
+      .then(([light, dark]) => { if (!off) setStyles({ light, dark }) })
+      .catch(() => { if (!off) setStyles({}) }) // repli : styles CARTO d'origine
+    return () => { off = true }
+  }, [lang])
+  const [artisans, setArtisans] = useState<ArtisanMarker[]>([])
 
   // Suivi
   const [puck, setPuck] = useState<{ lng: number; lat: number } | null>(null)
@@ -108,7 +123,7 @@ export default function BetiMap({
           .from('artisans')
           .select('id, category, hourly_rate, is_available, rating_avg, lat, lng, plan, plan_until, profiles(full_name, avatar_url)')
           .not('lat', 'is', null).not('lng', 'is', null)
-        if (data && data.length > 0) {
+        if (data) {
           // Paywall : hors période de lancement, on masque les non-abonnés.
           setArtisans(data.filter((a: any) => isListed(a)).map((a: any) => ({
             id: a.id,
@@ -123,7 +138,7 @@ export default function BetiMap({
             lat: a.lat, lng: a.lng, plan: a.plan, plan_until: a.plan_until,
           })))
         }
-      } catch { /* garde les démos */ }
+      } catch { /* liste vide : la page affiche l'état d'erreur */ }
     }
     load()
     const channel = supabase.channel('artisans-map')
@@ -246,80 +261,50 @@ export default function BetiMap({
     }
   }, [trackingArtisanId, artisans, clientLat, clientLng])
 
+  // Cadre la sélection au-dessus du panneau du bas.
+  useEffect(() => {
+    if (!selectedId) return
+    const a = artisans.find(x => x.id === selectedId)
+    const map = mapRef.current
+    if (!a || !map) return
+    try {
+      map.easeTo({ center: [a.lng, a.lat], zoom: Math.max(map.getZoom(), 14), padding: { top: 120, bottom: bottomInset + 24, left: 0, right: 0 }, duration: 500 })
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, artisans])
+
+  const mapLabels = { zoomIn: t('map2.zoomIn'), zoomOut: t('map2.zoomOut'), locate: t('map2.locate') }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <style>{`
         .maplibregl-popup-content { background: transparent !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
         .maplibregl-popup-tip { display: none !important; }
-        .maplibregl-ctrl-attrib, .maplibregl-ctrl-logo { opacity: 0.5; }
+        .maplibregl-ctrl-attrib { opacity: 0.7; }
+        .maplibregl-ctrl-logo { display: none !important; }
         @keyframes bmDot { 0% { transform: scale(1); opacity: 0.55; } 70% { transform: scale(2.4); opacity: 0; } 100% { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .bm-pulse { animation: none !important; } }
       `}</style>
 
-      <Map ref={mapRef} theme={theme} center={[clientLng, clientLat]} zoom={13}>
+      {!styles && (
+        <div role="status" aria-label={t('map2.mapLoading')} style={{ position: 'absolute', inset: 0, zIndex: 5, background: 'var(--bg)' }}>
+          <div className="skeleton" style={{ position: 'absolute', inset: 0, borderRadius: 0, opacity: 0.5 }} />
+        </div>
+      )}
+
+      {styles && (
+      <Map key={lang} ref={mapRef} theme={theme} styles={styles} center={[clientLng, clientLat]} zoom={13}>
         {/* Position client */}
         <MapMarker longitude={clientLng} latitude={clientLat}>
           <MarkerContent>
-            <div style={{ position: 'relative', width: 18, height: 18 }}>
-              <div style={{ position: 'absolute', inset: -7, borderRadius: '50%', background: 'rgba(23,92,196,0.35)', animation: 'bmDot 2s infinite' }} />
+            <div role="img" aria-label={t('map2.you')} style={{ position: 'relative', width: 18, height: 18 }}>
+              <div className="bm-pulse" style={{ position: 'absolute', inset: -7, borderRadius: '50%', background: 'rgba(23,92,196,0.35)', animation: 'bmDot 2s infinite' }} />
               <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#175CC4', border: '3px solid #fff', boxShadow: '0 0 0 2px rgba(23,92,196,0.4)' }} />
             </div>
           </MarkerContent>
         </MapMarker>
 
-        {/* Artisans cliquables avec photo de profil */}
-        {showAllArtisans && shown.map(a => (
-          <MapMarker key={a.id} longitude={a.lng} latitude={a.lat}>
-            <MarkerContent>
-              <div style={{ position: 'relative', transform: 'translateY(-4px)', opacity: a.available ? 1 : 0.55 }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', padding: 3, background: `linear-gradient(135deg, ${a.color}, #1E6FD6)`, boxShadow: '0 6px 16px rgba(0,0,0,0.35)' }}>
-                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', border: '2px solid #fff', background: 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {a.avatar
-                      ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ color: '#fff', fontWeight: 800, fontSize: 13 }}>{a.initials}</span>}
-                  </div>
-                </div>
-                <div style={{ position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%) rotate(45deg)', width: 10, height: 10, background: '#1E6FD6', borderBottomRightRadius: 2 }} />
-                {a.available && <div style={{ position: 'absolute', top: 0, right: 0, width: 12, height: 12, borderRadius: '50%', background: '#10b981', border: '2px solid #fff' }} />}
-              </div>
-            </MarkerContent>
-
-            <MarkerPopup className="!bg-transparent !border-0 !p-0 !shadow-none">
-              <div style={{ width: 250, borderRadius: 18, overflow: 'hidden', background: 'var(--bg2)', border: '1px solid var(--border)', boxShadow: '0 18px 40px -16px rgba(14,25,34,0.55)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: a.color + '22', border: `1.5px solid ${a.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {a.avatar ? <img src={a.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: a.color, fontWeight: 800 }}>{a.initials}</span>}
-                  </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
-                      {isPremium(a) && <PremiumBadge size="sm" />}
-                    </div>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', color: a.color, textTransform: 'uppercase' }}>{a.category}</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Star size={14} fill="var(--star)" strokeWidth={0} />
-                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}>{a.rating.toFixed(1)}</span>
-                  </div>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent)' }}>{a.price.toLocaleString('fr-DZ')} <span style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>DA/h</span></span>
-                </div>
-                <div style={{ display: 'flex', gap: 8, padding: '0 12px 12px' }}>
-                  <a href={`/artisan/${a.id}`} style={{ flex: 1, textDecoration: 'none' }}>
-                    <button style={{ width: '100%', padding: '10px 0', borderRadius: 11, border: 'none', background: 'var(--gradient)', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                      <Navigation size={13} /> Réserver
-                    </button>
-                  </a>
-                  <a href={`/suivi/${a.id}`} aria-label="Suivre" style={{ textDecoration: 'none' }}>
-                    <button style={{ width: 40, padding: '10px 0', borderRadius: 11, border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--tx2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Route size={15} />
-                    </button>
-                  </a>
-                </div>
-              </div>
-            </MarkerPopup>
-          </MapMarker>
-        ))}
+        {showAllArtisans && <ArtisanLayer shown={shown} selectedId={selectedId} onSelect={onSelect} />}
 
         {/* Suivi : route + puck directionnel */}
         {trackingArtisanId && routeCoords.length > 1 && <MapRoute coordinates={routeCoords} color="#1E6FD6" width={5} />}
@@ -327,8 +312,8 @@ export default function BetiMap({
           <MapMarker longitude={puck.lng} latitude={puck.lat}>
             <MarkerContent>
               <div style={{ position: 'relative', width: 46, height: 46 }}>
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(30,111,214,0.3)', animation: 'bmDot 2s infinite' }} />
-                <div style={{ position: 'absolute', top: 7, left: 7, width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#175CC4,#1E6FD6)', border: '3px solid #fff', boxShadow: '0 3px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `rotate(${heading}deg)`, transition: 'transform 0.45s ease' }}>
+                <div className="bm-pulse" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(30,111,214,0.3)', animation: 'bmDot 2s infinite' }} />
+                <div style={{ position: 'absolute', top: 7, insetInlineStart: 7, width: 32, height: 32, borderRadius: '50%', background: 'var(--accent-fill)', border: '3px solid #fff', boxShadow: '0 3px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `rotate(${heading}deg)`, transition: 'transform 0.45s ease' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 L19.5 21 L12 16.2 L4.5 21 Z" /></svg>
                 </div>
               </div>
@@ -336,15 +321,16 @@ export default function BetiMap({
           </MapMarker>
         )}
 
-        <MapControls showZoom showLocate />
+        <MapControls showZoom showLocate labels={mapLabels} onLocate={onLocate} />
       </Map>
+      )}
 
       {/* Bandeau ETA en mode suivi */}
       {trackingArtisanId && (distance || eta) && (
-        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 20, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', boxShadow: '0 18px 40px -16px rgba(14,25,34,0.55)' }}>
+        <div style={{ position: 'absolute', top: 16, insetInlineEnd: 16, zIndex: 20, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', boxShadow: '0 18px 40px -16px rgba(14,25,34,0.55)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-            <span style={{ fontSize: 11, color: '#10b981', fontWeight: 800, letterSpacing: '0.08em' }}>ARTISAN EN ROUTE</span>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)' }} />
+            <span style={{ fontSize: 11, color: 'var(--success)', fontWeight: 800, letterSpacing: '0.08em' }}>ARTISAN EN ROUTE</span>
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
             <div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{distance} km</div><div style={{ fontSize: 11, color: 'var(--tx3)', fontWeight: 300 }}>Distance</div></div>
@@ -354,5 +340,116 @@ export default function BetiMap({
         </div>
       )}
     </div>
+  )
+}
+
+// ── Pins et regroupements ────────────────────────────────────────
+type Cluster = { key: string; lat: number; lng: number; items: ArtisanMarker[] }
+
+function ArtisanPin({ a, selected }: { a: ArtisanMarker; selected: boolean }) {
+  const size = selected ? 46 : 40
+  return (
+    <div style={{ position: 'relative', width: size, height: size + 8, transform: `translateY(${-(size + 8) / 2 + 4}px)`, zIndex: selected ? 5 : 1 }}>
+      {/* corps du pin : goutte (cercle + pointe) */}
+      <div style={{
+        position: 'absolute', top: 0, insetInlineStart: 0, width: size, height: size,
+        borderRadius: '50% 50% 50% 4px', transform: 'rotate(-45deg)',
+        background: a.color, border: `3px solid ${selected ? 'var(--tx)' : '#fff'}`,
+        boxShadow: selected ? '0 8px 18px rgba(14,25,34,0.45)' : '0 4px 10px rgba(14,25,34,0.35)',
+        opacity: a.available ? 1 : 0.72,
+      }} />
+      <div style={{ position: 'absolute', top: 0, insetInlineStart: 0, width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CategoryIcon id={a.category} size={selected ? 22 : 19} color="#fff" strokeWidth={2.2} />
+      </div>
+      {a.available && (
+        <span aria-hidden style={{ position: 'absolute', top: -3, insetInlineEnd: -3, width: 14, height: 14, borderRadius: '50%', background: '#16A34A', border: '2.5px solid #fff' }} />
+      )}
+    </div>
+  )
+}
+
+function ArtisanLayer({ shown, selectedId, onSelect }: { shown: ArtisanMarker[]; selectedId: string | null; onSelect?: (id: string | null) => void }) {
+  const { map } = useMap()
+  const { t } = useLang()
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    if (!map) return
+    const bump = () => setTick(x => x + 1)
+    map.on('zoomend', bump)
+    map.on('load', bump)
+    return () => { map.off('zoomend', bump); map.off('load', bump) }
+  }, [map])
+
+  const clusters = useMemo<Cluster[]>(() => {
+    if (!map) return shown.map(a => ({ key: a.id, lat: a.lat, lng: a.lng, items: [a] }))
+    const zoom = map.getZoom()
+    const pts = shown.map(a => ({ a, p: map.project([a.lng, a.lat]) }))
+    const used = new Set<string>()
+    const out: Cluster[] = []
+    for (const { a, p } of pts) {
+      if (used.has(a.id)) continue
+      used.add(a.id)
+      const group = [a]
+      if (a.id !== selectedId && zoom < 17) {
+        for (const o of pts) {
+          if (used.has(o.a.id) || o.a.id === selectedId) continue
+          if (Math.hypot(o.p.x - p.x, o.p.y - p.y) < 48) { used.add(o.a.id); group.push(o.a) }
+        }
+      }
+      const lat = group.reduce((x, g) => x + g.lat, 0) / group.length
+      const lng = group.reduce((x, g) => x + g.lng, 0) / group.length
+      out.push({ key: group.length === 1 ? a.id : 'c-' + group.map(g => g.id).sort().join('|'), lat, lng, items: group })
+    }
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, shown, selectedId, tick])
+
+  const zoomInto = (c: Cluster) => {
+    if (!map) return
+    const lngs = c.items.map(i => i.lng), lats = c.items.map(i => i.lat)
+    map.fitBounds([[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]], { padding: 90, maxZoom: 17, duration: 500 })
+  }
+
+  return (
+    <>
+      {clusters.map(c => c.items.length > 1 ? (
+        <MapMarker key={c.key} longitude={c.lng} latitude={c.lat} onClick={() => zoomInto(c)}>
+          <MarkerContent>
+            <button type="button" aria-label={t('map2.cluster').replace('{n}', String(c.items.length))}
+              style={{ width: 46, height: 46, borderRadius: '50%', background: 'var(--accent-fill)', color: 'var(--on-accent)', border: '3px solid #fff', boxShadow: '0 6px 14px rgba(14,25,34,0.4)', fontWeight: 800, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontVariantNumeric: 'tabular-nums' }}>
+              {c.items.length}
+            </button>
+          </MarkerContent>
+        </MapMarker>
+      ) : (() => {
+        const a = c.items[0]
+        return (
+          <MapMarker key={c.key} longitude={a.lng} latitude={a.lat} onClick={() => onSelect?.(selectedId === a.id ? null : a.id)}>
+            <MarkerContent>
+              <ArtisanPin a={a} selected={selectedId === a.id} />
+            </MarkerContent>
+            {!onSelect && (
+              <MarkerPopup className="!bg-transparent !border-0 !p-0 !shadow-none">
+                <div style={{ width: 240, borderRadius: 16, background: 'var(--bg2)', border: '1px solid var(--border)', boxShadow: '0 18px 40px -16px rgba(14,25,34,0.55)', padding: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</span>
+                    {isPremium(a) && <PremiumBadge size="sm" />}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: `color-mix(in srgb, ${a.color} 68%, var(--tx))`, marginBottom: 8 }}>{t(`categories.${a.category}`)}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: 'var(--tx)' }}><Star size={14} fill="var(--star)" strokeWidth={0} />{a.rating.toFixed(1)}</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--tx)' }}>{a.price.toLocaleString('fr-DZ')} {t('common.da')}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <a href={`/artisan/${a.id}`} className="btn-primary" style={{ flex: 1 }}><Navigation size={13} /> {t('map2.book')}</a>
+                    <a href={`/suivi/${a.id}`} aria-label="Suivre" className="btn-ghost" style={{ width: 44, padding: 0 }}><Route size={15} /></a>
+                  </div>
+                </div>
+              </MarkerPopup>
+            )}
+          </MapMarker>
+        )
+      })())}
+    </>
   )
 }
