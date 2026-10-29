@@ -9,6 +9,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
+import CategoryCard from '@/components/CategoryCard'
 import { LayoutGrid, MapPin, Search, ChevronRight, Shapes, X, Navigation, SearchX, CalendarCheck, CheckCircle2 } from 'lucide-react'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { artisanAvatar } from '@/lib/avatar'
@@ -127,36 +128,18 @@ export default function MobileHome({
       <div className="anim-fade-up" style={{ animationDelay: '0.12s' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '22px 20px 12px' }}>
           <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.01em' }}>{t('mhome.categories')}</span>
+          {cat !== '' && (
+            <button type="button" onClick={() => { setCat(''); setTags([]) }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', padding: '6px 2px' }}>{t('mhome.all')}</button>
+          )}
         </div>
-        {/* scrollPaddingInline : l'aimantation (snap) respecte la gouttière de 20px
-            — sinon la 1re tuile se collait au bord de l'écran. */}
-        <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '2px 20px 6px', scrollSnapType: 'x proximity', scrollPaddingInline: 20 }}>
-          {(() => {
-            const tile = (key: string, active: boolean, color: string, icon: React.ReactNode, label: string, onClick: () => void) => (
-              <button key={key} onClick={onClick} aria-pressed={active} className="press" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, scrollSnapAlign: 'start', flexShrink: 0, width: 64 }}>
-                <div className="glassb" style={{
-                  width: 56, height: 56, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: active ? color : `${color}14`,
-                  border: `1px solid ${active ? color : color + '2E'}`,
-                  boxShadow: active ? `0 2px 0 ${color}, 0 10px 18px -10px ${color}` : 'none',
-                  transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)',
-                }}>
-                  {icon}
-                </div>
-                <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, color: active ? 'var(--tx)' : 'var(--tx2)', maxWidth: 64, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
-              </button>
-            )
-            const allColor = '#175CC4'
-            const autre = categoryColor('autre')
-            return <>
-              {tile('all', cat === '', allColor, <LayoutGrid size={22} color={cat === '' ? '#fff' : 'var(--accent)'} strokeWidth={1.9}/>, t('mhome.all'), () => { setCat(''); setTags([]) })}
-              {CATS.map(c => {
-                const active = cat === c.id
-                return tile(c.id, active, c.color, <CategoryIcon id={c.id} size={23} color={active ? '#fff' : c.color} strokeWidth={1.9}/>, cl(c.id), () => { setCat(active ? '' : c.id); setTags([]) })
-              })}
-              {tile('autre', cat === 'autre', autre, <Shapes size={22} color={cat === 'autre' ? '#fff' : autre} strokeWidth={1.9}/>, t('mhome.other'), () => { setCat('autre'); setTags([]) })}
-            </>
-          })()}
+        <div className="no-scrollbar" style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '2px 20px 8px', scrollSnapType: 'x proximity', scrollPaddingInline: 20 }}>
+          {CATS.map(c => (
+            <CategoryCard key={c.id} id={c.id} width={158} label={cl(c.id)}
+              desc={t(`home.svc${c.id[0].toUpperCase()}${c.id.slice(1)}`)}
+              active={cat === c.id} onClick={() => { setCat(cat === c.id ? '' : c.id); setTags([]) }} />
+          ))}
+          <CategoryCard id="autre" width={158} label={t('mhome.other')} desc={t('home.otherServiceSub')}
+            active={cat === 'autre'} onClick={() => { setCat('autre'); setTags([]) }} />
         </div>
 
         {cat === 'autre' && (

@@ -10,6 +10,7 @@ import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
+import CategoryCard from '@/components/CategoryCard'
 import { LayoutGrid, MapPinned, Search, CalendarCheck, CheckCircle2, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
 import { LogoMark } from '@/components/Logo'
@@ -240,28 +241,15 @@ export default function Home(){
 
         {/* ── SERVICES ── */}
         <section id="services" className="reveal-on-scroll" style={{maxWidth:1100,margin:'0 auto',padding:'40px 24px 28px'}}>
-          <div style={{marginBottom:24}}><div className="section-label">{t('home.servicesTag')}</div><h2 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.servicesTitle')}</h2></div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:12}}>
-            {(()=>{const go=()=>{setCat('');document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})};return(
-            <div onClick={go} {...pressable(go)} aria-pressed={!cat} className="card is-clickable" style={{padding:18,borderColor:!cat?'var(--accent)':'var(--border)',boxShadow:!cat?'0 0 0 1px var(--accent), var(--card-shadow)':undefined}}>
-              <div style={{marginBottom:12}}><LayoutGrid size={22} color={!cat?'var(--accent)':'var(--tx2)'} strokeWidth={1.75}/></div>
-              <div style={{fontSize:14,fontWeight:700,color:!cat?'var(--accent)':'var(--tx)',marginBottom:4}}>{t('home.allServices')}</div>
-              <div style={{fontSize:12,color:'var(--tx2)',lineHeight:1.5}}>{t('home.allServicesSub')}</div>
-            </div>)})()}
-            {SVC.map(s=>{const on=cat===s.id;const go=()=>{setCat(s.id);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})};return(
-              <div key={s.id} onClick={go} {...pressable(go)} aria-pressed={on} className="card is-clickable" style={{padding:18,position:'relative',borderColor:on?s.color:'var(--border)',boxShadow:on?`0 0 0 1px ${s.color}, var(--card-shadow)`:undefined}}>
-                {s.u&&<div className="badge tone-danger" style={{position:'absolute',top:12,insetInlineEnd:12}}>{t('home.urgent')}</div>}
-                <div style={{marginBottom:12,width:38,height:38,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`${s.color}${on?'22':'14'}`}}><CategoryIcon id={s.id} size={20} color={s.color} strokeWidth={1.9}/></div>
-                <div style={{fontSize:14,fontWeight:700,color:on?categoryInk(s.id):'var(--tx)',marginBottom:4,transition:'color 0.2s'}}>{cl(s.id)}</div>
-                <div style={{fontSize:12,color:'var(--tx2)',lineHeight:1.5}}>{svcDesc(s.id)}</div>
-              </div>
-            )})}
-            {(()=>{const on=cat==='autre';const c=categoryColor('autre');const go=()=>{setCat('autre');setTags([])};return(
-            <div onClick={go} {...pressable(go)} aria-pressed={on} className="card is-clickable" style={{padding:18,borderColor:on?c:'var(--border)',boxShadow:on?`0 0 0 1px ${c}, var(--card-shadow)`:undefined}}>
-              <div style={{marginBottom:12,width:38,height:38,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',background:`${c}${on?'22':'14'}`}}><Shapes size={20} color={c} strokeWidth={1.9}/></div>
-              <div style={{fontSize:14,fontWeight:700,color:on?categoryInk('autre'):'var(--tx)',marginBottom:4}}>{t('home.otherService')}</div>
-              <div style={{fontSize:12,color:'var(--tx2)',lineHeight:1.5}}>{t('home.otherServiceSub')}</div>
-            </div>)})()}
+          <div style={{marginBottom:24,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:16,flexWrap:'wrap'}}><div><div className="section-label">{t('home.servicesTag')}</div><h2 style={{fontSize:26,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.servicesTitle')}</h2></div>{cat!==''&&<button type="button" className="btn-ghost" onClick={()=>{setCat('');setTags([])}}>{t('home.allServices')}</button>}</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:14}}>
+            {SVC.map(s=>(
+              <CategoryCard key={s.id} id={s.id} label={cl(s.id)} desc={svcDesc(s.id)} active={cat===s.id}
+                badge={s.u?t('home.urgent'):undefined}
+                onClick={()=>{setCat(s.id);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})}} />
+            ))}
+            <CategoryCard id="autre" label={t('home.otherService')} desc={t('home.otherServiceSub')} active={cat==='autre'}
+              onClick={()=>{setCat('autre');setTags([])}} />
           </div>
           {cat==='autre'&&(<div style={{maxWidth:540,margin:'16px auto 0',animation:'fadeUp 0.3s ease'}}><OtherCategorySearch onSearch={kw=>{const t=kw.trim().split(/\s+/).filter(Boolean);setTags(t);if(t.length>0)setTimeout(()=>document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'}),200)}}/>{tags.length===0&&<p style={{textAlign:'center',fontSize:12.5,color:'var(--tx2)',marginTop:12}}>{t('home.otherHint')}</p>}</div>)}
         </section>
