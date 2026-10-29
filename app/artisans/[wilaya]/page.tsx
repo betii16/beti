@@ -79,7 +79,7 @@ export default function WilayaPage() {
           Artisans à {w.name}
         </h1>
         <p style={{ fontSize: 16, color: 'var(--tx2)', maxWidth: 600, lineHeight: 1.7, marginBottom: 32 }}>
-          Trouvez un artisan certifié BETI à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Disponibles maintenant, paiement en cash.
+          Trouvez un artisan près de chez vous à {w.name} — plombier, électricien, femme de ménage, peintre, serrurier. Classés par distance, sans commission, paiement direct à l'artisan.
         </p>
         <a href={`/?wilaya=${params.wilaya}`} className="btn-primary btn-lg">
           Trouver un artisan à {w.name}

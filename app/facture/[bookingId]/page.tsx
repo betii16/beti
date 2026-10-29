@@ -372,7 +372,6 @@ export default function FacturePage() {
               <div className="inv-party-info">
                 {category.charAt(0).toUpperCase() + category.slice(1)}<br/>
                 {artisan?.profiles?.phone && <>{artisan.profiles.phone}<br/></>}
-                Artisan certifié BETI
               </div>
             </div>
             <div>
@@ -467,10 +466,10 @@ export default function FacturePage() {
               <div style={{ marginTop: 4 }}>Document généré le {formatDate(new Date().toISOString())} · Facture non soumise à TVA (artisan individuel)</div>
             </div>
             <div style={{ textAlign: 'end' }}>
-              <div style={{ fontSize: 11, color: '#6B767E', marginBottom: 6 }}>Certifié par</div>
+              <div style={{ fontSize: 11, color: '#6B767E', marginBottom: 6 }}>Émise via</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
                 <div style={{ width: 24, height: 24, background: '#175CC4', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>B</div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#175CC4' }}>BETI CERTIFIÉ</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#175CC4' }}>BETI</span>
               </div>
             </div>
           </div>

@@ -44,8 +44,8 @@ export async function generateMetadata(props: { params: Promise<{ wilaya: string
   const c = CATEGORIES[params.category]
   if (!w || !c) return {}
 
-  const title = `${c.label} à ${w.name} — Certifié BETI | Disponible maintenant`
-  const description = `Trouvez un ${c.label.toLowerCase()} certifié à ${w.name} (wilaya ${w.num}). ${c.desc}. Intervention rapide, paiement en cash. Devis gratuit.`
+  const title = `${c.label} à ${w.name} | Artisans près de chez vous`
+  const description = `Trouvez un ${c.label.toLowerCase()} près de chez vous à ${w.name} (wilaya ${w.num}). ${c.desc}. Classés par distance, sans commission, paiement direct à l'artisan.`
 
   return {
     title,
@@ -104,7 +104,7 @@ export default async function WilayaCategoryPage(props: { params: Promise<{ wila
     'serviceType': c.label,
     'provider': { '@type': 'Organization', 'name': 'BETI' },
     'areaServed': { '@type': 'City', 'name': w.name, 'addressCountry': 'DZ' },
-    'description': `${c.labelPlural} certifiés BETI à ${w.name} — ${c.desc}`,
+    'description': `${c.labelPlural} à ${w.name} — ${c.desc}`,
     'url': `https://beti-ten.vercel.app/artisans/${params.wilaya}/${params.category}`,
     'offers': {
       '@type': 'AggregateOffer',
@@ -133,8 +133,8 @@ export default async function WilayaCategoryPage(props: { params: Promise<{ wila
             {c.label} à {w.name}
           </h1>
           <p style={{ fontSize: 16, color: 'var(--tx2)', maxWidth: 600, lineHeight: 1.7, marginBottom: 32 }}>
-            Trouvez un {c.label.toLowerCase()} certifié BETI à {w.name} (wilaya {w.num}).
-            Spécialisé en {c.desc}. Intervention rapide, devis gratuit, paiement en cash.
+            Trouvez un {c.label.toLowerCase()} près de chez vous à {w.name} (wilaya {w.num}).
+            Spécialisé en {c.desc}. Artisans classés par distance, sans commission, paiement direct à l'artisan.
           </p>
 
           <a href={`/?wilaya=${params.wilaya}&category=${params.category}`} className="btn-primary btn-lg">
@@ -152,7 +152,7 @@ export default async function WilayaCategoryPage(props: { params: Promise<{ wila
               {artisans.map((a: any) => (
                 <a key={a.id} href={`/artisan/${a.id}`} className="card is-clickable seo-card">
                   <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', marginBottom: 4 }}>{a.profiles?.full_name}</div>
-                  <div style={{ fontSize: 12.5, color: categoryInk(params.category), fontWeight: 700, marginBottom: 10 }}>{c.label} certifié BETI</div>
+                  <div style={{ fontSize: 12.5, color: categoryInk(params.category), fontWeight: 700, marginBottom: 10 }}>{c.label} à {w.name}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span className="badge-tone tone-success"><span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }}/>Disponible</span>
                     <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)' }}>{a.hourly_rate} <span style={{ fontSize: 11.5, color: 'var(--tx3)', fontWeight: 400 }}>DA/h</span></span>

@@ -58,11 +58,11 @@ export const metadata: Metadata = {
     default: 'BETI — Artisans à domicile en Algérie | Plombier, Électricien, Ménage',
     template: '%s | BETI Algérie',
   },
-  description: 'Trouvez un artisan certifié près de chez vous en Algérie. Plombier, électricien, ménage, peinture, serrurerie — disponibles maintenant. Paiement en cash. Intervention en 30 min.',
+  description: 'Trouvez un artisan près de chez vous en Algérie. Plombier, électricien, ménage, peinture, serrurerie. Sans commission, vous payez l’artisan directement.',
   keywords: [
     'artisan algerie', 'plombier alger', 'electricien alger', 'menage domicile algerie',
     'serrurerie alger', 'peintre alger', 'artisan domicile', 'service domicile algerie',
-    'beti artisan', 'plombier oran', 'electricien constantine', 'artisan certifié algerie',
+    'beti artisan', 'plombier oran', 'electricien constantine', 'artisan pres de chez moi algerie',
   ],
   applicationName: 'BETI',
   formatDetection: { telephone: false, email: false, address: false },
@@ -72,14 +72,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website', locale: 'fr_DZ',
     siteName: 'BETI',
-    title: 'BETI — Artisans certifiés à domicile en Algérie',
-    description: 'Trouvez un artisan certifié près de chez vous. Plombier, électricien, ménage : réservez en quelques minutes, paiement en cash.',
+    title: 'BETI — Artisans à domicile en Algérie',
+    description: 'Trouvez un artisan près de chez vous. Plombier, électricien, ménage : classés par distance, sans commission.',
     // L'image est générée par app/opengraph-image.tsx (convention App Router).
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BETI — Artisans certifiés à domicile en Algérie',
-    description: 'Trouvez un artisan certifié près de chez vous. Plombier, électricien, ménage : réservez en quelques minutes, paiement en cash.',
+    title: 'BETI — Artisans à domicile en Algérie',
+    description: 'Trouvez un artisan près de chez vous. Plombier, électricien, ménage : classés par distance, sans commission.',
   },
   verification: {
     google: 'WDYNC_syGCExgMflHe9Og6UkYB9yiS_CTn3U2vYRVqo',

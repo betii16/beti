@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
-import { Search, SearchX, LayoutGrid, SlidersHorizontal, Check, Star, X, BadgeCheck } from 'lucide-react'
+import { Search, SearchX, LayoutGrid, SlidersHorizontal, Check, Star, X } from 'lucide-react'
 import PremiumBadge from '@/components/PremiumBadge'
 import { fetchPlans, isListed } from '@/lib/subscription'
 import { useLang } from '@/lib/LangContext'
@@ -51,7 +51,6 @@ const L = {
   emptyTitle:   { fr: 'Aucun artisan trouvé',       ar: 'لم يتم العثور على أي حرفي' },
   emptySub:     { fr: "Élargissez le rayon ou assouplissez les filtres.", ar: 'وسّع النطاق أو خفف الفلاتر.' },
   widen:        { fr: 'Élargir à 100 km',           ar: 'توسيع إلى 100 كم' },
-  certified:    { fr: 'Certifié',                   ar: 'موثّق' },
   newA:         { fr: 'Nouveau',                    ar: 'جديد' },
   missions:     { fr: 'missions',                   ar: 'مهمة' },
   available:    { fr: 'Disponible',                 ar: 'متاح' },
@@ -455,7 +454,6 @@ export default function RecherchePage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{a.full_name}</span>
                         {a.plan === 'premium' && <PremiumBadge size="sm" />}
-                        <BadgeCheck size={15} color="var(--accent)" strokeWidth={2.2} aria-label={tr('certified')}/>
                       </div>
                       <div style={{ fontSize: 12.5, color: categoryInk(a.category), fontWeight: 700, marginBottom: 6 }}>{t(`categories.${a.category}`)}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--tx2)' }}>

@@ -83,7 +83,7 @@ export default function LegalPage({
         </div>
 
         <div style={{ marginTop: 36, fontSize: 13, color: 'var(--tx3)', lineHeight: 1.7 }}>
-          BETI — Artisans de confiance · Algérie · <a href="/aide" style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: 3 }}>support@beti.dz</a>
+          BETI — Artisans près de chez vous · Algérie · <a href="/aide" style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: 3 }}>support@beti.dz</a>
         </div>
       </div>
     </div>
