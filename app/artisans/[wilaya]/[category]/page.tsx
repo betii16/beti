@@ -60,9 +60,9 @@ export async function generateMetadata(props: { params: Promise<{ wilaya: string
     openGraph: {
       title,
       description,
-      url: `https://beti.dz/artisans/${params.wilaya}/${params.category}`,
+      url: `https://beti-ten.vercel.app/artisans/${params.wilaya}/${params.category}`,
     },
-    alternates: { canonical: `https://beti.dz/artisans/${params.wilaya}/${params.category}` },
+    alternates: { canonical: `https://beti-ten.vercel.app/artisans/${params.wilaya}/${params.category}` },
   }
 }
 
@@ -105,7 +105,7 @@ export default async function WilayaCategoryPage(props: { params: Promise<{ wila
     'provider': { '@type': 'Organization', 'name': 'BETI' },
     'areaServed': { '@type': 'City', 'name': w.name, 'addressCountry': 'DZ' },
     'description': `${c.labelPlural} certifiés BETI à ${w.name} — ${c.desc}`,
-    'url': `https://beti.dz/artisans/${params.wilaya}/${params.category}`,
+    'url': `https://beti-ten.vercel.app/artisans/${params.wilaya}/${params.category}`,
     'offers': {
       '@type': 'AggregateOffer',
       'priceCurrency': 'DZD',

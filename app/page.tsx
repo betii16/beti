@@ -32,20 +32,6 @@ const SVC = [
   {id:'coiffure'},
 ].map(s=>({...s,color:categoryColor(s.id)}))
 const NEED_KEYS = ['need1','need2','need3','need4','need5','need6','need7','need8']
-const DEMO:Artisan[] = [
-  {artisan_id:'d1',full_name:'Karim Benali',avatar_url:null,category:'plomberie',rating_avg:4.9,rating_count:84,hourly_rate:3500,distance_km:1.2,is_available:true,total_missions:312},
-  {artisan_id:'d2',full_name:'Sofiane Amrani',avatar_url:null,category:'electricite',rating_avg:4.8,rating_count:127,hourly_rate:4000,distance_km:2.8,is_available:true,total_missions:198},
-  {artisan_id:'d3',full_name:'Amina Kaci',avatar_url:null,category:'menage',rating_avg:5.0,rating_count:211,hourly_rate:2000,distance_km:0.9,is_available:true,total_missions:521},
-  {artisan_id:'d4',full_name:'Riad Hamdi',avatar_url:null,category:'serrurerie',rating_avg:4.6,rating_count:48,hourly_rate:4500,distance_km:4.2,is_available:true,total_missions:89},
-  {artisan_id:'d5',full_name:'Lina Hadj',avatar_url:null,category:'coiffure',rating_avg:4.9,rating_count:189,hourly_rate:2500,distance_km:2.1,is_available:true,total_missions:347},
-  {artisan_id:'d6',full_name:'Rachid Taleb',avatar_url:null,category:'demenagement',rating_avg:4.6,rating_count:67,hourly_rate:5000,distance_km:4.5,is_available:true,total_missions:156},
-  {artisan_id:'d7',full_name:'Fatima Zohra',avatar_url:null,category:'menage',rating_avg:4.8,rating_count:156,hourly_rate:1800,distance_km:1.8,is_available:true,total_missions:423},
-  {artisan_id:'d8',full_name:'Walid Benmoussa',avatar_url:null,category:'informatique',rating_avg:4.8,rating_count:52,hourly_rate:4500,distance_km:5.6,is_available:true,total_missions:87},
-  {artisan_id:'d9',full_name:'Mourad Khelifi',avatar_url:null,category:'serrurerie',rating_avg:4.9,rating_count:114,hourly_rate:5500,distance_km:2.3,is_available:true,total_missions:278},
-  {artisan_id:'d10',full_name:'Omar Belkacemi',avatar_url:null,category:'electricite',rating_avg:4.5,rating_count:91,hourly_rate:3800,distance_km:3.5,is_available:true,total_missions:201},
-  {artisan_id:'d11',full_name:'Nassim Cherif',avatar_url:null,category:'jardinage',rating_avg:4.4,rating_count:45,hourly_rate:2500,distance_km:7.8,is_available:true,total_missions:112},
-  {artisan_id:'d12',full_name:'Yacine Meziane',avatar_url:null,category:'peinture',rating_avg:4.7,rating_count:63,hourly_rate:3000,distance_km:3.1,is_available:true,total_missions:145},
-]
 
 function Stars({r,s=12}:{r:number;s?:number}){return<div role="img" aria-label={`${(r||0).toFixed(1)} / 5`} style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(i=><svg key={i} aria-hidden width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'var(--star)':'var(--border2)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
@@ -110,10 +96,8 @@ export default function Home(){
     const plans=await fetchPlans((data||[]).map((a:any)=>a.id))
     const real:Artisan[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||'',phone:a.profiles?.phone||null}))
     if(cat==='autre'){setArtisans(real);setLoading(false);return}
-    // Démo en SECOURS uniquement : dès qu'il y a de vrais artisans, on n'affiche
-    // qu'eux (pas de faux profils mélangés en production).
-    if(real.length>0){setArtisans(real);setLoading(false);return}
-    const d=cat?DEMO.filter(x=>x.category===cat):DEMO;setArtisans(d);setLoading(false)
+    // Jamais de faux profils : sans artisan réel, l'écran vide invite les artisans à s'inscrire.
+    setArtisans(real);setLoading(false)
   }
   const openA=async(a:Artisan)=>{setSel(a);setLoadR(true);setSent(false);const{data}=await supabase.from('reviews').select('id,rating,comment,created_at,photos,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',a.artisan_id).order('created_at',{ascending:false}).limit(20);setRevs((data||[])as any);setLoadR(false)}
   const [contactErr,setContactErr]=useState("")
@@ -321,6 +305,7 @@ export default function Home(){
               <div className="empty-icon"><SearchX size={26} strokeWidth={1.6}/></div>
               <div className="empty-title">{cat==='autre'?t('home.noKeywordResults'):t('home.noArtisan')}</div>
               <button onClick={()=>{setCat('');setTags([])}} className="btn-primary" style={{marginTop:14}}>{t('home.seeAll')}</button>
+              <a href="/auth/signup?role=artisan" className="btn-ghost" style={{marginTop:10}}>{t('mhome.ctaArtisan')}</a>
             </div>)
           ):(
             <>
