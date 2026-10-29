@@ -101,8 +101,9 @@ export default function Parametres() {
 
   const saveNotifs = async () => {
     setSavingNotifs(true)
-    await supabase.from('profiles').update({ notif_email: notifEmail, notif_sms: notifSms }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ notif_email: notifEmail, notif_sms: notifSms }).eq('id', user.id)
     setSavingNotifs(false)
+    if (error) { alert(t('cxp.saveFail')); return }
     setNotifsOk(true)
     setTimeout(() => setNotifsOk(false), 3000)
   }

@@ -76,11 +76,13 @@ export default function FacturePage() {
   const artisanName = artisan?.profiles?.full_name || 'Artisan'
   const clientName = client?.full_name || 'Client'
   const factureNum = generateFactureNumber(booking.id, booking.created_at)
-  const hourlyRate = artisan?.hourly_rate || 0
-  const hours = booking.duration_hours || 1
+  // Tarif convenu à la réservation en priorité, sinon tarif horaire de la fiche.
+  const hourlyRate = Number(booking.price_agreed) || Number(artisan?.hourly_rate) || 0
+  const hours = Number(booking.duration_hours) || 1
   const subtotal = hourlyRate * hours
+  const travelFee = Number(booking.travel_fee) || 0
   const tva = 0 // Algérie : pas de TVA pour artisans individuels
-  const total = subtotal + tva
+  const total = subtotal + tva + travelFee
   const category = artisan?.category || 'Service'
 
   return (
@@ -139,7 +141,7 @@ export default function FacturePage() {
           .inv-footer { flex-direction: column; align-items: flex-start !important; gap: 14px; }
           .inv-watermark { font-size: 72px !important; }
         }
-        @media screen and (max-width: 520px) { .fac-print-label { display: none; } }
+        
 
         /* Header */
         .inv-header {
@@ -337,7 +339,7 @@ export default function FacturePage() {
         </div>
         <button onClick={handlePrint} className="btn-primary" aria-label="Imprimer ou télécharger en PDF" style={{ minHeight: 44, flexShrink: 0 }}>
           <Printer size={16} aria-hidden/>
-          <span className="fac-print-label">Imprimer / Télécharger PDF</span>
+          <span className="fac-print-label">PDF</span>
         </button>
       </div>
 
@@ -387,7 +389,7 @@ export default function FacturePage() {
           {/* Statut */}
           <div className="inv-status">
             <Check size={12} strokeWidth={3}/>
-            Mission terminée · Paiement reçu
+            Mission terminée
           </div>
 
           {/* Tableau prestations */}
@@ -407,18 +409,18 @@ export default function FacturePage() {
                   <div style={{ fontWeight: 600, color: '#17242F', marginBottom: 3 }}>{booking.title || `Intervention ${category}`}</div>
                   {booking.description && <div style={{ fontSize: 12, color: '#55636D', fontWeight: 400, lineHeight: 1.5 }}>{booking.description}</div>}
                 </td>
-                <td style={{ color: '#55636D' }}>{formatDate(booking.booking_date || booking.created_at)}</td>
+                <td style={{ color: '#55636D' }}>{formatDate(booking.scheduled_at || booking.created_at)}</td>
                 <td style={{ color: '#55636D' }}>{hours}h</td>
                 <td style={{ color: '#55636D', whiteSpace: 'nowrap' }}>{hourlyRate.toLocaleString('fr-DZ')} DA/h</td>
                 <td style={{ fontWeight: 600, color: '#17242F', whiteSpace: 'nowrap' }}>{subtotal.toLocaleString('fr-DZ')} DA</td>
               </tr>
-              {booking.travel_fee > 0 && (
+              {travelFee > 0 && (
                 <tr>
                   <td>Frais de déplacement</td>
                   <td>—</td>
                   <td>—</td>
-                  <td>{booking.travel_fee.toLocaleString('fr-DZ')} DA</td>
-                  <td style={{ fontWeight: 600 }}>{booking.travel_fee.toLocaleString('fr-DZ')} DA</td>
+                  <td>{travelFee.toLocaleString('fr-DZ')} DA</td>
+                  <td style={{ fontWeight: 600 }}>{travelFee.toLocaleString('fr-DZ')} DA</td>
                 </tr>
               )}
             </tbody>
@@ -435,10 +437,10 @@ export default function FacturePage() {
                 <span>TVA (exonéré)</span>
                 <span>0 DA</span>
               </div>
-              {booking.travel_fee > 0 && (
+              {travelFee > 0 && (
                 <div className="inv-total-row">
                   <span>Frais déplacement</span>
-                  <span>{booking.travel_fee.toLocaleString('fr-DZ')} DA</span>
+                  <span>{travelFee.toLocaleString('fr-DZ')} DA</span>
                 </div>
               )}
               <div className="inv-total-final">
@@ -453,7 +455,7 @@ export default function FacturePage() {
             <div className="inv-payment-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Banknote size={22}/></div>
             <div>
               <div className="inv-payment-title">Paiement en espèces</div>
-              <div className="inv-payment-desc">Règlement effectué directement à l'artisan lors de l'intervention · Référence : {factureNum}</div>
+              <div className="inv-payment-desc">Règlement à effectuer directement auprès de l'artisan (BETI ne perçoit aucune commission) · Référence : {factureNum}</div>
             </div>
           </div>
 

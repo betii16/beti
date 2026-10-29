@@ -28,6 +28,7 @@ const STATUS: Record<string, string> = {
   refused:     'var(--danger)',
   cancelled:   'var(--tx2)',
 }
+const HINT: Record<string, string> = { pending: 'cxp.hintPending', confirmed: 'cxp.hintConfirmed', in_progress: 'cxp.hintInProgress', completed: 'cxp.hintCompleted', refused: 'cxp.hintRefused' }
 const SCOPE_CSS = `.res-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
 function StatusBadge({ status }: { status: string }) {
@@ -46,20 +47,26 @@ export default function MesReservations() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all')
+  const [reviewed, setReviewed] = useState<Set<string>>(new Set())
+  const [loadErr, setLoadErr] = useState(false)
+  const [notice, setNotice] = useState('')
 
-  useEffect(() => {
-    const init = async () => {
+  const init = async () => {
+      setLoadErr(false); setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
 
       // Réservations du client (sans embed fragile par nom de FK).
-      const { data: bk } = await supabase
+      const { data: bk, error: bkErr } = await supabase
         .from('bookings')
         .select('*')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
+      if (bkErr) { setLoadErr(true); setLoading(false); return }
 
       const list = bk || []
+      const { data: rv } = await supabase.from('reviews').select('booking_id').eq('client_id', user.id)
+      setReviewed(new Set((rv || []).map((r: any) => r.booking_id).filter(Boolean)))
       // L'artisan : nom sur `profiles`, catégorie/note sur `artisans` (même id).
       const ids = Array.from(new Set(list.map((b: any) => b.artisan_id).filter(Boolean)))
       const info: Record<string, { full_name: string; category: string; rating_avg: number }> = {}
@@ -79,10 +86,12 @@ export default function MesReservations() {
         }
       }
       setBookings(list.map((b: any) => ({ ...b, artisans: info[b.artisan_id] || null })))
+      // Actives d'abord (les plus proches en tête), puis le reste par récence.
+      const rank = (st: string) => ['pending', 'confirmed', 'in_progress'].includes(st) ? 0 : 1
+      setBookings(prev => [...prev].sort((a, b) => rank(a.status) - rank(b.status) || (rank(a.status) === 0 ? +new Date(a.scheduled_at) - +new Date(b.scheduled_at) : +new Date(b.created_at) - +new Date(a.created_at))))
       setLoading(false)
-    }
-    init()
-  }, [])
+  }
+  useEffect(() => { init() }, [])
 
   const fmt = (d: string) => new Date(d).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -93,11 +102,21 @@ export default function MesReservations() {
   })
 
   const cancelBooking = async (id: string) => {
-    if (!window.confirm(isAr ? 'هل تريد إلغاء هذا الطلب؟' : 'Annuler cette demande ? L’artisan en sera informé.')) return
+    if (!window.confirm(t('cxp.cancelConfirm'))) return
+    setNotice('')
     const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
-    if (error) { window.alert(isAr ? 'تعذر إلغاء الطلب، حاول مجدداً.' : 'Annulation impossible, réessaie.'); return }
+    if (error) { setNotice(t('cxp.cancelFail')); return }
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
   }
+
+  if (loadErr) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div role="alert" className="card" style={{ maxWidth: 420, textAlign: 'center', padding: '28px 22px' }}>
+        <p style={{ fontSize: 15, color: 'var(--tx)', marginBottom: 18, lineHeight: 1.5 }}>{t('cxp.loadErr')}</p>
+        <button onClick={init} className="btn-primary" style={{ minHeight: 44 }}>{t('cxp.retry')}</button>
+      </div>
+    </div>
+  )
 
   if (loading) return (
     <div role="status" aria-label={t('common.loading')} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 64 }}>
@@ -137,6 +156,8 @@ export default function MesReservations() {
           ))}
         </div>
 
+        {notice && <div role="alert" style={{ padding: '11px 14px', borderRadius: 'var(--r-field)', marginBottom: 14, background: 'color-mix(in srgb, var(--danger) 9%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 30%, transparent)', fontSize: 14, color: 'var(--danger)', fontWeight: 600 }}>{notice}</div>}
+
         {/* Liste */}
         {filtered.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
@@ -163,7 +184,7 @@ export default function MesReservations() {
                     <StatusBadge status={b.status}/>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px 16px', flexWrap: 'wrap', marginBottom: (b.status === 'pending' || b.status === 'completed') ? 14 : 0 }}>
+                  <div style={{ display: 'flex', gap: '8px 16px', flexWrap: 'wrap', marginBottom: 14 }}>
                     {[
                       { Icon: MapPin,   text: b.address },
                       { Icon: Calendar, text: fmt(b.scheduled_at) },
@@ -175,22 +196,32 @@ export default function MesReservations() {
                     ))}
                   </div>
 
+                  {HINT[b.status] && <p style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.5, margin: '0 0 12px' }}>{t(HINT[b.status])}</p>}
+
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {b.status === 'refused' && (
+                    <Link href="/#services" className="btn-soft btn-sm" style={{ minHeight: 44 }}>{t('cxp.findAnother')}</Link>
+                  )}
                   {b.status === 'pending' && (
                     <button onClick={() => cancelBooking(b.id)} className="btn-ghost btn-sm" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, transparent)', minHeight: 44 }}>
                       {t('mySpace.cancelRequest')}
                     </button>
                   )}
 
-                  {b.status === 'completed' && (
+                  {b.status === 'completed' && !reviewed.has(b.id) && (
                     <Link href={`/mon-espace/avis?booking=${b.id}`} className="btn-soft btn-sm" style={{ minHeight: 44 }}>
                       <Star size={13} fill="currentColor" strokeWidth={0} aria-hidden/> {t('mySpace.leaveReview')}
                     </Link>
                   )}
                   {b.status === 'completed' && (
                     <Link href={`/facture/${b.id}`} className="btn-ghost btn-sm" style={{ minHeight: 44 }}>
-                      {isAr ? 'الفاتورة' : 'Facture'}
+                      {t('cxp.invoice')}
                     </Link>
                   )}
+                  {b.status === 'completed' && reviewed.has(b.id) && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, fontSize: 13, fontWeight: 700, color: 'var(--success)' }}><Star size={13} fill="currentColor" strokeWidth={0} aria-hidden/> {t('cxp.reviewed')}</span>
+                  )}
+                  </div>
                 </div>
               </div>
             ))}

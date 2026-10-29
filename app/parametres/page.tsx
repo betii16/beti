@@ -34,6 +34,29 @@ export default function ParametresPage() {
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState<'profil' | 'securite' | 'notifications'>('profil')
   const [resetSent, setResetSent] = useState(false)
+  const [notifEmail, setNotifEmail] = useState(true)
+  const [notifSms, setNotifSms] = useState(false)
+  const [notifMsg, setNotifMsg] = useState('')
+  const [delOpen, setDelOpen] = useState(false)
+  const [delText, setDelText] = useState('')
+  const [delBusy, setDelBusy] = useState(false)
+  const [delErr, setDelErr] = useState('')
+
+  const saveNotif = async (patch: { notif_email?: boolean; notif_sms?: boolean }) => {
+    if (!user) return false
+    setNotifMsg('')
+    const { error } = await supabase.from('profiles').update(patch).eq('id', user.id)
+    if (error) { setNotifMsg(t('cxp.saveFail')); return false }
+    setNotifMsg(t('settings.saved'))
+    return true
+  }
+  const deleteAccount = async () => {
+    setDelBusy(true); setDelErr('')
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/account/delete', { method: 'POST', headers: { Authorization: `Bearer ${session?.access_token || ''}` } }).catch(() => null)
+    if (!res || !res.ok) { setDelBusy(false); setDelErr(t('common.errGeneric')); return }
+    await supabase.auth.signOut(); router.push('/')
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -41,7 +64,7 @@ export default function ParametresPage() {
       if (!user) { router.push('/auth/login'); return }
       setUser(user); setEmail(user.email || '')
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data) { setFullName(data.full_name || ''); setPhone(await fetchMyPhone(user.id, data.phone)) }
+      if (data) { setFullName(data.full_name || ''); setPhone(await fetchMyPhone(user.id, data.phone)); setNotifEmail(data.notif_email ?? true); setNotifSms(data.notif_sms ?? false) }
     }
     init()
   }, [])
@@ -49,8 +72,10 @@ export default function ParametresPage() {
   const saveProfile = async () => {
     if (!user) return
     setSaving(true)
-    await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
-    setSaving(false); setSaved(true)
+    const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
+    setSaving(false)
+    if (error) { alert(t('cxp.saveFail')); return }
+    setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }
 
@@ -133,16 +158,26 @@ export default function ParametresPage() {
               <p style={{ fontSize: 14, color: 'var(--tx2)', marginBottom: 16, lineHeight: 1.6 }}>
                 {t('settings.deleteAccDesc')}
               </p>
-              <button onClick={async () => {
-                if (!confirm(t('settings.deleteAccConfirm'))) return
-                const { data: { session } } = await supabase.auth.getSession()
-                const res = await fetch('/api/account/delete', { method: 'POST', headers: { Authorization: `Bearer ${session?.access_token || ''}` } }).catch(() => null)
-                if (!res || !res.ok) { alert(t('common.errGeneric')); return }
-                await supabase.auth.signOut(); router.push('/')
-              }}
-                className="btn-ghost btn-sm" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 55%, transparent)', minHeight: 44 }}>
-                {t('settings.deleteAcc')}
-              </button>
+              {!delOpen ? (
+                <button onClick={() => setDelOpen(true)}
+                  className="btn-ghost btn-sm" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 55%, transparent)', minHeight: 44 }}>
+                  {t('cxp.deleteOpen')}
+                </button>
+              ) : (
+                <div>
+                  <p style={{ fontSize: 14, color: 'var(--tx)', marginBottom: 14, lineHeight: 1.6 }}>{t('cxp.deleteWhat')}</p>
+                  <label htmlFor="del-confirm" style={LBL}>{t('cxp.deleteType')}</label>
+                  <input id="del-confirm" value={delText} onChange={e => setDelText(e.target.value)} autoComplete="off" className="field" style={{ marginBottom: 14 }}/>
+                  {delErr && <div role="alert" style={{ fontSize: 13, color: 'var(--danger)', fontWeight: 600, marginBottom: 12 }}>{delErr}</div>}
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button onClick={() => { setDelOpen(false); setDelText(''); setDelErr('') }} disabled={delBusy} className="btn-ghost" style={{ minHeight: 46 }}>{t('cxp.cancel')}</button>
+                    <button onClick={deleteAccount} disabled={delBusy || delText.trim().toLowerCase() !== t('cxp.deleteWord').toLowerCase()}
+                      className="btn-primary" style={{ minHeight: 46, background: 'var(--danger)', borderColor: 'var(--danger)' }}>
+                      {delBusy ? t('cxp.deleting') : t('cxp.deleteFinal')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -177,28 +212,21 @@ export default function ParametresPage() {
           <div className="card" style={{ padding: '24px' }}>
             <h2 style={H2}>{t('settings.notifTitle')}</h2>
             {[
-              { label: t('settings.notifAccepted'),    desc: t('settings.notifAcceptedSub'),    on: true  },
-              { label: t('settings.notifRefused'),     desc: t('settings.notifRefusedSub'),     on: true  },
-              { label: t('settings.notifCompleted'),   desc: t('settings.notifCompletedSub'),   on: true  },
-              { label: t('settings.notifNewArtisans'), desc: t('settings.notifNewArtisansSub'), on: false },
-              { label: t('settings.notifOffers'),      desc: t('settings.notifOffersSub'),      on: false },
-            ].map(n => <NotifToggle key={n.label} label={n.label} desc={n.desc} defaultOn={n.on}/>)}
+              { label: t('settings.notifEmail'), desc: t('settings.notifEmailSub'), on: notifEmail, set: async (v: boolean) => { const old = notifEmail; setNotifEmail(v); if (!(await saveNotif({ notif_email: v }))) setNotifEmail(old) } },
+              { label: t('settings.notifSms'),   desc: t('settings.notifSmsSub'),   on: notifSms,   set: async (v: boolean) => { const old = notifSms; setNotifSms(v); if (!(await saveNotif({ notif_sms: v }))) setNotifSms(old) } },
+            ].map(n => (
+              <div key={n.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>{n.label}</div>
+                  <div style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.45 }}>{n.desc}</div>
+                </div>
+                <Switch on={n.on} onChange={n.set} label={n.label} />
+              </div>
+            ))}
+            <div role="status" aria-live="polite" style={{ fontSize: 13, color: 'var(--tx2)', marginTop: 12, minHeight: 18 }}>{notifMsg}</div>
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-function NotifToggle({ label, desc, defaultOn }: { label: string; desc: string; defaultOn: boolean }) {
-  const [on, setOn] = useState(defaultOn)
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', borderBottom: '1px solid var(--border)' }}>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)', marginBottom: 3 }}>{label}</div>
-        <div style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.45 }}>{desc}</div>
-      </div>
-      <Switch on={on} onChange={setOn} label={label} />
     </div>
   )
 }
