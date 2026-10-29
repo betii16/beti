@@ -19,12 +19,15 @@ export default function NotificationsPage(){
   const { t, isAr } = useLang()
   const [notifs,setNotifs]=useState<any[]>([])
   const [loading,setLoading]=useState(true)
+  const [loadErr,setLoadErr]=useState(false)
 
   useEffect(()=>{load()},[])
   const load=async()=>{
     const{data:{user}}=await supabase.auth.getUser()
-    if(!user){router.push('/auth/login');return}
-    const{data}=await supabase.from('notifications').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50)
+    if(!user){router.push('/auth/login?next=/notifications');return}
+    const{data,error}=await supabase.from('notifications').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50)
+    if(error){setLoadErr(true);setLoading(false);return}
+    setLoadErr(false)
     if(data)setNotifs(data)
     // Mark all as read
     await supabase.from('notifications').update({is_read:true}).eq('user_id',user.id).eq('is_read',false)
@@ -32,7 +35,8 @@ export default function NotificationsPage(){
   }
 
   const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/60000);return x<1?t('common.justNow'):x<60?`${x} ${t('common.minShort')}`:x<1440?`${Math.floor(x/60)}${t('common.hourShort')}`:`${Math.floor(x/1440)}${t('common.daysShort')}`}
-  const clear=async()=>{if(!window.confirm(isAr?'حذف كل الإشعارات؟':'Supprimer toutes les notifications ?'))return;const{data:{user}}=await supabase.auth.getUser();if(user)await supabase.from('notifications').delete().eq('user_id',user.id);setNotifs([])}
+  const clear=async()=>{if(!window.confirm(t('cxb.notifsClear')))return;const{data:{user}}=await supabase.auth.getUser();if(!user)return;const{error}=await supabase.from('notifications').delete().eq('user_id',user.id);if(error){setLoadErr(true);return};setLoadErr(false);setNotifs([])}
+  const linkOf=(n:any):string|null=>n.link||(n.booking_id?`/chat/${n.booking_id}`:null)
   const unread=notifs.filter(n=>!n.is_read).length
 
   if(loading)return<div role="status" aria-label={t('common.loading')} style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>
@@ -47,7 +51,11 @@ export default function NotificationsPage(){
           {notifs.length>0&&<button onClick={clear} className="btn-ghost btn-sm" style={{minHeight:44}}>{t('notifs.clearAll')}</button>}
         </div>
 
-        {notifs.length===0?(
+        {loadErr&&<div role="alert" className="card" style={{padding:'14px 16px',marginBottom:12,display:'flex',alignItems:'center',gap:12,flexWrap:'wrap',color:'var(--danger)',fontSize:14,fontWeight:600}}>
+          <span style={{flex:1,minWidth:0}}>{t('cxb.notifsErr')}</span>
+          <button onClick={()=>{setLoading(true);load()}} className="btn-ghost btn-sm" style={{minHeight:44}}>{t('cxb.retry')}</button>
+        </div>}
+        {notifs.length===0&&loadErr?null:notifs.length===0?(
           <div className="card" style={{padding:'48px 24px',textAlign:'center'}}>
             <div aria-hidden style={{width:56,height:56,borderRadius:14,margin:'0 auto 14px',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--accent)',background:'color-mix(in srgb, var(--accent) 12%, transparent)'}}><Bell size={26}/></div>
             <div style={{fontSize:15,fontWeight:600,color:'var(--tx)'}}>{t('notifs.empty')}</div>
@@ -57,7 +65,7 @@ export default function NotificationsPage(){
             {notifs.map(n=>{
               const cfg=ICONS[n.type]||ICONS.default
               return(
-                <li key={n.id} className="card" style={{borderColor:n.is_read?undefined:`color-mix(in srgb, ${cfg.color} 40%, var(--border))`,padding:'14px 16px',display:'flex',alignItems:'flex-start',gap:12}}>
+                <li key={n.id} className="card" onClick={()=>{const l=linkOf(n);if(l)router.push(l)}} style={{cursor:linkOf(n)?'pointer':undefined,borderColor:n.is_read?undefined:`color-mix(in srgb, ${cfg.color} 40%, var(--border))`,padding:'14px 16px',display:'flex',alignItems:'flex-start',gap:12}}>
                   <div aria-hidden style={{width:36,height:36,borderRadius:10,background:`color-mix(in srgb, ${cfg.color} 13%, transparent)`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><cfg.Icon size={17} color={cfg.color}/></div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:14,fontWeight:n.is_read?600:800,color:'var(--tx)',marginBottom:3,display:'flex',alignItems:'center',gap:6}}>
