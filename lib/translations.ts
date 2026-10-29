@@ -1057,6 +1057,18 @@ export const translations = {
     later:      { fr: 'S\'inscrire plus tard',            ar: 'التسجيل لاحقاً'                      },
   },
 
+  // ── Parcours client : recherche et fiche artisan ──────────────────
+  cxs: {
+    errTitle:     { fr: 'Impossible de charger les artisans', ar: 'تعذّر تحميل الحرفيين' },
+    errSub:       { fr: 'Vérifiez votre connexion puis réessayez.', ar: 'تحقق من اتصالك ثم أعد المحاولة.' },
+    retry:        { fr: 'Réessayer', ar: 'أعد المحاولة' },
+    resetFilters: { fr: 'Réinitialiser les filtres', ar: 'إعادة ضبط الفلاتر' },
+    quote:        { fr: 'Sur devis', ar: 'حسب الطلب' },
+    geoNote:      { fr: 'Position indisponible : résultats autour d\'Alger. Choisissez votre ville dans les filtres.', ar: 'الموقع غير متاح: النتائج حول الجزائر العاصمة. اختر مدينتك من الفلاتر.' },
+    newArtisan:   { fr: 'Nouveau', ar: 'جديد' },
+    noReviews:    { fr: 'Pas encore d\'avis', ar: 'لا توجد تقييمات بعد' },
+  },
+
   // ── Expérience cinématique 3D (première visite desktop) ───────────
   cine: {
     heroTitle:  { fr: 'Trouvez l\'artisan parfait en quelques minutes.', ar: 'اعثر على الحرفي المثالي في دقائق.' },

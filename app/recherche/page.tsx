@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AlgeriaCitySearch, ALGERIA_CITIES } from '@/components/AlgeriaSearch'
@@ -85,6 +85,8 @@ export default function RecherchePage() {
   const [artisans, setArtisans] = useState<Artisan[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [geoFailed, setGeoFailed] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false) // bottom-sheet mobile
 
   // Filtres
@@ -112,13 +114,25 @@ export default function RecherchePage() {
     setKeywords(prev => prev.filter(k => k !== kw))
   }
 
+  // Recherche automatique à l'arrivée (0 tap) : d'abord autour d'Alger, puis
+  // relancée si la géolocalisation répond. ?category= pré-sélectionne un métier.
+  const searchRef = useRef<(o?: { loc?: { lat: number; lng: number }; cat?: string; rad?: number }) => Promise<void>>(async () => {})
   useEffect(() => {
+    const qc = new URLSearchParams(window.location.search).get('category') || ''
+    const cat0 = CATEGORY_IDS.includes(qc) ? qc : ''
+    if (cat0) setCategory(cat0)
+    searchRef.current({ cat: cat0 })
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        pos => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {}
+        pos => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+          setUserLocation(loc)
+          searchRef.current({ loc, cat: cat0 })
+        },
+        () => setGeoFailed(true),
+        { timeout: 8000, maximumAge: 300000 }
       )
-    }
+    } else setGeoFailed(true)
   }, [])
 
   // Sheet de filtres mobile : fermeture à Échap
@@ -134,15 +148,20 @@ export default function RecherchePage() {
     (category ? 1 : 0) + keywords.length + (minRating > 0 ? 1 : 0) +
     (maxPrice < 15000 ? 1 : 0) + (availableOnly ? 1 : 0) + (radius !== 50 ? 1 : 0)
 
-  const search = async () => {
+  const search = async (o?: { loc?: { lat: number; lng: number }; cat?: string; rad?: number }) => {
     setFiltersOpen(false) // referme le sheet mobile au lancement
     setLoading(true)
     setSearched(true)
+    setFailed(false)
+    const loc = o?.loc ?? userLocation
+    const cat = o?.cat ?? category
+    const rad = o?.rad ?? radius
     try {
-      const { data } = await supabase.rpc('get_nearby_artisans', {
-        lat: userLocation.lat, lng: userLocation.lng, radius_km: radius,
-        category_filter: category || null,
+      const { data, error } = await supabase.rpc('get_nearby_artisans', {
+        lat: loc.lat, lng: loc.lng, radius_km: rad,
+        category_filter: cat || null,
       })
+      if (error) throw error
       let results = (data || []) as Artisan[]
       if (minRating > 0) results = results.filter(a => (a.rating_avg || 0) >= minRating)
       if (maxPrice < 15000) results = results.filter(a => (a.hourly_rate || 0) <= maxPrice)
@@ -162,21 +181,30 @@ export default function RecherchePage() {
       results = results.map(a => ({ ...a, plan: plans[a.artisan_id] || 'free' }))
       // Paywall : hors période de lancement, on masque les non-abonnés.
       results = results.filter(a => isListed(a))
-      results.sort((a, b) => {
-        // Les Premium passent toujours devant, puis le critère de tri choisi.
-        const pa = a.plan === 'premium' ? 0 : 1
-        const pb = b.plan === 'premium' ? 0 : 1
-        if (pa !== pb) return pa - pb
-        if (sortBy === 'rating') return (b.rating_avg || 0) - (a.rating_avg || 0)
-        if (sortBy === 'price_asc') return (a.hourly_rate || 0) - (b.hourly_rate || 0)
-        if (sortBy === 'price_desc') return (b.hourly_rate || 0) - (a.hourly_rate || 0)
-        return (a.distance_km || 0) - (b.distance_km || 0)
-      })
       setArtisans(results)
     } catch {
       setArtisans([])
+      setFailed(true)
     }
     setLoading(false)
+  }
+  searchRef.current = search
+
+  // Tri appliqué à l'affichage : changer de tri réordonne tout de suite.
+  const sorted = useMemo(() => [...artisans].sort((a, b) => {
+    // Les Premium passent toujours devant, puis le critère de tri choisi.
+    const pa = a.plan === 'premium' ? 0 : 1
+    const pb = b.plan === 'premium' ? 0 : 1
+    if (pa !== pb) return pa - pb
+    if (sortBy === 'rating') return (b.rating_avg || 0) - (a.rating_avg || 0)
+    if (sortBy === 'price_asc') return (a.hourly_rate || 0) - (b.hourly_rate || 0)
+    if (sortBy === 'price_desc') return (b.hourly_rate || 0) - (a.hourly_rate || 0)
+    return (a.distance_km || 0) - (b.distance_km || 0)
+  }), [artisans, sortBy])
+
+  const resetFilters = () => {
+    setCategory(''); setKeywords([]); setKeywordInput(''); setMinRating(0); setMaxPrice(15000); setAvailableOnly(false); setRadius(50)
+    search({ cat: '', rad: 50 })
   }
 
   const catLabel = (id: string) => id ? t(`categories.${id}`) : tr('all')
@@ -259,7 +287,7 @@ export default function RecherchePage() {
                 <span className="field-label">{tr('city')}</span>
                 <AlgeriaCitySearch
                   defaultCity={ALGERIA_CITIES.find(c => c.id === 'alger-centre')}
-                  onSelect={city => setUserLocation({ lat: city.lat, lng: city.lng })}
+                  onSelect={city => { const loc = { lat: city.lat, lng: city.lng }; setUserLocation(loc); setGeoFailed(false); search({ loc }) }}
                   placeholder={tr('cityPh')}
                 />
               </div>
@@ -324,7 +352,7 @@ export default function RecherchePage() {
               </button>
 
               {/* Bouton rechercher */}
-              <button onClick={search} disabled={loading} className="btn-primary btn-block btn-lg">
+              <button onClick={() => search()} disabled={loading} className="btn-primary btn-block btn-lg">
                 {loading ? tr('searching') : <><Search size={16}/>{tr('search')}</>}
               </button>
             </div>
@@ -344,10 +372,13 @@ export default function RecherchePage() {
                 <span style={{ minWidth: 22, height: 22, padding: '0 7px', borderRadius: 11, background: 'var(--accent-fill)', color: 'var(--on-accent)', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{activeCount}</span>
               )}
             </button>
-            {searched && (
+            {geoFailed && !loading && (
+              <div role="status" style={{ fontSize: 13, color: 'var(--tx2)', marginBottom: 12 }}>{t('cxs.geoNote')}</div>
+            )}
+            {searched && !failed && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ fontSize: 15, color: 'var(--tx2)' }}>
-                  {loading ? tr('searchingLong') : <><strong className="num" style={{ color: 'var(--tx)', fontWeight: 700 }}>{artisans.length}</strong> {artisans.length === 1 ? tr('found1') : tr('foundN')}</>}
+                  {loading ? tr('searchingLong') : <><strong className="num" style={{ color: 'var(--tx)', fontWeight: 700 }}>{sorted.length}</strong> {sorted.length === 1 ? tr('found1') : tr('foundN')}</>}
                 </div>
                 <div className="no-scrollbar" style={{ display: 'flex', gap: 6, overflowX: 'auto', maxWidth: '100%' }}>
                   {([
@@ -388,17 +419,30 @@ export default function RecherchePage() {
               </div>
             )}
 
-            {searched && !loading && artisans.length === 0 && (
+            {searched && !loading && failed && (
+              <div role="alert" className="empty-state" style={{ padding: '72px 20px' }}>
+                <div className="empty-icon"><SearchX size={26}/></div>
+                <div className="empty-title">{t('cxs.errTitle')}</div>
+                <div className="empty-sub">{t('cxs.errSub')}</div>
+                <button onClick={() => search()} className="btn-primary" style={{ marginTop: 16 }}>{t('cxs.retry')}</button>
+              </div>
+            )}
+
+            {searched && !loading && !failed && artisans.length === 0 && (
               <div className="empty-state" style={{ padding: '72px 20px' }}>
                 <div className="empty-icon"><SearchX size={26}/></div>
                 <div className="empty-title">{tr('emptyTitle')}</div>
                 <div className="empty-sub">{tr('emptySub')}</div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 16 }}>
+                  {radius < 100 && <button onClick={() => { setRadius(100); search({ rad: 100 }) }} className="btn-primary">{tr('widen')}</button>}
+                  {activeCount > 0 && <button onClick={resetFilters} className="btn-soft">{t('cxs.resetFilters')}</button>}
+                </div>
               </div>
             )}
 
             {!loading && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {artisans.map((a, idx) => {
+              {sorted.map((a, idx) => {
                 const col = categoryColor(a.category)
                 const open = () => router.push(`/artisan/${a.artisan_id}`)
                 return (
@@ -416,15 +460,15 @@ export default function RecherchePage() {
                       <div style={{ fontSize: 12.5, color: categoryInk(a.category), fontWeight: 700, marginBottom: 6 }}>{t(`categories.${a.category}`)}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--tx2)' }}>
                         <Stars rating={a.rating_avg || 0}/>
-                        <span>{a.rating_avg ? <span className="num" style={{ color: 'var(--laiton)', fontWeight: 700 }}>{a.rating_avg.toFixed(1)}</span> : tr('newA')} ({a.rating_count || 0})</span>
+                        <span>{a.rating_avg && a.rating_count ? <><span className="num" style={{ color: 'var(--laiton)', fontWeight: 700 }}>{a.rating_avg.toFixed(1)}</span> ({a.rating_count})</> : tr('newA')}</span>
                         <span aria-hidden style={{ color: 'var(--tx3)' }}>·</span>
-                        <span>{a.distance_km?.toFixed(1)} km</span>
-                        <span aria-hidden style={{ color: 'var(--tx3)' }}>·</span>
+                        {a.distance_km != null && <><span>{a.distance_km.toFixed(1)} km</span>
+                        <span aria-hidden style={{ color: 'var(--tx3)' }}>·</span></>}
                         <span>{a.total_missions || 0} {tr('missions')}</span>
                       </div>
                     </div>
                     <div style={{ textAlign: 'end', flexShrink: 0 }}>
-                      <div className="num" style={{ fontSize: 19, fontWeight: 700, color: 'var(--tx)', marginBottom: 6 }}>{(a.hourly_rate || 0).toLocaleString('fr-DZ')} <span style={{ fontSize: 11.5, color: 'var(--tx3)', fontWeight: 400 }}>{tr('daH')}</span></div>
+                      <div className="num" style={{ fontSize: 19, fontWeight: 700, color: 'var(--tx)', marginBottom: 6 }}>{a.hourly_rate ? <>{a.hourly_rate.toLocaleString('fr-DZ')} <span style={{ fontSize: 11.5, color: 'var(--tx3)', fontWeight: 400 }}>{tr('daH')}</span></> : <span style={{ fontSize: 14, color: 'var(--tx2)', fontWeight: 600 }}>{t('cxs.quote')}</span>}</div>
                       <span className={`badge-tone ${a.is_available ? 'tone-success' : 'tone-muted'}`}>
                         <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: a.is_available ? 'var(--success)' : 'var(--tx3)' }}/>
                         {a.is_available ? tr('available') : tr('busy')}

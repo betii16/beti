@@ -39,18 +39,26 @@ export default function ArtisanPage(){
   }
 
   useEffect(()=>{load()},[id])
+  const [loadErr,setLoadErr]=useState(false)
   const load=async()=>{
-    setLoading(true)
-    const{data:{user}}=await supabase.auth.getUser();if(user)setUid(user.id)
-    const[{data:art},{data:prof}]=await Promise.all([
-      supabase.from('artisans').select('*').eq('id',id).single(),
-      supabase.from('profiles').select('full_name,phone,avatar_url').eq('id',id).single(),
-    ])
-    if(art)setA(art);if(prof)setP(prof)
-    const{data:r}=await supabase.from('reviews').select('id,rating,comment,photos,created_at,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',id).order('created_at',{ascending:false}).limit(30)
-    if(r)setRevs(r)
+    setLoading(true);setLoadErr(false)
+    try{
+      // Tout en parallèle (avant : avis chargés après, en série). Jamais profiles.phone.
+      const[{data:{user}},artR,profR,revR]=await Promise.all([
+        supabase.auth.getUser(),
+        supabase.from('artisans').select('*').eq('id',id).maybeSingle(),
+        supabase.from('profiles').select('full_name,avatar_url').eq('id',id).maybeSingle(),
+        supabase.from('reviews').select('id,rating,comment,photos,created_at,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',id).order('created_at',{ascending:false}).limit(30),
+      ])
+      if(user)setUid(user.id)
+      // Erreur réseau ≠ fiche introuvable : on propose de réessayer.
+      if(artR.error&&!artR.data){setLoadErr(true)}
+      if(artR.data)setA(artR.data);if(profR.data)setP(profR.data)
+      if(revR.data)setRevs(revR.data)
+    }catch{setLoadErr(true)}
     setLoading(false)
   }
+  const goBack=()=>{if(typeof window!=='undefined'&&window.history.length>1)router.back();else router.push('/recherche')}
 
   const [contactErr,setContactErr]=useState("")
   const [booking,setBooking]=useState(false)
@@ -79,6 +87,16 @@ export default function ArtisanPage(){
           </div>
           <div style={{display:'flex',gap:10,width:'100%',maxWidth:400,marginTop:8}}><Skeleton h={46} r={11}/><Skeleton w={110} h={46} r={11}/></div>
         </div>
+      </div>
+    </div>
+  )
+
+  if(loadErr)return(
+    <div role="alert" style={{minHeight:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24,paddingTop:64,textAlign:'center',direction:isAr?'rtl':'ltr'}}>
+      <div style={{maxWidth:380}}>
+        <div style={{fontSize:20,fontWeight:800,color:'var(--tx)',marginBottom:10}}>{t('cxs.errTitle')}</div>
+        <p style={{fontSize:14,color:'var(--tx2)',lineHeight:1.7,marginBottom:24}}>{t('cxs.errSub')}</p>
+        <button onClick={load} className="btn-primary" style={{padding:'11px 24px'}}>{t('cxs.retry')}</button>
       </div>
     </div>
   )
@@ -127,7 +145,7 @@ export default function ArtisanPage(){
 
       {/* ── APP BAR MOBILE : retour + nom artisan (remplace le header générique) ── */}
       <div className="mobile-only" style={{position:'fixed',top:0,left:0,right:0,zIndex:50,height:'calc(54px + env(safe-area-inset-top))',paddingTop:'env(safe-area-inset-top)',paddingLeft:12,paddingRight:12,alignItems:'center',gap:10,background:'var(--nav-bg)',backdropFilter:'blur(20px) saturate(180%)',WebkitBackdropFilter:'blur(20px) saturate(180%)',borderBottom:'0.5px solid var(--border)',direction:isAr?'rtl':'ltr'}}>
-        <button onClick={()=>router.back()} aria-label={t('common.back')} style={{width:40,height:40,borderRadius:12,background:'var(--bg2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,padding:0}}>
+        <button onClick={goBack} aria-label={t('common.back')} style={{width:40,height:40,borderRadius:12,background:'var(--bg2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,padding:0}}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--tx)" strokeWidth="2.2" style={{transform:isAr?'rotate(180deg)':'none'}}><path d="M15 18l-6-6 6-6"/></svg>
         </button>
         <span style={{flex:1,minWidth:0,fontSize:16,fontWeight:800,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{prof.full_name}</span>
@@ -172,8 +190,12 @@ export default function ArtisanPage(){
 
               {/* Rating */}
               <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:20}}>
-                <Stars r={avgR} s={16}/><span className="num" style={{fontSize:16,fontWeight:700,color:'var(--laiton)'}}>{avgR.toFixed(1)}</span>
-                <span style={{fontSize:13,color:tx3}}>({art.rating_count||revs.length} {t('common.reviews')})</span>
+                {(art.rating_count||revs.length)>0?(<>
+                  <Stars r={avgR} s={16}/><span className="num" style={{fontSize:16,fontWeight:700,color:'var(--laiton)'}}>{avgR.toFixed(1)}</span>
+                  <span style={{fontSize:13,color:tx2}}>({art.rating_count||revs.length} {t('common.reviews')})</span>
+                </>):(
+                  <span className="badge-tone" style={{fontSize:12}}>{t('cxs.newArtisan')} · {t('cxs.noReviews')}</span>
+                )}
               </div>
 
               {/* Sceau de confiance */}
