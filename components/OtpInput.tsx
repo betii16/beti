@@ -8,6 +8,27 @@
 // toujours de gauche à droite, même en arabe.
 
 import { useRef, useState } from 'react'
+import { useLang } from '@/lib/LangContext'
+
+/** Course contre un délai : jamais d'attente infinie (réseau coupé / serveur muet). */
+export const withTimeout = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
+  Promise.race([Promise.resolve(p), new Promise<T>((_, r) => setTimeout(() => r(new Error('timeout')), ms))])
+
+/**
+ * Traduit une erreur d'auth (objet Supabase ou exception) en clé `auth.*`.
+ * Ne renvoie jamais le message brut du serveur à l'utilisateur.
+ */
+export function authErrorKey(e: unknown): string {
+  const m = String((e as any)?.message ?? e ?? '')
+  const status = (e as any)?.status
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'errNetwork'
+  if (/^timeout$/i.test(m)) return 'errTimeout'
+  if (/failed to fetch|network|load failed|fetch/i.test(m)) return 'errNetwork'
+  if (status === 429 || /rate limit|too many|security purposes|after \d+ seconds/i.test(m)) return 'errRate'
+  if (/expired/i.test(m)) return 'errExpired'
+  if (/invalid|incorrect|token/i.test(m)) return 'errCode'
+  return 'errGeneric'
+}
 
 export default function OtpInput({
   value, onChange, onComplete, length = 6, autoFocus = true,
@@ -18,6 +39,7 @@ export default function OtpInput({
   length?: number
   autoFocus?: boolean
 }) {
+  const { t } = useLang()
   const ref = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState(false)
 
@@ -41,7 +63,7 @@ export default function OtpInput({
         onChange={e => handleChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        aria-label="Code de vérification"
+        aria-label={t('auth.codeTitle')}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           opacity: 0, border: 'none', outline: 'none', background: 'transparent',

@@ -6,10 +6,7 @@ import { useLang } from '@/lib/LangContext'
 import { toE164 } from '@/lib/countryCodes'
 import { CountryPicker } from '@/components/CountryPicker'
 import { LogoMark } from '@/components/Logo'
-import OtpInput from '@/components/OtpInput'
-
-const race = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
-  Promise.race([Promise.resolve(p), new Promise<T>((_, r) => setTimeout(() => r(new Error('Délai dépassé')), ms))])
+import OtpInput, { withTimeout as race, authErrorKey } from '@/components/OtpInput'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,6 +19,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
   const [cooldown, setCooldown] = useState(0)
+  const [info, setInfo] = useState('')
 
   // Repli email/mot de passe (comptes existants, admin)
   const [emailMode, setEmailMode] = useState(false)
@@ -48,35 +46,44 @@ export default function LoginPage() {
         else router.push('/mon-espace')
       } catch { router.push('/mon-espace') }
       router.refresh()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)) }
   }
 
   const sendCode = async () => {
     if (phone.replace(/\D/g, '').length < 6) { setErr(t('auth.errInvalidPhone')); return }
-    setLoading(true); setErr('')
+    if (loading) return
+    const resend = step === 'code'
+    setLoading(true); setErr(''); setInfo('')
+    const send = (channel: 'whatsapp' | 'sms') => race(supabase.auth.signInWithOtp({ phone: fullPhone, options: { shouldCreateUser: false, channel } }))
+    const noAcct = /not found|no user|sign.?ups? not allowed|shouldCreateUser/i
     try {
-      const { error } = await race(supabase.auth.signInWithOtp({ phone: fullPhone, options: { shouldCreateUser: false, channel: 'whatsapp' } }))
+      let { error } = await send('whatsapp')
+      let viaSms = false
+      // WhatsApp indisponible : repli SMS (sauf compte inexistant / limite de débit)
+      if (error && !noAcct.test(error.message) && !/rate limit|too many|security purposes/i.test(error.message)) {
+        const r = await send('sms')
+        if (!r.error) { error = null; viaSms = true } else error = r.error
+      }
       if (error) {
-        const m = error.message
-        setErr(/not found|no user|sign.?ups? not allowed|shouldCreateUser/i.test(m)
-          ? t('auth.errNoAccount')
-          : t('auth.errSend') + m)
+        setErr(noAcct.test(error.message) ? t('auth.errNoAccount') : t(`auth.${authErrorKey(error)}`))
         setLoading(false); return
       }
       setStep('code'); setCode(''); setCooldown(30); setLoading(false)
-    } catch (e: any) { setErr(e.message); setLoading(false) }
+      setInfo(viaSms ? t('auth.smsFallback') : resend ? t('auth.codeResent') : '')
+    } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)); setLoading(false) }
   }
 
   const verifyCode = async (v?: string) => {
     const token = (v ?? code).trim()
-    if (token.replace(/\D/g, '').length < 4) { setErr('Code incomplet : saisissez tous les chiffres reçus sur WhatsApp.'); return }
+    if (loading) return
+    if (token.replace(/\D/g, '').length < 6) { setErr(t('auth.errCodeShort')); return }
     setLoading(true); setErr('')
     try {
       const { error } = await race(supabase.auth.verifyOtp({ phone: fullPhone, token, type: 'sms' }))
-      if (error) { setErr(/expired|invalid|incorrect/i.test(error.message) ? t('auth.errCode') : error.message); setLoading(false); return }
+      if (error) { setErr(t(`auth.${authErrorKey(error)}`)); setCode(''); setLoading(false); return }
       await redirectByRole()
       setLoading(false)
-    } catch (e: any) { setErr(e.message); setLoading(false) }
+    } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)); setLoading(false) }
   }
 
   const loginEmail = async () => {
@@ -87,12 +94,12 @@ export default function LoginPage() {
       if (error) {
         const m = error.message
         setErr(m.includes('Invalid login') || m.includes('credentials') ? t('auth.errCredentials')
-          : m.includes('Email not confirmed') ? t('auth.errConfirmEmail') : 'Erreur : ' + m)
+          : m.includes('Email not confirmed') ? t('auth.errConfirmEmail') : t(`auth.${authErrorKey(error)}`))
         setLoading(false); return
       }
       await redirectByRole()
       setLoading(false)
-    } catch (e: any) { setErr(e.message); setLoading(false) }
+    } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)); setLoading(false) }
   }
 
   return (
@@ -149,13 +156,14 @@ export default function LoginPage() {
             <>
               <h1 style={{ fontSize: 'clamp(22px, 6vw, 26px)', fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center', lineHeight: 1.2 }}>{t('auth.codeTitle')}</h1>
               <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>{t('auth.codeSentOn')} <span style={{ color: 'var(--success)', fontWeight: 700 }}>WhatsApp</span> {t('auth.codeTo')} <span style={{ color: 'var(--tx)', fontWeight: 700 }} dir="ltr">{cc} {phone}</span></p>
-              <OtpInput value={code} onChange={v => { setCode(v); setErr('') }} onComplete={v => !loading && verifyCode(v)} />
+              <OtpInput value={code} onChange={v => { setCode(v); setErr(''); setInfo('') }} onComplete={v => !loading && verifyCode(v)} />
               {err && <div style={{ marginTop: 16 }}><Err msg={err} /></div>}
-              <button onClick={() => verifyCode()} disabled={loading || code.length < 4} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.verifying') : t('auth.validate')}</button>
+              {!err && info && <p role="status" style={{ marginTop: 14, fontSize: 13, lineHeight: 1.5, textAlign: 'center', color: 'var(--tx2)', fontWeight: 600 }}>{info}</p>}
+              <button onClick={() => verifyCode()} disabled={loading || code.length < 6} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.verifying') : t('auth.validate')}</button>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 14 }}>
                 <button onClick={() => { setStep('phone'); setCode(''); setErr('') }} style={{ ...LINK, marginTop: 0, width: 'auto' }}>{t('auth.changeNumber')}</button>
                 <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, marginTop: 0, width: 'auto', color: cooldown > 0 ? 'var(--tx2)' : 'var(--accent)', fontWeight: 700, cursor: cooldown > 0 ? 'default' : 'pointer' }}>
-                  {t('auth.resend')}{cooldown > 0 ? ` (${cooldown}s)` : ''}
+                  {cooldown > 0 ? `${t('auth.resendIn')} ${cooldown}s` : t('auth.resend')}
                 </button>
               </div>
             </>

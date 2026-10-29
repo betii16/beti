@@ -6,12 +6,9 @@ import { useLang } from '@/lib/LangContext'
 import { toE164 } from '@/lib/countryCodes'
 import { CountryPicker } from '@/components/CountryPicker'
 import { LogoMark } from '@/components/Logo'
-import OtpInput from '@/components/OtpInput'
+import OtpInput, { withTimeout as race, authErrorKey } from '@/components/OtpInput'
 import { UserRound, Hammer, Check } from 'lucide-react'
 import { phoneTaken } from '@/lib/phones'
-
-const race = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
-  Promise.race([Promise.resolve(p), new Promise<T>((_, r) => setTimeout(() => r(new Error('Délai dépassé')), ms))])
 
 export default function SignupPage() {
   const router = useRouter()
@@ -30,6 +27,15 @@ export default function SignupPage() {
   const [cooldown, setCooldown] = useState(0)
 
   const [okMsg, setOkMsg] = useState('')
+  const [info, setInfo] = useState('')
+
+  // /auth/signup?role=artisan (ou client) : rôle prérempli, étape « rôle » sautée.
+  // Lecture dans un effet (pas de useSearchParams : évite l'exigence Suspense au build).
+  const [fromUrl, setFromUrl] = useState(false)
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get('role')
+    if (r === 'artisan' || r === 'client') { setRole(r); setStep(2); setFromUrl(true) }
+  }, [])
 
   const fullPhone = toE164(cc, phone)
   const canSend = Boolean(name.trim() && phone.replace(/\D/g, '').length >= 6 && !phoneErr)
@@ -50,29 +56,38 @@ export default function SignupPage() {
   }
 
   const sendCode = async () => {
-    if (!canSend || !role) return
-    setLoading(true); setErr('')
+    if (!canSend || !role || loading) return
+    const resend = step === 3
+    setLoading(true); setErr(''); setInfo('')
+    const send = (channel: 'whatsapp' | 'sms') => race(supabase.auth.signInWithOtp({
+      phone: fullPhone,
+      options: { shouldCreateUser: true, channel, data: { full_name: name.trim(), role, phone: fullPhone, email: email.trim() || null } },
+    }))
     try {
-      const { error } = await race(supabase.auth.signInWithOtp({
-        phone: fullPhone,
-        options: { shouldCreateUser: true, channel: 'whatsapp', data: { full_name: name.trim(), role, phone: fullPhone, email: email.trim() || null } },
-      }))
+      let { error } = await send('whatsapp')
+      let viaSms = false
+      // WhatsApp indisponible : repli SMS (sauf numéro déjà pris / limite de débit)
+      if (error && !/already registered|exists|rate limit|too many|security purposes/i.test(error.message)) {
+        const r = await send('sms')
+        if (!r.error) { error = null; viaSms = true } else error = r.error
+      }
       if (error) {
-        const m = error.message
-        setErr(/already registered|exists/i.test(m) ? t('auth.phoneUsed') : t('auth.errSend') + m)
+        setErr(/already registered|exists/i.test(error.message) ? t('auth.phoneUsed') : t(`auth.${authErrorKey(error)}`))
         setLoading(false); return
       }
       setStep(3); setCode(''); setCooldown(30); setLoading(false)
-    } catch (e: any) { setErr(e.message); setLoading(false) }
+      setInfo(viaSms ? t('auth.smsFallback') : resend ? t('auth.codeResent') : '')
+    } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)); setLoading(false) }
   }
 
   const verifyCode = async (v?: string) => {
     const token = (v ?? code).trim()
-    if (token.replace(/\D/g, '').length < 4 || !role) return
+    if (!role || loading) return
+    if (token.replace(/\D/g, '').length < 6) { setErr(t('auth.errCodeShort')); return }
     setLoading(true); setErr('')
     try {
       const { data, error } = await race(supabase.auth.verifyOtp({ phone: fullPhone, token, type: 'sms' }))
-      if (error) { setErr(/expired|invalid|incorrect/i.test(error.message) ? t('auth.errCode') : error.message); setLoading(false); return }
+      if (error) { setErr(t(`auth.${authErrorKey(error)}`)); setCode(''); setLoading(false); return }
       const uid = data.user?.id
       let finalRole = role
       if (uid) {
@@ -90,13 +105,13 @@ export default function SignupPage() {
         } else {
           try { await race(supabase.from('profiles').upsert({ id: uid, full_name: name.trim(), phone: fullPhone, role }, { onConflict: 'id' })) } catch {}
           if (role === 'artisan') {
-            try { await race(supabase.from('artisans').upsert({ id: uid, category: 'plomberie', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' })) } catch {}
+            try { await race(supabase.from('artisans').upsert({ id: uid, category: 'autre', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' })) } catch {}
           }
         }
       }
       router.push(finalRole === 'artisan' ? '/artisan-dashboard/profil' : '/mon-espace')
       router.refresh()
-    } catch (e: any) { setErr(e.message); setLoading(false) }
+    } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)); setLoading(false) }
   }
 
   return (
@@ -180,8 +195,8 @@ export default function SignupPage() {
           {/* ── Étape 2 : infos (téléphone) ── */}
           {step === 2 && (
             <>
-              <h1 style={{ fontSize: 'clamp(22px, 6vw, 26px)', fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center', lineHeight: 1.2 }}>{t('auth.accountTitle')}</h1>
-              <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>{t('auth.accountSub')} <span style={{ color: 'var(--success)', fontWeight: 700 }}>WhatsApp</span></p>
+              <h1 style={{ fontSize: 'clamp(22px, 6vw, 26px)', fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center', lineHeight: 1.2 }}>{role === 'artisan' ? t('auth.signupArtisanTitle') : t('auth.accountTitle')}</h1>
+              <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>{role === 'artisan' ? t('auth.signupArtisanSub') : <>{t('auth.accountSub')} <span style={{ color: 'var(--success)', fontWeight: 700 }}>WhatsApp</span></>}</p>
 
               <div style={{ marginBottom: 14 }}>
                 <label htmlFor="su-name" style={LBL}>{t('auth.fullName')} *</label>
@@ -198,14 +213,14 @@ export default function SignupPage() {
                 {phoneErr && <p id="su-phone-err" role="alert" className="anim-scale-in" style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, marginTop: 6 }}>{phoneErr}</p>}
               </div>
 
-              <div style={{ marginBottom: 20 }}>
+              {role !== 'artisan' && <div style={{ marginBottom: 20 }}>
                 <label htmlFor="su-email" style={LBL}>{t('auth.email')} <span style={{ color: 'var(--tx2)', fontWeight: 400 }}>{t('auth.emailOptional')}</span></label>
                 <input id="su-email" type="email" autoComplete="email" inputMode="email" className="field" placeholder="votre@email.com" value={email} onChange={e => setEmail(e.target.value)} />
-              </div>
+              </div>}
 
               {err && <Err msg={err} />}
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setStep(1)} className="btn-ghost btn-lg" style={{ flex: 1 }}>{t('auth.back')}</button>
+                {!fromUrl && <button onClick={() => setStep(1)} className="btn-ghost btn-lg" style={{ flex: 1 }}>{t('auth.back')}</button>}
                 <button onClick={sendCode} disabled={!canSend || loading} className="btn-primary btn-lg" style={{ flex: 2 }}>{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
               </div>
             </>
@@ -216,13 +231,14 @@ export default function SignupPage() {
             <>
               <h1 style={{ fontSize: 'clamp(22px, 6vw, 26px)', fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center', lineHeight: 1.2 }}>{t('auth.codeTitle')}</h1>
               <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>{t('auth.codeSentOn')} <span style={{ color: 'var(--success)', fontWeight: 700 }}>WhatsApp</span> {t('auth.codeTo')} <span style={{ color: 'var(--tx)', fontWeight: 700 }} dir="ltr">{cc} {phone}</span></p>
-              <OtpInput value={code} onChange={v => { setCode(v); setErr('') }} onComplete={v => !loading && verifyCode(v)} />
+              <OtpInput value={code} onChange={v => { setCode(v); setErr(''); setInfo('') }} onComplete={v => !loading && verifyCode(v)} />
               {err && <div style={{ marginTop: 16 }}><Err msg={err} /></div>}
-              <button onClick={() => verifyCode()} disabled={loading || code.length < 4} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.creatingAccount') : t('auth.create')}</button>
+              {!err && info && <p role="status" style={{ marginTop: 14, fontSize: 13, lineHeight: 1.5, textAlign: 'center', color: 'var(--tx2)', fontWeight: 600 }}>{info}</p>}
+              <button onClick={() => verifyCode()} disabled={loading || code.length < 6} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.creatingAccount') : t('auth.create')}</button>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 14 }}>
-                <button onClick={() => { setStep(2); setCode(''); setErr('') }} style={LINK}>{t('auth.modify')}</button>
+                <button onClick={() => { setStep(2); setCode(''); setErr(''); setInfo('') }} style={LINK}>{t('auth.modify')}</button>
                 <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, color: cooldown > 0 ? 'var(--tx2)' : 'var(--accent)', fontWeight: 700, cursor: cooldown > 0 ? 'default' : 'pointer' }}>
-                  {t('auth.resend')}{cooldown > 0 ? ` (${cooldown}s)` : ''}
+                  {cooldown > 0 ? `${t('auth.resendIn')} ${cooldown}s` : t('auth.resend')}
                 </button>
               </div>
             </>

@@ -10,6 +10,7 @@ import { CategoryIcon } from '@/components/icons'
 import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles, Search, MapPin } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 import { fetchMyPhone, phoneTaken } from '@/lib/phones'
+import { withTimeout } from '@/components/OtpInput'
 
 // ── Types ──
 
@@ -88,6 +89,7 @@ export default function ArtisanProfileConfig() {
   const [phoneError, setPhoneError] = useState('')
   const [addressError, setAddressError] = useState('')
   const [isNewProfile, setIsNewProfile] = useState(false)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     loadProfile()
@@ -128,14 +130,25 @@ export default function ArtisanProfileConfig() {
   }
 
   const loadProfile = async () => {
-    const { data: { user: u } } = await supabase.auth.getUser()
+    setLoadError(false); setLoading(true)
+    try {
+      await loadProfileInner()
+    } catch {
+      setLoadError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadProfileInner = async () => {
+    const { data: { user: u } } = await withTimeout(supabase.auth.getUser())
     if (!u) { router.push('/auth/login'); return }
     setUser(u)
 
-    const [{ data: prof }, { data: art }] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', u.id).single(),
-      supabase.from('artisans').select('*').eq('id', u.id).single(),
-    ])
+    const [{ data: prof }, { data: art }] = await withTimeout(Promise.all([
+      supabase.from('profiles').select('*').eq('id', u.id).maybeSingle(),
+      supabase.from('artisans').select('*').eq('id', u.id).maybeSingle(),
+    ]))
 
     if (prof) {
       setFullName(prof.full_name || '')
@@ -156,7 +169,8 @@ export default function ArtisanProfileConfig() {
 
       if (art.services && Array.isArray(art.services)) {
         setServices(art.services)
-      } else if (art.category) {
+      } else if (art.category && (art.hourly_rate > 0 || art.bio)) {
+        // Ligne créée à l'inscription (catégorie fictive, tarif 0) : pas de métier prérempli.
         setServices([{
           category: art.category,
           description: art.bio || '',
@@ -165,12 +179,10 @@ export default function ArtisanProfileConfig() {
         }])
       }
 
-      if (!art.category && !art.services) setIsNewProfile(true)
+      if (!art.services && !(art.hourly_rate > 0)) setIsNewProfile(true)
     } else {
       setIsNewProfile(true)
     }
-
-    setLoading(false)
   }
 
   const checkPhone = async (phoneVal: string) => {
@@ -216,6 +228,11 @@ export default function ArtisanProfileConfig() {
     if (phoneError) return
     setSaveError('')
 
+    if (!fullName.trim()) {
+      setSaveError(t('artisanProfile.errName'))
+      setActiveSection('info')
+      return
+    }
     if (!phone || phone.length < 8) {
       setPhoneError(t('artisanProfile.errPhoneReq'))
       setActiveSection('info')
@@ -227,6 +244,12 @@ export default function ArtisanProfileConfig() {
       return
     }
 
+    if (!artisanAddress.trim() && !(artisanLat && artisanLng)) {
+      setSaveError(t('artisanProfile.errZone'))
+      setActiveSection('info')
+      return
+    }
+
     let saveLat = artisanLat
     let saveLng = artisanLng
     if ((!saveLat || !saveLng) && artisanAddress) {
@@ -235,14 +258,14 @@ export default function ArtisanProfileConfig() {
     }
 
     setSaving(true)
-
-    const { error: profErr } = await supabase.from('profiles').update({
-      full_name: fullName,
+    try {
+    const { error: profErr } = await withTimeout(supabase.from('profiles').update({
+      full_name: fullName.trim(),
       phone: phone,
       avatar_url: avatarUrl,
-    }).eq('id', user.id)
+    }).eq('id', user.id))
 
-    if (profErr) { setSaveError('Erreur profil: ' + profErr.message); setSaving(false); return }
+    if (profErr) { setSaveError(t('artisanProfile.errTimeout')); setSaving(false); return }
 
     const mainCategory = services.length > 0 ? services[0].category : 'plomberie'
     const mainRate = services.length > 0 ? services[0].price : 0
@@ -264,23 +287,44 @@ export default function ArtisanProfileConfig() {
       artisanData.lng = saveLng
     }
 
-    const { error: artErr } = await supabase.from('artisans').upsert({
+    const { error: artErr } = await withTimeout(supabase.from('artisans').upsert({
       ...artisanData,
       services: services.length > 0 ? services : null,
-    }, { onConflict: 'id' })
+    }, { onConflict: 'id' }))
 
     if (artErr) {
-      const { error: artErr2 } = await supabase.from('artisans').upsert(artisanData, { onConflict: 'id' })
-      if (artErr2) { setSaveError('Erreur: ' + artErr2.message); setSaving(false); return }
+      const { error: artErr2 } = await withTimeout(supabase.from('artisans').upsert(artisanData, { onConflict: 'id' }))
+      if (artErr2) { setSaveError(t('artisanProfile.errTimeout')); setSaving(false); return }
     }
 
     setSaving(false)
     setSaved(true)
+    setIsNewProfile(false)
     if (!saveLat || !saveLng) {
       setSaveError(t('artisanProfile.warnNoGeo'))
     }
     setTimeout(() => setSaved(false), 3000)
+    } catch {
+      // Réseau coupé / délai dépassé : jamais de bouton bloqué sur « Sauvegarde... »
+      setSaveError(t('artisanProfile.errTimeout'))
+      setSaving(false)
+    }
   }
+
+  // Jauge : 4 points obligatoires pour être listé, 3 facultatifs pour mieux convertir
+  const reqItems = [
+    { k: 'reqService', ok: services.length > 0 || tags.length > 0, tab: 'services' as const },
+    { k: 'reqName',    ok: !!fullName.trim(), tab: 'info' as const },
+    { k: 'reqPhone',   ok: phone.replace(/\D/g, '').length >= 8, tab: 'info' as const },
+    { k: 'reqZone',    ok: !!artisanAddress.trim() || !!(artisanLat && artisanLng), tab: 'info' as const },
+  ]
+  const optItems = [
+    { k: 'optPhoto', ok: !!avatarUrl, tab: 'info' as const },
+    { k: 'optBio',   ok: bio.trim().length > 10, tab: 'info' as const },
+    { k: 'optPortfolio', ok: tags.length > 0, tab: 'tags' as const },
+  ]
+  const gaugePct = Math.round(([...reqItems, ...optItems].filter(i => i.ok).length / (reqItems.length + optItems.length)) * 100)
+  const reqDone = reqItems.every(i => i.ok)
 
   const getCat = (id: string) => CATEGORIES.find(c => c.id === id)
 
@@ -306,6 +350,15 @@ export default function ArtisanProfileConfig() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div role="status" aria-label={t('common.loading')} className="loader-ring" />
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24, textAlign: 'center' }}>
+        <p role="alert" style={{ fontSize: 14, color: 'var(--danger)', fontWeight: 600, maxWidth: 360, lineHeight: 1.5 }}>{t('artisanProfile.errLoad')}</p>
+        <button onClick={loadProfile} className="btn-primary btn-lg">{t('artisanProfile.retry')}</button>
       </div>
     )
   }
@@ -354,6 +407,27 @@ export default function ArtisanProfileConfig() {
                 />
               )}
             </div>
+          </div>
+
+          {/* Jauge de complétion */}
+          <div className="card" style={{ padding: '16px 18px', marginBottom: 20 }}>
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--tx)' }}>{t('artisanProfile.gaugeDone')} <span className="num">{gaugePct}%</span></span>
+            </div>
+            <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={gaugePct} aria-label={t('artisanProfile.gaugeDone')} style={{ height: 6, borderRadius: 3, background: 'var(--border2)', overflow: 'hidden', marginBottom: 12 }}>
+              <div style={{ height: '100%', width: `${gaugePct}%`, background: reqDone ? 'var(--success)' : 'var(--accent)', transition: 'width .3s ease' }} />
+            </div>
+            {!reqDone && <p style={{ fontSize: 13, color: 'var(--tx2)', lineHeight: 1.5, marginBottom: 10 }}>{t('artisanProfile.gaugeTitle')}</p>}
+            {[{ label: t('artisanProfile.reqLabel'), items: reqItems }, { label: t('artisanProfile.optLabel'), items: optItems }].map(g => (
+              <div key={g.label} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--tx2)', minWidth: 72 }}>{g.label}</span>
+                {g.items.map(i => (
+                  <button key={i.k} type="button" onClick={() => setActiveSection(i.tab)} className={i.ok ? 'chip chip-active' : 'chip'} style={{ minHeight: 36, fontSize: 12.5 }}>
+                    <span aria-hidden>{i.ok ? '✓ ' : '○ '}</span>{t(`artisanProfile.${i.k}`)}
+                  </button>
+                ))}
+              </div>
+            ))}
           </div>
 
           {/* Tabs */}
