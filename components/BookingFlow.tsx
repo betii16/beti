@@ -9,7 +9,7 @@
 // - À la confirmation : création du booking (avec vraie date/adresse) puis
 //   premier message automatique dans le chat avec le besoin décrit.
 
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { X, Zap, CalendarDays, CalendarClock, ChevronLeft, BadgeCheck, Banknote } from 'lucide-react'
@@ -46,6 +46,8 @@ export default function BookingFlow({
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState('')
+  const sendingRef = useRef(false)
+  const createdRef = useRef<string | null>(null)
 
   const c = artisan.color || '#175CC4'
   const cl = (id: string) => t(`categories.${id}`)
@@ -82,10 +84,32 @@ export default function BookingFlow({
     return when !== 'asap' && time ? `${base} · ${time}` : base
   }
 
+  // Validation de l'heure : requise pour « aujourd'hui / demain », pas dans le passé.
+  const timeError = (): string => {
+    if (when === 'asap') return ''
+    if (!time) return t('cxb.errTimeMissing')
+    const d = new Date(scheduledAt())
+    if (d.getTime() < Date.now() - 60_000) return t('cxb.errTimePast')
+    return ''
+  }
+
+  // Échap ferme (sauf pendant l'envoi).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !sendingRef.current) onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const submit = async () => {
-    if (sending) return
+    if (sendingRef.current) return
+    const tErr = timeError()
+    if (tErr) { setErr(tErr); setStep(2); return }
+    sendingRef.current = true
     setSending(true); setErr('')
 
+    // Réessai après échec du message : la réservation existe déjà, on ne la recrée pas.
+    let bookingId = createdRef.current
+    if (!bookingId) {
     // 1. Créer la réservation (notif artisan générée par trigger en base)
     const { data: created, error: insErr } = await supabase.from('bookings').insert({
       client_id: clientId,
@@ -103,22 +127,29 @@ export default function BookingFlow({
     }).select('id').single()
 
     if (insErr || !created?.id) {
-      setErr(insErr?.message || t('bflow.errGeneric')); setSending(false); return
+      setErr(t('cxb.errBooking')); sendingRef.current = false; setSending(false); return
+    }
+    bookingId = created.id as string
+    createdRef.current = bookingId
     }
 
-    // 2. Premier message automatique : le chat s'ouvre avec le contexte
+    // 2. Premier message automatique : le chat s'ouvre avec le contexte.
+    // Si ça échoue on le signale et on laisse réessayer (sans recréer la réservation).
     try {
       const { data: prof } = await supabase.from('profiles').select('full_name,role').eq('id', clientId).single()
-      await supabase.from('messages').insert({
-        booking_id: created.id,
+      const { error: msgErr } = await supabase.from('messages').insert({
+        booking_id: bookingId,
         sender_id: clientId,
         sender_name: prof?.full_name || 'Client',
         sender_role: prof?.role || 'client',
         content: `${need.trim()}\n\n${t('bflow.msgWhen')} : ${whenLabel()}${address.trim() ? `\n${t('bflow.msgAddress')} : ${address.trim()}` : ''}`,
       })
-    } catch {}
+      if (msgErr) throw msgErr
+    } catch {
+      setErr(t('cxb.errBooking')); sendingRef.current = false; setSending(false); return
+    }
 
-    router.push(`/chat/${created.id}`)
+    router.push(`/chat/${bookingId}`)
   }
 
   const BTN = (active: boolean): CSSProperties => ({
@@ -144,9 +175,9 @@ export default function BookingFlow({
         .bstep { animation: bstepIn 0.3s cubic-bezier(0.22,1,0.36,1) both; }
       `}</style>
 
-      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', animation: 'bflowFade 0.25s ease both' }}/>
+      <div onClick={() => { if (!sending) onClose() }} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', animation: 'bflowFade 0.25s ease both' }}/>
 
-      <div className="bflow-sheet" style={{
+      <div className="bflow-sheet" role="dialog" aria-modal="true" aria-label={artisan.name} style={{
         position: 'relative', background: 'var(--bg2)', border: '1px solid var(--border)',
         maxHeight: '90dvh', overflowY: 'auto',
         padding: '14px 22px calc(22px + env(safe-area-inset-bottom))',
@@ -166,7 +197,7 @@ export default function BookingFlow({
             </div>
             <div style={{ fontSize: 11.5, color: c, fontWeight: 700 }}>{cl(artisan.category)}</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--bg3)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+          <button onClick={onClose} disabled={sending} aria-label={t('cxb.close')} style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--bg3)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
             <X size={15} color="var(--tx2)"/>
           </button>
         </div>
@@ -205,7 +236,8 @@ export default function BookingFlow({
                   { id: 'today'    as When, Icon: CalendarClock, label: t('bflow.today'),    sub: t('bflow.todaySub') },
                   { id: 'tomorrow' as When, Icon: CalendarDays,  label: t('bflow.tomorrow'), sub: t('bflow.tomorrowSub') },
                 ]).map(o => (
-                  <div key={o.id} onClick={() => setWhen(o.id)} className="press" style={{
+                  <button type="button" key={o.id} role="radio" aria-checked={when === o.id} onClick={() => { setWhen(o.id); setErr('') }} className="press" style={{
+                    width: '100%', minHeight: 56, textAlign: 'start', fontFamily: 'inherit',
                     display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderRadius: 15, cursor: 'pointer', marginBottom: 9,
                     background: when === o.id ? 'rgba(23,92,196,0.08)' : 'var(--bg)',
                     border: `1.5px solid ${when === o.id ? 'var(--accent)' : 'var(--border)'}`,
@@ -221,22 +253,24 @@ export default function BookingFlow({
                     <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${when === o.id ? 'var(--accent)' : 'var(--border2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 0.2s' }}>
                       {when === o.id && <div style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--accent)' }}/>}
                     </div>
-                  </div>
+                  </button>
                 ))}
 
                 {when !== 'asap' && (
                   <div className="bstep" style={{ margin: '4px 0 6px' }}>
-                    <label style={{ fontSize: 11, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', display: 'block', marginBottom: 7 }}>{t('bflow.timeLabel')}</label>
-                    <input type="time" value={time} onChange={e => setTime(e.target.value)}
-                      style={{ width: '100%', padding: '13px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 13, color: 'var(--tx)', fontSize: 15, outline: 'none', fontFamily: 'Nexa,sans-serif' }}/>
+                    <label htmlFor="bflow-time" style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.04em', display: 'block', marginBottom: 7 }}>{t('bflow.timeLabel')}</label>
+                    <input id="bflow-time" type="time" value={time} onChange={e => { setTime(e.target.value); setErr('') }} dir="ltr"
+                      style={{ minHeight: 48, width: '100%', padding: '13px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 13, color: 'var(--tx)', fontSize: 15, outline: 'none', fontFamily: 'Nexa,sans-serif' }}/>
                   </div>
                 )}
 
+                {err && <div role="alert" style={{ padding: '10px 14px', borderRadius: 10, marginTop: 8, background: '#ef444412', border: '1px solid #ef444422', fontSize: 13, color: 'var(--danger)' }}>{err}</div>}
+
                 <div style={{ display: 'flex', gap: 9, marginTop: 14 }}>
-                  <button onClick={() => setStep(1)} style={{ padding: '15px 18px', borderRadius: 14, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', cursor: 'pointer', fontFamily: 'Nexa,sans-serif', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => { setErr(''); setStep(1) }} aria-label={t('cxb.back')} style={{ minWidth: 48, padding: '15px 18px', borderRadius: 14, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', cursor: 'pointer', fontFamily: 'Nexa,sans-serif', display: 'flex', alignItems: 'center' }}>
                     <ChevronLeft size={17} style={{ transform: isAr ? 'rotate(180deg)' : 'none' }}/>
                   </button>
-                  <button onClick={() => setStep(3)} style={{ ...BTN(true), flex: 1 }}>{t('bflow.continue')}</button>
+                  <button onClick={() => { const e = timeError(); if (e) { setErr(e); return } setErr(''); setStep(3) }} style={{ ...BTN(true), flex: 1 }}>{t('bflow.continue')}</button>
                 </div>
               </div>
             )}
@@ -287,10 +321,10 @@ export default function BookingFlow({
                   ))}
                 </div>
 
-                {err && <div style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12, background: '#ef444412', border: '1px solid #ef444422', fontSize: 12, color: '#ef4444' }}>{err}</div>}
+                {err && <div role="alert" style={{ padding: '10px 14px', borderRadius: 10, marginBottom: 12, background: '#ef444412', border: '1px solid #ef444422', fontSize: 13, color: 'var(--danger)' }}>{err}</div>}
 
                 <div style={{ display: 'flex', gap: 9 }}>
-                  <button onClick={() => setStep(2)} style={{ padding: '15px 18px', borderRadius: 14, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', cursor: 'pointer', fontFamily: 'Nexa,sans-serif', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => setStep(2)} disabled={sending} aria-label={t('cxb.back')} style={{ minWidth: 48, padding: '15px 18px', borderRadius: 14, background: 'transparent', border: '1px solid var(--border)', color: 'var(--tx2)', cursor: 'pointer', fontFamily: 'Nexa,sans-serif', display: 'flex', alignItems: 'center' }}>
                     <ChevronLeft size={17} style={{ transform: isAr ? 'rotate(180deg)' : 'none' }}/>
                   </button>
                   <button onClick={submit} disabled={sending} style={{ ...BTN(!sending), flex: 1 }}>{sending ? t('bflow.sending') : t('bflow.submit')}</button>

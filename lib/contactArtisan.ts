@@ -14,7 +14,19 @@ export type ContactResult =
   | { ok: true; bookingId: string }
   | { ok: false; reason: 'demo' | 'error'; message: string }
 
-export async function contactArtisan(opts: {
+const inflight = new Map<string, Promise<ContactResult>>()
+
+// Anti double-tap : un seul envoi en vol par couple client/artisan.
+export function contactArtisan(opts: Parameters<typeof contactArtisanImpl>[0]): Promise<ContactResult> {
+  const key = opts.clientId + ':' + opts.artisanId
+  const cur = inflight.get(key)
+  if (cur) return cur
+  const p = contactArtisanImpl(opts).finally(() => inflight.delete(key))
+  inflight.set(key, p)
+  return p
+}
+
+async function contactArtisanImpl(opts: {
   clientId: string
   artisanId: string
   category?: string
@@ -57,7 +69,7 @@ export async function contactArtisan(opts: {
       status: 'pending',
       price_agreed: hourlyRate || 0,
     }).select('id').single()
-    if (insErr) return { ok: false, reason: 'error', message: 'Erreur : ' + insErr.message }
+    if (insErr) return { ok: false, reason: 'error', message: "La conversation n'a pas pu s'ouvrir. Vérifiez votre connexion puis réessayez." }
     bookingId = created?.id
   }
 

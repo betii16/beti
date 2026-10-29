@@ -25,6 +25,8 @@ export default function ChatPage(){
   const [sending,setSending]=useState(false)
   const [loadErr,setLoadErr]=useState('')
   const [sendErr,setSendErr]=useState('')
+  const [reloadKey,setReloadKey]=useState(0)
+  const [acting,setActing]=useState(false)
   const endRef=useRef<HTMLDivElement>(null)
 
   // Fusionne sans doublon (dédup par id) et garde l'ordre chronologique.
@@ -37,25 +39,26 @@ export default function ChatPage(){
   useEffect(()=>{
     if(!bookingId)return
     let alive=true
-    const fetchMsgs=async()=>{
+    const fetchMsgs=async(initial=false)=>{
+      if(!initial&&typeof document!=='undefined'&&document.hidden)return
       const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
       if(!alive)return
-      if(error){setLoadErr('Impossible de charger les messages. Vérifiez votre connexion puis réessayez. ('+error.message+')');return}
+      if(error){if(initial)setLoadErr(t('cxb.loadErr'));return}
       if(data)mergeMsgs(data as any)
     }
     const init=async()=>{
       const{data:{user:u}}=await supabase.auth.getUser()
-      if(!u){router.push('/auth/login');return};setUser(u)
+      if(!u){router.push('/auth/login?next='+encodeURIComponent('/chat/'+bookingId));return};setUser(u)
       const{data:p}=await supabase.from('profiles').select('full_name,role').eq('id',u.id).single()
       if(p)setProfile(p)
       const{data:b,error:bErr}=await supabase.from('bookings').select('*').eq('id',bookingId).single()
-      if(bErr){setLoadErr('Cette conversation est introuvable ou vous n’y avez pas accès. ('+bErr.message+')');return}
+      if(bErr){if(!alive)return;setLoadErr(bErr.code==='PGRST116'?t('cxb.notFound'):t('cxb.loadErr'));return}
       if(b){setBooking(b)
         const otherId=b.client_id===u.id?b.artisan_id:b.client_id
         const{data:op}=await supabase.from('profiles').select('full_name').eq('id',otherId).single()
         if(op)setOtherName(op.full_name)
       }
-      await fetchMsgs()
+      await fetchMsgs(true)
     };init()
 
     // Realtime (idéal) + dédup de l'écho.
@@ -70,12 +73,12 @@ export default function ChatPage(){
     const poll=setInterval(()=>{fetchMsgs()},4000)
 
     return()=>{alive=false;supabase.removeChannel(ch);clearInterval(poll)}
-  },[bookingId])
+  },[bookingId,reloadKey])
 
   useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'})},[msgs])
 
   const send=async()=>{
-    if(!input.trim()||!user||!profile||sending)return
+    if(!input.trim()||!user||sending)return
     const content=input.trim()
     setSending(true);setSendErr('')
     // .select() pour récupérer la ligne insérée et l'afficher tout de suite,
@@ -83,11 +86,11 @@ export default function ChatPage(){
     // le doublon quand l'écho Realtime arrive ensuite.
     const{data,error}=await supabase.from('messages').insert({
       booking_id:bookingId,sender_id:user.id,
-      sender_name:profile.full_name||'Moi',
-      sender_role:profile.role||'client',
+      sender_name:profile?.full_name||'Moi',
+      sender_role:profile?.role||'client',
       content
     }).select().single()
-    if(error){setSendErr('Message non envoyé : '+error.message);setSending(false);return}
+    if(error){setSendErr(t('cxb.sendFail'));setSending(false);return}
     if(data)mergeMsgs([data as any])
     setInput('')
     setSending(false)
@@ -99,16 +102,16 @@ export default function ChatPage(){
   // Prestation payée en CASH, en main propre (BETI n'encaisse rien). Clôture en
   // deux temps : 1) l'artisan signale « travail terminé » → status 'in_progress',
   // 2) le client confirme → 'completed' (ce qui débloque l'avis).
-  const markDone=async()=>{
-    const{error}=await supabase.from('bookings').update({status:'in_progress'}).eq('id',bookingId)
-    if(error){setSendErr('Action impossible : '+error.message);return}
-    setBooking((b:any)=>b?{...b,status:'in_progress'}:b)
+  const setStatus=async(status:'in_progress'|'completed')=>{
+    if(acting)return
+    setActing(true);setSendErr('')
+    const{error}=await supabase.from('bookings').update({status}).eq('id',bookingId)
+    setActing(false)
+    if(error){setSendErr(t('cxb.actionFail'));return}
+    setBooking((b:any)=>b?{...b,status}:b)
   }
-  const confirmDone=async()=>{
-    const{error}=await supabase.from('bookings').update({status:'completed'}).eq('id',bookingId)
-    if(error){setSendErr('Action impossible : '+error.message);return}
-    setBooking((b:any)=>b?{...b,status:'completed'}:b)
-  }
+  const markDone=()=>setStatus('in_progress')
+  const confirmDone=()=>setStatus('completed')
 
   const timeline=msgs.map(m=>({at:m.created_at,m})).sort((a,b)=>a.at.localeCompare(b.at))
 
@@ -122,9 +125,12 @@ export default function ChatPage(){
       <style>{SCOPE_CSS}</style>
       <div role="alert" className="card" style={{maxWidth:420,width:'100%',textAlign:'center',padding:'28px 22px'}}>
         <div aria-hidden style={{width:52,height:52,borderRadius:14,margin:'0 auto 14px',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--danger)',background:'color-mix(in srgb, var(--danger) 11%, transparent)'}}><AlertTriangle size={24}/></div>
-        <div style={{fontSize:17,fontWeight:800,color:'var(--tx)',marginBottom:10}}>Erreur de chargement</div>
+        <div style={{fontSize:17,fontWeight:800,color:'var(--tx)',marginBottom:10}}>{t('cxb.loadErrTitle')}</div>
         <div style={{fontSize:14,color:'var(--tx2)',lineHeight:1.55,marginBottom:20,overflowWrap:'anywhere'}}>{loadErr}</div>
-        <button onClick={()=>router.back()} className="btn-primary" style={{minHeight:44}}><ArrowLeft size={16} aria-hidden style={{transform:isAr?'scaleX(-1)':undefined}}/> Retour</button>
+        <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
+          <button onClick={()=>{setLoadErr('');setReloadKey(k=>k+1)}} className="btn-primary" style={{minHeight:44}}>{t('cxb.retry')}</button>
+          <button onClick={()=>router.back()} className="btn-ghost" style={{minHeight:44}}><ArrowLeft size={16} aria-hidden style={{transform:isAr?'scaleX(-1)':undefined}}/> {t('cxb.back')}</button>
+        </div>
       </div>
     </div>
   )
@@ -137,7 +143,7 @@ export default function ChatPage(){
       <style>{SCOPE_CSS}</style>
       {/* Header */}
       <div style={{background:'var(--bg2)',borderBottom:'1px solid var(--border)',paddingTop:8,paddingBottom:8,paddingInlineStart:8,paddingInlineEnd:16,display:'flex',alignItems:'center',gap:10}}>
-        <button onClick={()=>router.back()} aria-label="Retour" style={{width:44,height:44,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'none',borderRadius:12,color:'var(--tx)',cursor:'pointer'}}><ArrowLeft size={22} style={{transform:isAr?'scaleX(-1)':undefined}}/></button>
+        <button onClick={()=>router.back()} aria-label={t('cxb.back')} style={{width:44,height:44,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:'none',borderRadius:12,color:'var(--tx)',cursor:'pointer'}}><ArrowLeft size={22} style={{transform:isAr?'scaleX(-1)':undefined}}/></button>
         <div aria-hidden style={{width:40,height:40,borderRadius:11,flexShrink:0,background:'color-mix(in srgb, var(--accent) 13%, transparent)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,fontWeight:800,color:'var(--accent)'}}>{(otherName||'?')[0].toUpperCase()}</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{otherName||t('common.loading')}</div>
@@ -189,8 +195,8 @@ export default function ChatPage(){
               ? (isClient?t('done.awaitingClient'):t('done.awaitingArtisan'))
               : t('done.cashHint')}
           </div>
-          {isArtisan&&booking.status==='confirmed'&&<button onClick={markDone} className="btn-success btn-sm" style={doneBtn}>{t('done.markDone')}</button>}
-          {isClient&&booking.status==='in_progress'&&<button onClick={confirmDone} className="btn-success btn-sm" style={doneBtn}>{t('done.confirm')}</button>}
+          {isArtisan&&booking.status==='confirmed'&&<button onClick={markDone} className="btn-success btn-sm" disabled={acting} style={doneBtn}>{t('done.markDone')}</button>}
+          {isClient&&booking.status==='in_progress'&&<button onClick={confirmDone} className="btn-success btn-sm" disabled={acting} style={doneBtn}>{t('done.confirm')}</button>}
         </div>
       )}
 

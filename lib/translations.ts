@@ -853,6 +853,37 @@ export const translations = {
     empty:          { fr: 'Aucune notification',           ar: 'لا توجد إشعارات'                     },
   },
 
+  // ── Parcours contact / chat / suivi / notifications (cxb) ────
+  cxb: {
+    errBooking:    { fr: "La demande n'a pas pu être envoyée. Vérifiez votre connexion puis réessayez.", ar: 'تعذر إرسال الطلب. تحقق من الاتصال ثم أعد المحاولة.' },
+    errTimeMissing:{ fr: 'Choisissez une heure.', ar: 'اختر ساعة.' },
+    errTimePast:   { fr: 'Cette heure est déjà passée. Choisissez une heure plus tard.', ar: 'هذه الساعة انقضت. اختر ساعة لاحقة.' },
+    close:         { fr: 'Fermer', ar: 'إغلاق' },
+    back:          { fr: 'Retour', ar: 'رجوع' },
+    retry:         { fr: 'Réessayer', ar: 'إعادة المحاولة' },
+    loadErrTitle:  { fr: 'Conversation indisponible', ar: 'المحادثة غير متاحة' },
+    loadErr:       { fr: 'Impossible de charger la conversation. Vérifiez votre connexion puis réessayez.', ar: 'تعذر تحميل المحادثة. تحقق من الاتصال ثم أعد المحاولة.' },
+    notFound:      { fr: "Cette conversation est introuvable ou vous n'y avez pas accès.", ar: 'هذه المحادثة غير موجودة أو لا يمكنك الوصول إليها.' },
+    sendFail:      { fr: 'Message non envoyé. Votre texte est conservé, touchez Envoyer pour réessayer.', ar: 'لم تُرسل الرسالة. نصك محفوظ، اضغط إرسال لإعادة المحاولة.' },
+    actionFail:    { fr: "Action impossible pour l'instant. Réessayez.", ar: 'تعذر تنفيذ الإجراء حالياً. أعد المحاولة.' },
+    suiviLive:     { fr: 'Suivi en direct', ar: 'تتبع مباشر' },
+    suiviOf:       { fr: 'Suivi de', ar: 'تتبع' },
+    stPending:     { fr: 'Demande envoyée', ar: 'تم إرسال الطلب' },
+    stPendingSub:  { fr: "En attente de la réponse de l'artisan. Vous serez notifié.", ar: 'بانتظار رد الحرفي. سيصلك إشعار.' },
+    stConfirmed:   { fr: 'Demande acceptée', ar: 'تم قبول الطلب' },
+    stConfirmedSub:{ fr: "L'artisan a accepté. Son trajet apparaît sur la carte dès qu'il est en route.", ar: 'قبل الحرفي الطلب. يظهر مساره على الخريطة عند انطلاقه.' },
+    stProgress:    { fr: 'Intervention en cours', ar: 'الخدمة جارية' },
+    stProgressSub: { fr: 'Confirmez dans la discussion quand le travail est terminé.', ar: 'أكّد في المحادثة عند انتهاء العمل.' },
+    stCompleted:   { fr: 'Terminé', ar: 'مكتمل' },
+    stCompletedSub:{ fr: 'La prestation est terminée.', ar: 'تمت الخدمة.' },
+    stCancelled:   { fr: 'Annulé', ar: 'ملغى' },
+    stCancelledSub:{ fr: 'Cette demande est annulée ou refusée. Vous pouvez contacter un autre artisan.', ar: 'تم إلغاء الطلب أو رفضه. يمكنك التواصل مع حرفي آخر.' },
+    stNone:        { fr: 'Aucune demande en cours avec cet artisan.', ar: 'لا يوجد طلب جارٍ مع هذا الحرفي.' },
+    openChat:      { fr: 'Ouvrir la discussion', ar: 'فتح المحادثة' },
+    notifsErr:     { fr: 'Impossible de charger vos notifications.', ar: 'تعذر تحميل إشعاراتك.' },
+    notifsClear:   { fr: 'Supprimer toutes les notifications ?', ar: 'حذف كل الإشعارات؟' },
+  },
+
   // ── Onboarding artisan ───────────────────────────────────────
   onboarding: {
     stepProfile:    { fr: 'Profil',                        ar: 'الملف'                               },
