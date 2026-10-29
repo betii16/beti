@@ -9,7 +9,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
-import { LayoutGrid, MapPin, Search, BadgeCheck, ChevronRight, Shapes, X, Navigation, SearchX, CalendarCheck, CheckCircle2 } from 'lucide-react'
+import { LayoutGrid, MapPin, Search, ChevronRight, Shapes, X, Navigation, SearchX, CalendarCheck, CheckCircle2 } from 'lucide-react'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { artisanAvatar } from '@/lib/avatar'
 
@@ -276,7 +276,6 @@ export default function MobileHome({
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
                       <span style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--tx)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.full_name}</span>
-                      <BadgeCheck size={14} color="var(--accent)" strokeWidth={2.2} style={{ flexShrink: 0 }}/>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
                       <Star s={11}/>

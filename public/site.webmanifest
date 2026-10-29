@@ -2,7 +2,7 @@
   "id": "/",
   "name": "BETI — Artisans à domicile",
   "short_name": "BETI",
-  "description": "Trouvez un artisan certifié près de chez vous en Algérie. Plombier, électricien, ménage, peinture, serrurerie.",
+  "description": "Trouvez un artisan près de chez vous en Algérie. Plombier, électricien, ménage, peinture, serrurerie.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

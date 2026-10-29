@@ -109,7 +109,7 @@ export default function CguPage() {
       eyebrow="CONDITIONS D’UTILISATION"
       title="Conditions Générales d’Utilisation"
       updated="Dernière mise à jour : juin 2026"
-      intro="Bienvenue sur BETI. Ces conditions encadrent l’utilisation de la plateforme de mise en relation entre clients et artisans de confiance en Algérie."
+      intro="Bienvenue sur BETI. Ces conditions encadrent l’utilisation de la plateforme de mise en relation entre clients et artisans en Algérie."
       note="Modèle de départ à faire valider par un professionnel du droit avant le lancement, en cohérence avec la réglementation algérienne applicable."
       sections={sections}
     />

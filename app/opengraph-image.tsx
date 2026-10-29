@@ -10,7 +10,7 @@ export const runtime = 'edge'
 // les balises og:image / twitter:image correspondantes.
 // Charte « Chaux & Zellige » : fond chaux, encre bleu-nuit, bleu d'Alger, sans dégradé.
 
-export const alt = 'BETI — Artisans certifiés à domicile en Algérie'
+export const alt = 'BETI — Artisans près de chez vous en Algérie'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -38,7 +38,7 @@ export default function OgImage() {
           BETI
         </div>
         <div style={{ fontSize: 58, fontWeight: 700, marginTop: 20, color: INK, display: 'flex' }}>
-          Artisans certifiés à domicile
+          Artisans près de chez vous
         </div>
         <div style={{ fontSize: 34, marginTop: 16, color: '#4A5864', display: 'flex' }}>
           Plombier · Électricien · Ménage · Peinture · Serrurerie

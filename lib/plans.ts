@@ -46,7 +46,7 @@ export interface Feature {
 }
 
 export const FEATURES: Feature[] = [
-  { label: 'Profil professionnel vérifié',                  basic: true,    premium: true },
+  { label: 'Profil professionnel',                  basic: true,    premium: true },
   { label: 'Présence dans l’annuaire et la recherche',      basic: true,    premium: true },
   { label: 'Demandes clients illimitées (messages & appels)', basic: true,  premium: true },
   { label: 'Avis et notes clients',                          basic: true,   premium: true },

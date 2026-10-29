@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
-import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
+import { contactArtisan } from '@/lib/contactArtisan'
 import { fetchPlans, isListed } from '@/lib/subscription'
 import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
-import { LayoutGrid, X, Search, LocateFixed, BadgeCheck, SearchX } from 'lucide-react'
+import { LayoutGrid, X, Search, LocateFixed, SearchX } from 'lucide-react'
 
 const BetiMap = dynamic(() => import('@/components/BetiMap'), { ssr: false })
 
@@ -24,6 +24,10 @@ const L = {
   nearby:    { fr: 'à proximité',         ar: 'بالقرب منك' },
   hide:      { fr: 'Masquer',             ar: 'إخفاء' },
   show:      { fr: 'Afficher',            ar: 'إظهار' },
+  loadErr:   { fr: 'Impossible de charger les artisans.', ar: 'تعذّر تحميل الحرفيين.' },
+  retry:     { fr: 'Réessayer',           ar: 'إعادة المحاولة' },
+  noneSub:   { fr: 'Aucun artisan inscrit pour le moment.', ar: 'لا يوجد حرفي مسجل حالياً.' },
+  imArtisan: { fr: 'Je suis artisan',     ar: 'أنا حرفي' },
   none:      { fr: 'Aucun artisan dans cette zone', ar: 'لا يوجد حرفي في هذه المنطقة' },
   seeMore:   { fr: 'Voir les {n} autres artisans', ar: 'عرض {n} حرفيين آخرين' },
   missions:  { fr: 'missions',            ar: 'مهمة' },
@@ -40,16 +44,6 @@ type Art = {
   is_available:boolean; total_missions:number
 }
 
-const DEMO:Art[] = [
-  {id:'d1',full_name:'Karim Benali',avatar_url:null,category:'plomberie',rating_avg:4.9,rating_count:84,hourly_rate:3500,distance_km:1.2,is_available:true,total_missions:312},
-  {id:'d2',full_name:'Sofiane Amrani',avatar_url:null,category:'electricite',rating_avg:4.8,rating_count:127,hourly_rate:4000,distance_km:2.8,is_available:true,total_missions:198},
-  {id:'d3',full_name:'Amina Kaci',avatar_url:null,category:'menage',rating_avg:5.0,rating_count:211,hourly_rate:2000,distance_km:0.9,is_available:true,total_missions:521},
-  {id:'d4',full_name:'Riad Hamdi',avatar_url:null,category:'serrurerie',rating_avg:4.6,rating_count:48,hourly_rate:4500,distance_km:4.2,is_available:true,total_missions:89},
-  {id:'d5',full_name:'Lina Hadj',avatar_url:null,category:'coiffure',rating_avg:4.9,rating_count:189,hourly_rate:2500,distance_km:2.1,is_available:true,total_missions:347},
-  {id:'d6',full_name:'Fatima Zohra',avatar_url:null,category:'menage',rating_avg:4.8,rating_count:156,hourly_rate:1800,distance_km:1.8,is_available:true,total_missions:423},
-  {id:'d7',full_name:'Walid Benmoussa',avatar_url:null,category:'informatique',rating_avg:4.8,rating_count:52,hourly_rate:4500,distance_km:5.6,is_available:true,total_missions:87},
-  {id:'d8',full_name:'Mourad Khelifi',avatar_url:null,category:'serrurerie',rating_avg:4.9,rating_count:114,hourly_rate:5500,distance_km:2.3,is_available:true,total_missions:278},
-]
 
 function Stars({r,s=11}:{r:number;s?:number}){return<div role="img" aria-label={`${(r||0).toFixed(1)} / 5`} style={{display:'flex',gap:1}}>{[1,2,3,4,5].map(i=><svg key={i} aria-hidden width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'var(--star)':'var(--border2)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
@@ -62,6 +56,7 @@ export default function MapPage() {
   const [lng,setLng]=useState(3.0588)
   const [artisans,setArtisans]=useState<Art[]>([])
   const [loading,setLoading]=useState(true)
+  const [loadFailed,setLoadFailed]=useState(false)
   const [sheetOpen,setSheetOpen]=useState(true)
   const [sheetFull,setSheetFull]=useState(false)
   const [selected,setSelected]=useState<Art|null>(null)
@@ -79,18 +74,19 @@ export default function MapPage() {
   useEffect(()=>{loadArtisans()},[lat,lng,cat])
 
   const loadArtisans=async()=>{
-    setLoading(true)
+    setLoading(true);setLoadFailed(false)
+    try{
     let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat)q=q.eq('category',cat)
-    const{data}=await q
+    const{data,error}=await q
+    if(error)throw error
     // Paywall : hors période de lancement, on masque les non-abonnés.
     const plans=await fetchPlans((data||[]).map((a:any)=>a.id))
     const real:Art[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(lat,lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0}))
-    // Démo en SECOURS uniquement : s'il existe de vrais artisans, on n'affiche
-    // qu'eux (pas de faux profils mélangés en production).
-    if(real.length>0){setArtisans(real);setLoading(false);return}
-    const demo=cat?DEMO.filter(d=>d.category===cat):DEMO
-    setArtisans(demo)
+    setArtisans(real)
+    }catch{
+      setArtisans([]);setLoadFailed(true)
+    }
     setLoading(false)
   }
 
@@ -99,7 +95,6 @@ export default function MapPage() {
   const contact=async(a:Art,ty:'message'|'call')=>{
     if(!user){router.push('/auth/login');return}
     setContactErr('')
-    if(isDemoArtisan(a.id)){setContactErr(t('contact.demoProfile'));return}
     if(ty==='message'){setBooking(true);return}
     const res=await contactArtisan({clientId:user.id,artisanId:a.id,category:a.category,hourlyRate:a.hourly_rate,type:ty})
     if(!res.ok){setContactErr(res.message);return}
@@ -207,10 +202,16 @@ export default function MapPage() {
                     </div>
                   ))}
                 </div>
+              ):loadFailed?(
+                <div className="empty-state" style={{padding:'18px 12px 10px'}}>
+                  <div className="empty-title" style={{fontSize:14.5}}>{tr('loadErr')}</div>
+                  <button type="button" className="btn-primary" style={{marginTop:12}} onClick={()=>loadArtisans()}>{tr('retry')}</button>
+                </div>
               ):filtered.length===0?(
                 <div className="empty-state" style={{padding:'18px 12px 10px'}}>
                   <div className="empty-icon" style={{width:48,height:48}}><SearchX size={20}/></div>
-                  <div className="empty-title" style={{fontSize:14.5}}>{tr('none')}</div>
+                  <div className="empty-title" style={{fontSize:14.5}}>{search||cat?tr('none'):tr('noneSub')}</div>
+                  {!search&&!cat&&<a href="/auth/signup?role=artisan" className="btn-primary" style={{marginTop:12}}>{tr('imArtisan')}</a>}
                 </div>
               ):(
                 <>
@@ -281,7 +282,6 @@ export default function MapPage() {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
                     <span style={{fontSize:16,fontWeight:800,color:tx,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{selected.full_name}</span>
-                    <BadgeCheck size={15} color="var(--accent)" strokeWidth={2.2} style={{flexShrink:0}}/>
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12.5,color:tx2,flexWrap:'wrap'}}>
                     <span style={{color:categoryInk(selected.category),fontWeight:700}}>{cl(selected.category)}</span>

@@ -200,7 +200,7 @@ export default function ArtisanPage(){
 
               {/* Sceau de confiance */}
               <div style={{display:'flex',justifyContent:'center',marginBottom:24}}>
-                <TrustButton label={t('profile.trustedArtisan')||'Artisan de confiance'} />
+                <TrustButton label={t('profile.trustedArtisan')||'Numéro vérifié'} />
               </div>
 
               {/* Stats row */}
