@@ -8,15 +8,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/artisan-dashboard', '/mon-espace', '/facture', '/chat', '/api'],
+        disallow: ['/admin', '/artisan-dashboard', '/mon-espace', '/facture', '/chat', '/api', '/suivi', '/notifications', '/compte', '/parametres', '/onboarding'],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/admin', '/artisan-dashboard', '/mon-espace', '/facture', '/chat', '/api'],
+        disallow: ['/admin', '/artisan-dashboard', '/mon-espace', '/facture', '/chat', '/api', '/suivi', '/notifications', '/compte', '/parametres', '/onboarding'],
       },
     ],
-    sitemap: 'https://beti.dz/sitemap.xml',
-    host: 'https://beti.dz',
+    sitemap: 'https://beti-ten.vercel.app/sitemap.xml',
   }
 }
