@@ -1080,6 +1080,30 @@ export const translations = {
     finalCta:   { fr: 'Commencer',             ar: 'ابدأ الآن'           },
   },
 
+  // ── Après réservation (mon espace, compte, facture) ───────────
+  cxp: {
+    reviewed:      { fr: 'Avis publié', ar: 'تم نشر التقييم' },
+    invoice:       { fr: 'Facture', ar: 'الفاتورة' },
+    hintPending:   { fr: 'En attente de réponse de l’artisan. Tu peux annuler tant qu’il n’a pas répondu.', ar: 'في انتظار رد الحرفي. يمكنك الإلغاء قبل أن يرد.' },
+    hintConfirmed: { fr: 'Confirmée : l’artisan vient à la date prévue. Tu règles directement l’artisan.', ar: 'تم التأكيد: سيأتي الحرفي في الموعد المحدد. الدفع يتم مباشرة للحرفي.' },
+    hintInProgress:{ fr: 'L’artisan est en cours d’intervention.', ar: 'الحرفي يقوم بالعمل حالياً.' },
+    hintCompleted: { fr: 'Terminée. Retrouve ta facture et laisse un avis.', ar: 'انتهت المهمة. يمكنك عرض الفاتورة وترك تقييم.' },
+    hintRefused:   { fr: 'L’artisan n’a pas pu accepter. Essaie un autre artisan.', ar: 'لم يتمكن الحرفي من القبول. جرّب حرفياً آخر.' },
+    findAnother:   { fr: 'Trouver un artisan', ar: 'ابحث عن حرفي' },
+    loadErr:       { fr: 'Impossible de charger tes réservations. Vérifie ta connexion.', ar: 'تعذر تحميل حجوزاتك. تحقق من اتصالك.' },
+    retry:         { fr: 'Réessayer', ar: 'إعادة المحاولة' },
+    cancelFail:    { fr: 'Annulation impossible, réessaie.', ar: 'تعذر إلغاء الطلب، حاول مجدداً.' },
+    cancelConfirm: { fr: 'Annuler cette demande ? L’artisan en sera informé.', ar: 'هل تريد إلغاء هذا الطلب؟ سيتم إبلاغ الحرفي.' },
+    saveFail:      { fr: 'Enregistrement impossible. Réessaie.', ar: 'تعذر الحفظ. حاول مجدداً.' },
+    deleteWhat:    { fr: 'Seront supprimés : ton profil, ton numéro de téléphone et ta photo. Tu seras déconnecté et tu ne pourras plus te reconnecter avec ce compte. Tes réservations passées peuvent être conservées de façon anonyme pour l’artisan concerné.', ar: 'سيتم حذف: ملفك الشخصي ورقم هاتفك وصورتك. سيتم تسجيل خروجك ولن تتمكن من الدخول بهذا الحساب. قد تبقى حجوزاتك السابقة مجهولة الهوية لدى الحرفي المعني.' },
+    deleteType:    { fr: 'Pour confirmer, tape SUPPRIMER :', ar: 'للتأكيد، اكتب «حذف»:' },
+    deleteWord:    { fr: 'SUPPRIMER', ar: 'حذف' },
+    deleteFinal:   { fr: 'Supprimer définitivement', ar: 'حذف نهائي' },
+    deleteOpen:    { fr: 'Supprimer mon compte…', ar: 'حذف حسابي…' },
+    deleting:      { fr: 'Suppression…', ar: 'جارٍ الحذف…' },
+    cancel:        { fr: 'Annuler', ar: 'إلغاء' },
+  },
+
 } as const
 
 // ── Helper pour récupérer une traduction ──────────────────────────
