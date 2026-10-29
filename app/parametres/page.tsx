@@ -61,7 +61,7 @@ export default function ParametresPage() {
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { router.push('/auth/login?next='+encodeURIComponent(window.location.pathname)); return }
       setUser(user); setEmail(user.email || '')
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (data) { setFullName(data.full_name || ''); setPhone(await fetchMyPhone(user.id, data.phone)); setNotifEmail(data.notif_email ?? true); setNotifSms(data.notif_sms ?? false) }

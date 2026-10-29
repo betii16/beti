@@ -54,7 +54,7 @@ export default function MesReservations() {
   const init = async () => {
       setLoadErr(false); setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { router.push('/auth/login?next='+encodeURIComponent(window.location.pathname)); return }
 
       // Réservations du client (sans embed fragile par nom de FK).
       const { data: bk, error: bkErr } = await supabase

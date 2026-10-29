@@ -97,7 +97,7 @@ export default function MapPage() {
   const [contactErr,setContactErr]=useState('')
   const [booking,setBooking]=useState(false)
   const contact=async(a:Art,ty:'message'|'call')=>{
-    if(!user){router.push('/auth/login');return}
+    if(!user){router.push('/auth/login?next='+encodeURIComponent(window.location.pathname));return}
     setContactErr('')
     if(isDemoArtisan(a.id)){setContactErr(t('contact.demoProfile'));return}
     if(ty==='message'){setBooking(true);return}

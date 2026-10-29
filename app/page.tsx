@@ -109,7 +109,7 @@ export default function Home(){
     window.addEventListener('keydown',k);return()=>window.removeEventListener('keydown',k)
   },[sel,booking])
   const contact=async(ty:"message"|"call")=>{
-    if(!user||!sel){router.push("/auth/login");return}
+    if(!user||!sel){router.push('/auth/login?next='+encodeURIComponent(window.location.pathname));return}
     setContactErr("");setSent(false)
     if(isDemoArtisan(sel.artisan_id)){setContactErr(t('contact.demoProfile'));return}
     if(ty==='message'){setBooking(true);return}

@@ -50,7 +50,7 @@ export default function Parametres() {
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { router.push('/auth/login?next='+encodeURIComponent(window.location.pathname)); return }
       setUser(user)
       setNewEmail(user.email || '')
 

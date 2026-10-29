@@ -31,7 +31,7 @@ export default function FacturePage() {
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { router.push('/auth/login?next='+encodeURIComponent(window.location.pathname)); return }
 
       const { data, error } = await supabase
         .from('bookings')

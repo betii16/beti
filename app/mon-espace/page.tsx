@@ -22,7 +22,7 @@ export default function ClientDashboard(){
   useEffect(()=>{load()},[])
   const load=async()=>{
     const{data:{user:u}}=await supabase.auth.getUser()
-    if(!u){router.push('/auth/login');return};setUser(u)
+    if(!u){router.push('/auth/login?next='+encodeURIComponent(window.location.pathname));return};setUser(u)
     const[{data:p},{data:bk}]=await Promise.all([
       supabase.from('profiles').select('*').eq('id',u.id).single(),
       supabase.from('bookings').select('*').eq('client_id',u.id).order('created_at',{ascending:false}).limit(20),

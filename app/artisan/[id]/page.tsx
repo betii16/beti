@@ -64,7 +64,7 @@ export default function ArtisanPage(){
   const [booking,setBooking]=useState(false)
   const contact=async(ty:"message"|"call")=>{
     setContactErr("")
-    if(!uid){router.push('/auth/login');return}
+    if(!uid){router.push('/auth/login?next='+encodeURIComponent(window.location.pathname));return}
     if(isDemoArtisan(id)){setContactErr(t('contact.demoProfile'));return}
     if(ty==='message'){setBooking(true);return}
     const res=await contactArtisan({clientId:uid,artisanId:id,category:a?.category,hourlyRate:a?.hourly_rate,type:ty})

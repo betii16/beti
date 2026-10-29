@@ -90,7 +90,7 @@ function MesAvisContent() {
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { router.push('/auth/login?next='+encodeURIComponent(window.location.pathname)); return }
       setUserId(user.id)
       // Vérifier que la réservation appartient au client ET est terminée
       if (bookingId) {
