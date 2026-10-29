@@ -20,6 +20,8 @@ const mono = Spline_Sans_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
+  weight: ['400', '500', '700'],
+  preload: false, // chiffres/labels secondaires : pas bloquant pour le premier rendu
 })
 
 const arabic = Noto_Sans_Arabic({
@@ -27,6 +29,7 @@ const arabic = Noto_Sans_Arabic({
   weight: ['300', '400', '600', '700'],
   variable: '--font-arabic',
   display: 'swap',
+  preload: false, // utilisée seulement en mode arabe : ne pas la précharger pour tous les visiteurs FR
 })
 import Navigation from '@/components/Navigation'
 import BottomTabBar from '@/components/BottomTabBar'
@@ -46,6 +49,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  themeColor: '#F0ECE3',
 }
 
 export const metadata: Metadata = {
@@ -60,18 +64,22 @@ export const metadata: Metadata = {
     'serrurerie alger', 'peintre alger', 'artisan domicile', 'service domicile algerie',
     'beti artisan', 'plombier oran', 'electricien constantine', 'artisan certifié algerie',
   ],
+  applicationName: 'BETI',
+  formatDetection: { telephone: false, email: false, address: false },
   robots: { index: true, follow: true },
+  // Pas d'url/canonical ici : le layout est hérité par toutes les pages et
+  // pointerait chacune vers l'accueil. L'URL est résolue par metadataBase.
   openGraph: {
-    type: 'website', locale: 'fr_DZ', url: 'https://beti-ten.vercel.app',
+    type: 'website', locale: 'fr_DZ',
     siteName: 'BETI',
     title: 'BETI — Artisans certifiés à domicile en Algérie',
-    description: 'Trouvez un artisan certifié près de chez vous. Paiement en cash.',
+    description: 'Trouvez un artisan certifié près de chez vous. Plombier, électricien, ménage : réservez en quelques minutes, paiement en cash.',
     // L'image est générée par app/opengraph-image.tsx (convention App Router).
   },
   twitter: {
     card: 'summary_large_image',
     title: 'BETI — Artisans certifiés à domicile en Algérie',
-    description: 'Trouvez un artisan certifié près de chez vous. Paiement en cash.',
+    description: 'Trouvez un artisan certifié près de chez vous. Plombier, électricien, ménage : réservez en quelques minutes, paiement en cash.',
   },
   verification: {
     google: 'WDYNC_syGCExgMflHe9Og6UkYB9yiS_CTn3U2vYRVqo',
@@ -88,7 +96,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
         <meta name="apple-mobile-web-app-title" content="BETI"/>
-        <meta name="theme-color" content="#F0ECE3"/>
         {/* Theme init BEFORE React — prevents flash. Défaut = clair (identité Chaux). */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){

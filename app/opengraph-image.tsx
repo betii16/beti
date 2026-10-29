@@ -8,12 +8,15 @@ export const runtime = 'edge'
 // quand un lien BETI est envoyé sur WhatsApp, Facebook, etc. (canal n°1 en
 // Algérie). Convention de fichier App Router : Next injecte automatiquement
 // les balises og:image / twitter:image correspondantes.
+// Charte « Chaux & Zellige » : fond chaux, encre bleu-nuit, bleu d'Alger, sans dégradé.
 
 export const alt = 'BETI — Artisans certifiés à domicile en Algérie'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default function OgImage() {
+  const INK = '#17242F'
+  const ACCENT = '#175CC4'
   return new ImageResponse(
     (
       <div
@@ -25,58 +28,34 @@ export default function OgImage() {
           alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '80px',
-          background: 'linear-gradient(135deg, #0b0b12 0%, #15152a 55%, #1c1640 100%)',
-          color: '#ffffff',
+          background: '#F0ECE3',
+          color: INK,
           fontFamily: 'sans-serif',
+          borderLeft: `24px solid ${ACCENT}`,
         }}
       >
-        <div
-          style={{
-            fontSize: 150,
-            fontWeight: 900,
-            letterSpacing: '-4px',
-            background: 'linear-gradient(135deg, #1E6FD6, #6BA3E6)',
-            backgroundClip: 'text',
-            color: 'transparent',
-            display: 'flex',
-          }}
-        >
+        <div style={{ fontSize: 170, fontWeight: 900, letterSpacing: '-5px', color: ACCENT, display: 'flex', lineHeight: 1 }}>
           BETI
         </div>
-        <div style={{ fontSize: 46, fontWeight: 700, marginTop: 8, color: '#e0dfe5', display: 'flex' }}>
+        <div style={{ fontSize: 58, fontWeight: 700, marginTop: 20, color: INK, display: 'flex' }}>
           Artisans certifiés à domicile
         </div>
-        <div style={{ fontSize: 32, marginTop: 14, color: '#8585a0', display: 'flex' }}>
+        <div style={{ fontSize: 34, marginTop: 16, color: '#4A5864', display: 'flex' }}>
           Plombier · Électricien · Ménage · Peinture · Serrurerie
         </div>
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 16,
             marginTop: 48,
-            padding: '14px 28px',
+            padding: '14px 30px',
             borderRadius: 999,
-            background: 'rgba(23,92,196,0.18)',
-            border: '1px solid rgba(23,92,196,0.45)',
-            fontSize: 30,
+            background: ACCENT,
+            fontSize: 32,
             fontWeight: 700,
-            color: '#c7d2fe',
+            color: '#FFFFFF',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              padding: '4px 14px',
-              borderRadius: 8,
-              background: '#175CC4',
-              color: '#ffffff',
-              fontSize: 26,
-              fontWeight: 900,
-            }}
-          >
-            DZ
-          </div>
           Partout en Algérie · Paiement en cash
         </div>
       </div>

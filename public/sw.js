@@ -12,7 +12,19 @@
  *  - Démarrage plus rapide sur réseau instable (secours instantané).
  */
 
-const VERSION = 'beti-v1'
+const VERSION = 'beti-v2'
+
+const PRIVATE_PREFIXES = [
+  '/api', '/auth', '/admin', '/artisan-dashboard', '/mon-espace', '/compte', '/parametres',
+  '/chat', '/facture', '/suivi', '/notifications', '/onboarding',
+]
+const PUBLIC_PREFIXES = ['/recherche', '/map', '/artisans', '/aide', '/cgu', '/confidentialite', '/mentions']
+const inPrefix = (url, list) => list.some((p) => url.pathname === p || url.pathname.startsWith(p + '/'))
+const isPrivate = (url) => inPrefix(url, PRIVATE_PREFIXES)
+const isPublicPage = (url) => url.pathname === '/' || inPrefix(url, PUBLIC_PREFIXES)
+const isStaticAsset = (url) =>
+  url.pathname.startsWith('/_next/static/') ||
+  /\.(?:png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/.test(url.pathname)
 const STATIC_CACHE = `${VERSION}-static`
 const RUNTIME_CACHE = `${VERSION}-runtime`
 
@@ -51,22 +63,31 @@ self.addEventListener('fetch', (event) => {
   // Supabase, SATIM, tuiles de carte, POST/auth… passent direct au réseau.
   if (request.method !== 'GET' || url.origin !== self.location.origin) return
 
-  // Navigations (changements de page) : réseau d'abord, secours = dernière
-  // page connue, sinon la coque '/'.
+  // SECURITE : jamais de cache pour l'auth, les donnees, l'espace prive, les
+  // requetes RSC/API. Elles passent TOUJOURS par le reseau (hors-ligne, elles
+  // echouent proprement au lieu d'afficher une session/donnee perimee).
+  if (isPrivate(url) || request.headers.get('RSC') || url.searchParams.has('_rsc')) return
+
+  // Navigations publiques : reseau d'abord, secours = derniere page publique
+  // connue, sinon la coque '/'.
   if (request.mode === 'navigate') {
+    const cacheable = isPublicPage(url)
     event.respondWith(
       fetch(request)
         .then((res) => {
-          const copy = res.clone()
-          caches.open(RUNTIME_CACHE).then((c) => c.put(request, copy)).catch(() => {})
+          if (cacheable && res.status === 200) {
+            const copy = res.clone()
+            caches.open(RUNTIME_CACHE).then((c) => c.put(request, copy)).catch(() => {})
+          }
           return res
         })
-        .catch(async () => (await caches.match(request)) || (await caches.match('/')))
+        .catch(async () => (cacheable && (await caches.match(request))) || (await caches.match('/')))
     )
     return
   }
 
-  // Assets statiques (JS, CSS, polices, images) : réseau d'abord puis cache.
+  // Assets statiques (JS, CSS, polices, images) : reseau d'abord puis cache.
+  if (!isStaticAsset(url)) return
   event.respondWith(
     fetch(request)
       .then((res) => {
