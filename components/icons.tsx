@@ -1,21 +1,22 @@
 // components/icons.tsx
-// Icônes de catégories (lucide-react) — remplace les emojis, partagé entre les pages.
+// Icônes de catégories BETI (voir CategoryGlyphs.tsx), partagées entre les pages.
 import {
-  Wrench, Zap, Sparkles, Truck, Leaf, Paintbrush, KeyRound, Monitor, Scissors,
-  type LucideIcon,
-} from 'lucide-react'
+  GlyphPlomberie, GlyphElectricite, GlyphMenage, GlyphDemenagement, GlyphJardinage,
+  GlyphPeinture, GlyphSerrurerie, GlyphInformatique, GlyphCoiffure, GlyphAutre,
+  type Glyph,
+} from './CategoryGlyphs'
 
-export const CATEGORY_ICON: Record<string, LucideIcon> = {
-  plomberie:    Wrench,
-  electricite:  Zap,
-  menage:       Sparkles,
-  demenagement: Truck,
-  jardinage:    Leaf,
-  peinture:     Paintbrush,
-  serrurerie:   KeyRound,
-  informatique: Monitor,
-  coiffure:     Scissors,
-  autre:        Sparkles,
+export const CATEGORY_ICON: Record<string, Glyph> = {
+  plomberie:    GlyphPlomberie,
+  electricite:  GlyphElectricite,
+  menage:       GlyphMenage,
+  demenagement: GlyphDemenagement,
+  jardinage:    GlyphJardinage,
+  peinture:     GlyphPeinture,
+  serrurerie:   GlyphSerrurerie,
+  informatique: GlyphInformatique,
+  coiffure:     GlyphCoiffure,
+  autre:        GlyphAutre,
 }
 
 // Palette de catégories « Chaux & Zellige » — UNE seule source de vérité
@@ -51,7 +52,7 @@ export function CategoryIcon({ id, size = 20, color, strokeWidth = 2, style }: {
   strokeWidth?: number
   style?: React.CSSProperties
 }) {
-  const Ic = CATEGORY_ICON[id] || Sparkles
+  const Ic = CATEGORY_ICON[id] || GlyphAutre
   return <Ic size={size} color={color} strokeWidth={strokeWidth} style={style} aria-hidden />
 }
 
