@@ -20,12 +20,7 @@ import {
   Map, MapMarker, MarkerContent, MarkerPopup, MapControls, MapRoute, useMap, type MapRef,
 } from '@/components/ui/mapcn-marker-popup'
 
-type ArtisanMarker = {
-  id: string; name: string; initials: string; avatar: string | null
-  category: string; rating: number; price: number; available: boolean
-  color: string; lat: number; lng: number
-  plan?: string | null; plan_until?: string | null
-}
+import { fetchArtisanMarkers, type ArtisanMarker } from '@/lib/artisanMarker'
 
 // Palette unique « Chaux & Zellige » (components/icons)
 const CAT_COLORS: Record<string, string> = CATEGORY_COLOR
@@ -79,6 +74,8 @@ export default function BetiMap({
   onSelect,
   onLocate,
   bottomInset = 0,
+  artisansData,
+  onRefresh,
 }: {
   trackingArtisanId?: string
   clientLat?: number
@@ -93,6 +90,10 @@ export default function BetiMap({
   onLocate?: (c: { longitude: number; latitude: number }) => void
   /** Hauteur (px) occupée en bas par le panneau, pour cadrer la sélection. */
   bottomInset?: number
+  /** Marqueurs déjà chargés par la page (évite une 2e requête identique). */
+  artisansData?: ArtisanMarker[]
+  /** Appelé sur un changement realtime quand la page fournit les données. */
+  onRefresh?: () => void
 }) {
   const { t, lang } = useLang()
   const theme = useBetiTheme()
@@ -106,7 +107,11 @@ export default function BetiMap({
       .catch(() => { if (!off) setStyles({}) }) // repli : styles CARTO d'origine
     return () => { off = true }
   }, [lang])
-  const [artisans, setArtisans] = useState<ArtisanMarker[]>([])
+  const [ownArtisans, setArtisans] = useState<ArtisanMarker[]>([])
+  const artisans = artisansData ?? ownArtisans
+  const onRefreshRef = useRef(onRefresh)
+  onRefreshRef.current = onRefresh
+  const external = artisansData !== undefined
 
   // Suivi
   const [puck, setPuck] = useState<{ lng: number; lat: number } | null>(null)
@@ -118,29 +123,12 @@ export default function BetiMap({
   // ── Charger artisans (avec avatar + plan) ──
   useEffect(() => {
     const load = async () => {
-      try {
-        const { data } = await supabase
-          .from('artisans')
-          .select('id, category, hourly_rate, is_available, rating_avg, lat, lng, plan, plan_until, profiles(full_name, avatar_url)')
-          .not('lat', 'is', null).not('lng', 'is', null)
-        if (data) {
-          // Paywall : hors période de lancement, on masque les non-abonnés.
-          setArtisans(data.filter((a: any) => isListed(a)).map((a: any) => ({
-            id: a.id,
-            name: a.profiles?.full_name || 'Artisan',
-            initials: (a.profiles?.full_name || 'A').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2),
-            avatar: a.profiles?.avatar_url || null,
-            category: a.category || 'autre',
-            rating: a.rating_avg || 0,
-            price: a.hourly_rate || 0,
-            available: a.is_available,
-            color: CAT_COLORS[a.category] || '#175CC4',
-            lat: a.lat, lng: a.lng, plan: a.plan, plan_until: a.plan_until,
-          })))
-        }
-      } catch { /* liste vide : la page affiche l'état d'erreur */ }
+      if (external) { onRefreshRef.current?.(); return }
+      // Suivi seul : on ne charge que l'artisan suivi (pas tout l'annuaire).
+      const rows = await fetchArtisanMarkers(showAllArtisans ? undefined : trackingArtisanId)
+      if (rows) setArtisans(rows)
     }
-    load()
+    if (!external) load()
     const channel = supabase.channel('artisans-map')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'artisans' }, load)
       .subscribe()

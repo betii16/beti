@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { haversineKm } from '@/lib/distance'
 import { contactArtisan, isDemoArtisan } from '@/lib/contactArtisan'
-import { fetchPlans, isListed } from '@/lib/subscription'
+import { fetchListingPlans, isListed } from '@/lib/subscription'
 import { artisanAvatar } from '@/lib/avatar'
 import BookingFlow from '@/components/BookingFlow'
 import { OtherCategorySearch } from '@/components/OtherCategory'
@@ -16,7 +16,7 @@ import MobileHome from '@/components/MobileHome'
 import { LogoMark } from '@/components/Logo'
 import CinematicGate from '@/components/cinematic/CinematicGate'
 
-type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string;phone?:string }
+type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string }
 type Review = { id:string;rating:number;comment:string|null;created_at:string;photos?:string[];profiles?:{full_name:string}|null }
 
 // Libellés/descriptions traduits au rendu via t('categories.*') et t('home.svc*')
@@ -88,14 +88,14 @@ export default function Home(){
     setLoading(true)
     try{const{data,error}=await supabase.rpc('get_nearby_artisans',{lat:loc.lat,lng:loc.lng,radius_km:50,category_filter:cat||null});if(!error&&data&&data.length>0){
       // Paywall : hors période de lancement, on masque les non-abonnés.
-      const plans=await fetchPlans((data as any[]).map(a=>a.artisan_id))
+      const plans=await fetchListingPlans((data as any[]).map(a=>a.artisan_id))
       setArtisans((data as Artisan[]).filter(a=>isListed({plan:plans[a.artisan_id]||'free'})));setLoading(false);return
     }}catch{}
-    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,lat,lng,profiles(full_name,avatar_url,phone)').limit(30)
+    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat&&cat!=='autre')q=q.eq('category',cat);if(cat==='autre'&&tags.length>0)q=q.overlaps('tags',tags)
     const{data}=await q
-    const plans=await fetchPlans((data||[]).map((a:any)=>a.id))
-    const real:Artisan[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||'',phone:a.profiles?.phone||null}))
+    const plans=await fetchListingPlans((data||[]).map((a:any)=>a.id))
+    const real:Artisan[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||''}))
     if(cat==='autre'){setArtisans(real);setLoading(false);return}
     // Jamais de faux profils : sans artisan réel, l'écran vide invite les artisans à s'inscrire.
     setArtisans(real);setLoading(false)
@@ -220,7 +220,7 @@ export default function Home(){
                 <div key={a.name} onClick={go} {...pressable(go)} className="board-row"
                   style={{display:'grid',gridTemplateColumns:'40px 1fr auto',alignItems:'center',gap:14,padding:'12px 18px',borderTop:i===0?'none':'1px solid var(--border)',cursor:'pointer'}}>
                   <div style={{position:'relative',width:40,height:40}}>
-                    <img src={artisanAvatar(null,a.name)} alt="" style={{width:40,height:40,borderRadius:'50%',objectFit:'cover',background:'var(--bg3)',border:`2px solid ${c}`}}/>
+                    <img src={artisanAvatar(null,a.name)} alt="" loading="lazy" decoding="async" width={40} height={40} style={{width:40,height:40,borderRadius:'50%',objectFit:'cover',background:'var(--bg3)',border:`2px solid ${c}`}}/>
                     <span style={{position:'absolute',insetInlineEnd:-2,bottom:-2,width:14,height:14,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg2)',border:`1px solid ${c}44`}}>
                       <CategoryIcon id={a.cat} size={9} color={c} strokeWidth={2.2}/>
                     </span>
@@ -307,7 +307,7 @@ export default function Home(){
 
                       {/* Bandeau teinté + avatar centré */}
                       <div style={{position:'relative',height:130,background:`linear-gradient(160deg, ${c}26, var(--bg2) 68%)`,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        <img src={artisanAvatar(a.avatar_url,a.artisan_id)} alt="" loading="lazy" style={{width:76,height:76,borderRadius:18,objectFit:'cover',background:'var(--bg3)',border:`3px solid ${c}`,boxShadow:`0 8px 24px -8px ${c}66`,zIndex:1}}/>
+                        <img src={artisanAvatar(a.avatar_url,a.artisan_id)} alt="" loading="lazy" decoding="async" width={76} height={76} style={{width:76,height:76,borderRadius:18,objectFit:'cover',background:'var(--bg3)',border:`3px solid ${c}`,boxShadow:`0 8px 24px -8px ${c}66`,zIndex:1}}/>
                         {/* Pastilles */}
                         <div style={{position:'absolute',top:12,insetInlineEnd:14}}>
                           {a.is_available
@@ -439,7 +439,7 @@ export default function Home(){
         <div onClick={()=>setSel(null)} style={{position:'absolute',inset:0,background:'var(--overlay)'}}/>
         <div className="detail-sheet" style={{position:'absolute',insetInlineEnd:0,top:0,bottom:0,width:'100%',maxWidth:440,background:'var(--bg)',borderInlineStart:'1px solid var(--border)',overflowY:'auto',animation:`${isAr?'slideInRtl':'slideIn'} 0.35s cubic-bezier(0.4,0,0.2,1)`}}>
           <div style={{padding:'22px 24px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:14}}>
-            <img src={artisanAvatar(sel.avatar_url,sel.artisan_id)} alt="" style={{width:56,height:56,borderRadius:16,objectFit:'cover',background:'var(--bg3)',border:`2px solid ${cc(sel.category)}`}}/>
+            <img src={artisanAvatar(sel.avatar_url,sel.artisan_id)} alt="" loading="lazy" decoding="async" width={56} height={56} style={{width:56,height:56,borderRadius:16,objectFit:'cover',background:'var(--bg3)',border:`2px solid ${cc(sel.category)}`}}/>
             <div style={{flex:1,minWidth:0}}><div style={{fontSize:18,fontWeight:800}}>{sel.full_name}</div><div style={{fontSize:12,color:categoryInk(sel.category),fontWeight:700,marginBottom:4}}>{cl(sel.category)}</div><div style={{display:'flex',alignItems:'center',gap:5}}><Stars r={sel.rating_avg} s={12}/><span className="num" style={{fontSize:12.5,fontWeight:700,color:'var(--laiton)'}}>{sel.rating_avg?.toFixed(1)}</span><span style={{fontSize:12,color:'var(--tx3)'}}>({sel.rating_count})</span></div></div>
             <button onClick={()=>setSel(null)} className="icon-btn" aria-label={isAr?'إغلاق':'Fermer'}><X size={20}/></button>
           </div>

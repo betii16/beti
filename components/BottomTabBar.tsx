@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, Search, Map, CalendarDays, User } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useNotifications } from '@/components/NotificationsProvider'
 import { useLang } from '@/lib/LangContext'
 
 // Routes plein écran où la barre gêne (clavier, flux dédiés)
@@ -18,33 +18,9 @@ export default function BottomTabBar() {
   const pathname = usePathname()
   const router = useRouter()
   const { t, isAr } = useLang()
-  const [role, setRole] = useState<'client' | 'artisan' | 'admin' | null>(null)
-  const [logged, setLogged] = useState(false)
-  const [notifCount, setNotifCount] = useState(0)
+  const { user, role, notifCount } = useNotifications()
+  const logged = !!user
   const [hidden, setHidden] = useState(true) // masqué au départ → glisse à l'entrée
-
-  useEffect(() => {
-    let alive = true
-    let channel: ReturnType<typeof supabase.channel> | null = null
-
-    const init = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!alive) return
-      if (!data.user) { setLogged(false); setRole(null); setNotifCount(0); return }
-      setLogged(true)
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
-      if (!alive) return
-      if (profile) setRole(profile.role)
-      const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', data.user.id).eq('is_read', false)
-      if (!alive) return
-      setNotifCount(count || 0)
-      channel = supabase.channel(`tab-notif-${data.user.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${data.user.id}` }, () => setNotifCount(p => p + 1))
-        .subscribe()
-    }
-    init()
-    return () => { alive = false; if (channel) supabase.removeChannel(channel) }
-  }, [pathname])
 
   // Entrée : glisse vers le haut juste après le montage
   useEffect(() => {

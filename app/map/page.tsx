@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
 import { contactArtisan } from '@/lib/contactArtisan'
-import { fetchPlans, isListed } from '@/lib/subscription'
+import { fetchArtisanMarkers, type ArtisanMarker } from '@/lib/artisanMarker'
 import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import { useRouter } from 'next/navigation'
@@ -43,7 +43,7 @@ export default function MapPage() {
   const [cat,setCat]=useState('')
   const [lat,setLat]=useState(36.7538)
   const [lng,setLng]=useState(3.0588)
-  const [artisans,setArtisans]=useState<Art[]>([])
+  const [markers,setMarkers]=useState<ArtisanMarker[]>([])
   const [loading,setLoading]=useState(true)
   const [loadFailed,setLoadFailed]=useState(false)
   const [sheetFull,setSheetFull]=useState(false)
@@ -63,7 +63,9 @@ export default function MapPage() {
     }
   },[])
 
-  useEffect(()=>{loadArtisans()},[lat,lng,cat])
+  useEffect(()=>{loadArtisans()},[])
+  // Distances et filtre de catégorie dérivés des marqueurs (pas de requête sur chaque déplacement/filtre).
+  const artisans=useMemo<Art[]>(()=>markers.filter(a=>!cat||a.category===cat).map(a=>({id:a.id,full_name:a.name,avatar_url:a.avatar,category:a.category,rating_avg:a.rating,rating_count:a.ratingCount||0,hourly_rate:a.price,distance_km:haversineKm(lat,lng,a.lat,a.lng),is_available:a.available,total_missions:a.missions||0})),[markers,cat,lat,lng])
 
   // Hauteur réelle du panneau : place les boutons de zoom juste au-dessus et cadre la sélection.
   useEffect(()=>{
@@ -83,20 +85,11 @@ export default function MapPage() {
     return()=>{mq.removeEventListener('change',sync);ro?.disconnect()}
   },[])
 
+  // Unique requête artisans : partagée avec BetiMap (qui ne requête plus lui-même).
   const loadArtisans=async()=>{
-    setLoading(true);setLoadFailed(false)
-    try{
-    let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,lat,lng,profiles(full_name,avatar_url)').limit(30)
-    if(cat)q=q.eq('category',cat)
-    const{data,error}=await q
-    if(error)throw error
-    // Paywall : hors période de lancement, on masque les non-abonnés.
-    const plans=await fetchPlans((data||[]).map((a:any)=>a.id))
-    const real:Art[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(lat,lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0}))
-    setArtisans(real)
-    }catch{
-      setArtisans([]);setLoadFailed(true)
-    }
+    setLoadFailed(false);setLoading(true)
+    const rows=await fetchArtisanMarkers()
+    if(rows){setMarkers(rows)}else{setMarkers([]);setLoadFailed(true)}
     setLoading(false)
   }
 
@@ -122,7 +115,7 @@ export default function MapPage() {
   const Avatar=({a,size}:{a:Art;size:number})=>{
     const c=cc(a.category)
     return a.avatar_url
-      ?<img src={a.avatar_url} alt="" style={{width:size,height:size,borderRadius:12,objectFit:'cover',border:`2px solid ${c}55`,flexShrink:0}}/>
+      ?<img src={a.avatar_url} alt="" width={size} height={size} loading="lazy" decoding="async" style={{width:size,height:size,borderRadius:12,objectFit:'cover',border:`2px solid ${c}55`,flexShrink:0}}/>
       :<div aria-hidden style={{width:size,height:size,borderRadius:12,background:`${c}1F`,border:`2px solid ${c}33`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.34,fontWeight:800,color:categoryInk(a.category),flexShrink:0}}>{initials(a.full_name)}</div>
   }
 
@@ -133,7 +126,7 @@ export default function MapPage() {
 
       {/* Carte plein écran */}
       <div className="map-canvas">
-        <BetiMap clientLat={lat} clientLng={lng} showAllArtisans={true} categoryFilter={cat}
+        <BetiMap artisansData={markers} onRefresh={loadArtisans} clientLat={lat} clientLng={lng} showAllArtisans={true} categoryFilter={cat}
           selectedId={selected?.id??null} onSelect={fromMap} bottomInset={wide?0:sheetH}
           onLocate={c=>{setLat(c.latitude);setLng(c.longitude)}}/>
       </div>
