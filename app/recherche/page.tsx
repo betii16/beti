@@ -449,7 +449,7 @@ export default function RecherchePage() {
                     style={{ padding: '18px 20px', display: 'flex', gap: 16, alignItems: 'center', animation: `fadeIn 0.3s ease ${Math.min(idx, 8) * 0.05}s both` }}
                     onClick={open}
                   >
-                    <img src={artisanAvatar(a.avatar_url, a.artisan_id)} alt="" loading="lazy" style={{ width: 60, height: 60, borderRadius: 16, objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${col}`, flexShrink: 0 }}/>
+                    <img src={artisanAvatar(a.avatar_url, a.artisan_id)} alt="" loading="lazy" decoding="async" width={60} height={60} style={{ width: 60, height: 60, borderRadius: 16, objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${col}`, flexShrink: 0 }}/>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)' }}>{a.full_name}</span>

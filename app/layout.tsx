@@ -26,7 +26,7 @@ const mono = Spline_Sans_Mono({
 
 const arabic = Noto_Sans_Arabic({
   subsets: ['arabic'],
-  weight: ['300', '400', '600', '700'],
+  weight: ['400', '700'],
   variable: '--font-arabic',
   display: 'swap',
   preload: false, // utilisée seulement en mode arabe : ne pas la précharger pour tous les visiteurs FR
@@ -35,11 +35,10 @@ import Navigation from '@/components/Navigation'
 import BottomTabBar from '@/components/BottomTabBar'
 import MobileHeader from '@/components/MobileHeader'
 import BackgroundMesh from '@/components/BackgroundMesh'
-import AlgeriaBackdrop from '@/components/AlgeriaBackdrop'
-import GlassHover from '@/components/GlassHover'
+import LazyChrome from '@/components/LazyChrome'
+import NotificationsProvider from '@/components/NotificationsProvider'
 import NativeBridge from '@/components/NativeBridge'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
-import AppIntro from '@/components/AppIntro'
 import { LangProvider } from '@/lib/LangContext'
 
 // Viewport « application » : pas de zoom pinch, couvre l'encoche iPhone
@@ -118,16 +117,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <BackgroundMesh/>
-        <AlgeriaBackdrop/>
-        <GlassHover/>
         <NativeBridge/>
         <ServiceWorkerRegister/>
         <LangProvider>
-          <AppIntro/>
-          <Navigation/>
-          <MobileHeader/>
-          {children}
-          <BottomTabBar/>
+          <NotificationsProvider>
+            <LazyChrome/>
+            <Navigation/>
+            <MobileHeader/>
+            {children}
+            <BottomTabBar/>
+          </NotificationsProvider>
         </LangProvider>
       </body>
     </html>

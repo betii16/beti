@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { ChevronLeft, Bell, Sun, Moon } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useNotifications } from '@/components/NotificationsProvider'
 import { useLang } from '@/lib/LangContext'
 import { LogoMark } from '@/components/Logo'
 
@@ -21,8 +21,8 @@ export default function MobileHeader() {
   const pathname = usePathname() || '/'
   const router = useRouter()
   const { lang, setLang, t, isAr } = useLang()
-  const [logged, setLogged] = useState(false)
-  const [notifCount, setNotifCount] = useState(0)
+  const { user, notifCount } = useNotifications()
+  const logged = !!user
   const [dark, setDark] = useState(true)
 
   useEffect(() => {
@@ -30,25 +30,6 @@ export default function MobileHeader() {
     const s = localStorage.getItem('beti-theme')
     setDark((applied || s) === 'dark')
   }, [])
-
-  useEffect(() => {
-    let alive = true
-    let channel: ReturnType<typeof supabase.channel> | null = null
-    const init = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!alive) return
-      if (!data.user) { setLogged(false); setNotifCount(0); return }
-      setLogged(true)
-      const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', data.user.id).eq('is_read', false)
-      if (!alive) return
-      setNotifCount(count || 0)
-      channel = supabase.channel(`mh-notif-${data.user.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${data.user.id}` }, () => setNotifCount(p => p + 1))
-        .subscribe()
-    }
-    init()
-    return () => { alive = false; if (channel) supabase.removeChannel(channel) }
-  }, [pathname])
 
   if (HIDDEN.some(p => pathname.startsWith(p))) return null
 

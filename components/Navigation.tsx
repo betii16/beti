@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useNotifications } from '@/components/NotificationsProvider'
 import { useLang } from '@/lib/LangContext'
 import { LogoMark } from '@/components/Logo'
 import { Sun, Moon } from 'lucide-react'
@@ -13,10 +14,8 @@ export default function Navigation() {
   const { lang, setLang, t, isAr } = useLang()
   const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [role, setRole] = useState<'client' | 'artisan' | 'admin' | null>(null)
+  const { user, role, notifCount } = useNotifications()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [notifCount, setNotifCount] = useState(0)
   const [dark, setDark] = useState(true)
 
   useEffect(() => {
@@ -35,46 +34,9 @@ export default function Navigation() {
   }
 
   useEffect(() => {
-    let alive = true
-    let notifChannel: ReturnType<typeof supabase.channel> | null = null
-
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll)
-
-    const stopChannel = () => {
-      if (notifChannel) { supabase.removeChannel(notifChannel); notifChannel = null }
-    }
-
-    // Applique l'état de session (connexion, déconnexion, rafraîchissement).
-    const applyUser = async (u: any) => {
-      stopChannel()
-      if (!alive) return
-      if (!u) { setUser(null); setRole(null); setNotifCount(0); return }
-      setUser(u)
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', u.id).single()
-      if (!alive) return
-      if (profile) setRole(profile.role)
-      const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', u.id).eq('is_read', false)
-      if (!alive) return
-      setNotifCount(count || 0)
-      notifChannel = supabase.channel(`nav-notif-${u.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, () => setNotifCount(p => p + 1))
-        .subscribe()
-    }
-
-    supabase.auth.getUser().then(({ data }) => applyUser(data.user))
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
-        // différé : pas d'appel Supabase directement dans le callback d'auth
-        setTimeout(() => applyUser(session?.user ?? null), 0)
-      }
-    })
-    return () => {
-      alive = false
-      window.removeEventListener('scroll', onScroll)
-      sub.subscription.unsubscribe()
-      stopChannel()
-    }
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   const getDashboardLink = () => role === 'artisan' ? '/artisan-dashboard' : role === 'admin' ? '/admin' : '/mon-espace'

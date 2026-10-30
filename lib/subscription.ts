@@ -82,6 +82,20 @@ export async function fetchPlans(ids: string[]): Promise<Record<string, 'free' |
   return map
 }
 
+/** Plans nécessaires au paywall d'un listing : pendant le lancement gratuit,
+ *  isListed() renvoie true pour tous, donc aucune requête n'est émise (une
+ *  requête réseau en moins, en série derrière la RPC). */
+export async function fetchListingPlans(): Promise<Record<string, 'free' | PlanId>> {
+  if (isLaunchFree()) return {}
+  // Tous les abonnés d'un coup : lançable EN PARALLÈLE de la requête principale
+  // (au lieu de l'attendre pour connaître les ids). Absent de la map = 'free'.
+  const map: Record<string, 'free' | PlanId> = {}
+  const { data, error } = await supabase.from('artisans').select('id, plan, plan_until').not('plan', 'is', null).neq('plan', 'free').limit(2000)
+  if (error || !data) return map
+  for (const row of data as { id: string; plan?: string | null; plan_until?: string | null }[]) map[row.id] = effectivePlan(row)
+  return map
+}
+
 /** Dernière demande/abonnement de l'artisan connecté (pour afficher son statut). */
 export async function getMyLatestSubscription(artisanId: string): Promise<Subscription | null> {
   const { data, error } = await supabase

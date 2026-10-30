@@ -251,7 +251,7 @@ export default function MobileHome({
                 }}>
                   {/* Avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <img src={artisanAvatar(a.avatar_url, a.artisan_id)} alt="" loading="lazy" style={{ width: 56, height: 56, borderRadius: 15, objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${c}` }}/>
+                    <img src={artisanAvatar(a.avatar_url, a.artisan_id)} alt="" loading="lazy" decoding="async" width={56} height={56} style={{ width: 56, height: 56, borderRadius: 15, objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${c}` }}/>
                     {a.is_available && <div aria-hidden style={{ position: 'absolute', bottom: -1, insetInlineEnd: -1, width: 13, height: 13, borderRadius: '50%', background: 'var(--success)', border: '2.5px solid var(--bg2)' }}/>}
                   </div>
 
