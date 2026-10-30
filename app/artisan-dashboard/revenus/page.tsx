@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { formatDA } from '@/lib/format'
 import { SkeletonPage } from '@/components/Skeleton'
 import { isPremium } from '@/lib/subscription'
 import { Lock } from 'lucide-react'
@@ -15,7 +16,7 @@ const KPI_VAL:React.CSSProperties={fontSize:'clamp(22px,6vw,28px)',lineHeight:1.
 
 export default function RevenusPage(){
   const router=useRouter()
-  const { t, isAr } = useLang()
+  const { t, isAr, lang } = useLang()
   const [user,setUser]=useState<any>(null)
   const [bookings,setBookings]=useState<any[]>([])
   const [loading,setLoading]=useState(true)
@@ -80,7 +81,7 @@ export default function RevenusPage(){
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:24}}>
           <div className="card" style={{padding:'16px 18px',borderInlineStart:'3px solid var(--success)'}}>
             <div style={KPI_LBL}>{t('revenus.totalRevenue')}</div>
-            <div className="num" style={KPI_VAL}>{totalRev.toLocaleString('fr-DZ')} DA</div>
+            <div className="num" style={KPI_VAL}>{formatDA(totalRev,lang,lang==='ar'?'0 دج':'0 DA')}</div>
           </div>
           <div className="card" style={{padding:'16px 18px',borderInlineStart:'3px solid var(--accent)'}}>
             <div style={KPI_LBL}>{t('revenus.missions')}</div>
@@ -88,7 +89,7 @@ export default function RevenusPage(){
           </div>
           <div className="card" style={{padding:'16px 18px',borderInlineStart:'3px solid var(--laiton)'}}>
             <div style={KPI_LBL}>{t('revenus.avgBasket')}</div>
-            <div className="num" style={KPI_VAL}>{avgRev.toLocaleString('fr-DZ')} DA</div>
+            <div className="num" style={KPI_VAL}>{formatDA(avgRev,lang,lang==='ar'?'0 دج':'0 DA')}</div>
           </div>
         </div>
 
@@ -96,9 +97,9 @@ export default function RevenusPage(){
         {premium?(
         <div className="card" style={{padding:'24px',marginBottom:24}}>
           <h2 style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:20}}>{t('revenus.chartTitle')}</h2>
-          <div role="img" aria-label={`${t('revenus.chartTitle')} : ${weekData.map(w=>`${w.label} ${w.value.toLocaleString('fr-DZ')} DA`).join(', ')}`} style={{display:'flex',alignItems:'flex-end',gap:'clamp(4px,1.5vw,8px)',height:150}}>
+          <div role="img" aria-label={`${t('revenus.chartTitle')} : ${weekData.map(w=>`${w.label} ${formatDA(w.value,lang,'0')}`).join(', ')}`} style={{display:'flex',alignItems:'flex-end',gap:'clamp(4px,1.5vw,8px)',height:150}}>
             {weekData.map((w,i)=>(
-              <div key={i} title={`${w.label} · ${w.value.toLocaleString('fr-DZ')} DA`} style={{flex:1,minWidth:0,height:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+              <div key={i} title={`${w.label} · ${formatDA(w.value,lang,'0')}`} style={{flex:1,minWidth:0,height:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
                 <div className="num" style={{fontSize:11,color:'var(--tx2)',minHeight:14}}>{w.value>0?`${(w.value/1000).toFixed(0)}k`:''}</div>
                 <div style={{flex:1,minHeight:0,width:'100%',display:'flex',alignItems:'flex-end'}}>
                   <div style={{width:'100%',background:'var(--accent)',borderRadius:'5px 5px 0 0',height:`${Math.max((w.value/maxWeek)*100,4)}%`,minHeight:4,transition:'height 0.5s ease',opacity:w.value>0?1:0.25}}/>
@@ -136,7 +137,7 @@ export default function RevenusPage(){
                     <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.title||t('revenus.missionFallback')} · {timeAgo(b.created_at)}</div>
                   </div>
                   <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,flexShrink:0}}>
-                    <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                    <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{formatDA(b.price_agreed,lang)}</div>
                     <span style={{padding:'3px 9px',borderRadius:'var(--r-chip)',fontSize:11,fontWeight:700,whiteSpace:'nowrap',...tone(sc)}}>{statusLabel(b.status)}</span>
                   </div>
                 </div>

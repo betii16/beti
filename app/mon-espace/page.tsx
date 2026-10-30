@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Clock, CheckCircle2, Star, Layers, Search, ClipboardList, Map, CalendarPlus } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
+import { formatDA } from '@/lib/format'
 
 // Couleur d'un statut (tokens) + pastille teintée lisible en clair comme en sombre.
 const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var(--accent)',in_progress:'var(--accent)',completed:'var(--success)',refused:'var(--danger)',cancelled:'var(--tx2)'}
@@ -13,7 +14,7 @@ const SCOPE_CSS=`.me-scope :is(a,button):focus-visible{outline:2px solid var(--a
 
 export default function ClientDashboard(){
   const router=useRouter()
-  const { t, isAr }=useLang()
+  const { t, isAr, lang }=useLang()
   const [user,setUser]=useState<any>(null)
   const [profile,setProfile]=useState<any>(null)
   const [bookings,setBookings]=useState<any[]>([])
@@ -122,7 +123,7 @@ export default function ClientDashboard(){
                       <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.title||t('mySpace.booking')} · {timeAgo(b.created_at)}</div>
                     </div>
                     <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,flexShrink:0}}>
-                      <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} {t('common.da')}</div>
+                      <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{formatDA(b.price_agreed,lang)}</div>
                       <span style={{padding:'3px 9px',borderRadius:'var(--r-chip)',fontSize:11,fontWeight:700,whiteSpace:'nowrap',...tone(sc)}}>{sl}</span>
                     </div>
                   </Link>

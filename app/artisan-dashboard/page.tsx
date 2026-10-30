@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { formatDA } from '@/lib/format'
 import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map, Sparkles } from 'lucide-react'
 import { isLaunchFree, SUB_FREE_UNTIL } from '@/lib/plans'
 import NavigateButton from '@/components/NavigateButton'
@@ -14,7 +15,7 @@ const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c}
 const SCOPE_CSS=`.dash-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
 export default function ArtisanDashboard(){
-  const router=useRouter();const{t,isAr}=useLang()
+  const router=useRouter();const{t,isAr,lang}=useLang()
   const [user,setUser]=useState<any>(null)
   const [profile,setProfile]=useState<any>(null)
   const [artisan,setArtisan]=useState<any>(null)
@@ -158,7 +159,7 @@ export default function ArtisanDashboard(){
         {/* KPIs */}
         <div className="stagger" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:12,marginBottom:28}}>
           {[
-            {label:t('dashExtra.kpiRevenue'),value:`${stats.revenue.toLocaleString('fr-DZ')} DA`,Icon:Wallet,color:'var(--success)',sub:t('dashExtra.kpiRevenueSub')},
+            {label:t('dashExtra.kpiRevenue'),value:formatDA(stats.revenue,lang,lang==='ar'?'0 دج':'0 DA'),Icon:Wallet,color:'var(--success)',sub:t('dashExtra.kpiRevenueSub')},
             {label:t('dashExtra.kpiMissions'),value:stats.missions,Icon:CheckCircle2,color:'var(--accent)',sub:t('dashExtra.kpiMissionsSub')},
             {label:t('dashExtra.kpiPending'),value:stats.pending,Icon:Clock,color:'var(--warning)',sub:t('dashExtra.kpiPendingSub')},
             {label:t('dashExtra.kpiRating'),value:stats.rating?`${stats.rating.toFixed(1)}/5`:'—',Icon:Star,color:'var(--laiton)',sub:`${stats.ratingCount} ${t('dashExtra.ratingUnit')}`},
@@ -187,7 +188,7 @@ export default function ArtisanDashboard(){
                     <div style={{fontSize:13.5,color:'var(--tx)'}}>{b.title||b.description||t('dashExtra.requestFallback')}</div>
                     <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:4}}>{timeAgo(b.created_at)} · {b.address||t('dashExtra.addrFallback')}</div>
                   </div>
-                  <div className="num" style={{fontSize:17,fontWeight:800,color:'var(--tx)',marginInlineEnd:8,whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                  <div className="num" style={{fontSize:17,fontWeight:800,color:'var(--tx)',marginInlineEnd:8,whiteSpace:'nowrap'}}>{formatDA(b.price_agreed,lang)}</div>
                   <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                     <button onClick={()=>respond(b.id,true)} className="btn-success btn-sm" style={{minHeight:44}}>{t('dashExtra.accept')}</button>
                     <button onClick={()=>respond(b.id,false)} className="btn-ghost btn-sm" style={{minHeight:44,color:'var(--danger)',borderColor:'color-mix(in srgb, var(--danger) 40%, transparent)'}}>{t('dashExtra.refuse')}</button>
@@ -223,7 +224,7 @@ export default function ArtisanDashboard(){
                   </div>
                   {(b.status==='confirmed'||b.status==='in_progress')&&<NavigateButton lat={b.lat} lng={b.lng} compact/>}
                   <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,flexShrink:0}}>
-                    <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{(b.price_agreed||0).toLocaleString('fr-DZ')} DA</div>
+                    <div className="num" style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap'}}>{formatDA(b.price_agreed,lang)}</div>
                     <span style={{padding:'3px 9px',borderRadius:'var(--r-chip)',fontSize:11,fontWeight:700,whiteSpace:'nowrap',...tone(sc)}}>{statusLabel(b.status)}</span>
                   </div>
                 </div>
