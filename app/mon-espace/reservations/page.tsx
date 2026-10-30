@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Package, MapPin, Calendar, Banknote, Star } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
+import { formatDA, hasAmount, categoryLabel } from '@/lib/format'
 
 type Booking = {
   id: string
@@ -43,7 +44,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function MesReservations() {
   const router = useRouter()
-  const { t, isAr } = useLang()
+  const { t, isAr, lang } = useLang()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all')
@@ -177,7 +178,7 @@ export default function MesReservations() {
                       <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--tx)', marginBottom: 4, overflowWrap: 'anywhere' }}>{b.title}</div>
                       {b.artisans && (
                         <div style={{ fontSize: 13, color: 'var(--tx2)', display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
-                          {b.artisans.full_name} · {t(`categories.${b.artisans.category}`)} · <Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/> {b.artisans.rating_avg?.toFixed(1) || '—'}
+                          {b.artisans.full_name} · {categoryLabel(b.artisans.category, lang)} · <Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/> {b.artisans.rating_avg?.toFixed(1) || '—'}
                         </div>
                       )}
                     </div>
@@ -188,7 +189,7 @@ export default function MesReservations() {
                     {[
                       { Icon: MapPin,   text: b.address },
                       { Icon: Calendar, text: fmt(b.scheduled_at) },
-                      { Icon: Banknote, text: b.price_agreed ? `${b.price_agreed} ${t('common.da')}${t('common.perHour')}` : t('mySpace.priceTbd') },
+                      { Icon: Banknote, text: hasAmount(b.price_agreed) ? `${formatDA(b.price_agreed, lang)}${t('common.perHour')}` : t('mySpace.priceTbd') },
                     ].map((item, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--tx2)', minWidth: 0 }}>
                         <item.Icon size={14} aria-hidden style={{ flexShrink: 0 }}/>{item.text}

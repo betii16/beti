@@ -89,6 +89,8 @@ export default function ArtisanProfileConfig() {
   const [phoneError, setPhoneError] = useState('')
   const [addressError, setAddressError] = useState('')
   const [isNewProfile, setIsNewProfile] = useState(false)
+  // Une ligne `artisans` existe déjà : le bouton dit « Enregistrer », jamais « Créer ».
+  const [hasRow, setHasRow] = useState(false)
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
@@ -156,6 +158,7 @@ export default function ArtisanProfileConfig() {
       setAvatarUrl(prof.avatar_url || null)
     }
 
+    setHasRow(!!art)
     if (art) {
       setPlan(effectivePlan(art) as 'free' | 'basic' | 'premium')
       setBio(art.bio || '')
@@ -299,6 +302,7 @@ export default function ArtisanProfileConfig() {
 
     setSaving(false)
     setSaved(true)
+    setHasRow(true)
     setIsNewProfile(false)
     if (!saveLat || !saveLng) {
       setSaveError(t('artisanProfile.warnNoGeo'))
@@ -385,7 +389,7 @@ export default function ArtisanProfileConfig() {
       `}</style>
 
       <div className="prof-scope" style={{ minHeight: '100vh', paddingTop: 64, direction: isAr ? 'rtl' : 'ltr' }}>
-        <div className="page-x" style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 200px' }}>
+        <div className="page-x" style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 280px' }}>
 
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28 }}>
@@ -841,7 +845,7 @@ export default function ArtisanProfileConfig() {
               <button onClick={handleSave} disabled={saving} aria-live="polite"
                 className={saved ? 'btn-success btn-block btn-lg' : 'btn-primary btn-block btn-lg'}
               >
-                {saving ? t('artisanProfile.saving') : saved ? t('artisanProfile.savedMsg') : isNewProfile ? t('artisanProfile.createBtn') : t('artisanProfile.saveBtn')}
+                {saving ? t('artisanProfile.saving') : saved ? t('artisanProfile.savedMsg') : !hasRow ? t('artisanProfile.createBtn') : t('artisanProfile.saveBtn')}
               </button>
             </div>
           </div>

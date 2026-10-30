@@ -1183,6 +1183,16 @@ export const translations = {
     cancel:        { fr: 'Annuler', ar: 'إلغاء' },
   },
 
+  // ── QA espaces connectés ──────────────────────────────────────
+  cxq: {
+    catOther:     { fr: 'Autre',                                ar: 'أخرى'                        },
+    invNotDone:   { fr: "La mission n'est pas encore terminée", ar: 'لم تكتمل المهمة بعد'          },
+    invNotFound:  { fr: 'Facture introuvable',                  ar: 'الفاتورة غير موجودة'          },
+    invHint:      { fr: 'La facture est disponible une fois la mission terminée et confirmée par le client.', ar: 'تتوفر الفاتورة بعد اكتمال المهمة وتأكيدها من العميل.' },
+    back:         { fr: 'Retour',                               ar: 'رجوع'                         },
+    priceNone:    { fr: 'Tarif à définir',                      ar: 'السعر يُحدد لاحقاً'           },
+  },
+
 } as const
 
 // ── Helper pour récupérer une traduction ──────────────────────────

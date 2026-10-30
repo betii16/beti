@@ -8,6 +8,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fetchPhones } from '@/lib/phones'
 import { SkeletonPage } from '@/components/Skeleton'
+import { useLang } from '@/lib/LangContext'
+import { formatDA } from '@/lib/format'
 import { AlertTriangle, Banknote, Check, ArrowLeft, Printer } from 'lucide-react'
 function pad(n: number) { return String(n).padStart(2, '0') }
 
@@ -24,6 +26,7 @@ function generateFactureNumber(bookingId: string, date: string) {
 export default function FacturePage() {
   const { bookingId } = useParams()
   const router = useRouter()
+  const { t, isAr } = useLang()
   const [booking, setBooking] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -43,8 +46,8 @@ export default function FacturePage() {
         .eq('id', bookingId)
         .single()
 
-      if (error || !data) { setError('Facture introuvable'); setLoading(false); return }
-      if (data.status !== 'completed') { setError("La mission n'est pas encore terminée"); setLoading(false); return }
+      if (error || !data) { setError('cxq.invNotFound'); setLoading(false); return }
+      if (data.status !== 'completed') { setError('cxq.invNotDone'); setLoading(false); return }
       // bookings.artisan_id référence profiles : la fiche métier est lue à part.
       const { data: art } = await supabase.from('artisans').select('id, category, hourly_rate').eq('id', data.artisan_id).maybeSingle()
       const ph = await fetchPhones([data.client_id, data.artisan_id])
@@ -61,12 +64,12 @@ export default function FacturePage() {
   if (loading) return <SkeletonPage rows={4} paddingTop={48} />
 
   if (error) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div dir={isAr ? 'rtl' : 'ltr'} lang={isAr ? 'ar' : 'fr'} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div role="alert" className="card" style={{ maxWidth: 420, width: '100%', padding: '28px 22px', textAlign: 'center' }}>
         <div aria-hidden style={{ width: 52, height: 52, borderRadius: 14, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)', background: 'color-mix(in srgb, var(--danger) 11%, transparent)' }}><AlertTriangle size={24}/></div>
-        <div style={{ fontSize: 17, color: 'var(--tx)', fontWeight: 800, marginBottom: 8 }}>{error}</div>
-        <p style={{ fontSize: 14, color: 'var(--tx2)', lineHeight: 1.55, marginBottom: 20 }}>La facture est disponible une fois la mission terminée et confirmée par le client.</p>
-        <button onClick={() => router.back()} className="btn-primary" style={{ minHeight: 44 }}><ArrowLeft size={16} aria-hidden/> Retour</button>
+        <div style={{ fontSize: 17, color: 'var(--tx)', fontWeight: 800, marginBottom: 8 }}>{t(error)}</div>
+        <p style={{ fontSize: 14, color: 'var(--tx2)', lineHeight: 1.55, marginBottom: 20 }}>{t('cxq.invHint')}</p>
+        <button onClick={() => router.back()} className="btn-primary" style={{ minHeight: 44 }}><ArrowLeft size={16} aria-hidden style={{ transform: isAr ? 'scaleX(-1)' : undefined }}/> {t('cxq.back')}</button>
       </div>
     </div>
   )
@@ -313,12 +316,22 @@ export default function FacturePage() {
         @media print {
           html, body { background: #fff !important; }
           .fac-bar { display: none !important; }
-          .fac-wrap { padding: 0 !important; }
+          /* Chrome du site (navigation, barre d'onglets, en-tête mobile) : jamais sur le papier */
+          nav, header, .mobile-only, .desktop-only, .beti-nav, [role="dialog"], [aria-live] { display: none !important; }
+          body { padding-top: 0 !important; }
+          .fac-wrap { padding: 0 !important; display: block !important; }
           .invoice {
             box-shadow: none !important;
+            border-radius: 0 !important;
             width: 100% !important;
+            min-height: 0 !important;
             padding: 12mm 16mm !important;
           }
+          .inv-table-wrap { overflow: visible !important; }
+          .inv-table { min-width: 0 !important; page-break-inside: avoid; break-inside: avoid; }
+          .inv-table tr, .inv-totals, .inv-payment, .inv-footer, .inv-parties { page-break-inside: avoid; break-inside: avoid; }
+          .inv-table thead { display: table-header-group; }
+          .invoice, .invoice * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
           @page {
             size: A4;
@@ -410,16 +423,16 @@ export default function FacturePage() {
                 </td>
                 <td style={{ color: '#55636D' }}>{formatDate(booking.scheduled_at || booking.created_at)}</td>
                 <td style={{ color: '#55636D' }}>{hours}h</td>
-                <td style={{ color: '#55636D', whiteSpace: 'nowrap' }}>{hourlyRate.toLocaleString('fr-DZ')} DA/h</td>
-                <td style={{ fontWeight: 600, color: '#17242F', whiteSpace: 'nowrap' }}>{subtotal.toLocaleString('fr-DZ')} DA</td>
+                <td style={{ color: '#55636D', whiteSpace: 'nowrap' }}>{formatDA(hourlyRate, 'fr', '0 DA')}/h</td>
+                <td style={{ fontWeight: 600, color: '#17242F', whiteSpace: 'nowrap' }}>{formatDA(subtotal, 'fr', '0 DA')}</td>
               </tr>
               {travelFee > 0 && (
                 <tr>
                   <td>Frais de déplacement</td>
                   <td>—</td>
                   <td>—</td>
-                  <td>{travelFee.toLocaleString('fr-DZ')} DA</td>
-                  <td style={{ fontWeight: 600 }}>{travelFee.toLocaleString('fr-DZ')} DA</td>
+                  <td>{formatDA(travelFee, 'fr', '0 DA')}</td>
+                  <td style={{ fontWeight: 600 }}>{formatDA(travelFee, 'fr', '0 DA')}</td>
                 </tr>
               )}
             </tbody>
@@ -430,7 +443,7 @@ export default function FacturePage() {
             <div className="inv-totals-box">
               <div className="inv-total-row">
                 <span>Sous-total</span>
-                <span>{subtotal.toLocaleString('fr-DZ')} DA</span>
+                <span>{formatDA(subtotal, 'fr', '0 DA')}</span>
               </div>
               <div className="inv-total-row">
                 <span>TVA (exonéré)</span>
@@ -439,12 +452,12 @@ export default function FacturePage() {
               {travelFee > 0 && (
                 <div className="inv-total-row">
                   <span>Frais déplacement</span>
-                  <span>{travelFee.toLocaleString('fr-DZ')} DA</span>
+                  <span>{formatDA(travelFee, 'fr', '0 DA')}</span>
                 </div>
               )}
               <div className="inv-total-final">
                 <span>TOTAL TTC</span>
-                <span className="amount">{total.toLocaleString('fr-DZ')} DA</span>
+                <span className="amount">{formatDA(total, 'fr', '0 DA')}</span>
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fetchPhones } from '@/lib/phones'
 import { SkeletonPage } from '@/components/Skeleton'
+import { formatDA, categoryLabel } from '@/lib/format'
 import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock } from 'lucide-react'
 
 type Tab = 'overview' | 'artisans' | 'bookings' | 'users' | 'reviews' | 'subscriptions'
@@ -109,6 +110,8 @@ function StatusBadge({ status }: { status: string }) {
 // tableaux défilables horizontalement au lieu d'écraser les colonnes.
 const ADMIN_CSS = `
 .adm{display:flex;min-height:100vh;padding-top:64px}
+.adm-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){.adm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .adm-aside{width:220px;border-inline-end:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);flex-shrink:0;background:var(--bg)}
 .adm-nav{padding:16px 12px;flex:1;display:flex;flex-direction:column;gap:4px}
 .adm-nav-btn{width:100%;min-height:42px;padding:10px 12px;display:flex;align-items:center;gap:10px;background:transparent;border:1px solid transparent;border-radius:var(--r-btn);cursor:pointer;color:var(--tx2);font-size:14px;font-weight:500;text-align:start;white-space:nowrap;transition:background .15s,color .15s}
@@ -362,7 +365,7 @@ export default function AdminDashboard() {
     <>
       <style>{ADMIN_CSS}</style>
 
-      <div className="adm" dir="ltr">
+      <div className="adm" dir="ltr" lang="fr">
 
         {/* ── Sidebar ── */}
         <aside className="adm-aside">
@@ -444,7 +447,7 @@ export default function AdminDashboard() {
                           <tr key={s.id}>
                             <td style={{ fontWeight: 700 }}>{s.profiles?.full_name || '—'}<div style={{ fontSize: 12.5, color: 'var(--tx2)', fontWeight: 400 }}>{s.profiles?.phone || ''}</div></td>
                             <td>{s.plan === 'premium' ? 'Premium' : 'Basic'} · {s.cycle === 'yearly' ? 'Annuel' : 'Mensuel'}</td>
-                            <td className="num num-cell">{(s.amount || 0).toLocaleString('fr-DZ')} DA</td>
+                            <td className="num num-cell">{formatDA(s.amount, 'fr')}</td>
                             <td className="muted mono">{s.payment_ref || '—'}</td>
                             <td className="muted">{formatDate(s.created_at)}</td>
                             <td><StatusBadge status={s.status} /></td>
@@ -469,9 +472,9 @@ export default function AdminDashboard() {
             {tab === 'overview' && (
               <div style={{ animation: 'admFadeUp 0.4s ease' }}>
                 {/* Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
+                <div className="adm-stats" style={{ display: 'grid', gap: 12, marginBottom: 28 }}>
                   {[
-                    { label: 'Revenus total', value: `${stats.revenue.toLocaleString('fr-DZ')} DA`, Icon: Wallet, color: 'var(--success)' },
+                    { label: 'Revenus total', value: formatDA(stats.revenue, 'fr', '0 DA'), Icon: Wallet, color: 'var(--success)' },
                     { label: 'Réservations', value: stats.totalBookings.toString(), Icon: ClipboardList, color: 'var(--accent)', sub: `${stats.completedBookings} terminées` },
                     { label: 'Utilisateurs', value: stats.totalUsers.toString(), Icon: User, color: 'var(--accent)' },
                     { label: 'Artisans', value: stats.totalArtisans.toString(), Icon: HardHat, color: 'var(--zellige)', sub: `${stats.activeArtisans} actifs` },
@@ -508,7 +511,7 @@ export default function AdminDashboard() {
                             <td style={{ fontWeight: 700 }}>{b.client?.full_name || '—'}</td>
                             <td>{b.artisan?.full_name || '—'}</td>
                             <td>{b.title}</td>
-                            <td className="num num-cell">{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
+                            <td className="num num-cell">{formatDA(b.price_agreed, 'fr')}</td>
                             <td className="muted">{formatDate(b.scheduled_at)}</td>
                             <td>
                               <div style={{ display: 'flex', gap: 6 }}>
@@ -547,7 +550,7 @@ export default function AdminDashboard() {
                               <span style={{ fontWeight: 800 }}>{a.profiles?.full_name || '—'}</span>
                             </div>
                           </td>
-                          <td>{a.category}</td>
+                          <td>{categoryLabel(a.category, 'fr')}</td>
                           <td>{a.location_city || '—'}</td>
                           <td className={a.rating_avg > 0 ? 'num' : 'muted'}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/>{a.rating_avg.toFixed(1)}</span> : '—'}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'pending'}/></td>
@@ -591,9 +594,9 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                           </td>
-                          <td>{a.category}</td>
+                          <td>{categoryLabel(a.category, 'fr')}</td>
                           <td>{a.location_city || '—'}</td>
-                          <td className="num num-cell">{(a.hourly_rate || 0).toLocaleString('fr-DZ')} DA</td>
+                          <td className="num num-cell">{formatDA(a.hourly_rate, 'fr')}</td>
                           <td className={a.rating_avg > 0 ? 'num' : 'muted'} style={{ whiteSpace: 'nowrap' }}>{a.rating_avg > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Star size={12} fill="var(--laiton)" strokeWidth={0} aria-hidden/>{a.rating_avg.toFixed(1)} <span style={{ color: 'var(--tx2)' }}>({a.rating_count})</span></span> : '—'}</td>
                           <td className="num">{a.total_missions || 0}</td>
                           <td><StatusBadge status={a.is_available ? 'active' : 'suspended'}/></td>
@@ -647,7 +650,7 @@ export default function AdminDashboard() {
                           <td style={{ fontWeight: 700 }}>{b.client?.full_name || '—'}</td>
                           <td>{b.artisan?.full_name || '—'}</td>
                           <td>{b.title}</td>
-                          <td className="num num-cell">{(b.price_agreed || 0).toLocaleString('fr-DZ')} DA</td>
+                          <td className="num num-cell">{formatDA(b.price_agreed, 'fr')}</td>
                           <td className="muted">{formatDate(b.scheduled_at)}</td>
                           <td><StatusBadge status={b.status}/></td>
                           <td>
