@@ -1,13 +1,13 @@
 // components/Logo.tsx
-// Marque BETI (charte officielle) : symbole « toit / maison » + lettre B.
+// Marque BETI (charte officielle) : symbole « maison » + lettre B + étoile zellige laiton.
 // Logo réel extrait de la charte, détouré sur fond transparent
-//   public/beti-logo.svg        → marque bleu d'Alger (vectorielle ; .png 756x852 pour les usages hors site) (éclaircie en thème sombre via .beti-logo-mark)
+//   public/beti-logo.svg        → marque bleu d'Alger (vectorielle ; .png 800x832 pour les usages hors site) (éclaircie en thème sombre via .beti-logo-mark)
 //   public/beti-logo-white.svg  → marque blanche (pour badges sur fond accent)
 //
 //   <LogoMark/>  → marque seule (bleu d'Alger par défaut, ou variant="white")
 //   <Logo/>      → badge « icône d'application » : carré dégradé + marque blanche
 
-const RATIO = 213 / 189 // hauteur / largeur du PNG source
+const RATIO = 208 / 200 // hauteur / largeur du SVG (viewBox 200x208)
 
 export function LogoMark({
   size = 28,
