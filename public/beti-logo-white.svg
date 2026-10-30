@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 189 213" width="189" height="213" role="img" aria-label="BETI">
-  <g fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 96 L94.5 28 L173 96"/>
-    <path d="M62 105 V196"/>
-    <path d="M62 105 H105 A26.5 26.5 0 0 1 105 158 H62"/>
-    <path d="M62 158 H112 A19 19 0 0 1 112 196 H62"/>
-  </g>
-  <rect x="132" y="21" width="22" height="22" rx="4" transform="rotate(45 143 32)" fill="#FFFFFF"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="28 24 200 208" width="200" height="208" role="img" aria-label="BETI"><defs></defs><mask id="m"><rect x="0" y="0" width="256" height="256" fill="#fff"/><path d="M97 122H129a19 19 0 0 1 0 38H97M129 160H141a19 19 0 0 1 0 38H97V122" fill="none" stroke="#000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/><path d="M128.00 56.00L132.78 66.45L143.56 62.44L139.55 73.22L150.00 78.00L139.55 82.78L143.56 93.56L132.78 89.55L128.00 100.00L123.22 89.55L112.44 93.56L116.45 82.78L106.00 78.00L116.45 73.22L112.44 62.44L123.22 66.45Z" fill="#000"/></mask><path mask="url(#m)" d="M128 34L218 106V222H38V106Z" fill="#fff" stroke="#fff" stroke-width="20" stroke-linejoin="round"/></svg>
