@@ -86,15 +86,16 @@ export default function Home(){
   const loadA=async()=>{
     if(cat==='autre'&&tags.length===0){setArtisans([]);setLoading(false);return}
     setLoading(true)
+    // Plans (paywall) demandés en parallèle de la RPC, pas à sa suite.
+    const plansP=fetchListingPlans().catch(()=>({}as Record<string,'free'|'basic'|'premium'>))
     try{const{data,error}=await supabase.rpc('get_nearby_artisans',{lat:loc.lat,lng:loc.lng,radius_km:50,category_filter:cat||null});if(!error&&data&&data.length>0){
       // Paywall : hors période de lancement, on masque les non-abonnés.
-      const plans=await fetchListingPlans((data as any[]).map(a=>a.artisan_id))
+      const plans=await plansP
       setArtisans((data as Artisan[]).filter(a=>isListed({plan:plans[a.artisan_id]||'free'})));setLoading(false);return
     }}catch{}
     let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat&&cat!=='autre')q=q.eq('category',cat);if(cat==='autre'&&tags.length>0)q=q.overlaps('tags',tags)
-    const{data}=await q
-    const plans=await fetchListingPlans((data||[]).map((a:any)=>a.id))
+    const[{data},plans]=await Promise.all([q,plansP])
     const real:Artisan[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||''}))
     if(cat==='autre'){setArtisans(real);setLoading(false);return}
     // Jamais de faux profils : sans artisan réel, l'écran vide invite les artisans à s'inscrire.
