@@ -202,37 +202,36 @@ export default function Home(){
               </div>
             </div>
 
-            {/* Registre « en ce moment » — bordé, sans ombre ni coins ronds : un
-                tableau d'atelier, pas une carte glossy. */}
+            {/* Aperçu des VRAIS artisans chargés par la page ; jamais de profils fictifs.
+                Sans artisan réel : invitation aux artisans à s'inscrire. */}
             <div style={{border:'1px solid var(--border2)',background:'var(--bg2)',borderRadius:4}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px',borderBottom:'1px solid var(--border2)'}}>
-                <span className="mono" style={{fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--tx2)'}}>{t('home.heroBoard')} · Alger</span>
-                <span style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:11,color:'var(--success)',fontWeight:600}}>
-                  <span className="anim-pulse" style={{width:7,height:7,borderRadius:'50%',background:'var(--success)'}}/>live
-                </span>
+                <span className="mono" style={{fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--tx2)'}}>{t('home.artisansTag')}</span>
               </div>
-              {[
-                {name:'Karim B.',cat:'plomberie',zone:'Bab El Oued',r:4.9},
-                {name:'Amina K.',cat:'menage',zone:'Hydra',r:5.0},
-                {name:'Sofiane A.',cat:'electricite',zone:'Kouba',r:4.8},
-                {name:'Riad H.',cat:'serrurerie',zone:'El Biar',r:4.6},
-                {name:'Lina H.',cat:'coiffure',zone:'Belouizdad',r:4.9},
-              ].map((a,i)=>{const c=cc(a.cat);const go=()=>{setCat(a.cat);document.getElementById('artisans')?.scrollIntoView({behavior:'smooth'})};return(
-                <div key={a.name} onClick={go} {...pressable(go)} className="board-row"
+              {artisans.length===0?(
+                <div style={{padding:'28px 18px',textAlign:'center'}}>
+                  <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',marginBottom:6}}>{loading?t('home.searching'):t('map2.emptyTitle')}</div>
+                  {!loading&&<>
+                    <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.5,marginBottom:14}}>{t('map2.emptySub')}</div>
+                    <a href="/auth/signup?role=artisan" className="btn-primary">{t('mhome.ctaArtisan')}</a>
+                  </>}
+                </div>
+              ):artisans.slice(0,5).map((a,i)=>{const c=cc(a.category);const go=()=>{setSel(a);void openA(a)};return(
+                <div key={a.artisan_id} onClick={go} {...pressable(go)} className="board-row"
                   style={{display:'grid',gridTemplateColumns:'40px 1fr auto',alignItems:'center',gap:14,padding:'12px 18px',borderTop:i===0?'none':'1px solid var(--border)',cursor:'pointer'}}>
                   <div style={{position:'relative',width:40,height:40}}>
-                    <img src={artisanAvatar(null,a.name)} alt="" loading="lazy" decoding="async" width={40} height={40} style={{width:40,height:40,borderRadius:'50%',objectFit:'cover',background:'var(--bg3)',border:`2px solid ${c}`}}/>
+                    <img src={artisanAvatar(a.avatar_url,a.full_name)} alt="" width={40} height={40} decoding="async" style={{width:40,height:40,borderRadius:'50%',objectFit:'cover',background:'var(--bg3)',border:`2px solid ${c}`}}/>
                     <span style={{position:'absolute',insetInlineEnd:-2,bottom:-2,width:14,height:14,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg2)',border:`1px solid ${c}44`}}>
-                      <CategoryIcon id={a.cat} size={9} color={c} strokeWidth={2.2}/>
+                      <CategoryIcon id={a.category} size={9} color={c} strokeWidth={2.2}/>
                     </span>
                   </div>
                   <div style={{minWidth:0}}>
-                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.name} <span style={{color:'var(--tx3)',fontWeight:400}}>· {cl(a.cat)}</span></div>
-                    <div style={{fontSize:12,color:'var(--tx2)'}}>{a.zone}</div>
+                    <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.full_name} <span style={{color:'var(--tx3)',fontWeight:400}}>· {cl(a.category)}</span></div>
+                    {a.distance_km!=null&&<div style={{fontSize:12,color:'var(--tx2)'}}>{a.distance_km.toFixed(1)} km</div>}
                   </div>
                   <div style={{textAlign:'end'}}>
-                    <div className="mono" style={{fontSize:13,fontWeight:600,color:'var(--laiton)'}}>★ {a.r.toFixed(1)}</div>
-                    <div className="mono" style={{fontSize:10,letterSpacing:'0.06em',color:'var(--success)',textTransform:'uppercase'}}>{t('home.heroDispo')}</div>
+                    {a.rating_count>0?<div className="mono" style={{fontSize:13,fontWeight:600,color:'var(--laiton)'}}>★ {a.rating_avg.toFixed(1)}</div>:<div className="mono" style={{fontSize:11,color:'var(--tx2)'}}>{t('cxs.newArtisan')}</div>}
+                    {a.is_available&&<div className="mono" style={{fontSize:10,letterSpacing:'0.06em',color:'var(--success)',textTransform:'uppercase'}}>{t('home.heroDispo')}</div>}
                   </div>
                 </div>
               )})}
