@@ -2,13 +2,33 @@
 // Sitemap XML dynamique — soumis à Google Search Console
 
 import { MetadataRoute } from 'next'
+import { SITE_URL } from '@/lib/site'
+
+export const revalidate = 3600
 
 // Doivent rester identiques aux clés WILAYAS / CATEGORIES de app/artisans/[wilaya]/[category]/page.tsx
 const SERVICES = ['plomberie','electricite','menage','demenagement','jardinage','peinture','serrurerie','informatique','coiffure']
 const VILLES   = ['alger','oran','constantine','annaba','blida','batna','setif','tizi-ouzou','bejaia','tlemcen','sidi-bel-abbes','biskra','ouargla','boumerdes','tipaza']
-const BASE     = 'https://beti-ten.vercel.app'
+const BASE     = SITE_URL
 
-export default function sitemap(): MetadataRoute.Sitemap {
+async function artisanPages(now: Date): Promise<MetadataRoute.Sitemap> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return []
+  try {
+    const res = await fetch(`${url}/rest/v1/artisans?select=id&limit=1000`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const rows: { id: string }[] = await res.json()
+    return rows.filter((r) => r?.id).map((r) => ({
+      url: `${BASE}/artisan/${r.id}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.6,
+    }))
+  } catch { return [] }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
 
   // Pages principales
@@ -33,5 +53,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
 
-  return [...mainPages, ...seoPages]
+  return [...mainPages, ...seoPages, ...(await artisanPages(now))]
 }

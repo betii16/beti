@@ -12,7 +12,24 @@
  *  - Démarrage plus rapide sur réseau instable (secours instantané).
  */
 
-const VERSION = 'beti-v2'
+const VERSION = 'beti-v3'
+const NET_TIMEOUT_MS = 3000
+const RUNTIME_MAX = 60
+
+// Reseau avec delai max : au-dela, on rejette pour retomber sur le cache.
+const timedFetch = (request) =>
+  Promise.race([
+    fetch(request),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), NET_TIMEOUT_MS)),
+  ])
+
+// Runtime cache borne : on supprime les plus anciennes entrees au-dela de RUNTIME_MAX.
+const putRuntime = (request, res) =>
+  caches.open(RUNTIME_CACHE).then(async (c) => {
+    await c.put(request, res)
+    const keys = await c.keys()
+    for (let i = 0; i < keys.length - RUNTIME_MAX; i++) await c.delete(keys[i])
+  }).catch(() => {})
 
 const PRIVATE_PREFIXES = [
   '/api', '/auth', '/admin', '/artisan-dashboard', '/mon-espace', '/compte', '/parametres',
@@ -73,12 +90,9 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     const cacheable = isPublicPage(url)
     event.respondWith(
-      fetch(request)
+      timedFetch(request)
         .then((res) => {
-          if (cacheable && res.status === 200) {
-            const copy = res.clone()
-            caches.open(RUNTIME_CACHE).then((c) => c.put(request, copy)).catch(() => {})
-          }
+          if (cacheable && res.status === 200) putRuntime(request, res.clone())
           return res
         })
         .catch(async () => (cacheable && (await caches.match(request))) || (await caches.match('/')))
@@ -89,12 +103,9 @@ self.addEventListener('fetch', (event) => {
   // Assets statiques (JS, CSS, polices, images) : reseau d'abord puis cache.
   if (!isStaticAsset(url)) return
   event.respondWith(
-    fetch(request)
+    timedFetch(request)
       .then((res) => {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone()
-          caches.open(RUNTIME_CACHE).then((c) => c.put(request, copy)).catch(() => {})
-        }
+        if (res && res.status === 200 && res.type === 'basic') putRuntime(request, res.clone())
         return res
       })
       .catch(() => caches.match(request))
