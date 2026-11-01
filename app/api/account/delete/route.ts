@@ -9,6 +9,7 @@
 
 import { NextResponse } from 'next/server'
 import { getAdminClient } from '@/lib/supabaseAdmin'
+import { logError } from '@/lib/logError'
 
 export async function POST(req: Request) {
   const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
 
   let admin
   try { admin = getAdminClient() } catch (e: any) {
+    logError('api.account.delete.config', e)
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 
@@ -25,15 +27,19 @@ export async function POST(req: Request) {
   const { error: profErr } = await admin.from('profiles')
     .update({ full_name: 'Compte supprimé', phone: null, avatar_url: null })
     .eq('id', user.id)
+  if (profErr) logError('api.account.delete.profile', profErr)
   if (profErr) return NextResponse.json({ error: 'Suppression impossible, réessaie plus tard.' }, { status: 500 })
   const { error: artErr } = await admin.from('artisans').update({ is_available: false, plan: 'free', plan_until: null }).eq('id', user.id)
+  if (artErr) logError('api.account.delete.artisan', artErr)
   if (artErr) return NextResponse.json({ error: 'Suppression impossible, réessaie plus tard.' }, { status: 500 })
   // Table absente avant privacy_hardening.sql : l'erreur est volontairement ignorée.
   await admin.from('profile_private').delete().eq('id', user.id)
 
   const { error: delErr } = await admin.auth.admin.deleteUser(user.id)
   if (delErr) {
+    logError('api.account.delete.authUser', delErr) // repli : bannissement du compte
     const { error: banErr } = await admin.auth.admin.updateUserById(user.id, { ban_duration: '876000h' })
+    if (banErr) logError('api.account.delete.ban', banErr)
     if (banErr) return NextResponse.json({ error: 'Suppression impossible, réessaie plus tard.' }, { status: 500 })
   }
 

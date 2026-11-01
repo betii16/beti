@@ -1159,6 +1159,13 @@ export const translations = {
     finalCta:   { fr: 'Commencer',             ar: 'ابدأ الآن'           },
   },
 
+  // ── Erreurs signalées à l'utilisateur (échecs qui ne doivent plus être silencieux) ──
+  cxe: {
+    deleteFail:    { fr: 'Suppression impossible. Vérifie ta connexion et réessaie.', ar: 'تعذر الحذف. تحقق من اتصالك وحاول مجدداً.' },
+    loadFail:      { fr: 'Chargement impossible. Touche pour réessayer.', ar: 'تعذر التحميل. اضغط لإعادة المحاولة.' },
+    retry:         { fr: 'Réessayer', ar: 'إعادة المحاولة' },
+  },
+
   // ── Après réservation (mon espace, compte, facture) ───────────
   cxp: {
     reviewed:      { fr: 'Avis publié', ar: 'تم نشر التقييم' },

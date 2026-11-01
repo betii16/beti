@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { logError } from '@/lib/logError'
 import { X } from 'lucide-react'
 import { imageExt, IMAGE_ERR } from '@/lib/uploads'
 
@@ -29,6 +30,7 @@ export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userI
 
     const { error: upErr } = await supabase.storage.from('beti-photos').upload(path, file, { upsert: false, contentType: file.type })
     if (upErr) {
+      logError('photo.avatarUpload', upErr)
       setPreview(oldPreview)
       setErr(upErr.message.includes('security policy') ? 'Upload refusé — policies Storage manquantes (voir supabase/storage_policies.sql)' : 'Upload échoué : ' + upErr.message)
       setLoading(false); return
@@ -39,6 +41,7 @@ export function AvatarUpload({ userId, currentUrl, initials, onUpload }: { userI
 
     const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: finalUrl }).eq('id', userId)
     if (dbErr) {
+      logError('photo.avatarSave', dbErr)
       setPreview(oldPreview)
       setErr('Enregistrement échoué : ' + dbErr.message)
       setLoading(false); return
@@ -83,7 +86,7 @@ export function ProblemPhotosUpload({ bookingId, onUpload }: { bookingId:string;
       const path = `problems/${bookingId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
       if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); urls.push(data.publicUrl) }
-      else lastErr = 'Upload échoué : ' + error.message
+      else { logError('photo.upload', error); lastErr = 'Upload échoué : ' + error.message }
     }
     if (lastErr) setErr(lastErr)
     const all = [...photos,...urls]; setPhotos(all); onUpload(all); setLoading(false)
@@ -129,7 +132,7 @@ export function PortfolioUpload({ artisanId, existingPhotos }: { artisanId:strin
       const path = `portfolio/${artisanId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
       if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); urls.push(data.publicUrl) }
-      else lastErr = 'Upload échoué : ' + error.message
+      else { logError('photo.upload', error); lastErr = 'Upload échoué : ' + error.message }
     }
     if (lastErr) setErr(lastErr)
     const all=[...photos,...urls];setPhotos(all);setLoading(false)
@@ -171,7 +174,7 @@ export function BeforeAfterUpload({ bookingId, artisanId }: { bookingId:string; 
     const path = `interventions/${bookingId}/${type}_${Date.now()}.${ext}`
     const { error } = await supabase.storage.from('beti-photos').upload(path, file, { upsert:true, contentType: file.type })
     if (!error) { const { data } = supabase.storage.from('beti-photos').getPublicUrl(path); if(type==='before')setBefore(data.publicUrl);else setAfter(data.publicUrl) }
-    else alert('Upload échoué : ' + error.message)
+    else { logError('photo.intervention', error); alert('Upload échoué : ' + error.message) }
     setLoading(null)
   }
 

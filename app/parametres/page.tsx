@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { fetchMyPhone } from '@/lib/phones'
+import { logError } from '@/lib/logError'
 
 const SCOPE_CSS = `.set-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 const H2: React.CSSProperties = { fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 18 }
@@ -46,15 +47,19 @@ export default function ParametresPage() {
     if (!user) return false
     setNotifMsg('')
     const { error } = await supabase.from('profiles').update(patch).eq('id', user.id)
-    if (error) { setNotifMsg(t('cxp.saveFail')); return false }
+    if (error) { logError('settings.notif', error); setNotifMsg(t('cxp.saveFail')); return false }
     setNotifMsg(t('settings.saved'))
     return true
   }
   const deleteAccount = async () => {
     setDelBusy(true); setDelErr('')
     const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch('/api/account/delete', { method: 'POST', headers: { Authorization: `Bearer ${session?.access_token || ''}` } }).catch(() => null)
-    if (!res || !res.ok) { setDelBusy(false); setDelErr(t('common.errGeneric')); return }
+    const res = await fetch('/api/account/delete', { method: 'POST', headers: { Authorization: `Bearer ${session?.access_token || ''}` } })
+      .catch(e => { logError('account.delete.network', e); return null })
+    if (!res || !res.ok) {
+      if (res) logError('account.delete.http', `HTTP ${res.status}`)
+      setDelBusy(false); setDelErr(t('common.errGeneric')); return
+    }
     await supabase.auth.signOut(); router.push('/')
   }
 
@@ -74,7 +79,7 @@ export default function ParametresPage() {
     setSaving(true)
     const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
     setSaving(false)
-    if (error) { alert(t('cxp.saveFail')); return }
+    if (error) { logError('settings.profile', error); alert(t('cxp.saveFail')); return }
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }

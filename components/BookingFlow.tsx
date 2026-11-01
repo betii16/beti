@@ -12,6 +12,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { logError } from '@/lib/logError'
 import { X, Zap, CalendarDays, CalendarClock, ChevronLeft, Banknote } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 import { AddressPicker } from '@/components/AddressPicker'
@@ -127,6 +128,7 @@ export default function BookingFlow({
     }).select('id').single()
 
     if (insErr || !created?.id) {
+      logError('booking.insert', insErr ?? 'no id returned')
       setErr(t('cxb.errBooking')); sendingRef.current = false; setSending(false); return
     }
     bookingId = created.id as string
@@ -145,7 +147,8 @@ export default function BookingFlow({
         content: `${need.trim()}\n\n${t('bflow.msgWhen')} : ${whenLabel()}${address.trim() ? `\n${t('bflow.msgAddress')} : ${address.trim()}` : ''}`,
       })
       if (msgErr) throw msgErr
-    } catch {
+    } catch (e) {
+      logError('booking.firstMessage', e, { bookingId })
       setErr(t('cxb.errBooking')); sendingRef.current = false; setSending(false); return
     }
 

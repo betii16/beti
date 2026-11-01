@@ -7,6 +7,7 @@ import { toE164 } from '@/lib/countryCodes'
 import { CountryPicker } from '@/components/CountryPicker'
 import { LogoMark } from '@/components/Logo'
 import OtpInput, { withTimeout as race, authErrorKey } from '@/components/OtpInput'
+import { logError } from '@/lib/logError'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -52,7 +53,7 @@ export default function LoginPage() {
         if (p?.role === 'artisan') router.push('/artisan-dashboard')
         else if (p?.role === 'admin') router.push('/admin')
         else router.push('/mon-espace')
-      } catch { router.push('/mon-espace') }
+      } catch (e) { logError('login.roleLookup', e); router.push('/mon-espace') } // repli volontaire : /mon-espace redirige selon le rôle
       router.refresh()
     } catch (e) { setErr(t(`auth.${authErrorKey(e)}`)) }
   }

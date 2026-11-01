@@ -15,6 +15,7 @@ import {
   PLAN_LIST, FEATURES, priceFor, yearlySavings, freeMonths,
   isLaunchFree, SUB_FREE_UNTIL, type Plan, type BillingCycle,
 } from '@/lib/plans'
+import { logError } from '@/lib/logError'
 import { getMyLatestSubscription, submitSubscriptionRequest, type Subscription } from '@/lib/subscription'
 
 const da = (n: number) => n.toLocaleString('fr-DZ')
@@ -56,7 +57,7 @@ export default function AbonnementPage() {
       artisanId: uid, plan: chosen.id, cycle, amount: priceFor(chosen, cycle),
       method: payMethod, ref: payRef.trim() || undefined,
     })
-    if (!res.ok) { setErr(res.message); setSubmitting(false); return }
+    if (!res.ok) { logError('subscription.submit', res.message, { plan: chosen.id, cycle }); setErr(res.message); setSubmitting(false); return }
     setSubmitting(false); setSubmitted(true)
     setLatest(await getMyLatestSubscription(uid))
   }

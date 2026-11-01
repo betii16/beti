@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { logError } from '@/lib/logError'
 import { ArrowLeft, Send, MessageCircle, AlertTriangle } from 'lucide-react'
 
 // Statut de la réservation → token couleur ; focus clavier visible.
@@ -43,16 +44,17 @@ export default function ChatPage(){
       if(!initial&&typeof document!=='undefined'&&document.hidden)return
       const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
       if(!alive)return
-      if(error){if(initial)setLoadErr(t('cxb.loadErr'));return}
+      if(error){logError('chat.fetchMessages',error,{bookingId});if(initial)setLoadErr(t('cxb.loadErr'));return}
       if(data)mergeMsgs(data as any)
     }
     const init=async()=>{
       const{data:{user:u}}=await supabase.auth.getUser()
       if(!u){router.push('/auth/login?next='+encodeURIComponent('/chat/'+bookingId));return};setUser(u)
-      const{data:p}=await supabase.from('profiles').select('full_name,role').eq('id',u.id).single()
+      const{data:p,error:pErr}=await supabase.from('profiles').select('full_name,role').eq('id',u.id).single()
+      if(pErr)logError('chat.loadProfile',pErr) // non bloquant : le nom d'expéditeur retombe sur « Moi »
       if(p)setProfile(p)
       const{data:b,error:bErr}=await supabase.from('bookings').select('*').eq('id',bookingId).single()
-      if(bErr){if(!alive)return;setLoadErr(bErr.code==='PGRST116'?t('cxb.notFound'):t('cxb.loadErr'));return}
+      if(bErr){logError('chat.loadBooking',bErr,{bookingId});if(!alive)return;setLoadErr(bErr.code==='PGRST116'?t('cxb.notFound'):t('cxb.loadErr'));return}
       if(b){setBooking(b)
         const otherId=b.client_id===u.id?b.artisan_id:b.client_id
         const{data:op}=await supabase.from('profiles').select('full_name').eq('id',otherId).single()
@@ -90,7 +92,7 @@ export default function ChatPage(){
       sender_role:profile?.role||'client',
       content
     }).select().single()
-    if(error){setSendErr(t('cxb.sendFail'));setSending(false);return}
+    if(error){logError('chat.send',error,{bookingId});setSendErr(t('cxb.sendFail'));setSending(false);return}
     if(data)mergeMsgs([data as any])
     setInput('')
     setSending(false)
@@ -107,7 +109,7 @@ export default function ChatPage(){
     setActing(true);setSendErr('')
     const{error}=await supabase.from('bookings').update({status}).eq('id',bookingId)
     setActing(false)
-    if(error){setSendErr(t('cxb.actionFail'));return}
+    if(error){logError('chat.setStatus',error,{bookingId,status});setSendErr(t('cxb.actionFail'));return}
     setBooking((b:any)=>b?{...b,status}:b)
   }
   const markDone=()=>setStatus('in_progress')

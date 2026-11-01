@@ -4,6 +4,7 @@
 // réservation active au lieu d'en créer une à chaque clic.
 
 import { supabase } from './supabase'
+import { logError } from './logError'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -42,7 +43,7 @@ async function contactArtisanImpl(opts: {
   }
 
   // Conversation existante ? On la reprend.
-  const { data: existing } = await supabase
+  const { data: existing, error: findErr } = await supabase
     .from('bookings')
     .select('id')
     .eq('client_id', clientId)
@@ -51,6 +52,7 @@ async function contactArtisanImpl(opts: {
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  if (findErr) logError('contact.findExisting', findErr) // on tente quand même de créer la conversation
 
   let bookingId = existing?.id as string | undefined
 
@@ -69,6 +71,7 @@ async function contactArtisanImpl(opts: {
       status: 'pending',
       price_agreed: hourlyRate || 0,
     }).select('id').single()
+    if (insErr) logError('contact.createBooking', insErr)
     if (insErr) return { ok: false, reason: 'error', message: "La conversation n'a pas pu s'ouvrir. Vérifiez votre connexion puis réessayez." }
     bookingId = created?.id
   }

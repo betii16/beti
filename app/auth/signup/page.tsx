@@ -9,6 +9,7 @@ import { LogoMark } from '@/components/Logo'
 import OtpInput, { withTimeout as race, authErrorKey } from '@/components/OtpInput'
 import { UserRound, Hammer, Check } from 'lucide-react'
 import { phoneTaken } from '@/lib/phones'
+import { logError } from '@/lib/logError'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -52,7 +53,7 @@ export default function SignupPage() {
     setPhoneErr('')
     try {
       if (await race(phoneTaken(fullPhone))) setPhoneErr(t('auth.phoneUsed'))
-    } catch {}
+    } catch (e) { logError('signup.phoneCheck', e) } // ignorable : l'envoi du code revérifie côté serveur
   }
 
   const sendCode = async () => {
@@ -97,15 +98,26 @@ export default function SignupPage() {
         const isExistingAccount = Date.now() - createdAt > 60 * 60 * 1000
         let existing: { role: string } | null = null
         if (isExistingAccount) {
-          try { existing = (await race(supabase.from('profiles').select('role').eq('id', uid).maybeSingle())).data } catch {}
+          try {
+            const r = await race(supabase.from('profiles').select('role').eq('id', uid).maybeSingle())
+            if (r.error) logError('signup.existingProfile', r.error)
+            existing = r.data
+          } catch (e) { logError('signup.existingProfile', e) }
         }
         if (existing) {
           finalRole = existing.role === 'artisan' ? 'artisan' : 'client'
           if (existing.role === 'admin') { router.push('/admin'); router.refresh(); return }
         } else {
-          try { await race(supabase.from('profiles').upsert({ id: uid, full_name: name.trim(), phone: fullPhone, role }, { onConflict: 'id' })) } catch {}
+          // Échec non bloquant (le code OTP est déjà consommé, on ne peut pas rejouer) : journalisé, l'utilisateur complète son profil ensuite.
+          try {
+            const r = await race(supabase.from('profiles').upsert({ id: uid, full_name: name.trim(), phone: fullPhone, role }, { onConflict: 'id' }))
+            if (r.error) logError('signup.profileUpsert', r.error)
+          } catch (e) { logError('signup.profileUpsert', e) }
           if (role === 'artisan') {
-            try { await race(supabase.from('artisans').upsert({ id: uid, category: 'autre', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' })) } catch {}
+            try {
+              const r = await race(supabase.from('artisans').upsert({ id: uid, category: 'autre', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' }))
+              if (r.error) logError('signup.artisanUpsert', r.error)
+            } catch (e) { logError('signup.artisanUpsert', e) }
           }
         }
       }

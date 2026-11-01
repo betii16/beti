@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { fetchMyPhone } from '@/lib/phones'
 import { User, Lock, Bell, LogOut } from 'lucide-react'
+import { logError } from '@/lib/logError'
 
 const SCOPE_CSS = `.set-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 const OK_BOX: React.CSSProperties = { background: 'color-mix(in srgb, var(--success) 11%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 32%, transparent)', borderRadius: 'var(--r-field)', padding: '11px 14px', marginBottom: 16, fontSize: 14, color: 'var(--tx)', fontWeight: 600 }
@@ -74,7 +75,7 @@ export default function Parametres() {
   const saveProfil = async () => {
     setSavingProfil(true)
     const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
-    if (error) { alert('Enregistrement impossible : ' + error.message); setSavingProfil(false); return }
+    if (error) { logError('account.saveProfile', error); alert('Enregistrement impossible : ' + error.message); setSavingProfil(false); return }
     setProfilOk(true)
     setSavingProfil(false)
     setTimeout(() => setProfilOk(false), 3000)
@@ -91,7 +92,7 @@ export default function Parametres() {
     const { error: emailErr } = emailChanged ? await supabase.auth.updateUser({ email: newEmail.trim() }) : { error: null }
     const { error: pwErr } = newPassword ? await supabase.auth.updateUser({ password: newPassword }) : { error: null }
     const err = emailErr || pwErr
-    if (err) { alert('Mise à jour impossible : ' + err.message); setSavingSecurite(false); return }
+    if (err) { logError('account.saveSecurity', err); alert('Mise à jour impossible : ' + err.message); setSavingSecurite(false); return }
     setSecuriteOk(true)
     setSavingSecurite(false)
     setNewPassword('')
@@ -103,7 +104,7 @@ export default function Parametres() {
     setSavingNotifs(true)
     const { error } = await supabase.from('profiles').update({ notif_email: notifEmail, notif_sms: notifSms }).eq('id', user.id)
     setSavingNotifs(false)
-    if (error) { alert(t('cxp.saveFail')); return }
+    if (error) { logError('account.saveNotifs', error); alert(t('cxp.saveFail')); return }
     setNotifsOk(true)
     setTimeout(() => setNotifsOk(false), 3000)
   }

@@ -20,6 +20,12 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Vie privée : le téléphone vit dans `profile_private` (lecture via `lib/phones.ts`, jamais `profiles.phone`). La position GPS exacte vit dans `artisan_live_location`; `artisans.lat/lng` est arrondi à ~1 km. Le code tolère l'absence de ces tables, donc ne pas l'en croire protégé.
 - Suppression de compte réelle : `app/api/account/delete/route.ts` (exigence App Store / Google Play). Utilise la clé service (`lib/supabaseAdmin.ts`), jamais côté client.
 
+## Gestion des erreurs
+- Jamais de `catch {}` vide ni d'erreur Supabase ignorée (`const { data } = await …` sans lire `error`) sur un chemin critique (réservation, chat, abonnement, suppression de compte, photos, OTP).
+- Utiliser `logError(scope, error, context?)` de `lib/logError.ts` : console structurée, clés sensibles (phone, token, email, password, authorization…) filtrées, anti-doublon et limite de débit, envoi best-effort vers `NEXT_PUBLIC_ERROR_ENDPOINT` si défini. Ne jamais passer de donnée personnelle en contexte.
+- Si l'échec compte pour l'utilisateur : journaliser ET afficher un message clair avec réessai (textes `cxe.` / `cxb.` dans `lib/translations.ts`). Si l'échec est ignorable (ex. table absente avant `privacy_hardening.sql`) : commentaire d'une ligne qui dit pourquoi.
+- Brancher Sentry / Better Stack plus tard : un seul appel `setErrorSink((evt, original) => …)` au démarrage, sans retoucher les appels.
+
 ## Design et i18n
 - Identité « Chaux & Zellige » : variables CSS et classes dans `app/globals.css` (`var(--tx)`, `var(--accent)`, `.btn-primary`, `.field`…). Pas de violet, pas de verre, pas de dégradés de texte.
 - Thème et langue : clés `localStorage` `beti-theme` et `beti-lang`; textes dans `lib/translations.ts`, contexte dans `lib/LangContext.tsx`.

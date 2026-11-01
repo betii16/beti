@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { imageExt } from '@/lib/uploads'
 import { supabase } from '@/lib/supabase'
+import { logError } from '@/lib/logError'
 import { useLang } from '@/lib/LangContext'
 import { Skeleton } from '@/components/Skeleton'
 import { Camera, Hammer, X } from 'lucide-react'
@@ -97,7 +98,8 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
 
   useEffect(() => { load() }, [artisanId])
   const load = async () => {
-    const { data } = await supabase.from('portfolio_posts').select('*').eq('artisan_id', artisanId).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('portfolio_posts').select('*').eq('artisan_id', artisanId).order('created_at', { ascending: false })
+    if (error) { logError('portfolio.load', error); setErr(t('cxe.loadFail')) }
     if (data) setPosts(data as PortfolioPost[])
     setLoading(false)
   }
@@ -125,7 +127,7 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
       if (!ext) { setErr(`${file.name} ${t('portfolio.errNotImage')}`); continue }
       const path = `portfolio/${artisanId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('beti-photos').upload(path, file, { contentType: file.type })
-      if (error) { setErr(error.message.includes('security policy') ? t('portfolio.errStoragePolicy') : `${t('portfolio.errUploadFailed')} ${error.message}`); continue }
+      if (error) { logError('portfolio.upload', error); setErr(error.message.includes('security policy') ? t('portfolio.errStoragePolicy') : `${t('portfolio.errUploadFailed')} ${error.message}`); continue }
       urls.push(supabase.storage.from('beti-photos').getPublicUrl(path).data.publicUrl)
     }
     setDrafts(d => [...d, ...urls]); setUploading(false)
@@ -138,7 +140,7 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
     const { data, error } = await supabase.from('portfolio_posts')
       .insert({ artisan_id: artisanId, description: description.trim() || null, photos: drafts })
       .select('*').single()
-    if (error) { setErr(`${t('portfolio.errPublish')} ${error.message}`); setPosting(false); return }
+    if (error) { logError('portfolio.publish', error); setErr(`${t('portfolio.errPublish')} ${error.message}`); setPosting(false); return }
     setPosts(p => [data as PortfolioPost, ...p])
     setDescription(''); setDrafts([]); setPosting(false)
   }
@@ -146,7 +148,8 @@ export function PortfolioManager({ artisanId, plan = 'free' }: { artisanId: stri
   const removeDraft = (i: number) => setDrafts(d => d.filter((_, x) => x !== i))
   const deletePost = async (id: string) => {
     if (!confirm(t('portfolio.deleteConfirm'))) return
-    await supabase.from('portfolio_posts').delete().eq('id', id)
+    const { error } = await supabase.from('portfolio_posts').delete().eq('id', id)
+    if (error) { logError('portfolio.delete', error); setErr(t('cxe.deleteFail')); return }
     setPosts(p => p.filter(x => x.id !== id))
   }
 
@@ -235,7 +238,7 @@ export function PortfolioFeed({ artisanId }: { artisanId: string }) {
 
   useEffect(() => {
     supabase.from('portfolio_posts').select('*').eq('artisan_id', artisanId).order('created_at', { ascending: false })
-      .then(({ data }) => { if (data) setPosts(data as PortfolioPost[]); setLoading(false) })
+      .then(({ data, error }) => { if (error) logError('portfolio.feed', error) /* galerie vide acceptable, juste journalisée */; if (data) setPosts(data as PortfolioPost[]); setLoading(false) })
   }, [artisanId])
 
   if (loading) return <PortfolioSkeleton />
