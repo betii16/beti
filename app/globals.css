@@ -979,3 +979,6 @@ body:has(.map-screen) { overflow: hidden; }
     transform: scaleX(1);
   }
 }
+
+/* Cibles tactiles : compact à la souris, 44 px au doigt (sans changer le look desktop). */
+@media (pointer: coarse) { .tap44 { min-height: 44px !important; min-width: 44px !important; } }

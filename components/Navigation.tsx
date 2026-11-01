@@ -56,8 +56,8 @@ export default function Navigation() {
     return (
       <div style={{ display: 'flex', gap: 3 }}>
         {(['fr', 'ar'] as const).map(l => (
-          <button key={l} onClick={() => setLang(l)}
-            style={{ padding: '0 10px', minHeight: 44, minWidth: 44, borderRadius: 6, border: 'none', background: lang === l ? 'var(--accent, #175CC4)' : 'var(--border, #2a2a3a)', color: lang === l ? '#fff' : 'var(--tx3, #555)', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif' }}>
+          <button key={l} onClick={() => setLang(l)} className="tap44"
+            style={{ padding: '0 10px', minHeight: 26, borderRadius: 6, border: 'none', background: lang === l ? 'var(--accent, #175CC4)' : 'var(--border, #2a2a3a)', color: lang === l ? '#fff' : 'var(--tx3, #555)', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif' }}>
             {l.toUpperCase()}
           </button>
         ))}

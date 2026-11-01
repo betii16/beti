@@ -11,6 +11,16 @@ const localStorageAdapter = typeof window !== 'undefined'
     }
   : undefined
 
+const emptyResult = { data: [] as unknown[], error: null, count: 0 }
+const emptyChain = (): any =>
+  new Proxy(function () {}, {
+    get: (_t, p) =>
+      p === 'then'
+        ? (res: any, rej: any) => Promise.resolve(emptyResult).then(res, rej)
+        : p in emptyResult ? (emptyResult as any)[p] : emptyChain(),
+    apply: () => emptyChain(),
+  })
+
 /**
  * Supabase client — safe during build (returns a stub when env vars are absent).
  * At runtime the env vars are always present via Vercel.
@@ -27,10 +37,9 @@ export const supabase: SupabaseClient = supabaseUrl
     })
   : (new Proxy({} as SupabaseClient, {
       get: (_target, prop) => {
-        // During build, return no-op functions that resolve to empty data
-        if (prop === 'from') return () => ({
-          select: () => ({ eq: () => ({ eq: () => ({ limit: () => ({ data: [], error: null }), data: [], error: null }), limit: () => ({ data: [], error: null }), data: [], error: null }), limit: () => ({ data: [], error: null }), data: [], error: null }),
-        })
+        // Sans configuration (build, aperçu local sans clés) : toute chaîne de requête
+        // (from/rpc/select/eq/not/order/limit…) renvoie des données vides, sans erreur.
+        if (prop === 'from' || prop === 'rpc') return () => emptyChain()
         if (prop === 'auth') {
           // ⚠️ Si on arrive ici au RUNTIME (pas juste au build), c'est que les
           // variables NEXT_PUBLIC_SUPABASE_* étaient absentes du build → toute
