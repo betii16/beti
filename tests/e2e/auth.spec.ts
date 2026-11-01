@@ -14,6 +14,7 @@ async function mockAuth(page: Page) {
 }
 
 async function login(page: Page) {
+  await page.getByRole('tab', { name: 'Téléphone' }).click() // le mode e-mail est le mode par défaut
   await page.getByLabel('Numéro de téléphone').fill('555123456')
   await page.getByRole('button', { name: /recevoir le code/i }).click()
   await page.getByLabel(/code/i).first().fill('123456') // validation automatique à 6 chiffres
@@ -23,6 +24,7 @@ test('connexion sans numéro : bouton désactivé avec indication', async ({ pag
   const errors = watchErrors(page)
   await mockSupabase(page)
   await page.goto('/auth/login')
+  await page.getByRole('tab', { name: 'Téléphone' }).click()
   const btn = page.getByRole('button', { name: /recevoir le code/i })
   await expect(btn).toBeDisabled()
   await expect(page.getByRole('status').filter({ hasText: /\S/ }).first()).toBeVisible()
@@ -62,4 +64,5 @@ test('page protégée sans session : redirige vers la connexion avec ?next', asy
   await page.goto('/mon-espace')
   await page.waitForURL(/\/auth\/login\?next=%2Fmon-espace/)
   await expect(page.getByRole('button', { name: /recevoir le code/i })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'E-mail' })).toHaveAttribute('aria-selected', 'true')
 })
