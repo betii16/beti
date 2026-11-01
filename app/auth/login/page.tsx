@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { safeNext } from '@/lib/safeNext'
 import { toE164 } from '@/lib/countryCodes'
 import { CountryPicker } from '@/components/CountryPicker'
 import { LogoMark } from '@/components/Logo'
@@ -36,17 +37,13 @@ export default function LoginPage() {
     return () => clearInterval(id)
   }, [cooldown])
 
-  // Retour à la page d'origine : uniquement un chemin interne (jamais un autre site).
-  const safeNext = () => {
-    const n = new URLSearchParams(window.location.search).get('next') || ''
-    return n.startsWith('/') && !n.startsWith('//') && !n.startsWith('/\\') && !n.startsWith('/auth/') ? n : ''
-  }
+  const getNext = () => safeNext(new URLSearchParams(window.location.search).get('next'))
 
   const redirectByRole = async () => {
     try {
       const { data: { user } } = await race(supabase.auth.getUser())
       if (!user) { setErr(t('auth.errLogin')); return }
-      const next = safeNext()
+      const next = getNext()
       if (next) { router.push(next); router.refresh(); return }
       try {
         const { data: p } = await race(supabase.from('profiles').select('role').eq('id', user.id).single())

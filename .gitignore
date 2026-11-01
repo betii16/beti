@@ -39,3 +39,7 @@ next-env.d.ts
 
 # captures de verification mobile
 /.screenshots
+
+# tests
+/test-results/
+/playwright-report/
