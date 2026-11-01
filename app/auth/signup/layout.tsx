@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const D = "Créez votre compte BETI, client ou artisan, avec votre numéro de téléphone en quelques minutes."
+const D = "Créez votre compte BETI, client (code reçu par e-mail) ou artisan (code reçu sur votre téléphone), en quelques minutes."
 export const metadata: Metadata = {
   title: "Inscription",
   description: D,

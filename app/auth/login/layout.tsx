@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const D = "Connectez-vous à BETI avec votre numéro de téléphone pour réserver un artisan ou gérer votre activité."
+const D = "Connectez-vous à BETI par e-mail (clients) ou par téléphone (artisans) pour réserver un artisan ou gérer votre activité."
 export const metadata: Metadata = {
   title: "Connexion",
   description: D,
