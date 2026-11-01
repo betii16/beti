@@ -36,6 +36,16 @@ h1, h2, h3, h4, .display {
    L'accent est un token unique (--accent) → repalettable en 1 ligne.
    ═══════════════════════════════════════════════════════════════ */
 
+/* Espace réservé sous le contenu mobile : dock flottant (64 px + 12 px de marge
+   + 12 px d'air) + zone sûre iOS/Android. Source unique (pages, carte, éléments fixés). */
+:root { --tabbar-space: calc(88px + env(safe-area-inset-bottom)); }
+
+/* Texte réservé aux lecteurs d'écran */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
 /* ═══ CHAUX (thème clair — défaut) ═══ */
 :root,
 [data-theme="light"] {
@@ -249,6 +259,12 @@ body { background: transparent; }
 .btn-danger:active, .btn-success:active, .btn-soft:active { transform: translateY(0) scale(.97); }
 .btn:disabled, .btn-primary:disabled, .btn-ghost:disabled,
 .btn-danger:disabled, .btn-success:disabled, .btn-soft:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+/* Désactivé lisible (AA) : aplat neutre + encre secondaire, plus d'opacité sur le texte blanc */
+.btn-primary:disabled {
+  opacity: 1; background: var(--bg3); color: var(--tx2);
+  border: 1px solid var(--border2); box-shadow: none;
+}
+.field-hint { font-size: 13px; color: var(--tx2); text-align: center; margin: 10px 0 0; line-height: 1.4; }
 
 /* Aplat bleu d'Alger (action principale) — franc, sans dégradé */
 .btn-primary {
@@ -687,7 +703,7 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; a
   .page-pad-m {
     padding-left: 20px !important;
     padding-right: 20px !important;
-    padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(var(--tabbar-space) + 22px) !important;
   }
 }
 
@@ -726,10 +742,10 @@ button, a {
   body { padding-top: env(safe-area-inset-top); }
 
   /* Carte : l'écran s'arrête au-dessus du dock flottant */
-  .map-screen { bottom: calc(88px + env(safe-area-inset-bottom)) !important; }
+  .map-screen { bottom: var(--tabbar-space) !important; }
 
   /* Éléments fixés en bas de page : remontent au-dessus du dock flottant */
-  .above-tabbar { bottom: calc(88px + env(safe-area-inset-bottom)) !important; }
+  .above-tabbar { bottom: var(--tabbar-space) !important; }
 
   /* Panneau artisan : bottom sheet plein écran (au lieu du slide latéral desktop) */
   .detail-sheet {
@@ -848,6 +864,9 @@ body:has(.map-screen) { overflow: hidden; }
 .map-chips {
   display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 8px;
   scroll-padding-inline: 16px; pointer-events: none; overscroll-behavior-x: contain;
+  /* Fondu de bord : signale que la liste défile (symétrique, donc valable en RTL) */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 28px), transparent 100%);
 }
 .map-chip {
   pointer-events: auto; flex-shrink: 0; min-height: 44px; padding: 0 16px;
@@ -871,8 +890,9 @@ body:has(.map-screen) { overflow: hidden; }
 }
 .map-sheet[data-full="true"] { max-height: min(72%, 640px); }
 .map-sheet[data-detail="true"] { max-height: 78%; }
+.map-sheet[data-empty="true"] { max-height: min(400px, 60%); }
 .map-handle {
-  flex-shrink: 0; width: 100%; height: 26px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; width: 100%; height: 44px; display: flex; align-items: center; justify-content: center;
   background: transparent; border: none; cursor: pointer;
 }
 .map-handle span { width: 40px; height: 4px; border-radius: 2px; background: var(--border2); }

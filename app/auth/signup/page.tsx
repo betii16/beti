@@ -188,6 +188,7 @@ export default function SignupPage() {
               })}
               </div>
               <button onClick={() => role && setStep(2)} disabled={!role} className="btn-primary btn-block btn-lg" style={{ marginTop: 4 }}>{t('auth.continueBtn')}</button>
+              {!role && <p className="field-hint" role="status">{t('cxu.hintRole')}</p>}
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.alreadyAccount')} <a href="/auth/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 700, display: 'inline-block', padding: '12px 2px' }}>{t('auth.signIn')}</a></p>
             </>
           )}
@@ -223,6 +224,7 @@ export default function SignupPage() {
                 {!fromUrl && <button onClick={() => setStep(1)} className="btn-ghost btn-lg" style={{ flex: 1 }}>{t('auth.back')}</button>}
                 <button onClick={sendCode} disabled={!canSend || loading} className="btn-primary btn-lg" style={{ flex: 2 }}>{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
               </div>
+              {!canSend && !loading && <p className="field-hint" role="status">{t('cxu.hintName')}</p>}
             </>
           )}
 
@@ -235,6 +237,7 @@ export default function SignupPage() {
               {err && <div style={{ marginTop: 16 }}><Err msg={err} /></div>}
               {!err && info && <p role="status" style={{ marginTop: 14, fontSize: 13, lineHeight: 1.5, textAlign: 'center', color: 'var(--tx2)', fontWeight: 600 }}>{info}</p>}
               <button onClick={() => verifyCode()} disabled={loading || code.length < 6} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.creatingAccount') : t('auth.create')}</button>
+              {code.length < 6 && !loading && <p className="field-hint" role="status">{t('cxu.hintCode')}</p>}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 14 }}>
                 <button onClick={() => { setStep(2); setCode(''); setErr(''); setInfo('') }} style={LINK}>{t('auth.modify')}</button>
                 <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, color: cooldown > 0 ? 'var(--tx2)' : 'var(--accent)', fontWeight: 700, cursor: cooldown > 0 ? 'default' : 'pointer' }}>

@@ -123,6 +123,7 @@ export default function MapPage() {
 
   return(
     <div ref={screenRef} className="map-screen" style={{direction:isAr?'rtl':'ltr'}}>
+      <h1 className="sr-only">{t('cxu.mapTitle')}</h1>
 
       {/* Carte plein écran */}
       <div className="map-canvas">
@@ -152,7 +153,7 @@ export default function MapPage() {
       </div>
 
       {/* Panneau : bottom-sheet sur mobile, colonne latérale sur desktop */}
-      <section ref={sheetRef} className="map-sheet map-float" data-full={sheetFull} data-detail={!!selected}>
+      <section ref={sheetRef} className="map-sheet map-float" data-full={sheetFull} data-detail={!!selected} data-empty={count===0&&!loading&&!selected}>
         <button className="map-handle" onClick={()=>setSheetFull(!sheetFull)} aria-label={sheetFull?t('map2.collapse'):t('map2.expand')} aria-expanded={sheetFull}>
           <span/>
         </button>

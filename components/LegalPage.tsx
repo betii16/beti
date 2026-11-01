@@ -5,8 +5,9 @@
 // Rendu sobre brandé BETI : cartes « carreau » Chaux & Zellige, bleu d'Alger, dir-aware (FR/AR).
 // Le contenu est passé en props depuis chaque page (server component → SEO).
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ArrowUp } from 'lucide-react'
 
 export type LegalSection = { h: string; body: string[] }
 
@@ -26,6 +27,15 @@ export default function LegalPage({
   note?: string
 }) {
   const router = useRouter()
+  const [showTop, setShowTop] = useState(false)
+
+  // Bouton « Haut de page » : visible après ~1 écran de défilement
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 600)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', paddingTop: 72, direction: 'ltr' }} lang="fr">
@@ -85,6 +95,23 @@ export default function LegalPage({
         <div style={{ marginTop: 36, fontSize: 13, color: 'var(--tx3)', lineHeight: 1.7 }}>
           BETI — Artisans près de chez vous · Algérie · <a href="/aide" style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: 3 }}>support@beti.dz</a>
         </div>
+
+        <button
+          type="button"
+          aria-hidden={!showTop}
+          tabIndex={showTop ? 0 : -1}
+          onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}
+          style={{
+            position: 'fixed', insetInlineEnd: 16, bottom: 'calc(var(--tabbar-space) + 8px)', zIndex: 240,
+            width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--bg2)', color: 'var(--tx2)', border: '1px solid var(--border2)', cursor: 'pointer',
+            boxShadow: '0 6px 16px -8px rgba(14,25,34,0.45)',
+            opacity: showTop ? 1 : 0, pointerEvents: showTop ? 'auto' : 'none', transition: 'opacity .2s ease',
+          }}
+        >
+          <ArrowUp size={18} aria-hidden />
+          <span className="sr-only">Haut de page</span>
+        </button>
       </div>
     </div>
   )

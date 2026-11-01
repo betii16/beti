@@ -77,7 +77,7 @@ export default function BottomTabBar() {
   return (
     <>
       {/* Espace réservé dans le flux pour ne pas masquer le bas des pages */}
-      <div className="mobile-only" style={{ height: 'calc(92px + env(safe-area-inset-bottom))' }}/>
+      <div className="mobile-only" style={{ height: 'var(--tabbar-space)' }}/>
 
       <nav className="mobile-only" style={{
         position: 'fixed', left: 12, right: 12,

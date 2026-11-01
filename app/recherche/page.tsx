@@ -213,7 +213,7 @@ export default function RecherchePage() {
       <style suppressHydrationWarning>{`
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         *{box-sizing:border-box;margin:0;padding:0}
-        .rq-opt{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:9px 14px;border-radius:var(--r-field);
+        .rq-opt{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:9px 14px;border-radius:var(--r-field);
           border:1px solid var(--border);background:var(--bg2);color:var(--tx2);font-size:14px;font-weight:500;cursor:pointer;text-align:start;
           transition:border-color .2s ease,background .2s ease,color .2s ease}
         .rq-opt:hover{border-color:var(--border2);color:var(--tx)}
@@ -386,7 +386,7 @@ export default function RecherchePage() {
                     { id: 'price_asc',  label: tr('sortPriceAsc') },
                     { id: 'price_desc', label: tr('sortPriceDesc') },
                   ] as const).map(s => (
-                    <button key={s.id} onClick={() => setSortBy(s.id)} aria-pressed={sortBy === s.id} className={sortBy === s.id ? 'chip chip-active' : 'chip'} style={{ padding: '7px 13px', fontSize: 12.5, flexShrink: 0 }}
+                    <button key={s.id} onClick={() => setSortBy(s.id)} aria-pressed={sortBy === s.id} className={sortBy === s.id ? 'chip chip-active' : 'chip'} style={{ padding: '7px 13px', fontSize: 12.5, flexShrink: 0, minHeight: 44 }}
                     >{s.label}</button>
                   ))}
                 </div>

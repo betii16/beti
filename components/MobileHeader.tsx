@@ -58,7 +58,7 @@ export default function MobileHeader() {
   const title = TITLES.find(([p]) => pathname.startsWith(p))?.[1] || ''
 
   const iconBtn: React.CSSProperties = {
-    width: 34, height: 34, borderRadius: 12, background: 'var(--bg2)',
+    width: 44, height: 44, borderRadius: 14, background: 'var(--bg2)',
     border: '1px solid var(--border)', cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     padding: 0, flexShrink: 0, WebkitTapHighlightColor: 'transparent',
@@ -104,7 +104,7 @@ export default function MobileHeader() {
         {isHome && (
           <>
             {/* Langue */}
-            <button onClick={() => setLang(lang === 'fr' ? 'ar' : 'fr')} style={{ ...iconBtn, width: 'auto', padding: '0 11px', fontSize: 11, fontWeight: 800, color: 'var(--tx2)', fontFamily: 'Nexa,sans-serif' }}>
+            <button onClick={() => setLang(lang === 'fr' ? 'ar' : 'fr')} style={{ ...iconBtn, width: 'auto', minWidth: 44, padding: '0 11px', fontSize: 11, fontWeight: 800, color: 'var(--tx2)', fontFamily: 'Nexa,sans-serif' }}>
               {lang === 'fr' ? 'AR' : 'FR'}
             </button>
             {/* Thème */}
@@ -124,7 +124,7 @@ export default function MobileHeader() {
             )}
           </button>
         ) : isHome && (
-          <button onClick={() => router.push('/auth/login')} style={{ padding: '8px 15px', borderRadius: 12, background: 'var(--gradient)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa,sans-serif', whiteSpace: 'nowrap' }}>
+          <button onClick={() => router.push('/auth/login')} style={{ padding: '0 16px', minHeight: 44, borderRadius: 14, background: 'var(--gradient)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'Nexa,sans-serif', whiteSpace: 'nowrap' }}>
             {t('nav.login')}
           </button>
         )}

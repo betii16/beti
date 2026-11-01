@@ -1193,6 +1193,21 @@ export const translations = {
     priceNone:    { fr: 'Tarif à définir',                      ar: 'السعر يُحدد لاحقاً'           },
   },
 
+  // ── QA pages publiques (accessibilité, cibles tactiles) ───────
+  cxu: {
+    mapTitle:     { fr: 'Carte des artisans près de chez vous', ar: 'خريطة الحرفيين القريبين منك'   },
+    hintPhone:    { fr: 'Saisissez votre numéro pour continuer', ar: 'أدخل رقم هاتفك للمتابعة'      },
+    hintEmail:    { fr: 'Saisissez votre e-mail et votre mot de passe', ar: 'أدخل بريدك الإلكتروني وكلمة المرور' },
+    hintCode:     { fr: 'Saisissez le code à 6 chiffres',        ar: 'أدخل الرمز المكوّن من 6 أرقام' },
+    hintRole:     { fr: 'Choisissez un profil pour continuer',   ar: 'اختر نوع الحساب للمتابعة'      },
+    hintName:     { fr: 'Saisissez votre nom et votre numéro',   ar: 'أدخل اسمك ورقم هاتفك'          },
+    nfLabel:      { fr: 'Erreur 404',                            ar: 'خطأ 404'                      },
+    nfTitle:      { fr: "Cette page n'existe pas",               ar: 'هذه الصفحة غير موجودة'         },
+    nfText:       { fr: "Le lien est peut-être cassé ou la page a été déplacée. Revenez à l'accueil pour trouver un artisan près de chez vous.", ar: 'ربما الرابط معطّل أو تم نقل الصفحة. عد إلى الصفحة الرئيسية للعثور على حرفي قريب منك.' },
+    nfHome:       { fr: "Retour à l'accueil",                    ar: 'العودة إلى الرئيسية'           },
+    nfSearch:     { fr: 'Rechercher un artisan',                 ar: 'ابحث عن حرفي'                 },
+  },
+
 } as const
 
 // ── Helper pour récupérer une traduction ──────────────────────────

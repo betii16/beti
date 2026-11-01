@@ -291,6 +291,7 @@ export function AlgeriaCitySearch({
             onChange={e => handleInput(e.target.value)}
             onFocus={() => setOpen(results.length > 0 || query.length === 0)}
             placeholder={detecting ? 'Détection...' : placeholder}
+            aria-label={placeholder}
             style={{
               width: '100%', padding: '11px 0', paddingInlineStart: 34, paddingInlineEnd: 36,
               background: 'var(--bg2)', border: `0.5px solid ${selected ? '#175CC444' : 'var(--border)'}`,
@@ -302,8 +303,10 @@ export function AlgeriaCitySearch({
           <button
             onClick={detectLocation}
             title="Détecter ma position"
+            aria-label="Détecter ma position"
             style={{
-              position: 'absolute', insetInlineEnd: 10, top: '50%', transform: 'translateY(-50%)',
+              position: 'absolute', insetInlineEnd: 0, top: '50%', transform: 'translateY(-50%)',
+              width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
               background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 14,
               opacity: detecting ? 0.5 : 0.8, transition: 'opacity 0.2s',
             }}

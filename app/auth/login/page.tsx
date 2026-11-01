@@ -140,6 +140,7 @@ export default function LoginPage() {
               </div>
               {err && <Err msg={err} />}
               <button onClick={loginEmail} disabled={loading || !email || !pw} className="btn-primary btn-block btn-lg">{loading ? t('auth.connecting') : t('auth.connect')}</button>
+              {(!email || !pw) && !loading && <p className="field-hint" role="status">{t('cxu.hintEmail')}</p>}
               <button onClick={() => { setEmailMode(false); setErr('') }} style={LINK}>{t('auth.backToPhone')}</button>
             </>
           ) : step === 'phone' ? (
@@ -156,6 +157,7 @@ export default function LoginPage() {
 
               {err && <Err msg={err} />}
               <button onClick={sendCode} disabled={loading || phone.length < 6} className="btn-primary btn-block btn-lg">{loading ? t('auth.sending') : t('auth.receiveCode')}</button>
+              {phone.length < 6 && !loading && <p className="field-hint" role="status">{t('cxu.hintPhone')}</p>}
 
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--tx2)', marginTop: 20 }}>{t('auth.noAccount')} <a href="/auth/signup" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 700, display: 'inline-block', padding: '12px 2px' }}>{t('auth.register')}</a></p>
               <button onClick={() => { setEmailMode(true); setErr('') }} style={{ ...LINK, marginTop: 4 }}>{t('auth.loginByEmail')}</button>
@@ -168,6 +170,7 @@ export default function LoginPage() {
               {err && <div style={{ marginTop: 16 }}><Err msg={err} /></div>}
               {!err && info && <p role="status" style={{ marginTop: 14, fontSize: 13, lineHeight: 1.5, textAlign: 'center', color: 'var(--tx2)', fontWeight: 600 }}>{info}</p>}
               <button onClick={() => verifyCode()} disabled={loading || code.length < 6} className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }}>{loading ? t('auth.verifying') : t('auth.validate')}</button>
+              {code.length < 6 && !loading && <p className="field-hint" role="status">{t('cxu.hintCode')}</p>}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 14 }}>
                 <button onClick={() => { setStep('phone'); setCode(''); setErr('') }} style={{ ...LINK, marginTop: 0, width: 'auto' }}>{t('auth.changeNumber')}</button>
                 <button onClick={sendCode} disabled={loading || cooldown > 0} style={{ ...LINK, marginTop: 0, width: 'auto', color: cooldown > 0 ? 'var(--tx2)' : 'var(--accent)', fontWeight: 700, cursor: cooldown > 0 ? 'default' : 'pointer' }}>

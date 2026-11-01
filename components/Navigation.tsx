@@ -57,7 +57,7 @@ export default function Navigation() {
       <div style={{ display: 'flex', gap: 3 }}>
         {(['fr', 'ar'] as const).map(l => (
           <button key={l} onClick={() => setLang(l)}
-            style={{ padding: '3px 8px', borderRadius: 6, border: 'none', background: lang === l ? 'var(--accent, #175CC4)' : 'var(--border, #2a2a3a)', color: lang === l ? '#fff' : 'var(--tx3, #555)', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif' }}>
+            style={{ padding: '0 10px', minHeight: 44, minWidth: 44, borderRadius: 6, border: 'none', background: lang === l ? 'var(--accent, #175CC4)' : 'var(--border, #2a2a3a)', color: lang === l ? '#fff' : 'var(--tx3, #555)', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'Nexa, sans-serif' }}>
             {l.toUpperCase()}
           </button>
         ))}
@@ -103,7 +103,7 @@ export default function Navigation() {
                     if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
                   }
                 }}
-                style={{ fontSize: 14, fontWeight: 500, color: base, textDecoration: 'none', transition: 'color 0.2s', letterSpacing: '0.01em' }}
+                style={{ fontSize: 14, fontWeight: 500, color: base, textDecoration: 'none', transition: 'color 0.2s', letterSpacing: '0.01em', display: 'inline-flex', alignItems: 'center', minHeight: 44 }}
                 onMouseEnter={e => (e.currentTarget.style.color = active ? 'var(--accent)' : 'var(--tx)')}
                 onMouseLeave={e => (e.currentTarget.style.color = base)}
               >{l.label}</a>
