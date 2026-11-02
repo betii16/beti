@@ -18,6 +18,10 @@
 --     deverrouiller un avis ; l'artisan gonfler son compteur de missions).
 --     Flux reel de l'application : l'artisan accepte (confirmed) ou refuse,
 --     signale « travail termine » (in_progress), le client confirme (completed).
+--  5. compteur de missions : c'est le client qui passe 'completed', mais le declencheur
+--     n'avait pas les droits sur artisans (RLS) : total_missions ne montait jamais.
+--  6. artisans : un artisan pouvait ecrire lui-meme rating_avg / rating_count /
+--     total_missions (seul `plan` etait garde a la mise a jour).
 -- ============================================================================
 
 -- 1. Notifications : insertion directe interdite aux utilisateurs.
@@ -107,6 +111,43 @@ drop trigger if exists trg_guard_booking_status on public.bookings;
 create trigger trg_guard_booking_status
   before update on public.bookings
   for each row execute function public.guard_booking_status();
+
+-- 5. Compteur de missions : c'est le CLIENT qui passe la reservation a 'completed'.
+--    Le declencheur s'executait avec ses droits, et la regle artisans_update
+--    (auth.uid() = id) rejetait silencieusement l'UPDATE (0 ligne, aucune erreur) :
+--    total_missions ne montait jamais. Il devient security definer.
+create or replace function public.increment_artisan_missions()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.status::text = 'completed' and old.status::text <> 'completed' then
+    update public.artisans set total_missions = total_missions + 1 where id = new.artisan_id;
+  end if;
+  return new;
+end; $$;
+revoke execute on function public.increment_artisan_missions() from public, anon, authenticated;
+
+-- 6. Statistiques d'artisan : la regle artisans_update (auth.uid() = id) laisse l'artisan
+--    ecrire toute sa ligne. Seul `plan` etait garde ; il pouvait donc se fixer
+--    rating_avg / rating_count / total_missions. (guard_artisan_insert les remet deja
+--    a zero a la creation, mais rien ne le faisait a la mise a jour.)
+--    Les declencheurs security definer (avis, missions) s'executent en tant que
+--    proprietaire de la fonction, donc ne sont pas touches par ce garde.
+create or replace function public.guard_artisan_stats()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if current_user in ('authenticated', 'anon') and not public.is_admin() then
+    new.rating_avg     := old.rating_avg;
+    new.rating_count   := old.rating_count;
+    new.total_missions := old.total_missions;
+  end if;
+  return new;
+end; $$;
+
+drop trigger if exists trg_guard_artisan_stats on public.artisans;
+create trigger trg_guard_artisan_stats
+  before update on public.artisans
+  for each row execute function public.guard_artisan_stats();
+revoke execute on function public.guard_artisan_stats() from public, anon, authenticated;
 
 revoke execute on function public.guard_message_update() from public, anon, authenticated;
 revoke execute on function public.guard_booking_status() from public, anon, authenticated;
