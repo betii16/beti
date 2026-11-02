@@ -43,8 +43,9 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Ne pousser sur GitHub que sur demande explicite du propriétaire.
 - Pour des tâches parallèles, un agent par périmètre distinct, chacun dans son worktree; vérifier qu'il est parti du dernier commit de `main` avant de fusionner.
 
-## État et reste à faire
-- Fait : refonte du design, suppression de compte, facture, vie privée (code), Next 16, RTL, vérification visuelle des pages publiques.
-- Action propriétaire : exécuter `privacy_hardening.sql` dans Supabase; vérifier les variables d'environnement Vercel (clés Supabase, dont la clé service).
-- Non testé de bout en bout : inscription OTP, réservation, chat, facture, suppression de compte (aucun compte de test).
-- À faire plus tard : pages légales et SEO en arabe (relecture humaine), publication des fiches App Store / Google Play, Sentry après lancement.
+## État et reste à faire (2026-11-02)
+- Fait : refonte du design, suppression de compte, facture, Next 16, RTL; en production et vérifiés : `fix_booking_status.sql`, `fix_integrity.sql` (§5 et §6), `privacy_hardening.sql`.
+- Action propriétaire : SMTP e-mail (Brevo/Resend) + templates `{{ .Token }}` dans Supabase; variables Vercel (dont `NEXT_PUBLIC_LAUNCH_DATE` et clé service). Détail : `A_FAIRE_PROPRIETAIRE.md`.
+- Non testé de bout en bout (vrais comptes) : acceptation, clôture, avis, chat, facture, suppression de compte.
+- Décisions ouvertes : avis masqué dans la note ?, `artisans.location` non arrondi, `siret`/assurance lisibles par anon. Push GitHub (~48 commits d'avance) seulement sur demande.
+- Plus tard : légal/SEO en arabe (relecture humaine), fiches App Store / Google Play, Sentry après lancement.
