@@ -47,5 +47,6 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Fait : refonte du design, suppression de compte, facture, Next 16, RTL; en production et vérifiés : `fix_booking_status.sql`, `fix_integrity.sql` (§5 et §6), `privacy_hardening.sql`.
 - Action propriétaire : SMTP e-mail (Brevo/Resend) + templates `{{ .Token }}` dans Supabase; variables Vercel (dont `NEXT_PUBLIC_LAUNCH_DATE` et clé service). Détail : `A_FAIRE_PROPRIETAIRE.md`.
 - Non testé de bout en bout (vrais comptes) : acceptation, clôture, avis, chat, facture, suppression de compte.
-- Décisions ouvertes : avis masqué dans la note ?, `artisans.location` non arrondi, `siret`/assurance lisibles par anon. Push GitHub (~48 commits d'avance) seulement sur demande.
+- Aussi appliqué en production : `fix_integrity2.sql` (offres gardées, une seule note qui ignore les avis masqués, `siret`/assurance dans `artisan_private`).
+- Décision ouverte : `artisans.location` (zone d'intervention) non arrondi. Push GitHub (~50 commits d'avance) seulement sur demande.
 - Plus tard : légal/SEO en arabe (relecture humaine), fiches App Store / Google Play, Sentry après lancement.

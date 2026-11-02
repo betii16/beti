@@ -40,7 +40,7 @@ Option sans toucher à la production : un 2e projet Supabase de test (checklist 
 `main` a environ 48 commits d'avance sur `origin/main`. Rien n'est parti. La base est prête, donc tu peux le faire quand tu veux. Dis « pousse » et je le fais. Je ne pousse jamais de moi-même.
 
 ## 5. Décisions ouvertes
-- **Avis masqué** : un avis masqué par la modération compte-t-il quand même dans la note de l'artisan ? À trancher.
+- **Avis masqué** : tranché le 2026-11-02, un avis masqué ne compte pas dans la note (`fix_integrity2.sql`, appliqué en production).
 - **`artisans.location`** : le centre de la zone d'intervention reste lisible par tous et n'est pas arrondi. Ce n'est pas la position en direct. L'accepter ou l'arrondir ?
 - **`siret` et assurance** : ces deux champs sont lisibles par tout visiteur (aucune valeur saisie aujourd'hui). Les cacher avant que des artisans les remplissent ?
 - **Nom de domaine** (possèdes-tu `beti.dz` ? les pages légales affichent `support@beti.dz`).
