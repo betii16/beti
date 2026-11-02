@@ -10,6 +10,7 @@ import { CategoryIcon } from '@/components/icons'
 import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles, Search, MapPin } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 import { fetchMyPhone, phoneTaken } from '@/lib/phones'
+import { logError } from '@/lib/logError'
 import { withTimeout } from '@/components/OtpInput'
 
 // ── Types ──
@@ -110,7 +111,7 @@ export default function ArtisanProfileConfig() {
         setAddressError('')
         return { lat, lng }
       }
-    } catch {}
+    } catch (e) { logError('profil.geocode', e) }
     return null
   }
 

@@ -1,5 +1,6 @@
 'use client'
 import { supabase } from '@/lib/supabase'
+import { logError } from '@/lib/logError'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { haversineKm } from '@/lib/distance'
@@ -92,7 +93,7 @@ export default function Home(){
       // Paywall : hors période de lancement, on masque les non-abonnés.
       const plans=await plansP
       setArtisans((data as Artisan[]).filter(a=>isListed({plan:plans[a.artisan_id]||'free'})));setLoading(false);return
-    }}catch{}
+    }}catch(e){logError('home.nearbyRpc',e)} // repli sur la requête directe ci-dessous
     let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat&&cat!=='autre')q=q.eq('category',cat);if(cat==='autre'&&tags.length>0)q=q.overlaps('tags',tags)
     const[{data},plans]=await Promise.all([q,plansP])

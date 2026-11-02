@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Package, MapPin, Calendar, Banknote, Star } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
+import { logError } from '@/lib/logError'
 import { formatDA, hasAmount, categoryLabel } from '@/lib/format'
 
 type Booking = {
@@ -66,7 +67,8 @@ export default function MesReservations() {
       if (bkErr) { setLoadErr(true); setLoading(false); return }
 
       const list = bk || []
-      const { data: rv } = await supabase.from('reviews').select('booking_id').eq('client_id', user.id)
+      const { data: rv, error: rvErr } = await supabase.from('reviews').select('booking_id').eq('client_id', user.id)
+      if (rvErr) logError('reservations.loadReviews', rvErr) // non bloquant : le bouton « avis » reste simplement affiché
       setReviewed(new Set((rv || []).map((r: any) => r.booking_id).filter(Boolean)))
       // L'artisan : nom sur `profiles`, catégorie/note sur `artisans` (même id).
       const ids = Array.from(new Set(list.map((b: any) => b.artisan_id).filter(Boolean)))
@@ -106,7 +108,7 @@ export default function MesReservations() {
     if (!window.confirm(t('cxp.cancelConfirm'))) return
     setNotice('')
     const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id)
-    if (error) { setNotice(t('cxp.cancelFail')); return }
+    if (error) { logError('reservations.cancel', error, { bookingId: id }); setNotice(t('cxp.cancelFail')); return }
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
   }
 

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
+import { logError } from '@/lib/logError'
 import { ReviewPhotoUpload } from '@/components/ReviewPhotos'
 import { SkeletonPage } from '@/components/Skeleton'
 import { CheckCircle2, AlertTriangle, Star } from 'lucide-react'
@@ -94,8 +95,10 @@ function MesAvisContent() {
       setUserId(user.id)
       // Vérifier que la réservation appartient au client ET est terminée
       if (bookingId) {
-        const { data: bk } = await supabase.from('bookings').select('client_id, status').eq('id', bookingId).single()
-        const { data: existing } = await supabase.from('reviews').select('id').eq('booking_id', bookingId).maybeSingle()
+        const { data: bk, error: bkErr } = await supabase.from('bookings').select('client_id, status').eq('id', bookingId).single()
+        const { data: existing, error: exErr } = await supabase.from('reviews').select('id').eq('booking_id', bookingId).maybeSingle()
+        if (bkErr) logError('avis.checkBooking', bkErr, { bookingId })
+        if (exErr) logError('avis.checkExisting', exErr, { bookingId })
         if (!bk || bk.client_id !== user.id) { setBookingOk(false); setCheckMsg(t('avis.errNotFound')) }
         else if (bk.status !== 'completed') { setBookingOk(false); setCheckMsg(t('avis.errNotDone')) }
         else if (existing) { setBookingOk(false); setCheckMsg(t('avis.errAlready')) }
@@ -115,14 +118,19 @@ function MesAvisContent() {
   const submitReview = async () => {
     if (!rating || !bookingId || !userId) return
     setSubmitting(true); setSubmitErr('')
-    const { data: booking } = await supabase.from('bookings').select('artisan_id').eq('id', bookingId).single()
-    if (booking) {
+    const { data: booking, error: bErr } = await supabase.from('bookings').select('artisan_id').eq('id', bookingId).single()
+    if (bErr || !booking) {
+      logError('avis.loadBooking', bErr ?? 'no booking', { bookingId })
+      setSubmitting(false); setSubmitErr(t('avis.errNotFound')); return
+    }
+    {
       const { error } = await supabase.from('reviews').insert({
         client_id: userId, artisan_id: booking.artisan_id,
         booking_id: bookingId, rating, comment: comment.trim() || null,
         photos,
       })
       if (error) {
+        logError('avis.insert', error, { bookingId })
         setSubmitting(false)
         setSubmitErr(error.message.includes('row-level security')
           ? t('avis.errDenied')

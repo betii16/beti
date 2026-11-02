@@ -15,6 +15,7 @@ import PremiumBadge from '@/components/PremiumBadge'
 import { CATEGORY_COLOR, CategoryIcon } from '@/components/icons'
 import { useLang } from '@/lib/LangContext'
 import { loadBetiStyle } from '@/components/betiMapStyle'
+import { logError } from '@/lib/logError'
 import { Star, Navigation, Route } from 'lucide-react'
 import {
   Map, MapMarker, MarkerContent, MarkerPopup, MapControls, MapRoute, useMap, type MapRef,
@@ -214,9 +215,10 @@ export default function BetiMap({
         }
         ;(async () => {
           try {
-            const { data } = await supabase.from('artisan_live_location').select('lat, lng').eq('artisan_id', trackingArtisanId).maybeSingle()
-            if (!aborted && data && data.lat && data.lng) { liveSeen = true; onPos(data.lat, data.lng) }
-          } catch { /* table absente -> repli */ }
+            const { data, error } = await supabase.from('artisan_live_location').select('lat, lng').eq('artisan_id', trackingArtisanId).maybeSingle()
+            if (error) logError('map.liveLocation', error) // repli sur artisans.lat/lng (arrondi) via le realtime ci-dessous
+            else if (!aborted && data && data.lat && data.lng) { liveSeen = true; onPos(data.lat, data.lng) }
+          } catch (e) { logError('map.liveLocation', e) }
         })()
         const channel = supabase.channel(`track-${trackingArtisanId}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'artisan_live_location', filter: `artisan_id=eq.${trackingArtisanId}` }, (payload: any) => {
