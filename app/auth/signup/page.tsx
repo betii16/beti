@@ -139,7 +139,7 @@ export default function SignupPage() {
           } catch (e) { logError('signup.profileUpsert', e) }
           if (role === 'artisan') {
             try {
-              const r = await race(supabase.from('artisans').upsert({ id: uid, category: 'autre', hourly_rate: 0, is_available: false, rating_avg: 0, rating_count: 0, total_missions: 0 }, { onConflict: 'id' }))
+              const r = await race(supabase.from('artisans').upsert({ id: uid, category: 'autre', hourly_rate: 0, is_available: false }, { onConflict: 'id', ignoreDuplicates: true }))
               if (r.error) logError('signup.artisanUpsert', r.error)
             } catch (e) { logError('signup.artisanUpsert', e) }
           }

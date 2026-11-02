@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fetchPhones } from '@/lib/phones'
+import { logError } from '@/lib/logError'
 import { SkeletonPage } from '@/components/Skeleton'
 import { formatDA, categoryLabel } from '@/lib/format'
 import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock } from 'lucide-react'
@@ -304,13 +305,15 @@ export default function AdminDashboard() {
   // ── Actions admin ──
 
   const toggleArtisanAvailability = async (id: string, available: boolean) => {
-    await supabase.from('artisans').update({ is_available: available }).eq('id', id)
+    const { error } = await supabase.from('artisans').update({ is_available: available }).eq('id', id)
+    if (error) { logError('admin.artisanAvailability', error, { artisanId: id }); alert('Action impossible : ' + error.message); return }
     await loadArtisans()
     await loadStats()
   }
 
   const updateBookingStatus = async (id: string, status: string) => {
-    await supabase.from('bookings').update({ status }).eq('id', id)
+    const { error } = await supabase.from('bookings').update({ status }).eq('id', id)
+    if (error) { logError('admin.bookingStatus', error, { bookingId: id, status }); alert('Action impossible : ' + error.message); return }
     await loadBookings()
     await loadStats()
   }

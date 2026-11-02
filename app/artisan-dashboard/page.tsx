@@ -9,6 +9,7 @@ import { Wallet, CheckCircle2, Clock, Star, User, Calendar, BarChart3, Map, Spar
 import { isLaunchFree, SUB_FREE_UNTIL } from '@/lib/plans'
 import NavigateButton from '@/components/NavigateButton'
 import { fetchPhones, fetchMyPhone } from '@/lib/phones'
+import { logError } from '@/lib/logError'
 
 const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var(--accent)',in_progress:'var(--accent)',completed:'var(--success)',refused:'var(--danger)',cancelled:'var(--tx2)'}
 const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c} 13%, transparent)`,color:`color-mix(in srgb, ${c} 72%, var(--tx))`})
@@ -53,9 +54,14 @@ export default function ArtisanDashboard(){
     const lat=pos.coords.latitude,lng=pos.coords.longitude
     try{
       const{error}=await supabase.from('artisan_live_location').upsert({artisan_id:user.id,lat,lng,updated_at:new Date().toISOString()},{onConflict:'artisan_id'})
-      if(!error){if(!artisan?.lat||!artisan?.lng)await supabase.from('artisans').update({lat,lng}).eq('id',user.id);return}
-    }catch{}
-    await supabase.from('artisans').update({lat,lng}).eq('id',user.id)
+      if(!error){
+        if(!artisan?.lat||!artisan?.lng){const{error:e2}=await supabase.from('artisans').update({lat,lng}).eq('id',user.id);if(e2)logError('dashboard.pushLive.coarse',e2)}
+        return
+      }
+      logError('dashboard.pushLive.live',error) // table absente avant privacy_hardening.sql : repli sur artisans.lat/lng (arrondi par trigger)
+    }catch(e){logError('dashboard.pushLive.live',e)}
+    const{error:e3}=await supabase.from('artisans').update({lat,lng}).eq('id',user.id)
+    if(e3)logError('dashboard.pushLive.fallback',e3)
   }
 
   const toggleAvail=async()=>{
