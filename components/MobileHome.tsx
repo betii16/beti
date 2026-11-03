@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
 import CategoryCard from '@/components/CategoryCard'
-import { LayoutGrid, MapPin, Search, ChevronRight, Shapes, X, Navigation, SearchX, CalendarCheck, CheckCircle2 } from 'lucide-react'
+import { LayoutGrid, MapPin, Search, ChevronRight, Shapes, X, Navigation, SearchX } from 'lucide-react'
 import { OtherCategorySearch } from '@/components/OtherCategory'
 import { artisanAvatar } from '@/lib/avatar'
 
@@ -173,26 +173,6 @@ export default function MobileHome({
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* ═══ Comment ça marche (visiteurs) ═══ */}
-      {!q && !userName && (
-        <div style={{ padding: '26px 20px 0' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '-0.01em', margin: '0 0 12px' }}>{t('mhome.howTitle')}</h2>
-          <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[{ k: 'how1', Icon: Search }, { k: 'how2', Icon: CalendarCheck }, { k: 'how3', Icon: CheckCircle2 }].map((st, i) => (
-              <li key={st.k} style={{ display: 'flex', alignItems: 'flex-start', gap: 13, padding: '13px 14px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r-card)' }}>
-                <span aria-hidden style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 11, background: 'var(--accent-fill)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <st.Icon size={19} color="var(--on-accent)" strokeWidth={2}/>
-                </span>
-                <span style={{ minWidth: 0 }}>
-                  <span style={{ display: 'block', fontSize: 14.5, fontWeight: 800, color: 'var(--tx)', marginBottom: 2 }}>{i + 1}. {t(`mhome.${st.k}t`)}</span>
-                  <span style={{ display: 'block', fontSize: 13, color: 'var(--tx2)', lineHeight: 1.5 }}>{t(`mhome.${st.k}d`)}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
       )}
 

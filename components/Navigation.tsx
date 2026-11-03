@@ -46,7 +46,7 @@ export default function Navigation() {
     { href: '/#services',  label: t('nav.services') },
     { href: '/#artisans',  label: t('nav.artisans') },
     { href: '/map',        label: t('nav.map'), gold: true },
-    { href: '/#comment',   label: t('nav.howItWorks') },
+    { href: '/aide',       label: t('nav.howItWorks') },
   ]
 
   // Nav transparente seulement sur l'accueil (par-dessus le hero) ;

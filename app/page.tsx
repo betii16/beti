@@ -14,7 +14,7 @@ import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
 import CategoryCard from '@/components/CategoryCard'
-import { LayoutGrid, MapPinned, Search, CalendarCheck, CheckCircle2, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
+import { LayoutGrid, MapPinned, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
 import { LogoMark } from '@/components/Logo'
 import CinematicGate from '@/components/cinematic/CinematicGate'
@@ -146,7 +146,7 @@ export default function Home(){
         @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-6px)}}
         *{box-sizing:border-box;margin:0;padding:0}
         html{scroll-behavior:smooth}
-        #services,#artisans,#comment{scroll-margin-top:100px}
+        #services,#artisans{scroll-margin-top:100px}
         /* Boutons/chips/labels/cartes vivent dans globals.css (système global unique). */
         .badge{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
         .tag{padding:4px 10px;border-radius:var(--r-chip);background:var(--bg);border:1px solid var(--border);font-size:11px;color:var(--tx2);font-weight:500;white-space:nowrap}
@@ -351,25 +351,6 @@ export default function Home(){
           )}
         </section>
 
-        {/* ── COMMENT ÇA MARCHE ── */}
-        <section id="comment" className="reveal-on-scroll" style={{padding:'56px 24px 72px',maxWidth:1100,margin:'0 auto'}}>
-          <div style={{textAlign:'center',marginBottom:44}}><div className="section-label">{t('home.howTag')}</div><h2 style={{fontSize:28,fontWeight:800,letterSpacing:'-0.02em'}}>{t('home.howTitle')}</h2></div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'28px 18px'}}>
-            {[{n:'01',k:'step1',Icon:Search},{n:'02',k:'step2',Icon:CalendarCheck},{n:'03',k:'step3',Icon:CheckCircle2}].map((s,i)=>(
-              <div key={s.n} style={{position:'relative',padding:'0 8px'}}>
-                {/* Trait de liaison vers l'étape suivante (desktop) — pointillé « cordeau » */}
-                {i<2&&<div aria-hidden className="desktop-only" style={{position:'absolute',top:27,insetInlineStart:78,insetInlineEnd:-10,height:0,borderTop:'2px dashed color-mix(in srgb, var(--accent) 35%, transparent)',pointerEvents:'none'}}/>}
-                <div style={{position:'relative',width:54,height:54,borderRadius:15,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--accent-fill)',boxShadow:'0 2px 0 color-mix(in srgb, var(--accent-fill) 55%, #000), 0 12px 24px -12px var(--accent-fill)',marginBottom:20,zIndex:1}}>
-                  <s.Icon size={25} color="var(--on-accent)" strokeWidth={2}/>
-                  <span className="num" style={{position:'absolute',top:-8,insetInlineEnd:-8,minWidth:22,height:22,padding:'0 5px',borderRadius:11,background:'var(--bg2)',border:'1px solid var(--border2)',color:'var(--accent)',fontSize:10,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>{s.n}</span>
-                </div>
-                <h3 style={{fontSize:17,fontWeight:800,marginBottom:9}}>{t(`home.${s.k}t`)}</h3>
-                <div style={{fontSize:14,color:'var(--tx2)',lineHeight:1.7}}>{t(`home.${s.k}d`)}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* ── POURQUOI BETI ── */}
         <section className="reveal-on-scroll" style={{padding:'64px 24px',borderTop:'1px solid var(--border)',borderBottom:'1px solid var(--border)'}}>
           <div style={{maxWidth:1100,margin:'0 auto'}}>
@@ -424,7 +405,7 @@ export default function Home(){
                 <p style={{fontSize:13,color:'var(--tx2)',lineHeight:1.7,maxWidth:240}}>{t('home.footerDesc')}</p>
               </div>
               <nav aria-label={t('home.footerServices')}><div className="foot-h">{t('home.footerServices')}</div>{['plomberie','electricite','serrurerie','menage','peinture','demenagement'].map(s=><Link key={s} href="/#services" className="foot-link">{cl(s)}</Link>)}</nav>
-              <nav aria-label={t('home.footerPlatform')}><div className="foot-h">{t('home.footerPlatform')}</div>{[{l:t('home.footerHow'),h:'/#comment'},{l:t('nav.map'),h:'/map'},{l:t('home.footerBecome'),h:'/auth/signup'},{l:t('nav.login'),h:'/auth/login'}].map(s=><a key={s.l} href={s.h} className="foot-link">{s.l}</a>)}</nav>
+              <nav aria-label={t('home.footerPlatform')}><div className="foot-h">{t('home.footerPlatform')}</div>{[{l:t('home.footerHow'),h:'/aide'},{l:t('nav.map'),h:'/map'},{l:t('home.footerBecome'),h:'/auth/signup'},{l:t('nav.login'),h:'/auth/login'}].map(s=><a key={s.l} href={s.h} className="foot-link">{s.l}</a>)}</nav>
               <nav aria-label={t('home.footerSupport')}><div className="foot-h">{t('home.footerSupport')}</div>{[{l:t('nav.help'),h:'/aide'},{l:t('nav.settings'),h:'/parametres'},{l:t('home.footerLegal'),h:'/mentions'},{l:t('home.footerCgu'),h:'/cgu'},{l:t('home.footerPrivacy'),h:'/confidentialite'}].map(s=><a key={s.l} href={s.h} className="foot-link">{s.l}</a>)}</nav>
             </div>
             <div style={{height:1,background:'var(--border)',marginBottom:20}}/>
