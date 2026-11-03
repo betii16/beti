@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
@@ -27,7 +28,7 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 export default function ParametresPage() {
   const router = useRouter()
   const { t, isAr } = useLang()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -88,7 +89,7 @@ export default function ParametresPage() {
     { id: 'profil',        label: t('settings.profile')       },
     { id: 'securite',      label: t('settings.security')      },
     { id: 'notifications', label: t('settings.notifications') },
-  ]
+  ] as const
 
   return (
     <div className="set-scope" style={{ minHeight: '100vh', paddingTop: 72, direction: isAr ? 'rtl' : 'ltr' }}>
@@ -100,7 +101,7 @@ export default function ParametresPage() {
 
         <div role="tablist" className="no-scrollbar" style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 24, overflowX: 'auto' }}>
           {TABS.map(tab => (
-            <button key={tab.id} role="tab" aria-selected={activeTab === tab.id} onClick={() => setActiveTab(tab.id as any)}
+            <button key={tab.id} role="tab" aria-selected={activeTab === tab.id} onClick={() => setActiveTab(tab.id)}
               style={{ padding: '12px 18px', minHeight: 46, marginBottom: -1, whiteSpace: 'nowrap', background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? 'var(--accent)' : 'transparent'}`, color: activeTab === tab.id ? 'var(--accent)' : 'var(--tx2)', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
               {tab.label}
             </button>

@@ -21,6 +21,8 @@ type Booking = {
   artisans: { full_name: string; category: string; rating_avg: number } | null
 }
 
+type BookingRaw = Omit<Booking, 'artisans'> & { artisan_id: string }
+
 // Statuts → tokens de l'identité (lisibles en clair comme en sombre).
 const STATUS: Record<string, string> = {
   pending:     'var(--warning)',
@@ -64,22 +66,23 @@ export default function MesReservations() {
         .select('*')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
+        .returns<BookingRaw[]>()
       if (bkErr) { setLoadErr(true); setLoading(false); return }
 
       const list = bk || []
       const { data: rv, error: rvErr } = await supabase.from('reviews').select('booking_id').eq('client_id', user.id)
       if (rvErr) logError('reservations.loadReviews', rvErr) // non bloquant : le bouton « avis » reste simplement affiché
-      setReviewed(new Set((rv || []).map((r: any) => r.booking_id).filter(Boolean)))
+      setReviewed(new Set((rv || []).map((r: { booking_id: string | null }) => r.booking_id).filter((x): x is string => Boolean(x))))
       // L'artisan : nom sur `profiles`, catégorie/note sur `artisans` (même id).
-      const ids = Array.from(new Set(list.map((b: any) => b.artisan_id).filter(Boolean)))
+      const ids = Array.from(new Set(list.map(b => b.artisan_id).filter(Boolean)))
       const info: Record<string, { full_name: string; category: string; rating_avg: number }> = {}
       if (ids.length) {
         const [{ data: profs }, { data: arts }] = await Promise.all([
           supabase.from('profiles').select('id, full_name').in('id', ids),
           supabase.from('artisans').select('id, category, rating_avg').in('id', ids),
         ])
-        const pMap = new Map((profs || []).map((p: any) => [p.id, p.full_name]))
-        const aMap = new Map((arts || []).map((a: any) => [a.id, a]))
+        const pMap = new Map((profs || []).map((p: { id: string; full_name: string }) => [p.id, p.full_name]))
+        const aMap = new Map((arts || []).map((a: { id: string; category: string; rating_avg: number }) => [a.id, a]))
         for (const id of ids) {
           info[id] = {
             full_name: pMap.get(id) || 'Artisan',
@@ -88,7 +91,7 @@ export default function MesReservations() {
           }
         }
       }
-      setBookings(list.map((b: any) => ({ ...b, artisans: info[b.artisan_id] || null })))
+      setBookings(list.map(b => ({ ...b, artisans: info[b.artisan_id] || null })))
       // Actives d'abord (les plus proches en tête), puis le reste par récence.
       const rank = (st: string) => ['pending', 'confirmed', 'in_progress'].includes(st) ? 0 : 1
       setBookings(prev => [...prev].sort((a, b) => rank(a.status) - rank(b.status) || (rank(a.status) === 0 ? +new Date(a.scheduled_at) - +new Date(b.scheduled_at) : +new Date(b.created_at) - +new Date(a.created_at))))
@@ -145,11 +148,11 @@ export default function MesReservations() {
         {/* Onglets */}
         <div role="tablist" className="no-scrollbar" style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: 24, overflowX: 'auto' }}>
           {[
-            { id: 'all',       label: t('mySpace.tabAll'),    count: bookings.length },
-            { id: 'active',    label: t('mySpace.tabActive'), count: bookings.filter(b => ['pending','confirmed','in_progress'].includes(b.status)).length },
-            { id: 'completed', label: t('mySpace.tabDone'),   count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
+            { id: 'all' as const,       label: t('mySpace.tabAll'),    count: bookings.length },
+            { id: 'active' as const,    label: t('mySpace.tabActive'), count: bookings.filter(b => ['pending','confirmed','in_progress'].includes(b.status)).length },
+            { id: 'completed' as const, label: t('mySpace.tabDone'),   count: bookings.filter(b => ['completed','refused','cancelled'].includes(b.status)).length },
           ].map(tab => (
-            <button key={tab.id} role="tab" aria-selected={activeTab === tab.id} onClick={() => setActiveTab(tab.id as any)}
+            <button key={tab.id} role="tab" aria-selected={activeTab === tab.id} onClick={() => setActiveTab(tab.id)}
               style={{ padding: '12px 16px', minHeight: 46, background: 'transparent', border: 'none', borderBottom: `2px solid ${activeTab === tab.id ? 'var(--accent)' : 'transparent'}`, marginBottom: -1, color: activeTab === tab.id ? 'var(--accent)' : 'var(--tx2)', fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
               {tab.label}
               {tab.count > 0 && (

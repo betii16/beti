@@ -23,11 +23,20 @@ function generateFactureNumber(bookingId: string, date: string) {
   return `BETI-${d.getFullYear()}-${pad(d.getMonth()+1)}-${bookingId.slice(0,6).toUpperCase()}`
 }
 
+type Party = { full_name: string | null; phone: string | null; avatar_url?: string | null }
+type FactureBooking = {
+  id: string; created_at: string; completed_at?: string | null; updated_at?: string | null; scheduled_at?: string | null
+  address?: string | null; title?: string | null; description?: string | null
+  price_agreed: number | null; duration_hours?: number | null; travel_fee?: number | null
+  client: Party | null
+  artisan: { category?: string | null; hourly_rate?: number | null; profiles: Party | null }
+}
+
 export default function FacturePage() {
   const { bookingId } = useParams()
   const router = useRouter()
   const { t, isAr } = useLang()
-  const [booking, setBooking] = useState<any>(null)
+  const [booking, setBooking] = useState<FactureBooking | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -74,6 +83,7 @@ export default function FacturePage() {
     </div>
   )
 
+  if (!booking) return null
   const artisan = booking.artisan
   const client = booking.client
   const artisanName = artisan?.profiles?.full_name || 'Artisan'

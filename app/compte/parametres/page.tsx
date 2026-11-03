@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { fetchMyPhone } from '@/lib/phones'
@@ -27,7 +28,7 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 export default function Parametres() {
   const router = useRouter()
   const { t, isAr } = useLang()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState<'profil' | 'securite' | 'notifications'>('profil')
 
@@ -73,6 +74,7 @@ export default function Parametres() {
   }, [])
 
   const saveProfil = async () => {
+    if (!user) return
     setSavingProfil(true)
     const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id)
     if (error) { logError('account.saveProfile', error); alert('Enregistrement impossible : ' + error.message); setSavingProfil(false); return }
@@ -82,6 +84,7 @@ export default function Parametres() {
   }
 
   const saveSecurite = async () => {
+    if (!user) return
     if (newPassword && newPassword !== confirmPassword) {
       setPasswordError(true)
       setTimeout(() => setPasswordError(false), 3000)
@@ -101,6 +104,7 @@ export default function Parametres() {
   }
 
   const saveNotifs = async () => {
+    if (!user) return
     setSavingNotifs(true)
     const { error } = await supabase.from('profiles').update({ notif_email: notifEmail, notif_sms: notifSms }).eq('id', user.id)
     setSavingNotifs(false)
@@ -111,7 +115,7 @@ export default function Parametres() {
 
   const labelStyle = { fontSize: 12, color: 'var(--tx2)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 8, display: 'block' } as React.CSSProperties
 
-  if (loading) return (
+  if (loading || !user) return (
     <div role="status" aria-label={t('common.loading')} style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 64 }}>
       <div className="loader-ring" />
     </div>
@@ -121,7 +125,7 @@ export default function Parametres() {
     { id: 'profil',        Icon: User, label: t('settings.profile')       },
     { id: 'securite',      Icon: Lock, label: t('settings.security')      },
     { id: 'notifications', Icon: Bell, label: t('settings.notifications') },
-  ]
+  ] as const
 
   return (
     <div className="set-scope" style={{ paddingTop: 64, minHeight: '100vh', direction: isAr ? 'rtl' : 'ltr' }}>
@@ -140,7 +144,7 @@ export default function Parametres() {
           {sections.map(s => {
             const on = activeSection === s.id
             return (
-            <button key={s.id} aria-current={on ? 'page' : undefined} onClick={() => setActiveSection(s.id as any)}
+            <button key={s.id} aria-current={on ? 'page' : undefined} onClick={() => setActiveSection(s.id)}
               style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 46, padding: '12px 14px', background: on ? 'color-mix(in srgb, var(--accent) 10%, var(--bg2))' : 'transparent', border: 'none', borderRadius: 'var(--r-btn)', cursor: 'pointer', textAlign: 'start', transition: 'background 0.15s' }}>
               <s.Icon size={17} color={on ? 'var(--accent)' : 'var(--tx2)'} aria-hidden/>
               <span style={{ fontSize: 14, color: on ? 'var(--accent)' : 'var(--tx2)', fontWeight: on ? 700 : 500 }}>{s.label}</span>

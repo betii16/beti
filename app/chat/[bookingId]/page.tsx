@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import type { User as AuthUser, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { logError } from '@/lib/logError'
@@ -12,6 +13,8 @@ const SCOPE_CSS=`.chat-scope :is(a,button):focus-visible{outline:2px solid var(-
 
 type Msg = { id:string; booking_id:string; sender_id:string; sender_name:string; sender_role:string; content:string; created_at:string }
 
+type BookingRow = { id:string; client_id:string; artisan_id:string; status:string; title?:string|null }
+
 export default function ChatPage(){
   const params=useParams()
   const bookingId=Array.isArray(params?.bookingId)?params.bookingId[0]:params?.bookingId
@@ -19,9 +22,9 @@ export default function ChatPage(){
   const { t, isAr }=useLang()
   const [msgs,setMsgs]=useState<Msg[]>([])
   const [input,setInput]=useState('')
-  const [user,setUser]=useState<any>(null)
-  const [profile,setProfile]=useState<any>(null)
-  const [booking,setBooking]=useState<any>(null)
+  const [user,setUser]=useState<AuthUser|null>(null)
+  const [profile,setProfile]=useState<{full_name:string|null;role:string|null}|null>(null)
+  const [booking,setBooking]=useState<BookingRow|null>(null)
   const [otherName,setOtherName]=useState('')
   const [sending,setSending]=useState(false)
   const [loadErr,setLoadErr]=useState('')
@@ -42,10 +45,10 @@ export default function ChatPage(){
     let alive=true
     const fetchMsgs=async(initial=false)=>{
       if(!initial&&typeof document!=='undefined'&&document.hidden)return
-      const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true})
+      const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true}).returns<Msg[]>()
       if(!alive)return
       if(error){logError('chat.fetchMessages',error,{bookingId});if(initial)setLoadErr(t('cxb.loadErr'));return}
-      if(data)mergeMsgs(data as any)
+      if(data)mergeMsgs(data)
     }
     const init=async()=>{
       const{data:{user:u}}=await supabase.auth.getUser()
@@ -65,7 +68,7 @@ export default function ChatPage(){
 
     // Realtime (idéal) + dédup de l'écho.
     const ch=supabase.channel(`chat-${bookingId}`)
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`booking_id=eq.${bookingId}`},(payload:any)=>{
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`booking_id=eq.${bookingId}`},(payload:RealtimePostgresChangesPayload<Msg>)=>{
         mergeMsgs([payload.new as Msg])
       })
       .subscribe()
@@ -93,7 +96,7 @@ export default function ChatPage(){
       content
     }).select().single()
     if(error){logError('chat.send',error,{bookingId});setSendErr(t('cxb.sendFail'));setSending(false);return}
-    if(data)mergeMsgs([data as any])
+    if(data)mergeMsgs([data])
     setInput('')
     setSending(false)
   }
@@ -110,7 +113,7 @@ export default function ChatPage(){
     const{error}=await supabase.from('bookings').update({status}).eq('id',bookingId)
     setActing(false)
     if(error){logError('chat.setStatus',error,{bookingId,status});setSendErr(t('cxb.actionFail'));return}
-    setBooking((b:any)=>b?{...b,status}:b)
+    setBooking(b=>b?{...b,status}:b)
   }
   const markDone=()=>setStatus('in_progress')
   const confirmDone=()=>setStatus('completed')

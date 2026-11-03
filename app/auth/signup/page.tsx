@@ -186,10 +186,10 @@ export default function SignupPage() {
               <h1 style={{ fontSize: 'clamp(24px, 6.5vw, 28px)', fontWeight: 800, color: 'var(--tx)', marginBottom: 8, textAlign: 'center', lineHeight: 1.2 }}>{t('auth.welcome2')}</h1>
               <p style={{ fontSize: 13.5, color: 'var(--tx2)', marginBottom: 28, textAlign: 'center', lineHeight: 1.5 }}>{t('auth.youAre2')}</p>
               <div role="radiogroup" aria-label={t('auth.youAre2')}>
-              {[{ v: 'client', tt: t('auth.clientT'), d: t('auth.clientD'), Icon: UserRound }, { v: 'artisan', tt: t('auth.artisanT'), d: t('auth.artisanD'), Icon: Hammer }].map(o => {
+              {[{ v: 'client' as const, tt: t('auth.clientT'), d: t('auth.clientD'), Icon: UserRound }, { v: 'artisan' as const, tt: t('auth.artisanT'), d: t('auth.artisanD'), Icon: Hammer }].map(o => {
                 const active = role === o.v
                 return (
-                  <button type="button" role="radio" aria-checked={active} key={o.v} onClick={() => setRole(o.v as any)} className="press" style={{
+                  <button type="button" role="radio" aria-checked={active} key={o.v} onClick={() => setRole(o.v)} className="press" style={{
                     display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'start', font: 'inherit', color: 'inherit', minHeight: 72,
                     padding: '16px 18px', borderRadius: 'var(--r-card)', cursor: 'pointer', marginBottom: 10,
                     border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border)'}`,

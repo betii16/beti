@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import { haversineKm } from '@/lib/distance'
@@ -49,7 +50,7 @@ export default function MapPage() {
   const [sheetFull,setSheetFull]=useState(false)
   const [selected,setSelected]=useState<Art|null>(null)
   const [search,setSearch]=useState('')
-  const [user,setUser]=useState<any>(null)
+  const [user,setUser]=useState<AuthUser|null>(null)
   const [sent,setSent]=useState(false)
   const [sheetH,setSheetH]=useState(0)
   const [wide,setWide]=useState(false)

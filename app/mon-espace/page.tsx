@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -12,12 +13,15 @@ const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var
 const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c} 13%, transparent)`,color:`color-mix(in srgb, ${c} 72%, var(--tx))`})
 const SCOPE_CSS=`.me-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
+type BookingRaw={id:string;artisan_id:string;status:string;title:string;description:string|null;created_at:string;scheduled_at:string;price_agreed:number|null}
+type BookingRow=BookingRaw&{artisans:{profiles:{full_name:string}}}
+
 export default function ClientDashboard(){
   const router=useRouter()
   const { t, isAr, lang }=useLang()
-  const [user,setUser]=useState<any>(null)
-  const [profile,setProfile]=useState<any>(null)
-  const [bookings,setBookings]=useState<any[]>([])
+  const [user,setUser]=useState<AuthUser|null>(null)
+  const [profile,setProfile]=useState<{full_name:string|null}|null>(null)
+  const [bookings,setBookings]=useState<BookingRow[]>([])
   const [loading,setLoading]=useState(true)
 
   useEffect(()=>{load()},[])
@@ -26,18 +30,18 @@ export default function ClientDashboard(){
     if(!u){router.push('/auth/login?next='+encodeURIComponent(window.location.pathname));return};setUser(u)
     const[{data:p},{data:bk}]=await Promise.all([
       supabase.from('profiles').select('*').eq('id',u.id).single(),
-      supabase.from('bookings').select('*').eq('client_id',u.id).order('created_at',{ascending:false}).limit(20),
+      supabase.from('bookings').select('*').eq('client_id',u.id).order('created_at',{ascending:false}).limit(20).returns<BookingRaw[]>(),
     ])
     if(p)setProfile(p)
     // Nom de l'artisan via profiles (l'embed par FK pointait vers la mauvaise table).
     const list=bk||[]
-    const ids=Array.from(new Set(list.map((x:any)=>x.artisan_id).filter(Boolean)))
+    const ids=Array.from(new Set(list.map(x=>x.artisan_id).filter(Boolean)))
     const nameById:Record<string,string>={}
     if(ids.length){
       const{data:profs}=await supabase.from('profiles').select('id,full_name').in('id',ids)
-      for(const pr of (profs||[]) as any[])nameById[pr.id]=pr.full_name
+      for(const pr of (profs||[]) as {id:string;full_name:string}[])nameById[pr.id]=pr.full_name
     }
-    setBookings(list.map((x:any)=>({...x,artisans:{profiles:{full_name:nameById[x.artisan_id]||'Artisan'}}})))
+    setBookings(list.map(x=>({...x,artisans:{profiles:{full_name:nameById[x.artisan_id]||'Artisan'}}})))
     setLoading(false)
   }
 

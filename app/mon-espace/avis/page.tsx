@@ -16,12 +16,13 @@ type Review = {
   rating: number
   comment: string | null
   created_at: string
-  artisans: { full_name: string; category: string } | null
+  artisans?: { full_name: string; category: string } | null
 }
+type ReviewRaw = Omit<Review, 'artisans'> & { artisan_id: string }
 
 // L'artisan d'un avis : nom sur `profiles`, catégorie sur `artisans` (même id).
 // On enrichit en 2 requêtes au lieu d'un embed par nom de FK (fragile/erroné).
-async function withArtisanInfo(reviews: any[]): Promise<any[]> {
+async function withArtisanInfo(reviews: ReviewRaw[]): Promise<Review[]> {
   const list = reviews || []
   const ids = Array.from(new Set(list.map(r => r.artisan_id).filter(Boolean)))
   if (!ids.length) return list
@@ -29,8 +30,8 @@ async function withArtisanInfo(reviews: any[]): Promise<any[]> {
     supabase.from('profiles').select('id, full_name').in('id', ids),
     supabase.from('artisans').select('id, category').in('id', ids),
   ])
-  const pMap = new Map((profs || []).map((p: any) => [p.id, p.full_name]))
-  const aMap = new Map((arts || []).map((a: any) => [a.id, a.category]))
+  const pMap = new Map((profs || []).map((p: { id: string; full_name: string }) => [p.id, p.full_name]))
+  const aMap = new Map((arts || []).map((a: { id: string; category: string }) => [a.id, a.category]))
   return list.map(r => ({
     ...r,
     artisans: { full_name: pMap.get(r.artisan_id) || 'Artisan', category: aMap.get(r.artisan_id) || '' },
@@ -109,7 +110,8 @@ function MesAvisContent() {
         .select('*')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false })
-      if (data) setReviews(await withArtisanInfo(data) as any)
+        .returns<ReviewRaw[]>()
+      if (data) setReviews(await withArtisanInfo(data))
       setLoading(false)
     }
     init()
@@ -142,7 +144,8 @@ function MesAvisContent() {
         .select('*')
         .eq('client_id', userId)
         .order('created_at', { ascending: false })
-      if (data) setReviews(await withArtisanInfo(data) as any)
+        .returns<ReviewRaw[]>()
+      if (data) setReviews(await withArtisanInfo(data))
     }
     setSubmitting(false); setSubmitted(true); setShowForm(false); setRating(0); setComment(''); setPhotos([])
   }
