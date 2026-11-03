@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { ArtisanAvatar } from '@/components/ReviewPhotos'
 import { PortfolioManager } from '@/components/Portfolio'
 import { effectivePlan } from '@/lib/subscription'
 import { CategoryIcon } from '@/components/icons'
-import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles, Search, MapPin } from 'lucide-react'
+import { Wrench, User, Tag, Hammer, Clock, ClipboardList, FileText, Handshake, Lock, X, Sparkles, Search, MapPin, type LucideIcon } from 'lucide-react'
 import { useLang } from '@/lib/LangContext'
 import { fetchMyPhone, phoneTaken } from '@/lib/phones'
 import { logError } from '@/lib/logError'
@@ -58,7 +59,7 @@ const ICON: React.CSSProperties = { verticalAlign: 'middle', marginInlineEnd: 5 
 export default function ArtisanProfileConfig() {
   const router = useRouter()
   const { t, isAr } = useLang()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [plan, setPlan] = useState<'free' | 'basic' | 'premium'>('free')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -275,7 +276,7 @@ export default function ArtisanProfileConfig() {
     const mainRate = services.length > 0 ? services[0].price : 0
     const city = artisanAddress.split(',').pop()?.trim() || artisanAddress
 
-    const artisanData: any = {
+    const artisanData: Record<string, unknown> = {
       id: user.id,
       bio,
       category: mainCategory,
@@ -347,7 +348,7 @@ export default function ArtisanProfileConfig() {
     negotiable: '',
   }[id] || '')
 
-  const PRICE_TYPE_ICONS: Record<string, any> = {
+  const PRICE_TYPE_ICONS: Record<string, LucideIcon> = {
     hour: Clock, service: ClipboardList, quote: FileText, negotiable: Handshake,
   }
 
@@ -442,7 +443,7 @@ export default function ArtisanProfileConfig() {
               { id: 'info'      as const, label: t('artisanProfile.tabInfo'),       Icon: User },
               { id: 'tags'      as const, label: t('artisanProfile.tabTags'),       Icon: Tag,    badge: tags.length },
               { id: 'portfolio' as const, label: t('artisanProfile.tabPortfolio'),  Icon: Hammer },
-            ]).map(tab => (
+            ] as Array<{ id: 'services' | 'info' | 'tags' | 'portfolio'; label: string; Icon: LucideIcon; badge?: number }>).map(tab => (
               <button key={tab.id} role="tab" aria-selected={activeSection === tab.id} onClick={() => setActiveSection(tab.id)}
                 style={{
                   flex: '1 0 auto', minHeight: 44, padding: '10px 14px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
@@ -455,8 +456,8 @@ export default function ArtisanProfileConfig() {
                 }}
               >
                 <tab.Icon size={16} aria-hidden/> {tab.label}
-                {'badge' in tab && (tab as any).badge > 0 && (
-                  <span className="num" style={{ padding: '1px 7px', borderRadius: 'var(--r-pill)', background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700 }}>{(tab as any).badge}</span>
+                {(tab.badge ?? 0) > 0 && (
+                  <span className="num" style={{ padding: '1px 7px', borderRadius: 'var(--r-pill)', background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700 }}>{tab.badge}</span>
                 )}
               </button>
             ))}
@@ -517,7 +518,7 @@ export default function ArtisanProfileConfig() {
                         {PRICE_TYPE_IDS.map(ptId => {
                           const PIcon = PRICE_TYPE_ICONS[ptId]
                           return (
-                            <button key={ptId} type="button" role="radio" aria-checked={service.price_type === ptId} onClick={() => updateService(i, { price_type: ptId as any })}
+                            <button key={ptId} type="button" role="radio" aria-checked={service.price_type === ptId} onClick={() => updateService(i, { price_type: ptId as Service['price_type'] })}
                               style={{
                                 minHeight: 44, padding: '10px 12px', borderRadius: 'var(--r-field)', textAlign: 'start',
                                 border: `1.5px solid ${service.price_type === ptId ? 'var(--accent)' : 'var(--border)'}`,

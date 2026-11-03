@@ -16,9 +16,9 @@ export async function POST(req: Request) {
   if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
 
   let admin
-  try { admin = getAdminClient() } catch (e: any) {
+  try { admin = getAdminClient() } catch (e) {
     logError('api.account.delete.config', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 })
   }
 
   const { data: { user }, error: authErr } = await admin.auth.getUser(token)

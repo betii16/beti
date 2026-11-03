@@ -11,6 +11,7 @@ import NavigateButton from '@/components/NavigateButton'
 
 type Mission = {
   id: string
+  client_id: string
   title: string
   address: string
   scheduled_at: string
@@ -61,10 +62,11 @@ export default function Planning() {
         .eq('artisan_id', user.id)
         .in('status', ['confirmed', 'in_progress', 'completed'])
         .order('scheduled_at', { ascending: true })
+        .returns<Mission[]>()
 
       if (data) {
-        const ph = await fetchPhones(data.map((m: any) => m.client_id))
-        setMissions(data.map((m: any) => ({ ...m, profiles: m.profiles ? { ...m.profiles, phone: ph[m.client_id] || m.profiles.phone || null } : m.profiles })))
+        const ph = await fetchPhones(data.map(m => m.client_id))
+        setMissions(data.map(m => ({ ...m, profiles: m.profiles ? { ...m.profiles, phone: ph[m.client_id] || m.profiles.phone || null } : m.profiles })))
       }
       setLoading(false)
     }

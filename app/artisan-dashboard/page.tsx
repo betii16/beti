@@ -1,6 +1,7 @@
 ﻿'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
@@ -15,12 +16,16 @@ const STATUS_TONE:Record<string,string>={pending:'var(--warning)',confirmed:'var
 const tone=(c:string):React.CSSProperties=>({background:`color-mix(in srgb, ${c} 13%, transparent)`,color:`color-mix(in srgb, ${c} 72%, var(--tx))`})
 const SCOPE_CSS=`.dash-scope :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}`
 
+type ProfileRow={full_name:string|null;avatar_url:string|null;phone:string|null}
+type ArtisanRow={is_available:boolean;rating_avg:number|null;rating_count:number|null;bio:string|null;lat:number|null;lng:number|null;hourly_rate:number|null;category:string|null}
+type BookingRow={id:string;client_id:string;status:string;title:string;description:string|null;created_at:string;address:string;price_agreed:number|null;lat:number|null;lng:number|null;profiles:{full_name?:string|null;phone?:string|null}|null}
+
 export default function ArtisanDashboard(){
   const router=useRouter();const{t,isAr,lang}=useLang()
-  const [user,setUser]=useState<any>(null)
-  const [profile,setProfile]=useState<any>(null)
-  const [artisan,setArtisan]=useState<any>(null)
-  const [bookings,setBookings]=useState<any[]>([])
+  const [user,setUser]=useState<AuthUser|null>(null)
+  const [profile,setProfile]=useState<ProfileRow|null>(null)
+  const [artisan,setArtisan]=useState<ArtisanRow|null>(null)
+  const [bookings,setBookings]=useState<BookingRow[]>([])
   const [stats,setStats]=useState({revenue:0,missions:0,pending:0,rating:0,ratingCount:0})
   const [loading,setLoading]=useState(true)
   const [isAvailable,setIsAvailable]=useState(false)
@@ -41,9 +46,9 @@ export default function ArtisanDashboard(){
     ])
     if(p){const mp=await fetchMyPhone(u.id,p.phone);setProfile({...p,phone:mp})}
     if(a){setArtisan(a);setIsAvailable(a.is_available)}
-    if(b){const ph=await fetchPhones(b.map((x:any)=>x.client_id));setBookings(b.map((x:any)=>({...x,profiles:{...(x.profiles||{}),phone:ph[x.client_id]||x.profiles?.phone||null}})))}
-    const rev=(completed||[]).reduce((s:number,x:any)=>s+(x.price_agreed||0),0)
-    const pending=(b||[]).filter((x:any)=>x.status==='pending').length
+    if(b){const ph=await fetchPhones(b.map(x=>x.client_id));setBookings(b.map(x=>({...x,profiles:{...(x.profiles||{}),phone:ph[x.client_id]||x.profiles?.phone||null}})))}
+    const rev=(completed||[]).reduce((s:number,x)=>s+(x.price_agreed||0),0)
+    const pending=(b||[]).filter(x=>x.status==='pending').length
     setStats({revenue:rev,missions:(completed||[]).length,pending,rating:a?.rating_avg||0,ratingCount:a?.rating_count||0})
     setLoading(false)
   }
@@ -91,7 +96,7 @@ export default function ArtisanDashboard(){
     if(!artisan||!profile)return 0;const total=7;let s=0
     if(profile.full_name)s++;if(profile.avatar_url)s++;if(profile.phone)s++
     if(artisan.bio&&artisan.bio.length>10)s++;if(artisan.lat&&artisan.lng)s++
-    if(artisan.hourly_rate>0)s++;if(artisan.category)s++
+    if((artisan.hourly_rate??0)>0)s++;if(artisan.category)s++
     return Math.round((s/total)*100)
   })()
 

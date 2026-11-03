@@ -14,12 +14,16 @@ import { Skeleton } from '@/components/Skeleton'
 
 function Stars({r,s=14}:{r:number;s?:number}){return<div role="img" aria-label={`${(r||0).toFixed(1)} / 5`} style={{display:'flex',gap:2}}>{[1,2,3,4,5].map(i=><svg key={i} aria-hidden width={s} height={s} viewBox="0 0 24 24" fill={i<=Math.round(r)?'var(--star)':'var(--border2)'}><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>}
 
+type ArtisanData={category:string;bio:string|null;hourly_rate:number|null;rating_avg:number|null;rating_count:number|null;total_missions:number|null;years_experience:number|null;intervention_radius_km:number|null;is_available:boolean;location_city:string|null;tags:string[]|null;plan?:string|null;plan_until?:string|null}
+type ProfileData={full_name:string|null;avatar_url:string|null}
+type ReviewData={id:string;rating:number;comment:string|null;photos:string[]|null;created_at:string;profiles:{full_name:string|null}|null}
+
 export default function ArtisanClient(){
   const params=useParams();const id=params?.id as string;const router=useRouter()
   const { t, isAr } = useLang()
-  const [a,setA]=useState<any>(null)
-  const [p,setP]=useState<any>(null)
-  const [revs,setRevs]=useState<any[]>([])
+  const [a,setA]=useState<ArtisanData|null>(null)
+  const [p,setP]=useState<ProfileData|null>(null)
+  const [revs,setRevs]=useState<ReviewData[]>([])
   const [loading,setLoading]=useState(true)
   const [uid,setUid]=useState<string|null>(null)
   const [tab,setTab]=useState<'about'|'portfolio'|'reviews'|'rates'>('about')
@@ -48,7 +52,7 @@ export default function ArtisanClient(){
         supabase.auth.getUser(),
         supabase.from('artisans').select('*').eq('id',id).maybeSingle(),
         supabase.from('profiles').select('full_name,avatar_url').eq('id',id).maybeSingle(),
-        supabase.from('reviews').select('id,rating,comment,photos,created_at,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',id).order('created_at',{ascending:false}).limit(30),
+        supabase.from('reviews').select('id,rating,comment,photos,created_at,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',id).order('created_at',{ascending:false}).limit(30).returns<ReviewData[]>(),
       ])
       if(user)setUid(user.id)
       // Erreur réseau ≠ fiche introuvable : on propose de réessayer.
@@ -67,7 +71,7 @@ export default function ArtisanClient(){
     if(!uid){router.push('/auth/login?next='+encodeURIComponent(window.location.pathname));return}
     if(isDemoArtisan(id)){setContactErr(t('contact.demoProfile'));return}
     if(ty==='message'){setBooking(true);return}
-    const res=await contactArtisan({clientId:uid,artisanId:id,category:a?.category,hourlyRate:a?.hourly_rate,type:ty})
+    const res=await contactArtisan({clientId:uid,artisanId:id,category:a?.category,hourlyRate:a?.hourly_rate??undefined,type:ty})
     if(!res.ok){setContactErr(res.message);return}
     setSent(true)
   }
@@ -114,11 +118,11 @@ export default function ArtisanClient(){
     </div>
   )
 
-  const art=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
+  const art:ArtisanData=a||{category:'plomberie',bio:'',hourly_rate:0,rating_avg:0,rating_count:0,total_missions:0,years_experience:0,intervention_radius_km:20,is_available:true,location_city:'Algérie',tags:[]}
   const prof=p||{full_name:'Artisan BETI',phone:null,avatar_url:null}
   const c=categoryColor(art.category)
   const init=prof.full_name?.split(' ').map((n:string)=>n[0]).join('').toUpperCase().slice(0,2)||'A'
-  const avgR=revs.length>0?revs.reduce((s:number,r:any)=>s+r.rating,0)/revs.length:art.rating_avg||0
+  const avgR=revs.length>0?revs.reduce((s:number,r)=>s+r.rating,0)/revs.length:art.rating_avg||0
 
   const TABS=[
     {id:'about'    as const,label:t('profile.about')},
@@ -280,7 +284,7 @@ export default function ArtisanClient(){
                       </div>
                       <div style={{flex:1,minWidth:180}}>
                         {[5,4,3,2,1].map(star=>{
-                          const cnt=revs.filter((r:any)=>r.rating===star).length
+                          const cnt=revs.filter(r=>r.rating===star).length
                           const pct=Math.round((cnt/revs.length)*100)
                           return(
                             <div key={star} style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
@@ -300,7 +304,7 @@ export default function ArtisanClient(){
                     <div style={{textAlign:'center',padding:'40px 16px',color:tx2,fontSize:14,background:bg3,border:`1px dashed var(--border2)`,borderRadius:'var(--r-card)'}}>{t('profile.noReviewsYet')}</div>
                   ):(
                     <div style={{display:'flex',flexDirection:'column',gap:12}}>
-                      {revs.map((r:any)=>(
+                      {revs.map(r=>(
                         <div key={r.id} style={{background:bg3,border:`1px solid ${brd}`,borderRadius:14,padding:'18px 20px'}}>
                           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
                             <div style={{display:'flex',alignItems:'center',gap:10}}>

@@ -8,7 +8,7 @@ import { fetchPhones } from '@/lib/phones'
 import { logError } from '@/lib/logError'
 import { SkeletonPage } from '@/components/Skeleton'
 import { formatDA, categoryLabel } from '@/lib/format'
-import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock } from 'lucide-react'
+import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock, type LucideIcon } from 'lucide-react'
 
 type Tab = 'overview' | 'artisans' | 'bookings' | 'users' | 'reviews' | 'subscriptions'
 
@@ -231,8 +231,8 @@ export default function AdminDashboard() {
     ])
 
     // Revenus = somme des bookings completed
-    const { data: revData } = await supabase.from('bookings').select('price_agreed').eq('status', 'completed')
-    const revenue = (revData || []).reduce((s: number, b: any) => s + (b.price_agreed || 0), 0)
+    const { data: revData } = await supabase.from('bookings').select('price_agreed').eq('status', 'completed').returns<{ price_agreed: number | null }[]>()
+    const revenue = (revData || []).reduce((s: number, b) => s + (b.price_agreed || 0), 0)
 
     setStats({
       totalArtisans: totalArtisans || 0,
@@ -253,9 +253,10 @@ export default function AdminDashboard() {
       .select('id, category, is_available, rating_avg, rating_count, total_missions, hourly_rate, location_city, created_at, profiles!inner(full_name, phone, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(100)
+      .returns<ArtisanRow[]>()
     if (data) {
-      const ph = await fetchPhones(data.map((a: any) => a.id))
-      setArtisans(data.map((a: any) => ({ ...a, profiles: a.profiles ? { ...a.profiles, phone: ph[a.id] || a.profiles.phone || '' } : a.profiles })) as any)
+      const ph = await fetchPhones(data.map(a => a.id))
+      setArtisans(data.map(a => ({ ...a, profiles: a.profiles ? { ...a.profiles, phone: ph[a.id] || a.profiles.phone || '' } : a.profiles })))
     }
   }
 
@@ -265,7 +266,8 @@ export default function AdminDashboard() {
       .select('id, title, description, address, scheduled_at, status, price_agreed, created_at, client:profiles!bookings_client_id_fkey(full_name), artisan:profiles!bookings_artisan_id_fkey(full_name)')
       .order('created_at', { ascending: false })
       .limit(100)
-    if (data) setBookings(data as any)
+      .returns<BookingRow[]>()
+    if (data) setBookings(data)
   }
 
   const loadUsers = async () => {
@@ -274,9 +276,10 @@ export default function AdminDashboard() {
       .select('id, full_name, phone, role, created_at, avatar_url')
       .order('created_at', { ascending: false })
       .limit(100)
+      .returns<UserRow[]>()
     if (data) {
-      const ph = await fetchPhones(data.map((u: any) => u.id))
-      setUsers(data.map((u: any) => ({ ...u, phone: ph[u.id] || u.phone || '' })) as any)
+      const ph = await fetchPhones(data.map(u => u.id))
+      setUsers(data.map(u => ({ ...u, phone: ph[u.id] || u.phone || '' })))
     }
   }
 
@@ -286,7 +289,8 @@ export default function AdminDashboard() {
       .select('id, rating, comment, created_at, client:profiles!reviews_client_id_fkey(full_name), artisan_profile:profiles!reviews_artisan_id_fkey(full_name)')
       .order('created_at', { ascending: false })
       .limit(100)
-    if (data) setReviews(data as any)
+      .returns<ReviewRow[]>()
+    if (data) setReviews(data)
   }
 
   const loadSubscriptions = async () => {
@@ -296,9 +300,10 @@ export default function AdminDashboard() {
         .select('id, artisan_id, plan, cycle, amount, status, payment_ref, created_at, profiles!subscriptions_artisan_id_fkey(full_name, phone)')
         .order('created_at', { ascending: false })
         .limit(100)
+        .returns<SubRow[]>()
       if (!error && data) {
-        const ph = await fetchPhones(data.map((s: any) => s.artisan_id))
-        setSubs(data.map((s: any) => ({ ...s, profiles: s.profiles ? { ...s.profiles, phone: ph[s.artisan_id] || s.profiles.phone || '' } : s.profiles })) as any)
+        const ph = await fetchPhones(data.map(s => s.artisan_id))
+        setSubs(data.map(s => ({ ...s, profiles: s.profiles ? { ...s.profiles, phone: ph[s.artisan_id] || s.profiles.phone || '' } : s.profiles })))
       }
     } catch { /* table subscriptions pas encore créée */ }
   }
@@ -389,13 +394,13 @@ export default function AdminDashboard() {
               { id: 'subscriptions', Icon: Wallet, label: 'Abonnements', badge: subs.filter(s => s.status === 'pending').length },
               { id: 'users',    Icon: User, label: 'Utilisateurs' },
               { id: 'reviews',  Icon: Star, label: 'Avis' },
-            ] as const).map(item => (
+            ] as Array<{ id: Tab; Icon: LucideIcon; label: string; badge?: number }>).map(item => (
               <button key={item.id} onClick={() => setTab(item.id as Tab)} aria-current={tab === item.id ? 'page' : undefined} className="adm-nav-btn">
                 <item.Icon size={16} aria-hidden/>
                 <span style={{ flex: 1 }}>{item.label}</span>
-                {'badge' in item && (item as any).badge > 0 && (
+                {(item.badge ?? 0) > 0 && (
                   <span className="num" style={{ padding: '1px 7px', borderRadius: 'var(--r-pill)', background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 700 }}>
-                    {(item as any).badge}
+                    {item.badge}
                   </span>
                 )}
               </button>

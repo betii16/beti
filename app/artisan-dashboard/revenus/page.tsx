@@ -1,6 +1,7 @@
 ﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { formatDA } from '@/lib/format'
@@ -14,11 +15,13 @@ const SCOPE_CSS=`.rev-scope :is(a,button):focus-visible{outline:2px solid var(--
 const KPI_LBL:React.CSSProperties={fontSize:11.5,color:'var(--tx2)',fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase',marginBottom:10}
 const KPI_VAL:React.CSSProperties={fontSize:'clamp(22px,6vw,28px)',lineHeight:1.1,fontWeight:800,color:'var(--tx)',whiteSpace:'nowrap'}
 
+type BookingRow={id:string;title:string;status:string;price_agreed:number|null;created_at:string;profiles:{full_name:string|null}|null}
+
 export default function RevenusPage(){
   const router=useRouter()
   const { t, isAr, lang } = useLang()
-  const [user,setUser]=useState<any>(null)
-  const [bookings,setBookings]=useState<any[]>([])
+  const [user,setUser]=useState<AuthUser|null>(null)
+  const [bookings,setBookings]=useState<BookingRow[]>([])
   const [loading,setLoading]=useState(true)
   const [premium,setPremium]=useState(false)
   const [period,setPeriod]=useState<'week'|'month'|'all'>('month')
@@ -28,7 +31,7 @@ export default function RevenusPage(){
     const{data:{user:u}}=await supabase.auth.getUser()
     if(!u){router.push('/auth/login');return};setUser(u)
     const[{data},{data:art}]=await Promise.all([
-      supabase.from('bookings').select('id,title,status,price_agreed,created_at,profiles!bookings_client_id_fkey(full_name)').eq('artisan_id',u.id).order('created_at',{ascending:false}).limit(100),
+      supabase.from('bookings').select('id,title,status,price_agreed,created_at,profiles!bookings_client_id_fkey(full_name)').eq('artisan_id',u.id).order('created_at',{ascending:false}).limit(100).returns<BookingRow[]>(),
       supabase.from('artisans').select('plan,plan_until').eq('id',u.id).single(),
     ])
     if(data)setBookings(data)
@@ -43,14 +46,14 @@ export default function RevenusPage(){
     return period==='week'?d<7*86400000:d<30*86400000
   })
   const completed=filtered.filter(b=>b.status==='completed')
-  const totalRev=completed.reduce((s:number,b:any)=>s+(b.price_agreed||0),0)
+  const totalRev=completed.reduce((s:number,b)=>s+(b.price_agreed||0),0)
   const avgRev=completed.length>0?Math.round(totalRev/completed.length):0
 
   // Weekly chart data (last 8 weeks)
   const weekData=Array.from({length:8},(_,i)=>{
     const weekStart=now-(7-i)*7*86400000
     const weekEnd=weekStart+7*86400000
-    const rev=bookings.filter(b=>b.status==='completed'&&new Date(b.created_at).getTime()>=weekStart&&new Date(b.created_at).getTime()<weekEnd).reduce((s:number,b:any)=>s+(b.price_agreed||0),0)
+    const rev=bookings.filter(b=>b.status==='completed'&&new Date(b.created_at).getTime()>=weekStart&&new Date(b.created_at).getTime()<weekEnd).reduce((s:number,b)=>s+(b.price_agreed||0),0)
     return{label:`${t('revenus.weekPrefix')}${i+1}`,value:rev}
   })
   const maxWeek=Math.max(...weekData.map(w=>w.value),1)

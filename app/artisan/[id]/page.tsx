@@ -34,18 +34,18 @@ async function load(id: string): Promise<Result> {
     ])
     if (a.error) return { status: 'unknown' }
     if (!a.data) return { status: 'missing' }
-    const d = a.data as any
+    const d = a.data as { category: string; bio: string | null; location_city: string | null; rating_avg: number | null; rating_count: number | null; plan: string | null; plan_until: string | null }
     if (!isListed(d)) return { status: 'unknown' }
     return {
       status: 'ok',
       fiche: {
-        name: (p.data as any)?.full_name || 'Artisan BETI',
+        name: (p.data as { full_name: string | null } | null)?.full_name || 'Artisan BETI',
         metier: METIERS[d.category] || 'Artisan',
         city: d.location_city || 'Algérie',
         bio: (d.bio || '').toString().slice(0, 300),
         rating: Number(d.rating_avg) || 0,
         count: Number(d.rating_count) || 0,
-        avatar: (p.data as any)?.avatar_url || null,
+        avatar: (p.data as { avatar_url: string | null } | null)?.avatar_url || null,
       },
     }
   } catch { return { status: 'unknown' } }
