@@ -58,7 +58,7 @@ export default function NativeBridge() {
           Haptics.impact({ style }).catch(() => {})
         }
         // Expose un helper global pour les actions importantes (réservation, succès…)
-        ;(window as any).betiHaptic = impact
+        ;(window as unknown as { betiHaptic?: typeof impact }).betiHaptic = impact
         // Actions clés (réservation, envoi de message…) : boutons de validation
         const onClick = (e: MouseEvent) => {
           const el = (e.target as Element | null)?.closest?.('button[type="submit"], .btn-primary, [data-haptic]')
@@ -69,12 +69,12 @@ export default function NativeBridge() {
         // Redirige l'API web vers le natif (sans casser le type de retour)
         try {
           const original = navigator.vibrate?.bind(navigator)
-          ;(navigator as any).vibrate = (pattern: number | number[]) => {
+          ;(navigator as unknown as { vibrate: (p: number | number[]) => boolean }).vibrate = (pattern: number | number[]) => {
             const ms = Array.isArray(pattern) ? pattern[0] : pattern
             impact(typeof ms === 'number' ? ms : 10)
             return true
           }
-          cleanup.push(() => { if (original) (navigator as any).vibrate = original })
+          cleanup.push(() => { if (original) (navigator as unknown as { vibrate: typeof original }).vibrate = original })
         } catch {}
       } catch {}
 
@@ -163,10 +163,10 @@ export default function NativeBridge() {
       document.addEventListener('click', onLink)
       cleanup.push(() => document.removeEventListener('click', onLink))
       const origOpen = window.open
-      window.open = ((url?: string | URL, ...rest: any[]) => {
+      window.open = ((url?: string | URL, ...rest: unknown[]) => {
         const u = url ? String(url) : ''
         if (u && isExternal(u)) { window.location.href = u; return null }
-        return (origOpen as any).call(window, url, ...rest)
+        return Reflect.apply(origOpen, window, [url, ...rest])
       }) as typeof window.open
       cleanup.push(() => { window.open = origOpen })
     })()

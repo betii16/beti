@@ -4,6 +4,7 @@
 // Saisie d'adresse + carte avec curseur draggable — style Yassir
 
 import { useState, useEffect, useRef } from 'react'
+import { getLeaflet, hasLeaflet, type LeafletMap, type LeafletLayer, type LeafletCircle, type LeafletEvent, type NominatimResult } from '@/lib/leaflet'
 import { MapPin, Crosshair, Check } from 'lucide-react'
 
 type Location = {
@@ -30,17 +31,17 @@ export function AddressPicker({
   height?: number
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstance = useRef<any>(null)
-  const markerRef = useRef<any>(null)
+  const mapInstance = useRef<LeafletMap | null>(null)
+  const markerRef = useRef<LeafletLayer | null>(null)
   const [address, setAddress] = useState(defaultAddress)
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [currentLat, setCurrentLat] = useState(defaultLat)
   const [currentLng, setCurrentLng] = useState(defaultLng)
   const [loading, setLoading] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
-  const searchTimeout = useRef<any>(null)
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
   // Charger Leaflet
@@ -55,7 +56,7 @@ export function AddressPicker({
         link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
         document.head.appendChild(link)
       }
-      if (!(window as any).L) {
+      if (!hasLeaflet()) {
         await new Promise<void>(resolve => {
           const script = document.createElement('script')
           script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
@@ -79,7 +80,7 @@ export function AddressPicker({
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || mapInstance.current) return
 
-    const L = (window as any).L
+    const L = getLeaflet()
 
     const map = L.map(mapRef.current, {
       center: [currentLat, currentLng],
@@ -120,7 +121,7 @@ export function AddressPicker({
     }).addTo(map)
 
     // Quand on glisse le marqueur
-    marker.on('dragend', async (e: any) => {
+    marker.on('dragend', async (e: LeafletEvent) => {
       const { lat, lng } = e.target.getLatLng()
       setCurrentLat(lat)
       setCurrentLng(lng)
@@ -128,7 +129,7 @@ export function AddressPicker({
     })
 
     // Quand on clique sur la carte
-    map.on('click', async (e: any) => {
+    map.on('click', async (e: LeafletEvent) => {
       const { lat, lng } = e.latlng
       marker.setLatLng([lat, lng])
       setCurrentLat(lat)
@@ -159,7 +160,7 @@ export function AddressPicker({
   }
 
   // Formater l'adresse de manière lisible
-  const formatAddress = (data: any) => {
+  const formatAddress = (data: NominatimResult) => {
     const a = data.address || {}
     const parts = [
       a.house_number,
@@ -188,11 +189,11 @@ export function AddressPicker({
   const handleAddressInput = (val: string) => {
     setAddress(val)
     setConfirmed(false)
-    clearTimeout(searchTimeout.current)
+    if (searchTimeout.current) clearTimeout(searchTimeout.current)
     searchTimeout.current = setTimeout(() => searchAddress(val), 600)
   }
 
-  const handleSelectSuggestion = (suggestion: any) => {
+  const handleSelectSuggestion = (suggestion: NominatimResult) => {
     const lat = parseFloat(suggestion.lat)
     const lng = parseFloat(suggestion.lon)
     const addr = suggestion.display_name

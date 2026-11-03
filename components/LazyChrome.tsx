@@ -13,7 +13,7 @@ export default function LazyChrome() {
   const [native, setNative] = useState(false)
   useEffect(() => {
     // L'intro n'existe que dans l'app Capacitor : le web ne télécharge jamais son code.
-    try { setNative(!!(window as any).Capacitor?.isNativePlatform?.()) } catch {}
+    try { setNative(!!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) } catch {}
   }, [])
   return (
     <>

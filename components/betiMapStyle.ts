@@ -3,6 +3,8 @@
 // terre = chaux / nuit, eau teintée, routes discrètes, labels en encre,
 // POI et numéros masqués, labels de lieux moins denses.
 
+import type { StyleSpecification } from 'maplibre-gl'
+
 type Theme = 'light' | 'dark'
 type Lang = 'fr' | 'ar'
 
@@ -16,9 +18,9 @@ const PALETTE = {
   dark: { land: '#13212C', park: '#16302B', water: '#1B3D55', road: '#5B7488', roadMinor: '#3E5568', casing: '#0F1A23', building: '#1C2F3E', ink: '#E9E4D8', ink2: '#B3BEC6', halo: '#13212C', rail: '#2A3F50' },
 } as const
 
-const cache = new Map<string, Promise<any>>()
+const cache = new Map<string, Promise<StyleSpecification>>()
 
-export function loadBetiStyle(theme: Theme, lang: Lang): Promise<any> {
+export function loadBetiStyle(theme: Theme, lang: Lang): Promise<StyleSpecification> {
   const key = `${theme}-${lang}`
   let p = cache.get(key)
   if (!p) {
@@ -31,13 +33,15 @@ export function loadBetiStyle(theme: Theme, lang: Lang): Promise<any> {
 
 const HIDE = /^(poi_|housenumber|watername_lake_pois|waterway_label|boundary_|aeroway|building-top|tunnel_|rail|road_path_areas|roadname_minor|place_country|place_continent|place_state|water_shadow|landcover$)/
 
-function restyle(style: any, theme: Theme, lang: Lang) {
+type LooseLayer = { id: string; type: string; minzoom?: number; paint?: Record<string, unknown>; layout?: Record<string, unknown> }
+
+function restyle(style: { layers: LooseLayer[] }, theme: Theme, lang: Lang): StyleSpecification {
   const c = PALETTE[theme]
-  const nameField: any = lang === 'ar'
+  const nameField: unknown[] = lang === 'ar'
     ? ['coalesce', ['get', 'name:ar'], ['get', 'name']]
     : ['coalesce', ['get', 'name:fr'], ['get', 'name:en'], ['get', 'name:latin'], ['get', 'name']]
 
-  style.layers = style.layers.map((l: any) => {
+  style.layers = style.layers.map((l): LooseLayer => {
     const id: string = l.id
     l.paint = { ...(l.paint || {}) }
     l.layout = { ...(l.layout || {}) }
@@ -74,5 +78,5 @@ function restyle(style: any, theme: Theme, lang: Lang) {
     }
     return l
   })
-  return style
+  return style as unknown as StyleSpecification
 }

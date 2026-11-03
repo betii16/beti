@@ -59,7 +59,7 @@ export default function TrustButton({
         type="button"
         onClick={() => setOpen(true)}
         className="beti-trust"
-        style={{ ['--ring' as any]: sm ? '1.5px' : '2px', direction: isAr ? 'rtl' : 'ltr' }}
+        style={{ ['--ring']: sm ? '1.5px' : '2px', direction: isAr ? 'rtl' : 'ltr' } as React.CSSProperties}
       >
         <span className="beti-trust__face" style={{ gap: sm ? 6 : 8, padding: sm ? '7px 16px' : '11px 22px', fontSize: sm ? 12 : 13.5 }}>
           <Award size={sm ? 13 : 15} fill="rgba(255,255,255,.25)" strokeWidth={2.2} />

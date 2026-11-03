@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 // Côté artisan — choisir son adresse + rayon d'intervention
 
 import { useState, useEffect, useRef } from 'react'
+import { getLeaflet, hasLeaflet, type LeafletMap, type LeafletLayer, type LeafletCircle, type LeafletEvent, type NominatimResult } from '@/lib/leaflet'
 import { Wrench, MapPin, Crosshair, Check } from 'lucide-react'
 
 
@@ -33,12 +34,12 @@ export function ArtisanZonePicker({
   onSave?: (data: { radius: number; address: string; lat: number; lng: number }) => void
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstance = useRef<any>(null)
-  const markerRef = useRef<any>(null)
-  const circleRef = useRef<any>(null)
+  const mapInstance = useRef<LeafletMap | null>(null)
+  const markerRef = useRef<LeafletLayer | null>(null)
+  const circleRef = useRef<LeafletCircle | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [address, setAddress] = useState(initialAddress)
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
   const [showSugg, setShowSugg] = useState(false)
   const [lat, setLat] = useState(initialLat)
   const [lng, setLng] = useState(initialLng)
@@ -46,7 +47,7 @@ export function ArtisanZonePicker({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [detecting, setDetecting] = useState(false)
-  const searchTimeout = useRef<any>(null)
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
   // Charger Leaflet
@@ -60,7 +61,7 @@ export function ArtisanZonePicker({
         link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
         document.head.appendChild(link)
       }
-      if (!(window as any).L) {
+      if (!hasLeaflet()) {
         await new Promise<void>(resolve => {
           const script = document.createElement('script')
           script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
@@ -82,7 +83,7 @@ export function ArtisanZonePicker({
   // Init carte
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || mapInstance.current) return
-    const L = (window as any).L
+    const L = getLeaflet()
 
     const map = L.map(mapRef.current, {
       center: [lat, lng], zoom: 12, zoomControl: false,
@@ -107,14 +108,14 @@ export function ArtisanZonePicker({
       dashArray: '6 4',
     }).addTo(map)
 
-    marker.on('dragend', async (e: any) => {
+    marker.on('dragend', async (e: LeafletEvent) => {
       const { lat: newLat, lng: newLng } = e.target.getLatLng()
       setLat(newLat); setLng(newLng)
       circle.setLatLng([newLat, newLng])
       await reverseGeocode(newLat, newLng)
     })
 
-    map.on('click', async (e: any) => {
+    map.on('click', async (e: LeafletEvent) => {
       const { lat: newLat, lng: newLng } = e.latlng
       marker.setLatLng([newLat, newLng])
       circle.setLatLng([newLat, newLng])
@@ -166,11 +167,11 @@ export function ArtisanZonePicker({
 
   const handleAddressInput = (val: string) => {
     setAddress(val); setSaved(false)
-    clearTimeout(searchTimeout.current)
+    if (searchTimeout.current) clearTimeout(searchTimeout.current)
     searchTimeout.current = setTimeout(() => searchAddress(val), 600)
   }
 
-  const handleSelectSuggestion = (s: any) => {
+  const handleSelectSuggestion = (s: NominatimResult) => {
     const newLat = parseFloat(s.lat), newLng = parseFloat(s.lon)
     setAddress(s.display_name); setLat(newLat); setLng(newLng); setShowSugg(false)
     if (mapInstance.current && markerRef.current && circleRef.current) {

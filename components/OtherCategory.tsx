@@ -54,7 +54,7 @@ export function OtherCategorySearch({
         .limit(100)
 
       if (data) {
-        const allTags = data.flatMap((a: any) => a.tags || [])
+        const allTags = data.flatMap((a: { tags: string[] | null }) => a.tags || [])
         const freq: Record<string, number> = {}
         allTags.forEach((t: string) => { freq[t] = (freq[t] || 0) + 1 })
         const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 20).map(([t]) => t)

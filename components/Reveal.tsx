@@ -51,7 +51,7 @@ export default function Reveal({ children, delay = 0, y = 20, as = 'div', classN
     return () => io.disconnect()
   }, [])
 
-  const Tag = as as any
+  const Tag = as as React.ElementType
   return (
     <Tag
       ref={ref}

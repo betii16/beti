@@ -8,6 +8,10 @@
 //   caméra qui suit. Interface (props) identique à l'ancienne version Leaflet.
 
 import { useEffect, useRef, useState, useMemo } from 'react'
+import type { StyleSpecification } from 'maplibre-gl'
+
+type LiveRow = { lat?: number | null; lng?: number | null }
+type LivePayload = { new: LiveRow | null }
 import { supabase } from '@/lib/supabase'
 import { isDemoArtisan } from '@/lib/contactArtisan'
 import { isPremium, isListed } from '@/lib/subscription'
@@ -99,7 +103,7 @@ export default function BetiMap({
   const { t, lang } = useLang()
   const theme = useBetiTheme()
   const mapRef = useRef<MapRef | null>(null)
-  const [styles, setStyles] = useState<{ light?: any; dark?: any } | null>(null)
+  const [styles, setStyles] = useState<{ light?: StyleSpecification; dark?: StyleSpecification } | null>(null)
   useEffect(() => {
     let off = false
     setStyles(null)
@@ -221,13 +225,13 @@ export default function BetiMap({
           } catch (e) { logError('map.liveLocation', e) }
         })()
         const channel = supabase.channel(`track-${trackingArtisanId}`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'artisan_live_location', filter: `artisan_id=eq.${trackingArtisanId}` }, (payload: any) => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'artisan_live_location', filter: `artisan_id=eq.${trackingArtisanId}` }, (payload: LivePayload) => {
             const { lat, lng } = payload.new || {}
             if (!lat || !lng) return
             liveSeen = true
             onPos(lat, lng)
           })
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'artisans', filter: `id=eq.${trackingArtisanId}` }, (payload: any) => {
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'artisans', filter: `id=eq.${trackingArtisanId}` }, (payload: { new: LiveRow }) => {
             if (liveSeen) return
             const { lat, lng } = payload.new
             if (!lat || !lng) return
@@ -240,7 +244,7 @@ export default function BetiMap({
 
     let cleanupChannel: (() => void) | null = null
     const map = mapRef.current
-    if (map && (map as any).isStyleLoaded?.()) start()
+    if (map && map.isStyleLoaded()) start()
     else map?.once('load', start)
 
     return () => {

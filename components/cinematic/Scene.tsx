@@ -10,6 +10,7 @@
 
 import { useRef, useEffect, useMemo, type MutableRefObject } from 'react'
 import * as THREE from 'three'
+import type { BloomEffect } from 'postprocessing'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, useAnimations, ContactShadows } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
@@ -337,7 +338,7 @@ function DustParticles() {
 
 /* ── Bloom dont l'intensité suit l'embrasement final ── */
 function AnimatedBloom({ cam }: { cam: CamState }) {
-  const bloom = useRef<any>(null)
+  const bloom = useRef<typeof BloomEffect & { intensity: number }>(null)
   useFrame(() => {
     if (bloom.current) bloom.current.intensity = 0.32 + cam.tint * 1.6
   })

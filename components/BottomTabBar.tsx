@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Search, Map, CalendarDays, User } from 'lucide-react'
+import { Home, Search, Map, CalendarDays, User, type LucideIcon } from 'lucide-react'
 import { useNotifications } from '@/components/NotificationsProvider'
 import { useLang } from '@/lib/LangContext'
 
@@ -72,7 +72,7 @@ export default function BottomTabBar() {
     { href: '/map',        label: t('nav.tabMap'),      Icon: Map,          match: (p: string) => p.startsWith('/map'), center: true },
     { href: bookingsHref,  label: t('nav.tabBookings'), Icon: CalendarDays, match: (p: string) => p.startsWith('/mon-espace/reservations') || p.startsWith('/artisan-dashboard/planning') },
     { href: profileHref,   label: t('nav.tabProfile'),  Icon: User,         match: (p: string) => p === '/mon-espace' || p === '/artisan-dashboard' || p.startsWith('/admin') || p.startsWith('/compte') || p.startsWith('/parametres'), badge: notifCount },
-  ] as Array<{ href: string; label: string; Icon: any; match: (p: string) => boolean; center?: boolean; badge?: number }>
+  ] as Array<{ href: string; label: string; Icon: LucideIcon; match: (p: string) => boolean; center?: boolean; badge?: number }>
 
   return (
     <>

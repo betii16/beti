@@ -19,15 +19,16 @@ export const withTimeout = <T,>(p: PromiseLike<T>, ms = 15000): Promise<T> =>
  * Ne renvoie jamais le message brut du serveur à l'utilisateur.
  */
 export function authErrorKey(e: unknown): string {
-  const m = String((e as any)?.message ?? e ?? '')
-  const status = (e as any)?.status
+  const err = e as { message?: unknown; status?: unknown; code?: unknown } | null | undefined
+  const m = String(err?.message ?? e ?? '')
+  const status = err?.status
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'errNetwork'
   if (/^timeout$/i.test(m)) return 'errTimeout'
   if (/failed to fetch|network|load failed|fetch/i.test(m)) return 'errNetwork'
   if (status === 429 || /rate limit|too many|security purposes|after \d+ seconds/i.test(m)) return 'errRate'
   // GoTrue renvoie « Token has expired or is invalid » pour un code faux comme pour un code périmé :
   // sans code d'erreur précis, on reste neutre (« incorrect ou expiré »).
-  if ((e as any)?.code === 'otp_expired') return 'errExpired'
+  if (err?.code === 'otp_expired') return 'errExpired'
   if (/expired or is invalid/i.test(m)) return 'errCode'
   if (/expired/i.test(m)) return 'errExpired'
   if (/invalid|incorrect|token/i.test(m)) return 'errCode'

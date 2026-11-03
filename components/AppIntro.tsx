@@ -43,7 +43,7 @@ export default function AppIntro() {
     // Uniquement dans l'app installée (Capacitor) : un visiteur web venant de
     // TikTok doit voir la page d'accueil tout de suite, pas 4 écrans d'intro.
     try {
-      const native = !!(window as any).Capacitor?.isNativePlatform?.()
+      const native = !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
       if (native && !localStorage.getItem(DONE_KEY)) setShow(true)
     } catch {}
   }, [])

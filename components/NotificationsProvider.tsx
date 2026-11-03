@@ -6,15 +6,16 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 type Role = 'client' | 'artisan' | 'admin' | null
-interface Ctx { user: any; role: Role; notifCount: number }
+interface Ctx { user: User | null; role: Role; notifCount: number }
 
 const NotificationsContext = createContext<Ctx>({ user: null, role: null, notifCount: 0 })
 export const useNotifications = () => useContext(NotificationsContext)
 
 export default function NotificationsProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [role, setRole] = useState<Role>(null)
   const [notifCount, setNotifCount] = useState(0)
 
@@ -23,7 +24,7 @@ export default function NotificationsProvider({ children }: { children: React.Re
     let channel: ReturnType<typeof supabase.channel> | null = null
     const stop = () => { if (channel) { supabase.removeChannel(channel); channel = null } }
 
-    const apply = async (u: any) => {
+    const apply = async (u: User | null) => {
       stop()
       if (!alive) return
       if (!u) { setUser(null); setRole(null); setNotifCount(0); return }

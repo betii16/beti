@@ -12,12 +12,13 @@ const localStorageAdapter = typeof window !== 'undefined'
   : undefined
 
 const emptyResult = { data: [] as unknown[], error: null, count: 0 }
-const emptyChain = (): any =>
-  new Proxy(function () {}, {
+type EmptyChain = { (...args: unknown[]): EmptyChain; [key: string]: unknown }
+const emptyChain = (): EmptyChain =>
+  new Proxy((function () {}) as unknown as EmptyChain, {
     get: (_t, p) =>
       p === 'then'
-        ? (res: any, rej: any) => Promise.resolve(emptyResult).then(res, rej)
-        : p in emptyResult ? (emptyResult as any)[p] : emptyChain(),
+        ? (res?: (v: typeof emptyResult) => unknown, rej?: (e: unknown) => unknown) => Promise.resolve(emptyResult).then(res, rej)
+        : p in emptyResult ? (emptyResult as Record<PropertyKey, unknown>)[p] : emptyChain(),
     apply: () => emptyChain(),
   })
 
