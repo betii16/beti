@@ -18,6 +18,7 @@ import { useLang } from '@/lib/LangContext'
 import type { Lang } from '@/lib/translations'
 import { LogoMark } from '@/components/Logo'
 import AlgeriaWatermark from '@/components/AlgeriaWatermark'
+import { introSrc } from '@/lib/photos'
 import { ShieldCheck, CalendarClock, Banknote } from 'lucide-react'
 
 const DONE_KEY = 'beti-intro-done'
@@ -52,9 +53,11 @@ export default function AppIntro() {
   // de bordel d'image cassée si le fichier n'existe pas encore.
   useEffect(() => {
     if (!show) return // pas de requêtes (404 si photos absentes) quand l'intro ne s'affiche pas
-    SLIDES.forEach((s, i) => {
+    SLIDES.forEach((_s, i) => {
+      const src = introSrc(i + 1) // null = fichier absent : aucune requête 404
+      if (!src) return
       const img = new window.Image()
-      img.src = s.img
+      img.src = src
       img.onload = () => setOkPhotos(p => ({ ...p, [i + 1]: true }))
     })
   }, [show])
@@ -103,7 +106,7 @@ export default function AppIntro() {
       {/* Photo plein écran (slides) — derrière le contenu, avec dégradé lisibilité */}
       {photo && slide && (
         <div key={`bg${step}`} style={{ position: 'absolute', inset: 0, animation: 'introFade 0.5s ease both' }}>
-          <img src={slide.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={introSrc(step) ?? slide.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(11,11,18,0.55) 0%, rgba(11,11,18,0) 26%, rgba(11,11,18,0.25) 50%, rgba(11,11,18,0.93) 84%, #0b0b12 100%)' }} />
         </div>
       )}

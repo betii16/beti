@@ -14,6 +14,8 @@ import { OtherCategorySearch } from '@/components/OtherCategory'
 import { useLang } from '@/lib/LangContext'
 import { CategoryIcon, categoryColor, categoryInk, pressable } from '@/components/icons'
 import CategoryCard from '@/components/CategoryCard'
+import SlotPhoto from '@/components/SlotPhoto'
+import { photoSrc } from '@/lib/photos'
 import { LayoutGrid, MapPinned, Sun, Moon, X, Shapes, SearchX } from 'lucide-react'
 import MobileHome from '@/components/MobileHome'
 import { LogoMark } from '@/components/Logo'
@@ -208,7 +210,8 @@ export default function Home(){
 
             {/* Aperçu des VRAIS artisans chargés par la page ; jamais de profils fictifs.
                 Sans artisan réel : invitation aux artisans à s'inscrire. */}
-            <div style={{border:'1px solid var(--border2)',background:'var(--bg2)',borderRadius:4}}>
+            <div style={{border:'1px solid var(--border2)',background:'var(--bg2)',borderRadius:4,overflow:'hidden'}}>
+              {photoSrc('accueil-hero')&&(<div style={{position:'relative',aspectRatio:'16 / 9',borderBottom:'1px solid var(--border2)'}}><SlotPhoto slot="accueil-hero" alt={t('home.artisansTag')} sizes="(max-width: 1180px) 50vw, 560px"/></div>)}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px',borderBottom:'1px solid var(--border2)'}}>
                 <span className="mono" style={{fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--tx2)'}}>{t('home.artisansTag')}</span>
               </div>
