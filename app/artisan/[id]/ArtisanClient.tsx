@@ -8,6 +8,7 @@ import BookingFlow from '@/components/BookingFlow'
 import { useLang } from '@/lib/LangContext'
 import PremiumBadge from '@/components/PremiumBadge'
 import TrustButton from '@/components/TrustButton'
+import ReportButton from '@/components/ReportButton'
 import { isPremium, isListed } from '@/lib/subscription'
 import { categoryColor, categoryInk } from '@/components/icons'
 import { Skeleton } from '@/components/Skeleton'
@@ -16,7 +17,7 @@ function Stars({r,s=14}:{r:number;s?:number}){return<div role="img" aria-label={
 
 type ArtisanData={category:string;bio:string|null;hourly_rate:number|null;rating_avg:number|null;rating_count:number|null;total_missions:number|null;years_experience:number|null;intervention_radius_km:number|null;is_available:boolean;location_city:string|null;tags:string[]|null;plan?:string|null;plan_until?:string|null}
 type ProfileData={full_name:string|null;avatar_url:string|null}
-type ReviewData={id:string;rating:number;comment:string|null;photos:string[]|null;created_at:string;profiles:{full_name:string|null}|null}
+type ReviewData={id:string;client_id:string;rating:number;comment:string|null;photos:string[]|null;created_at:string;profiles:{full_name:string|null}|null}
 
 export default function ArtisanClient(){
   const params=useParams();const id=params?.id as string;const router=useRouter()
@@ -52,7 +53,7 @@ export default function ArtisanClient(){
         supabase.auth.getUser(),
         supabase.from('artisans').select('*').eq('id',id).maybeSingle(),
         supabase.from('profiles').select('full_name,avatar_url').eq('id',id).maybeSingle(),
-        supabase.from('reviews').select('id,rating,comment,photos,created_at,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',id).order('created_at',{ascending:false}).limit(30).returns<ReviewData[]>(),
+        supabase.from('reviews').select('id,client_id,rating,comment,photos,created_at,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',id).order('created_at',{ascending:false}).limit(30).returns<ReviewData[]>(),
       ])
       if(user)setUid(user.id)
       // Erreur réseau ≠ fiche introuvable : on propose de réessayer.
@@ -206,6 +207,10 @@ export default function ArtisanClient(){
               <div style={{display:'flex',justifyContent:'center',marginBottom:24}}>
                 <TrustButton label={t('profile.trustedArtisan')||'Numéro vérifié'} />
               </div>
+              {/* Signalement (visible seulement connecté) */}
+              <div style={{display:'flex',justifyContent:'center',marginTop:-12,marginBottom:12}}>
+                <ReportButton targetType="artisan" targetId={id} reportedUserId={id} title={t('rep.aboutArtisan')} />
+              </div>
 
               {/* Stats row */}
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:24}}>
@@ -314,7 +319,10 @@ export default function ArtisanClient(){
                                 <div style={{fontSize:11,color:tx3}}>{timeAgo(r.created_at)}</div>
                               </div>
                             </div>
-                            <Stars r={r.rating} s={12}/>
+                            <div style={{display:'flex',alignItems:'center',gap:4}}>
+                              <Stars r={r.rating} s={12}/>
+                              <ReportButton variant="icon" targetType="review" targetId={r.id} reportedUserId={r.client_id} title={t('rep.aboutReview')} label={t('rep.aboutReview')} />
+                            </div>
                           </div>
                           {r.comment&&<p style={{fontSize:13,color:tx2,lineHeight:1.7,fontWeight:300}}>{r.comment}</p>}
                           {r.photos&&r.photos.length>0&&(

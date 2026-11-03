@@ -5,6 +5,7 @@ import type { User as AuthUser, RealtimePostgresChangesPayload } from '@supabase
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
 import { logError } from '@/lib/logError'
+import ReportButton from '@/components/ReportButton'
 import { ArrowLeft, Send, MessageCircle, AlertTriangle } from 'lucide-react'
 
 // Statut de la réservation → token couleur ; focus clavier visible.
@@ -154,6 +155,7 @@ export default function ChatPage(){
           <div style={{fontSize:15,fontWeight:700,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{otherName||t('common.loading')}</div>
           <div style={{fontSize:12.5,color:'var(--tx2)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{booking?.title||t('chat.conversation')}</div>
         </div>
+        {booking&&user&&bookingId&&<ReportButton variant="icon" targetType="booking" targetId={bookingId} bookingId={bookingId} reportedUserId={booking.client_id===user.id?booking.artisan_id:booking.client_id} title={t('rep.aboutChat')} label={t('rep.aboutChat')}/>}
         {booking&&<span style={{padding:'4px 10px',borderRadius:'var(--r-chip)',fontSize:11.5,fontWeight:700,flexShrink:0,whiteSpace:'nowrap',background:`color-mix(in srgb, ${st} 13%, transparent)`,color:`color-mix(in srgb, ${st} 72%, var(--tx))`}}>{t(`status.${booking.status}`)}</span>}
       </div>
 

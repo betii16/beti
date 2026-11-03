@@ -8,9 +8,10 @@ import { fetchPhones } from '@/lib/phones'
 import { logError } from '@/lib/logError'
 import { SkeletonPage } from '@/components/Skeleton'
 import { formatDA, categoryLabel } from '@/lib/format'
-import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock, type LucideIcon } from 'lucide-react'
+import ReportsPanel from '@/components/admin/ReportsPanel'
+import { LayoutDashboard, HardHat, ClipboardList, User, Star, Wallet, Clock, Flag, type LucideIcon } from 'lucide-react'
 
-type Tab = 'overview' | 'artisans' | 'bookings' | 'users' | 'reviews' | 'subscriptions'
+type Tab = 'overview' | 'artisans' | 'bookings' | 'users' | 'reviews' | 'subscriptions' | 'reports'
 
 type Stats = {
   totalArtisans: number
@@ -176,6 +177,8 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('overview')
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [adminId, setAdminId] = useState('')
+  const [openReports, setOpenReports] = useState(0)
 
   const [stats, setStats] = useState<Stats>({ totalArtisans: 0, activeArtisans: 0, pendingArtisans: 0, totalBookings: 0, completedBookings: 0, pendingBookings: 0, totalUsers: 0, totalReviews: 0, revenue: 0 })
   const [artisans, setArtisans] = useState<ArtisanRow[]>([])
@@ -201,12 +204,21 @@ export default function AdminDashboard() {
       return
     }
     setIsAdmin(true)
+    setAdminId(user.id)
+    loadOpenReports()
     await loadAll()
     setLoading(false)
   }
 
   const loadAll = async () => {
     await Promise.all([loadStats(), loadArtisans(), loadBookings(), loadUsers(), loadReviews(), loadSubscriptions()])
+  }
+
+  // Badge de l'onglet Signalements (table absente avant moderation.sql : erreur journalisee, badge a 0)
+  const loadOpenReports = async () => {
+    const { count, error } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'open')
+    if (error) { logError('admin.reports.count', error); return }
+    setOpenReports(count || 0)
   }
 
   const loadStats = async () => {
@@ -392,6 +404,7 @@ export default function AdminDashboard() {
               { id: 'artisans', Icon: HardHat, label: 'Artisans', badge: stats.pendingArtisans },
               { id: 'bookings', Icon: ClipboardList, label: 'Réservations', badge: stats.pendingBookings },
               { id: 'subscriptions', Icon: Wallet, label: 'Abonnements', badge: subs.filter(s => s.status === 'pending').length },
+              { id: 'reports', Icon: Flag, label: 'Signalements', badge: openReports },
               { id: 'users',    Icon: User, label: 'Utilisateurs' },
               { id: 'reviews',  Icon: Star, label: 'Avis' },
             ] as Array<{ id: Tab; Icon: LucideIcon; label: string; badge?: number }>).map(item => (
@@ -421,7 +434,7 @@ export default function AdminDashboard() {
             <div>
               <div className="section-label" style={{ marginBottom: 4 }}>Tableau de bord</div>
               <h1 style={{ fontSize: 'clamp(22px, 5vw, 26px)', lineHeight: 1.2, fontWeight: 800, color: 'var(--tx)' }}>
-                {{ overview: 'Vue d\'ensemble', artisans: 'Gestion des artisans', bookings: 'Réservations', users: 'Utilisateurs', reviews: 'Avis & Modération', subscriptions: 'Abonnements' }[tab]}
+                {{ overview: 'Vue d\'ensemble', artisans: 'Gestion des artisans', bookings: 'Réservations', users: 'Utilisateurs', reviews: 'Avis & Modération', subscriptions: 'Abonnements', reports: 'Signalements' }[tab]}
               </h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -435,6 +448,9 @@ export default function AdminDashboard() {
           </div>
 
           <div className="adm-body">
+
+            {/* ═══ SIGNALEMENTS ═══ */}
+            {tab === 'reports' && adminId && <ReportsPanel adminId={adminId} onCountChange={setOpenReports} />}
 
             {/* ═══ ABONNEMENTS ═══ */}
             {tab === 'subscriptions' && (
