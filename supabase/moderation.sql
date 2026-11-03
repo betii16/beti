@@ -4,8 +4,9 @@
 -- A EXECUTER A LA MAIN dans le SQL Editor, apres rls_policies.sql,
 -- security_hardening.sql et privacy_hardening.sql. Tester d'abord sur une branche.
 --
--- PREREQUIS : public.is_admin(), public.is_booking_party(), public.is_client_write()
--- (security_hardening.sql). Ne remplace AUCUNE policy ni fonction existante :
+-- PREREQUIS : public.is_admin(), public.is_booking_party() (presentes en production).
+-- NB : is_client_write() de security_hardening.sql n'existe PAS en production (verifie
+-- le 2026-11-03) ; ce fichier definit donc sa propre fonction mod_is_client(). Ne remplace AUCUNE policy ni fonction existante :
 -- guard_profile_role reste intact, les nouvelles regles sont des objets a part.
 --
 -- Contenu :
@@ -20,6 +21,14 @@
 -- admin_note dans la meme table lui exposerait les notes internes des moderateurs.
 -- Elle vit donc dans `report_admin_notes`, illisible pour tout non-admin.
 -- ============================================================================
+
+-- Appel par un client de l'API (role authenticated/anon) qui n'est pas admin. Le proprietaire
+-- des tables, la cle service et les triggers security definer ne sont pas concernes (meme
+-- logique que les gardes de fix_integrity.sql).
+create or replace function public.mod_is_client()
+returns boolean language sql stable set search_path = public as $$
+  select current_user in ('authenticated', 'anon') and not public.is_admin();
+$$;
 
 -- ── 1. REPORTS ──────────────────────────────────────────────────────────────
 -- Pas de cle etrangere sur reported_user_id / booking_id / target_id : si le
@@ -94,7 +103,7 @@ create policy reports_update on public.reports
   with check (public.is_admin());
 
 -- Trigger d'insertion : coherence + anti-spam. Volontairement SANS security definer :
--- is_client_write() lit current_user, qui serait le proprietaire dans une fonction
+-- mod_is_client() lit current_user, qui serait le proprietaire dans une fonction
 -- definer (le garde serait alors desactive). Les lectures (ses propres signalements,
 -- profiles, bookings dont il est partie, reviews) passent par le RLS de l'appelant.
 create or replace function public.guard_report_insert()
@@ -103,7 +112,7 @@ declare
   b record;
   open_count int;
 begin
-  if public.is_client_write() then
+  if public.mod_is_client() then
     -- Champs de traitement : jamais fournis par le client.
     new.status := 'open';
     new.resolution := 'none';
@@ -160,7 +169,7 @@ create trigger trg_guard_report_insert
 create or replace function public.guard_report_update()
 returns trigger language plpgsql set search_path = public as $$
 begin
-  if public.is_client_write() then
+  if public.mod_is_client() then
     raise exception 'reports_admin_only' using errcode = '42501';
   end if;
   if new.reporter_id is distinct from old.reporter_id
@@ -214,10 +223,10 @@ create policy report_notes_admin_update on public.report_admin_notes
 -- ── 3. JOURNAL DE MODERATION (ajout seul) ───────────────────────────────────
 create table if not exists public.moderation_log (
   id         bigint generated always as identity primary key,
-  admin_id   uuid not null references auth.users(id) on delete restrict,
+  admin_id   uuid not null,                          -- pas de cle etrangere : la suppression d'un compte ne doit ni echouer ni reecrire le journal
   action     text not null check (char_length(action) between 1 and 60),
   target     text,                                   -- ex. « profile:<uuid> », « report:<uuid> »
-  report_id  uuid references public.reports(id) on delete set null,
+  report_id  uuid,                                   -- idem : un ON DELETE SET NULL ferait un UPDATE, refuse par le trigger d'ajout seul
   details    jsonb not null default '{}'::jsonb,     -- jamais de donnee personnelle (telephone...)
   created_at timestamptz not null default now()
 );
@@ -273,7 +282,7 @@ create policy bookings_select_admin on public.bookings
 create or replace function public.guard_profile_active()
 returns trigger language plpgsql set search_path = public as $$
 begin
-  if public.is_client_write() and new.is_active is distinct from old.is_active then
+  if public.mod_is_client() and new.is_active is distinct from old.is_active then
     new.is_active := old.is_active;
   end if;
   -- Meme un admin ne peut pas suspendre un compte admin depuis l'API (evite l'auto-blocage).
@@ -289,6 +298,13 @@ drop trigger if exists trg_guard_profile_active on public.profiles;
 create trigger trg_guard_profile_active
   before update on public.profiles
   for each row execute function public.guard_profile_active();
+
+-- 5a-bis. Sans policy admin, `update profiles set is_active = ... where id = <autre>` ne touche
+--     AUCUNE ligne et sans erreur (profiles_update : auth.uid() = id seulement) : la suspension
+--     depuis le panneau admin ne ferait rien. guard_profile_role laisse deja passer l'admin.
+drop policy if exists profiles_update_admin on public.profiles;
+create policy profiles_update_admin on public.profiles
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- 5b. Compte actif ? (is_active NULL = actif, comme get_nearby_artisans : `is not false`)
 create or replace function public.is_account_active(uid uuid)
