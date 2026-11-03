@@ -1,5 +1,6 @@
 'use client'
 import { supabase } from '@/lib/supabase'
+import type { User as AuthUser } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { logError } from '@/lib/logError'
 import { useState, useEffect } from 'react'
@@ -19,6 +20,7 @@ import { LogoMark } from '@/components/Logo'
 import CinematicGate from '@/components/cinematic/CinematicGate'
 
 type Artisan = { artisan_id:string;full_name:string;avatar_url:string|null;category:string;rating_avg:number;rating_count:number;hourly_rate:number;distance_km:number|null;is_available:boolean;total_missions:number;bio?:string }
+type ArtisanQRow = {id:string;category:string;hourly_rate:number|null;is_available:boolean;rating_avg:number|null;rating_count:number|null;total_missions:number|null;bio:string|null;tags:string[]|null;lat:number|null;lng:number|null;profiles:{full_name:string|null;avatar_url:string|null}|null}
 type Review = { id:string;rating:number;comment:string|null;created_at:string;photos?:string[];profiles?:{full_name:string}|null }
 
 // Libellés/descriptions traduits au rendu via t('categories.*') et t('home.svc*')
@@ -54,7 +56,7 @@ export default function Home(){
   const [sel,setSel]=useState<Artisan|null>(null)
   const [revs,setRevs]=useState<Review[]>([])
   const [loadR,setLoadR]=useState(false)
-  const [user,setUser]=useState<any>(null)
+  const [user,setUser]=useState<AuthUser|null>(null)
   const [sent,setSent]=useState(false)
 
   // Theme — dark par défaut
@@ -97,13 +99,13 @@ export default function Home(){
     }}catch(e){logError('home.nearbyRpc',e)} // repli sur la requête directe ci-dessous
     let q=supabase.from('artisans').select('id,category,hourly_rate,is_available,rating_avg,rating_count,total_missions,bio,tags,lat,lng,profiles(full_name,avatar_url)').limit(30)
     if(cat&&cat!=='autre')q=q.eq('category',cat);if(cat==='autre'&&tags.length>0)q=q.overlaps('tags',tags)
-    const[{data},plans]=await Promise.all([q,plansP])
-    const real:Artisan[]=(data||[]).filter((a:any)=>isListed({plan:plans[a.id]||'free'})).map((a:any)=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||''}))
+    const[{data},plans]=await Promise.all([q.returns<ArtisanQRow[]>(),plansP])
+    const real:Artisan[]=(data||[]).filter(a=>isListed({plan:plans[a.id]||'free'})).map(a=>({artisan_id:a.id,full_name:a.profiles?.full_name||'Artisan',avatar_url:a.profiles?.avatar_url||null,category:a.category,rating_avg:a.rating_avg||0,rating_count:a.rating_count||0,hourly_rate:a.hourly_rate||0,distance_km:a.lat&&a.lng?haversineKm(loc.lat,loc.lng,a.lat,a.lng):null,is_available:a.is_available,total_missions:a.total_missions||0,bio:a.bio||''}))
     if(cat==='autre'){setArtisans(real);setLoading(false);return}
     // Jamais de faux profils : sans artisan réel, l'écran vide invite les artisans à s'inscrire.
     setArtisans(real);setLoading(false)
   }
-  const openA=async(a:Artisan)=>{setSel(a);setLoadR(true);setSent(false);const{data}=await supabase.from('reviews').select('id,rating,comment,created_at,photos,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',a.artisan_id).order('created_at',{ascending:false}).limit(20);setRevs((data||[])as any);setLoadR(false)}
+  const openA=async(a:Artisan)=>{setSel(a);setLoadR(true);setSent(false);const{data}=await supabase.from('reviews').select('id,rating,comment,created_at,photos,profiles!reviews_client_id_fkey(full_name)').eq('artisan_id',a.artisan_id).order('created_at',{ascending:false}).limit(20).returns<Review[]>();setRevs(data||[]);setLoadR(false)}
   const [contactErr,setContactErr]=useState("")
   const [booking,setBooking]=useState(false)
   // Panneau artisan : fermeture à la touche Échap (hors tunnel de réservation)
@@ -263,7 +265,7 @@ export default function Home(){
             <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
               {(['distance','rating','price_asc','price_desc','missions'] as const).map(s=>(
                 <button key={s} onClick={()=>setSort(s)} aria-pressed={sort===s} className={`chip${sort===s?' chip-active':''}`} style={{padding:'7px 14px',fontSize:12}}>
-                  {({distance:t('home.sortDistance'),rating:t('home.sortRating'),price_asc:t('home.sortPriceAsc'),price_desc:t('home.sortPriceDesc'),missions:t('home.sortExp')} as any)[s]}
+                  {({distance:t('home.sortDistance'),rating:t('home.sortRating'),price_asc:t('home.sortPriceAsc'),price_desc:t('home.sortPriceDesc'),missions:t('home.sortExp')} as Record<string,string>)[s]}
                 </button>
               ))}
               <div style={{width:1,height:14,background:'var(--border)',margin:'0 6px'}}/>

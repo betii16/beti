@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
-import { CheckCircle2, XCircle, Star, Inbox, MessageSquare, Phone, Clock, Bell } from 'lucide-react'
+import { CheckCircle2, XCircle, Star, Inbox, MessageSquare, Phone, Clock, Bell, type LucideIcon } from 'lucide-react'
 
-const ICONS:Record<string,{Icon:any;color:string}>={
+type Notif={id:string;type:string;title:string|null;message?:string|null;body?:string|null;link?:string|null;booking_id?:string|null;is_read:boolean;created_at:string}
+
+const ICONS:Record<string,{Icon:LucideIcon;color:string}>={
   booking_confirmed:{Icon:CheckCircle2,color:'var(--success)'},booking_cancelled:{Icon:XCircle,color:'var(--danger)'},
   booking_refused:{Icon:XCircle,color:'var(--danger)'},
   booking_completed:{Icon:Star,color:'var(--laiton)'},new_booking:{Icon:Inbox,color:'var(--accent)'},
@@ -17,7 +19,7 @@ const SCOPE_CSS=`.notif-scope :is(a,button):focus-visible{outline:2px solid var(
 export default function NotificationsPage(){
   const router=useRouter()
   const { t, isAr } = useLang()
-  const [notifs,setNotifs]=useState<any[]>([])
+  const [notifs,setNotifs]=useState<Notif[]>([])
   const [loading,setLoading]=useState(true)
   const [loadErr,setLoadErr]=useState(false)
 
@@ -25,7 +27,7 @@ export default function NotificationsPage(){
   const load=async()=>{
     const{data:{user}}=await supabase.auth.getUser()
     if(!user){router.push('/auth/login?next=/notifications');return}
-    const{data,error}=await supabase.from('notifications').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50)
+    const{data,error}=await supabase.from('notifications').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50).returns<Notif[]>()
     if(error){setLoadErr(true);setLoading(false);return}
     setLoadErr(false)
     if(data)setNotifs(data)
@@ -36,7 +38,7 @@ export default function NotificationsPage(){
 
   const timeAgo=(d:string)=>{const x=Math.floor((Date.now()-new Date(d).getTime())/60000);return x<1?t('common.justNow'):x<60?`${x} ${t('common.minShort')}`:x<1440?`${Math.floor(x/60)}${t('common.hourShort')}`:`${Math.floor(x/1440)}${t('common.daysShort')}`}
   const clear=async()=>{if(!window.confirm(t('cxb.notifsClear')))return;const{data:{user}}=await supabase.auth.getUser();if(!user)return;const{error}=await supabase.from('notifications').delete().eq('user_id',user.id);if(error){setLoadErr(true);return};setLoadErr(false);setNotifs([])}
-  const linkOf=(n:any):string|null=>n.link||(n.booking_id?`/chat/${n.booking_id}`:null)
+  const linkOf=(n:Notif):string|null=>n.link||(n.booking_id?`/chat/${n.booking_id}`:null)
   const unread=notifs.filter(n=>!n.is_read).length
 
   if(loading)return<div role="status" aria-label={t('common.loading')} style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:64}}><div className="loader-ring"/></div>

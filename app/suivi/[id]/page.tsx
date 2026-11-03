@@ -40,7 +40,7 @@ export default function SuiviPage() {
         .eq('client_id', user.id).eq('artisan_id', id)
         .order('created_at', { ascending: false }).limit(1).maybeSingle()
       if (!alive) return
-      if (data) setBooking(data as any)
+      if (data) setBooking(data)
       setBookingLoaded(true)
     }
     load()
