@@ -467,7 +467,7 @@ export default function FacturePage() {
             <div className="inv-payment-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Banknote size={22}/></div>
             <div>
               <div className="inv-payment-title">Paiement en espèces</div>
-              <div className="inv-payment-desc">Règlement à effectuer directement auprès de l'artisan (BETI ne perçoit aucune commission) · Référence : {factureNum}</div>
+              <div className="inv-payment-desc">Règlement à effectuer directement auprès de l&apos;artisan (BETI ne perçoit aucune commission) · Référence : {factureNum}</div>
             </div>
           </div>
 

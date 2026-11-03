@@ -155,7 +155,7 @@ export function WorkGallery({
     return (
       <div style={{ textAlign: 'center', padding: '40px 20px', color: '#333' }}>
         <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: '#555' }}><Camera size={38}/></div>
-        <div style={{ fontSize: 14, fontWeight: 800, color: '#555', marginBottom: 6 }}>Aucune photo pour l'instant</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#555', marginBottom: 6 }}>Aucune photo pour l&apos;instant</div>
         <div style={{ fontSize: 12, color: '#444', fontWeight: 300 }}>
           Les photos sont ajoutées par les clients après chaque mission terminée.
         </div>

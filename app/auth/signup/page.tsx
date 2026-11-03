@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLang } from '@/lib/LangContext'
@@ -155,10 +156,10 @@ export default function SignupPage() {
       <style>{AUTH_CSS}</style>
       <div style={{ width: '100%', maxWidth: 440 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <a href="/" aria-label="BETI — accueil" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+          <Link href="/" aria-label="BETI — accueil" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
             <div style={{ width: 38, height: 38, background: 'var(--accent)', borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 0 var(--accent-ink)' }}><LogoMark size={20} variant="white" /></div>
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.08em' }}>BETI</span>
-          </a>
+          </Link>
         </div>
 
         <div role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step} aria-label={`Étape ${step} sur 3`} style={{ display: 'flex', gap: 6, marginBottom: 28, justifyContent: 'center' }}>

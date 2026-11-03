@@ -1,5 +1,6 @@
 'use client'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 import { logError } from '@/lib/logError'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -420,7 +421,7 @@ export default function Home(){
                 </div>
                 <p style={{fontSize:13,color:'var(--tx2)',lineHeight:1.7,maxWidth:240}}>{t('home.footerDesc')}</p>
               </div>
-              <nav aria-label={t('home.footerServices')}><div className="foot-h">{t('home.footerServices')}</div>{['plomberie','electricite','serrurerie','menage','peinture','demenagement'].map(s=><a key={s} href="/#services" className="foot-link">{cl(s)}</a>)}</nav>
+              <nav aria-label={t('home.footerServices')}><div className="foot-h">{t('home.footerServices')}</div>{['plomberie','electricite','serrurerie','menage','peinture','demenagement'].map(s=><Link key={s} href="/#services" className="foot-link">{cl(s)}</Link>)}</nav>
               <nav aria-label={t('home.footerPlatform')}><div className="foot-h">{t('home.footerPlatform')}</div>{[{l:t('home.footerHow'),h:'/#comment'},{l:t('nav.map'),h:'/map'},{l:t('home.footerBecome'),h:'/auth/signup'},{l:t('nav.login'),h:'/auth/login'}].map(s=><a key={s.l} href={s.h} className="foot-link">{s.l}</a>)}</nav>
               <nav aria-label={t('home.footerSupport')}><div className="foot-h">{t('home.footerSupport')}</div>{[{l:t('nav.help'),h:'/aide'},{l:t('nav.settings'),h:'/parametres'},{l:t('home.footerLegal'),h:'/mentions'},{l:t('home.footerCgu'),h:'/cgu'},{l:t('home.footerPrivacy'),h:'/confidentialite'}].map(s=><a key={s.l} href={s.h} className="foot-link">{s.l}</a>)}</nav>
             </div>

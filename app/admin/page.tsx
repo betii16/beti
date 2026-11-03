@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fetchPhones } from '@/lib/phones'
@@ -402,9 +403,9 @@ export default function AdminDashboard() {
           </nav>
 
           <div className="adm-back" style={{ padding: '12px 20px', borderTop: '1px solid var(--border)' }}>
-            <a href="/" style={{ fontSize: 13, color: 'var(--tx2)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, minHeight: 40 }}>
+            <Link href="/" style={{ fontSize: 13, color: 'var(--tx2)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, minHeight: 40 }}>
               ← Retour au site
-            </a>
+            </Link>
           </div>
         </aside>
 
@@ -730,7 +731,7 @@ export default function AdminDashboard() {
                     <span className="adm-panel-title">Tous les avis ({reviews.length})</span>
                   </div>
                   {reviews.length === 0 ? (
-                    <div style={EMPTY}>Aucun avis pour l'instant</div>
+                    <div style={EMPTY}>Aucun avis pour l&apos;instant</div>
                   ) : (
                     <div style={{ padding: '16px' }}>
                       {reviews.map(r => (

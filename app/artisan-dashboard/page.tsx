@@ -88,7 +88,7 @@ export default function ArtisanDashboard(){
 
   // Complétion profil
   const completion=(()=>{
-    if(!artisan||!profile)return 0;let s=0,total=7
+    if(!artisan||!profile)return 0;const total=7;let s=0
     if(profile.full_name)s++;if(profile.avatar_url)s++;if(profile.phone)s++
     if(artisan.bio&&artisan.bio.length>10)s++;if(artisan.lat&&artisan.lng)s++
     if(artisan.hourly_rate>0)s++;if(artisan.category)s++

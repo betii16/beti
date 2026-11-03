@@ -1,6 +1,7 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useNotifications } from '@/components/NotificationsProvider'
@@ -80,10 +81,10 @@ export default function Navigation() {
       }}>
 
         {/* Logo */}
-        <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, justifySelf: 'start' }}>
+        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, justifySelf: 'start' }}>
           <LogoMark size={26} />
           <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--tx)', letterSpacing: '0.1em', fontFamily: 'Nexa, sans-serif' }}>BETI</span>
-        </a>
+        </Link>
 
         {/* Liens — desktop uniquement (sur mobile : barre d'onglets en bas) */}
         <div className="desktop-only" style={{ display: 'flex', gap: 30, alignItems: 'center', justifySelf: 'center' }}>

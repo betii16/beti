@@ -25,7 +25,7 @@ export default function NativeBridge() {
   const checkRef = useRef<null | (() => Promise<boolean>)>(null)
 
   useEffect(() => {
-    let cleanup: Array<() => void> = []
+    const cleanup: Array<() => void> = []
     try { setAr(localStorage.getItem('beti-lang') === 'ar') } catch {}
     let cancelled = false
 

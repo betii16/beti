@@ -219,7 +219,7 @@ export function ArtisanZonePicker({
       {/* Titre */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 6 }}>
-          VOTRE ZONE D'INTERVENTION
+          VOTRE ZONE D&apos;INTERVENTION
         </div>
         <p style={{ fontSize: 13, color: '#555', fontWeight: 300, lineHeight: 1.6 }}>
           Définissez votre adresse et le périmètre dans lequel vous intervenez. Seuls les clients dans cette zone vous trouveront.
@@ -270,7 +270,7 @@ export function ArtisanZonePicker({
       {/* Sélection du rayon */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 11, color: '#888', fontWeight: 800, letterSpacing: '0.06em', marginBottom: 12 }}>
-          RAYON D'INTERVENTION
+          RAYON D&apos;INTERVENTION
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {RADIUS_OPTIONS.map(opt => (

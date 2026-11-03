@@ -30,7 +30,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         Une erreur est survenue
       </h1>
       <p style={{ fontSize: 15.5, color: 'var(--tx2)', maxWidth: 380, margin: 0, lineHeight: 1.65 }}>
-        Quelque chose s'est mal passé de notre côté. Réessayez — si le problème
+        Quelque chose s&apos;est mal passé de notre côté. Réessayez — si le problème
         persiste, revenez un peu plus tard.
       </p>
       <div style={{ display: 'flex', gap: 10, marginTop: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
