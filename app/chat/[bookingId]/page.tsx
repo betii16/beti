@@ -44,8 +44,11 @@ export default function ChatPage(){
   useEffect(()=>{
     if(!bookingId)return
     let alive=true
+    let lastRealtimeAt=0
     const fetchMsgs=async(initial=false)=>{
       if(!initial&&typeof document!=='undefined'&&document.hidden)return
+      // Si le Realtime a livré un message il y a < 30 s, le poll est superflu.
+      if(!initial&&Date.now()-lastRealtimeAt<30_000)return
       const{data,error}=await supabase.from('messages').select('*').eq('booking_id',bookingId).order('created_at',{ascending:true}).returns<Msg[]>()
       if(!alive)return
       if(error){logError('chat.fetchMessages',error,{bookingId});if(initial)setLoadErr(t('cxb.loadErr'));return}
@@ -70,13 +73,15 @@ export default function ChatPage(){
     // Realtime (idéal) + dédup de l'écho.
     const ch=supabase.channel(`chat-${bookingId}`)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`booking_id=eq.${bookingId}`},(payload:RealtimePostgresChangesPayload<Msg>)=>{
+        lastRealtimeAt=Date.now()
         mergeMsgs([payload.new as Msg])
       })
       .subscribe()
 
     // Filet de sécurité : si le WebSocket Realtime est bloqué (WebView mobile,
-    // réseau d'entreprise…), on rafraîchit quand même toutes les 4 s.
-    const poll=setInterval(()=>{fetchMsgs()},4000)
+    // réseau d'entreprise…), on rafraîchit toutes les 30 s. Si le Realtime a
+    // livré un message récemment, fetchMsgs no-op (voir lastRealtimeAt).
+    const poll=setInterval(()=>{fetchMsgs()},30_000)
 
     return()=>{alive=false;supabase.removeChannel(ch);clearInterval(poll)}
   },[bookingId,reloadKey])

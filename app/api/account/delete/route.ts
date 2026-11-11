@@ -35,6 +35,16 @@ export async function POST(req: Request) {
   // Table absente avant privacy_hardening.sql : l'erreur est volontairement ignorée.
   await admin.from('profile_private').delete().eq('id', user.id)
 
+  // Anonymisation des traces (RGPD / loi 18-07) : les lignes historiques
+  // restent (intégrité des avis/factures) mais sans PII tapées librement.
+  // Best-effort : erreurs journalisées, suppression du compte continuée.
+  const scrubs = await Promise.all([
+    admin.from('bookings').update({ description: '', address: '' }).eq('client_id', user.id),
+    admin.from('reviews').update({ comment: null }).eq('client_id', user.id),
+    admin.from('messages').update({ content: '' }).eq('sender_id', user.id),
+  ])
+  for (const r of scrubs) if (r.error) logError('api.account.delete.scrub', r.error)
+
   const { error: delErr } = await admin.auth.admin.deleteUser(user.id)
   if (delErr) {
     logError('api.account.delete.authUser', delErr) // repli : bannissement du compte

@@ -179,6 +179,8 @@ export default function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminId, setAdminId] = useState('')
   const [openReports, setOpenReports] = useState(0)
+  const [flash, setFlash] = useState<{ tone: 'danger' | 'success'; text: string } | null>(null)
+  const notify = (tone: 'danger' | 'success', text: string) => { setFlash({ tone, text }); setTimeout(() => setFlash(null), 4000) }
 
   const [stats, setStats] = useState<Stats>({ totalArtisans: 0, activeArtisans: 0, pendingArtisans: 0, totalBookings: 0, completedBookings: 0, pendingBookings: 0, totalUsers: 0, totalReviews: 0, revenue: 0 })
   const [artisans, setArtisans] = useState<ArtisanRow[]>([])
@@ -324,41 +326,38 @@ export default function AdminDashboard() {
 
   const toggleArtisanAvailability = async (id: string, available: boolean) => {
     const { error } = await supabase.from('artisans').update({ is_available: available }).eq('id', id)
-    if (error) { logError('admin.artisanAvailability', error, { artisanId: id }); alert('Action impossible : ' + error.message); return }
+    if (error) { logError('admin.artisanAvailability', error, { artisanId: id }); notify('danger', 'Action impossible.'); return }
     await loadArtisans()
     await loadStats()
   }
 
   const updateBookingStatus = async (id: string, status: string) => {
     const { error } = await supabase.from('bookings').update({ status }).eq('id', id)
-    if (error) { logError('admin.bookingStatus', error, { bookingId: id, status }); alert('Action impossible : ' + error.message); return }
+    if (error) { logError('admin.bookingStatus', error, { bookingId: id, status }); notify('danger', 'Action impossible.'); return }
     await loadBookings()
     await loadStats()
   }
 
   const deleteReview = async (id: string) => {
     if (!confirm('Supprimer cet avis ?')) return
-    await supabase.from('reviews').delete().eq('id', id)
+    const { error } = await supabase.from('reviews').delete().eq('id', id)
+    if (error) { logError('admin.reviewDelete', error, { reviewId: id }); notify('danger', 'Suppression impossible.'); return }
     await loadReviews()
     await loadStats()
   }
 
   const approveSub = async (s: SubRow) => {
-    const now = new Date()
-    const exp = new Date(now)
-    if (s.cycle === 'yearly') exp.setFullYear(exp.getFullYear() + 1)
-    else exp.setMonth(exp.getMonth() + 1)
-    const { error: artErr } = await supabase.from('artisans').update({ plan: s.plan, plan_until: exp.toISOString() }).eq('id', s.artisan_id)
-    if (artErr) { alert('Activation impossible : ' + artErr.message); return }
-    const { error: subErr } = await supabase.from('subscriptions').update({ status: 'active', started_at: now.toISOString(), expires_at: exp.toISOString(), reviewed_at: now.toISOString() }).eq('id', s.id)
-    if (subErr) { alert('Abonnement non mis à jour : ' + subErr.message); return }
+    // RPC atomique (artisans + subscriptions en une transaction, voir audit_fixes_2026_11_11.sql).
+    const { error } = await supabase.rpc('approve_subscription', { p_sub_id: s.id })
+    if (error) { logError('admin.subApprove', error, { subId: s.id }); notify('danger', 'Activation impossible.'); return }
+    notify('success', 'Abonnement activé.')
     await loadSubscriptions()
   }
 
   const rejectSub = async (s: SubRow) => {
     const reason = prompt('Motif du refus (optionnel) :') || null
     const { error } = await supabase.from('subscriptions').update({ status: 'rejected', reviewed_at: new Date().toISOString(), note: reason }).eq('id', s.id)
-    if (error) { alert('Refus impossible : ' + error.message); return }
+    if (error) { logError('admin.subReject', error, { subId: s.id }); notify('danger', 'Refus impossible.'); return }
     await loadSubscriptions()
   }
 
@@ -448,6 +447,12 @@ export default function AdminDashboard() {
           </div>
 
           <div className="adm-body">
+            {flash && (
+              <div role="alert" className={flash.tone === 'success' ? 'tone-success' : 'tone-danger'}
+                style={{ padding: '10px 14px', borderRadius: 'var(--r-field)', marginBottom: 14, fontSize: 13.5, fontWeight: 600 }}>
+                {flash.text}
+              </div>
+            )}
 
             {/* ═══ SIGNALEMENTS ═══ */}
             {tab === 'reports' && adminId && <ReportsPanel adminId={adminId} onCountChange={setOpenReports} />}
