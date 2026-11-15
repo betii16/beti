@@ -2,53 +2,55 @@
 
 Site + app mobile pour trouver et réserver des artisans par wilaya. Interface en français et en arabe (RTL). Langue de travail avec le propriétaire : français.
 
-## Stack
-- Next.js 16 (App Router), React 18, TypeScript, Tailwind 3, MapLibre pour la carte.
-- Supabase : auth par code OTP WhatsApp/SMS (téléphone), Postgres, realtime, storage.
-- App mobile Capacitor (`dz.beti.app`) : `capacitor.config.ts` charge le site en ligne (`server.url`). Une route API ou un correctif web marche donc aussi dans l'app, sans republier sur les stores.
+## Deux versions dans le dépôt
+- `main` : la v1, l'ancien site. Ne plus la faire évoluer, sauf correctif urgent.
+- `refonte` : la v2, réécriture à neuf décidée par le propriétaire le 2026-11-15 (nouvelle structure, nouvelle identité visuelle, base de données neuve). Rien n'est poussé sur GitHub.
+- Relire l'ancien code sans changer de branche : `git show main:<chemin>` ou `git grep <motif> main`.
+
+## Stack (v2)
+- Next.js 16 (App Router, code dans `src/`), React 19, TypeScript strict, Tailwind 4, zod, MapLibre.
+- Supabase : Postgres, auth par code (e-mail ou téléphone), temps réel, stockage. Session en cookies avec `@supabase/ssr`.
+- App mobile Capacitor (`dz.beti.app`) : `capacitor.config.ts` charge le site en ligne (`server.url`). Un correctif web vaut donc aussi pour l'app, sans republier sur les stores.
 - Déploiement : Vercel (projet `beti`, dépôt GitHub `betii16/beti`, branche `main`).
+- Avant d'écrire du code Next : lire le guide concerné dans `node_modules/next/dist/docs/` (voir `AGENTS.md`). Next 16 a changé des conventions.
 
 ## Commandes
-- `npm run dev` / `npm run build` / `npm run lint` / `npx tsc --noEmit`
-- Le build applique maintenant les erreurs de types et de lint (elles étaient masquées avant la mise à jour Next 16). Avant de pousser : `npx tsc --noEmit` puis `npx next build`.
-- Dans un worktree git, Turbopack ne suit pas un lien vers `node_modules` : utiliser `--webpack`.
+- `npm run dev` / `npm run build` / `npm run lint` / `npm run typecheck`
+- `npm test` : tous les tests (vitest). `npm run test:db` : la base seule.
 
-## Sécurité : à ne jamais oublier
-- L'app est surtout client-side avec la clé anon Supabase. La session est dans `localStorage` (`beti-auth`), pas en cookies : un `proxy.ts` ou middleware ne verrait jamais l'utilisateur. Les redirections React (admin, dashboard) ne servent qu'à l'affichage.
-- **La seule vraie barrière est le RLS Supabase.** Tout nouvel accès aux données passe par une policy.
-- SQL exécuté à la main dans le SQL Editor de Supabase. Ordre réel, scripts restants et scripts à ne jamais rejouer : `supabase/README_ORDRE.md`. État lu dans la base : `supabase/SCHEMA_SNAPSHOT.md`. Ne jamais supposer qu'un fichier SQL du dépôt a été exécuté en production (`rls_policies.sql`, `security_hardening.sql` et `launch_hardening.sql` ne l'ont pas été et ne doivent pas l'être).
-- Vie privée : le téléphone vit dans `profile_private` (lecture via `lib/phones.ts`, jamais `profiles.phone`). La position GPS exacte vit dans `artisan_live_location`; `artisans.lat/lng` est arrondi à ~1 km. Le code tolère l'absence de ces tables, donc ne pas l'en croire protégé.
-- Suppression de compte réelle : `app/api/account/delete/route.ts` (exigence App Store / Google Play). Utilise la clé service (`lib/supabaseAdmin.ts`), jamais côté client.
+## Base de données : la règle à ne jamais casser
+- L'API (rôles `anon`, `authenticated`) lit les tables à travers le RLS et n'écrit jamais dedans. Toute écriture passe par une fonction de `supabase/migrations/…300_api.sql` (utilisateurs) ou `…400_admin.sql` (équipe, journalisée dans `audit_log`).
+- Toute nouvelle table ou fonction s'inscrit à la main dans `tests/db/surface.test.ts` et dans la liste des droits en fin de `…400_admin.sql`.
+- Principe, règles d'écriture d'une fonction et bascule depuis la v1 : `supabase/README.md`.
+- `supabase/archive-v1/` : anciens scripts de la v1, ne plus rien en exécuter.
+- Ne jamais supposer qu'un fichier SQL du dépôt est en production : lire la base (connecteur Supabase, projet `cqsejaarturvbilyvbfs`, requêtes sur le catalogue uniquement, jamais les données des personnes).
 
 ## Gestion des erreurs
-- Jamais de `catch {}` vide ni d'erreur Supabase ignorée (`const { data } = await …` sans lire `error`) sur un chemin critique (réservation, chat, abonnement, suppression de compte, photos, OTP).
-- Utiliser `logError(scope, error, context?)` de `lib/logError.ts` : console structurée, clés sensibles (phone, token, email, password, authorization…) filtrées, anti-doublon et limite de débit, envoi best-effort vers `NEXT_PUBLIC_ERROR_ENDPOINT` si défini. Ne jamais passer de donnée personnelle en contexte.
-- Si l'échec compte pour l'utilisateur : journaliser ET afficher un message clair avec réessai (textes `cxe.` / `cxb.` dans `lib/translations.ts`). Si l'échec est ignorable (ex. table absente avant `privacy_hardening.sql`) : commentaire d'une ligne qui dit pourquoi.
-- Brancher Sentry / Better Stack plus tard : un seul appel `setErrorSink((evt, original) => …)` au démarrage, sans retoucher les appels.
+- Les fonctions SQL renvoient des codes stables (`invalid_transition`, `rate_limited`, `not_found`…) que l'application traduit en français ou en arabe. Jamais de message SQL brut à l'écran.
+- Jamais de `catch {}` vide ni d'erreur Supabase ignorée sur un chemin critique (demande, message, avis, abonnement, suppression de compte, photos, code de connexion).
 
 ## Design et i18n
-- Identité « Chaux & Zellige » : variables CSS et classes dans `app/globals.css` (`var(--tx)`, `var(--accent)`, `.btn-primary`, `.field`…). Pas de violet, pas de verre, pas de dégradés de texte.
-- Thème et langue : clés `localStorage` `beti-theme` et `beti-lang`; textes dans `lib/translations.ts`, contexte dans `lib/LangContext.tsx`.
-- RTL : utiliser les propriétés logiques (`marginInlineStart`, `insetInlineEnd`, `textAlign: 'start'`), jamais `left`/`right` sauf cartes, sliders et champs téléphone en `dir="ltr"`.
-- Pages légales (`components/LegalPage.tsx`) et pages SEO `app/artisans/[wilaya]/…` : contenu français uniquement, forcé en `dir="ltr"`. Ne pas traduire le texte juridique sans relecture humaine.
+- Nouvelle identité en cours de choix. Trois directions montrées au propriétaire le 2026-11-15 : A « Enseigne », B « Plein cadre », C « Affiche », sur le canevas https://claude.ai/artifact/3q8s7T1bMZdBi133vCngZp. Ne rien construire de visuel avant sa réponse.
+- Son reproche à la v1 : « trop fade, trop claudifié ». Donc de vraies images dans les écrans ; pas de fond crème, pas de cartes arrondies identiques partout, pas d'étiquette en capitales au-dessus de chaque titre.
+- Images : `public/images/`. Cinq photos générées avec son compte Higgsfield le 2026-11-15 ; trois manquent (ménage, climatisation, portrait d'artisan : limite quotidienne de son compte atteinte). Chaque génération coûte ses crédits : une seule prise par image, jamais de relance sans son accord. Ce sont des photos d'illustration : jamais de faux profil d'artisan ni de faux avis.
+- Français et arabe (RTL) : propriétés logiques CSS (`margin-inline-start`…), jamais `left` / `right` sauf carte et champ téléphone.
+- Textes juridiques (CGU, confidentialité, mentions) : français uniquement, à reprendre tels quels de la v1. Ne pas les traduire ni les réécrire sans relecture humaine.
 
 ## Pièges connus
-- Le dossier `app/facture/[bookingId]` s'affiche `FACTURE` sur le disque Windows (casse insensible). Git suit la version en minuscules, c'est la bonne.
-- Warnings « LF will be replaced by CRLF » : bruit de fins de ligne, ne pas commiter des fichiers modifiés uniquement pour ça.
-- `.claude/worktrees/` contient les copies de travail des agents : non suivi par git, ne pas le commiter.
-- Hooks locaux (GateGuard) : la première commande Bash et la première édition d'un fichier demandent de présenter des faits avant de réessayer.
-- Garde SQL : dans une fonction `security definer`, `current_user` vaut le propriétaire (`postgres`), jamais l'appelant. Un garde qui teste `current_user` doit rester `security invoker`, sinon il ne bride plus personne.
-- Le projet Supabase gratuit se met en pause après une semaine sans activité (constaté le 2026-11-15) : le site en ligne n'a alors plus de données ni de connexion.
+- SQL : dans une fonction `security definer`, `current_user` vaut le propriétaire (`postgres`), jamais l'appelant. Un garde qui le teste ne bride personne.
+- SQL : `x not in (a, b)` vaut `NULL` si `a` ou `b` est `NULL`, et la vérification saute. Utiliser `is distinct from`.
+- Le projet Supabase gratuit se met en pause après une semaine sans activité (constaté le 2026-11-15) : le site n'a alors plus ni données ni connexion.
+- Warnings « LF will be replaced by CRLF » : bruit de fins de ligne.
+- `.claude/` : non suivi par git, ne pas le commiter.
+- Hooks locaux (GateGuard) : la première commande Bash et la première écriture de chaque fichier sont refusées une fois. Présenter les faits demandés, puis réessayer.
 
 ## Conventions de travail
-- Commits en français, style `type(portée): message`, avec la ligne `Co-Authored-By` demandée par le harnais.
+- Commits en français, style `type(portée): message`, avec la ligne `Co-Authored-By` demandée par le harnais. Le propriétaire a autorisé les commits par étape sur `refonte`.
 - Ne pousser sur GitHub que sur demande explicite du propriétaire.
-- Pour des tâches parallèles, un agent par périmètre distinct, chacun dans son worktree; vérifier qu'il est parti du dernier commit de `main` avant de fusionner.
+- Lui demander avant toute écriture en production (Supabase) et avant toute dépense de crédits (images).
 
-## État et reste à faire (2026-11-02)
-- Fait : refonte du design, suppression de compte, facture, Next 16, RTL; en production et vérifiés : `fix_booking_status.sql`, `fix_integrity.sql` (§5 et §6), `privacy_hardening.sql`.
-- Action propriétaire : SMTP e-mail (Brevo/Resend) + templates `{{ .Token }}` dans Supabase; variables Vercel (dont `NEXT_PUBLIC_LAUNCH_DATE` et clé service). Détail : `A_FAIRE_PROPRIETAIRE.md`.
-- Non testé de bout en bout (vrais comptes) : acceptation, clôture, avis, chat, facture, suppression de compte.
-- Aussi appliqué en production : `fix_integrity2.sql` (offres gardées, une seule note qui ignore les avis masqués, `siret`/assurance dans `artisan_private`).
-- Décision ouverte : `artisans.location` (zone d'intervention) non arrondi. Push GitHub (~50 commits d'avance) seulement sur demande.
-- Plus tard : légal/SEO en arabe (relecture humaine), fiches App Store / Google Play, Sentry après lancement.
+## État du chantier v2 (2026-11-15)
+- Fait : base de données v2 et ses 59 tests ; scripts de bascule ; trois directions visuelles sur le canevas ; cinq photos.
+- En attente du propriétaire : choix de la direction visuelle ; accord pour installer la base v2 sur le projet Supabase (l'ancien site cessera alors de fonctionner) ; compte qui sera le premier admin.
+- Reste à construire : socle de l'application (configuration, i18n, auth, accès aux données), pages publiques, connexion, demande / conversation / avis, espaces client et artisan, panneau admin, PWA et pont Capacitor, tests de parcours.
+- Actions du propriétaire héritées de la v1, toujours valables : service d'envoi des codes par e-mail (SMTP), variables Vercel dont la clé service, nom de domaine, juriste. Détail : `A_FAIRE_PROPRIETAIRE.md`.
