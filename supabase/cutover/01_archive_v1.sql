@@ -34,6 +34,19 @@ begin
     execute format('alter table public.%I set schema v1_archive', r.relname);
   end loop;
 
+  -- L'archive doit être inerte : on coupe ses liens vers auth.users, pour qu'une
+  -- suppression de compte en v2 ne la modifie pas et ne soit pas bloquée par elle.
+  for r in
+    select con.conname, c.relname
+      from pg_constraint con
+      join pg_class c on c.oid = con.conrelid
+      join pg_namespace n on n.oid = c.relnamespace
+     where n.nspname = 'v1_archive' and con.contype = 'f'
+       and con.confrelid in (select x.oid from pg_class x where x.relnamespace = 'auth'::regnamespace)
+  loop
+    execute format('alter table v1_archive.%I drop constraint %I', r.relname, r.conname);
+  end loop;
+
   -- Fonctions de la v1 : déplacées elles aussi, donc plus appelables par l'API.
   for r in
     select p.oid::regprocedure as sig, p.prokind
@@ -55,11 +68,14 @@ begin
     execute format('alter type public.%I set schema v1_archive', r.typname);
   end loop;
 
-  -- Ancien bucket beti-photos : on retire ses règles d'écriture. Les photos déjà
-  -- envoyées restent lisibles par leur adresse ; plus personne ne peut en ajouter.
+  -- Anciens espaces de stockage (avatars, portfolio, intervention-photos,
+  -- beti-photos) : on retire toutes leurs règles. Certaines laissaient n'importe
+  -- quel visiteur lister les fichiers, d'autres tout utilisateur connecté en
+  -- déposer. Les photos déjà envoyées restent lisibles par leur adresse (espaces
+  -- publics) ; plus personne ne peut en lister ni en ajouter. Définitions d'origine :
+  -- archive-v1/storage_policies_prod_2026-11-15.sql. La v2 crée ensuite les siennes.
   for r in
-    select policyname from pg_policies
-     where schemaname = 'storage' and tablename = 'objects' and policyname like 'beti-photos%'
+    select policyname from pg_policies where schemaname = 'storage' and tablename = 'objects'
   loop
     execute format('drop policy %I on storage.objects', r.policyname);
   end loop;

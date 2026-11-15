@@ -3,7 +3,7 @@
 Site + app mobile pour trouver et réserver des artisans par wilaya. Interface en français et en arabe (RTL). Langue de travail avec le propriétaire : français.
 
 ## Deux versions dans le dépôt
-- `main` : la v1, l'ancien site. Ne plus la faire évoluer, sauf correctif urgent.
+- `main` : la v1, l'ancien site. Hors service depuis le 2026-11-15 : la base de production est passée au schéma v2 et le site déployé (Vercel, branche `main`) ne peut plus la lire. Ne plus la faire évoluer.
 - `refonte` : la v2, réécriture à neuf décidée par le propriétaire le 2026-11-15 (nouvelle structure, nouvelle identité visuelle, base de données neuve). Rien n'est poussé sur GitHub.
 - Relire l'ancien code sans changer de branche : `git show main:<chemin>` ou `git grep <motif> main`.
 
@@ -20,7 +20,8 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 
 ## Base de données : la règle à ne jamais casser
 - L'API (rôles `anon`, `authenticated`) lit les tables à travers le RLS et n'écrit jamais dedans. Toute écriture passe par une fonction de `supabase/migrations/…300_api.sql` (utilisateurs) ou `…400_admin.sql` (équipe, journalisée dans `audit_log`).
-- Toute nouvelle table ou fonction s'inscrit à la main dans `tests/db/surface.test.ts` et dans la liste des droits en fin de `…400_admin.sql`.
+- La v2 est installée en production depuis le 2026-11-15, vérifiée identique à la base des tests. Les six fichiers de `supabase/migrations/` sont donc figés : toute évolution est un nouveau fichier de migration, qui règle lui-même les droits de ses fonctions, s'inscrit à la main dans `tests/db/surface.test.ts`, et ne s'applique en production qu'avec l'accord du propriétaire.
+- En production, le schéma `v1_archive` garde les tables et fonctions de la v1 (données d'essai), hors de portée de l'API. `supabase/cutover/` ne se rejoue pas.
 - Principe, règles d'écriture d'une fonction et bascule depuis la v1 : `supabase/README.md`.
 - `supabase/archive-v1/` : anciens scripts de la v1, ne plus rien en exécuter.
 - Ne jamais supposer qu'un fichier SQL du dépôt est en production : lire la base (connecteur Supabase, projet `cqsejaarturvbilyvbfs`, requêtes sur le catalogue uniquement, jamais les données des personnes).
@@ -50,8 +51,8 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Lui demander avant toute écriture en production (Supabase) et avant toute dépense de crédits (images).
 
 ## État du chantier v2 (2026-11-15)
-- Fait : base de données v2 et ses 59 tests ; scripts de bascule ; trois directions visuelles sur le canevas ; cinq photos ; squelette de l'app (`src/` : pages sous `/fr` et `/ar`, proxy de langue et de session, clients Supabase, en-têtes de sécurité), compilé et vérifié dans le navigateur.
+- Fait : base de données v2 et ses 59 tests, installée en production (bascule du 2026-11-15 : 10 comptes repris ; annonces, demandes et messages de la v1 laissés dans l'archive) ; trois directions visuelles sur le canevas ; cinq photos ; squelette de l'app (`src/` : pages sous `/fr` et `/ar`, proxy de langue et de session, clients Supabase, en-têtes de sécurité), compilé et vérifié dans le navigateur.
 - `eslint.config.mjs` est protégé par un hook : ne pas le modifier. Le lint vise donc `src` et `tests` (`npm run lint`), ce qui évite aussi de parcourir `.claude/worktrees/`.
-- En attente du propriétaire : choix de la direction visuelle ; accord pour installer la base v2 sur le projet Supabase (l'ancien site cessera alors de fonctionner) ; compte qui sera le premier admin.
+- En attente du propriétaire : choix de la direction visuelle ; compte qui sera le premier admin (`private.staff` est vide) ; accord pour retirer les anciens droits de lecture restés sur les tables de `v1_archive` (sans effet tant que le schéma est fermé) ; sort de PostGIS, que Supabase signale (table `spatial_ref_sys` sans RLS) et qu'on garde tant que l'archive existe.
 - Reste à construire : socle de l'application (configuration, i18n, auth, accès aux données), pages publiques, connexion, demande / conversation / avis, espaces client et artisan, panneau admin, PWA et pont Capacitor, tests de parcours.
 - Actions du propriétaire héritées de la v1, toujours valables : service d'envoi des codes par e-mail (SMTP), variables Vercel dont la clé service, nom de domaine, juriste. Détail : `A_FAIRE_PROPRIETAIRE.md`.
