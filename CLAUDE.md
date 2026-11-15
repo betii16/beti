@@ -16,7 +16,7 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 ## Sécurité : à ne jamais oublier
 - L'app est surtout client-side avec la clé anon Supabase. La session est dans `localStorage` (`beti-auth`), pas en cookies : un `proxy.ts` ou middleware ne verrait jamais l'utilisateur. Les redirections React (admin, dashboard) ne servent qu'à l'affichage.
 - **La seule vraie barrière est le RLS Supabase.** Tout nouvel accès aux données passe par une policy.
-- SQL à exécuter à la main dans le SQL Editor de Supabase, dans cet ordre : `rls_policies.sql` → `security_hardening.sql` → `privacy_hardening.sql`. Les autres fichiers de `supabase/` sont des schémas par fonctionnalité. Ne jamais supposer qu'un fichier SQL du dépôt a été exécuté en production.
+- SQL exécuté à la main dans le SQL Editor de Supabase. Ordre réel, scripts restants et scripts à ne jamais rejouer : `supabase/README_ORDRE.md`. État lu dans la base : `supabase/SCHEMA_SNAPSHOT.md`. Ne jamais supposer qu'un fichier SQL du dépôt a été exécuté en production (`rls_policies.sql`, `security_hardening.sql` et `launch_hardening.sql` ne l'ont pas été et ne doivent pas l'être).
 - Vie privée : le téléphone vit dans `profile_private` (lecture via `lib/phones.ts`, jamais `profiles.phone`). La position GPS exacte vit dans `artisan_live_location`; `artisans.lat/lng` est arrondi à ~1 km. Le code tolère l'absence de ces tables, donc ne pas l'en croire protégé.
 - Suppression de compte réelle : `app/api/account/delete/route.ts` (exigence App Store / Google Play). Utilise la clé service (`lib/supabaseAdmin.ts`), jamais côté client.
 
@@ -37,6 +37,8 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Warnings « LF will be replaced by CRLF » : bruit de fins de ligne, ne pas commiter des fichiers modifiés uniquement pour ça.
 - `.claude/worktrees/` contient les copies de travail des agents : non suivi par git, ne pas le commiter.
 - Hooks locaux (GateGuard) : la première commande Bash et la première édition d'un fichier demandent de présenter des faits avant de réessayer.
+- Garde SQL : dans une fonction `security definer`, `current_user` vaut le propriétaire (`postgres`), jamais l'appelant. Un garde qui teste `current_user` doit rester `security invoker`, sinon il ne bride plus personne.
+- Le projet Supabase gratuit se met en pause après une semaine sans activité (constaté le 2026-11-15) : le site en ligne n'a alors plus de données ni de connexion.
 
 ## Conventions de travail
 - Commits en français, style `type(portée): message`, avec la ligne `Co-Authored-By` demandée par le harnais.
