@@ -1,0 +1,7 @@
+/* source(none) + @source : Tailwind ne lit que src/, pas les copies de travail
+   ni les dossiers natifs (android, ios). */
+@import 'tailwindcss' source(none);
+@source '../';
+
+/* Socle seulement. Les couleurs, typographies et composants de la nouvelle
+   identité s'ajouteront ici une fois la direction visuelle choisie. */

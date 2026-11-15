@@ -50,7 +50,8 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Lui demander avant toute écriture en production (Supabase) et avant toute dépense de crédits (images).
 
 ## État du chantier v2 (2026-11-15)
-- Fait : base de données v2 et ses 59 tests ; scripts de bascule ; trois directions visuelles sur le canevas ; cinq photos.
+- Fait : base de données v2 et ses 59 tests ; scripts de bascule ; trois directions visuelles sur le canevas ; cinq photos ; squelette de l'app (`src/` : pages sous `/fr` et `/ar`, proxy de langue et de session, clients Supabase, en-têtes de sécurité), compilé et vérifié dans le navigateur.
+- `eslint.config.mjs` est protégé par un hook : ne pas le modifier. Le lint vise donc `src` et `tests` (`npm run lint`), ce qui évite aussi de parcourir `.claude/worktrees/`.
 - En attente du propriétaire : choix de la direction visuelle ; accord pour installer la base v2 sur le projet Supabase (l'ancien site cessera alors de fonctionner) ; compte qui sera le premier admin.
 - Reste à construire : socle de l'application (configuration, i18n, auth, accès aux données), pages publiques, connexion, demande / conversation / avis, espaces client et artisan, panneau admin, PWA et pont Capacitor, tests de parcours.
 - Actions du propriétaire héritées de la v1, toujours valables : service d'envoi des codes par e-mail (SMTP), variables Vercel dont la clé service, nom de domaine, juriste. Détail : `A_FAIRE_PROPRIETAIRE.md`.
