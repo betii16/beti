@@ -17,17 +17,19 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 ## Commandes
 - `npm run dev` / `npm run build` / `npm run lint` / `npm run typecheck`
 - `npm test` : tous les tests (vitest). `npm run test:db` : la base seule.
+- `npm run gen:types` : régénère les types de la base (`src/lib/supabase/database.types.ts`) après une migration.
 
 ## Base de données : la règle à ne jamais casser
 - L'API (rôles `anon`, `authenticated`) lit les tables à travers le RLS et n'écrit jamais dedans. Toute écriture passe par une fonction de `supabase/migrations/…300_api.sql` (utilisateurs) ou `…400_admin.sql` (équipe, journalisée dans `audit_log`).
 - La v2 est installée en production depuis le 2026-11-15, vérifiée identique à la base des tests. Les six fichiers de `supabase/migrations/` sont donc figés : toute évolution est un nouveau fichier de migration, qui règle lui-même les droits de ses fonctions, s'inscrit à la main dans `tests/db/surface.test.ts`, et ne s'applique en production qu'avec l'accord du propriétaire.
+- Les types de la base sont générés par `tests/db/contract.test.ts` depuis la base des tests, pas par le générateur de Supabase (il recopierait les centaines de fonctions PostGIS). `Insert` et `Update` y valent `never` : une écriture directe dans une table ne compile pas.
 - En production, le schéma `v1_archive` garde les tables et fonctions de la v1 (données d'essai), hors de portée de l'API. `supabase/cutover/` ne se rejoue pas.
 - Principe, règles d'écriture d'une fonction et bascule depuis la v1 : `supabase/README.md`.
 - `supabase/archive-v1/` : anciens scripts de la v1, ne plus rien en exécuter.
 - Ne jamais supposer qu'un fichier SQL du dépôt est en production : lire la base (connecteur Supabase, projet `cqsejaarturvbilyvbfs`, requêtes sur le catalogue uniquement, jamais les données des personnes).
 
 ## Gestion des erreurs
-- Les fonctions SQL renvoient des codes stables (`invalid_transition`, `rate_limited`, `not_found`…) que l'application traduit en français ou en arabe. Jamais de message SQL brut à l'écran.
+- Les fonctions SQL renvoient des codes stables (`invalid_transition`, `rate_limited`, `not_found`…) que l'application traduit en français ou en arabe. Jamais de message SQL brut à l'écran : `errorCode()` (`src/lib/errors.ts`) range l'erreur, `src/i18n/dictionaries/` donne la phrase. Un code SQL sans phrase fait échouer `tests/unit/errors.test.ts`.
 - Jamais de `catch {}` vide ni d'erreur Supabase ignorée sur un chemin critique (demande, message, avis, abonnement, suppression de compte, photos, code de connexion).
 
 ## Design et i18n
@@ -35,12 +37,14 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Son reproche à la v1 : « trop fade, trop claudifié ». Donc de vraies images dans les écrans ; pas de fond crème, pas de cartes arrondies identiques partout, pas d'étiquette en capitales au-dessus de chaque titre.
 - Images : `public/images/`. Cinq photos générées avec son compte Higgsfield le 2026-11-15 ; trois manquent (ménage, climatisation, portrait d'artisan : limite quotidienne de son compte atteinte). Chaque génération coûte ses crédits : une seule prise par image, jamais de relance sans son accord. Ce sont des photos d'illustration : jamais de faux profil d'artisan ni de faux avis.
 - Français et arabe (RTL) : propriétés logiques CSS (`margin-inline-start`…), jamais `left` / `right` sauf carte et champ téléphone.
+- Textes de l'interface : `src/i18n/dictionaries/fr.ts` fait référence, `ar.ts` doit porter les mêmes clés (erreur de compilation sinon). L'arabe rédigé par Claude (messages d'erreur, noms des wilayas) est à faire relire par une personne arabophone avant la mise en ligne.
 - Textes juridiques (CGU, confidentialité, mentions) : français uniquement, à reprendre tels quels de la v1. Ne pas les traduire ni les réécrire sans relecture humaine.
 
 ## Pièges connus
 - SQL : dans une fonction `security definer`, `current_user` vaut le propriétaire (`postgres`), jamais l'appelant. Un garde qui le teste ne bride personne.
 - SQL : `x not in (a, b)` vaut `NULL` si `a` ou `b` est `NULL`, et la vérification saute. Utiliser `is distinct from`.
 - Le projet Supabase gratuit se met en pause après une semaine sans activité (constaté le 2026-11-15) : le site n'a alors plus ni données ni connexion.
+- Tests : `vitest.config.ts` limite à 3 processus en parallèle. Au-delà, les Postgres embarqués compilés en même temps font tomber un processus en « out of memory » (constaté le 2026-11-15, 2 passages sur 7).
 - Warnings « LF will be replaced by CRLF » : bruit de fins de ligne.
 - `.claude/` : non suivi par git, ne pas le commiter.
 - Hooks locaux (GateGuard) : la première commande Bash et la première écriture de chaque fichier sont refusées une fois. Présenter les faits demandés, puis réessayer.
@@ -51,8 +55,8 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Lui demander avant toute écriture en production (Supabase) et avant toute dépense de crédits (images).
 
 ## État du chantier v2 (2026-11-15)
-- Fait : base de données v2 et ses 59 tests, installée en production (bascule du 2026-11-15 : 10 comptes repris ; annonces, demandes et messages de la v1 laissés dans l'archive) ; trois directions visuelles sur le canevas ; cinq photos ; squelette de l'app (`src/` : pages sous `/fr` et `/ar`, proxy de langue et de session, clients Supabase, en-têtes de sécurité), compilé et vérifié dans le navigateur.
+- Fait : base de données v2 et ses 59 tests, installée en production (bascule du 2026-11-15 : 10 comptes repris ; annonces, demandes et messages de la v1 laissés dans l'archive) ; trois directions visuelles sur le canevas ; cinq photos ; squelette de l'app (`src/` : pages sous `/fr` et `/ar`, proxy de langue et de session, clients Supabase, en-têtes de sécurité), compilé et vérifié dans le navigateur ; socle de données (types de la base générés, codes d'erreur expliqués en français et en arabe, 58 wilayas, libellés des catégories). 67 tests.
 - `eslint.config.mjs` est protégé par un hook : ne pas le modifier. Le lint vise donc `src` et `tests` (`npm run lint`), ce qui évite aussi de parcourir `.claude/worktrees/`.
 - En attente du propriétaire : choix de la direction visuelle ; compte qui sera le premier admin (`private.staff` est vide) ; accord pour retirer les anciens droits de lecture restés sur les tables de `v1_archive` (sans effet tant que le schéma est fermé) ; sort de PostGIS, que Supabase signale (table `spatial_ref_sys` sans RLS) et qu'on garde tant que l'archive existe.
-- Reste à construire : socle de l'application (configuration, i18n, auth, accès aux données), pages publiques, connexion, demande / conversation / avis, espaces client et artisan, panneau admin, PWA et pont Capacitor, tests de parcours.
+- Reste à construire : connexion par code (e-mail ou téléphone) et garde des pages, textes des écrans, pages publiques, demande / conversation / avis, espaces client et artisan, panneau admin, suppression de compte, PWA et pont Capacitor, tests de parcours.
 - Actions du propriétaire héritées de la v1, toujours valables : service d'envoi des codes par e-mail (SMTP), variables Vercel dont la clé service, nom de domaine, juriste. Détail : `A_FAIRE_PROPRIETAIRE.md`.

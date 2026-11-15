@@ -33,7 +33,7 @@ Les tests (`tests/db/`) démarrent un vrai Postgres embarqué, jouent les migrat
 - `security definer` avec `set search_path = ''` et des noms complets (`public.bookings`, `auth.uid()`).
 - Ne jamais tester `current_user` dans une fonction `security definer` : il vaut le propriétaire (`postgres`), pas l'appelant. Identifier l'appelant avec `private.require_user()` ou `private.require_staff()`.
 - Comparer avec `is distinct from` dès qu'une colonne peut être `NULL` : `x not in (a, b)` vaut `NULL` si `a` ou `b` est `NULL`, et la vérification saute.
-- Les six premiers fichiers sont installés en production : ne plus les modifier. Une nouvelle fonction va dans un nouveau fichier de migration, qui retire lui-même les droits que Supabase donne par défaut (`revoke execute on function … from public, anon, authenticated`), accorde celui qu'il faut, et s'inscrit dans `surface.test.ts`.
+- Les six premiers fichiers sont installés en production : ne plus les modifier. Une nouvelle fonction va dans un nouveau fichier de migration, qui retire lui-même les droits que Supabase donne par défaut (`revoke execute on function … from public, anon, authenticated`), accorde celui qu'il faut, et s'inscrit dans `surface.test.ts`. Puis `npm run gen:types` met à jour les types de l'application.
 
 ## Bascule depuis la v1 (faite le 2026-11-15)
 

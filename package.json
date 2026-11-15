@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:db": "vitest run tests/db",
+    "gen:types": "vitest run tests/db/contract.test.ts -u",
     "test:e2e": "playwright test",
     "mobile:sync": "npx cap sync",
     "mobile:android": "npx cap open android",
