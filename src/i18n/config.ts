@@ -6,6 +6,9 @@ export type Locale = (typeof locales)[number]
 
 export const defaultLocale: Locale = 'fr'
 
+/** Nom de chaque langue dans sa propre langue, pour le bouton qui permet d'en changer. */
+export const localeNames: Record<Locale, string> = { fr: 'Français', ar: 'العربية' }
+
 /** Cookie posé quand la personne choisit sa langue ; le proxy s'en sert pour rediriger. */
 export const LOCALE_COOKIE = 'beti-lang'
 
@@ -15,3 +18,6 @@ export const dirOf = (locale: Locale): 'ltr' | 'rtl' => (locale === 'ar' ? 'rtl'
 
 /** Chemin interne préfixé par la langue : href('ar', '/recherche') → « /ar/recherche ». */
 export const href = (locale: Locale, path = '/'): string => `/${locale}${path === '/' ? '' : path}`
+
+/** La même page dans une autre langue : switchLocalePath('/fr/recherche', 'ar') → « /ar/recherche ». */
+export const switchLocalePath = (pathname: string, to: Locale): string => pathname.replace(/^\/[^/]*/, `/${to}`)

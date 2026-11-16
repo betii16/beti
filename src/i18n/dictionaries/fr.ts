@@ -39,6 +39,85 @@ const errors: Record<ErrorCode, string> = {
 }
 
 export const fr = {
+  meta: {
+    title: 'BETI, les artisans de votre wilaya',
+    description:
+      'Plombier, électricien, serrurier… Trouvez un artisan près de chez vous en Algérie, envoyez votre demande et suivez son arrivée.',
+  },
+  nav: {
+    skip: 'Aller au contenu',
+    home: 'Accueil BETI',
+    main: 'Navigation principale',
+    how: 'Comment ça marche',
+    artisan: 'Je suis artisan',
+    login: 'Connexion',
+  },
+  home: {
+    heroTag: 'Plomberie, électricité, serrurerie et sept autres métiers',
+    heroTitle1: 'Besoin d’un artisan ?',
+    heroTitle2: 'Il est tout près.',
+    heroText: 'Dites ce qu’il vous faut et où. Vous choisissez un artisan proche, il vous répond avec un prix indicatif.',
+    heroAlt: 'Dans une cuisine d’Alger, un plombier resserre un raccord sous l’évier',
+    // Les quatre états réels d'une demande (bookings.status), pas un exemple inventé.
+    track: {
+      title: 'Suivi d’une demande',
+      sent: 'Demande envoyée',
+      accepted: 'Acceptée, prix indicatif annoncé',
+      onTheWay: 'L’artisan est en route',
+      sharing: 'Position partagée sur la carte',
+      done: 'Terminée, à vous de noter',
+    },
+    search: {
+      need: 'Votre besoin',
+      needPlaceholder: 'Fuite d’eau, panne, porte bloquée',
+      wilaya: 'Wilaya',
+      allWilayas: 'Toute l’Algérie',
+      submit: 'Trouver un artisan',
+    },
+    trades: {
+      title: 'Quel métier cherchez-vous ?',
+      all: 'Voir les dix métiers',
+      more: 'Et aussi',
+      electricite: 'Panne, câblage, tableau',
+      peinture: 'Intérieur, extérieur, enduit',
+      serrurerie: 'Porte bloquée, clé, verrou',
+    },
+    steps: {
+      title: 'De la demande à l’avis, tout se passe dans BETI',
+      items: [
+        { title: 'Choisissez un artisan', text: 'Par métier et par wilaya, avec la distance jusqu’à chez vous.' },
+        { title: 'Envoyez votre demande', text: 'Il accepte ou décline, et peut vous annoncer un prix indicatif.' },
+        { title: 'Suivez son arrivée', text: 'S’il partage sa position, vous le voyez approcher sur la carte.' },
+        { title: 'Confirmez et notez', text: 'Le travail terminé, vous le confirmez et laissez un avis.' },
+      ],
+    },
+    trust: {
+      title: 'Vos coordonnées restent à vous',
+      alt: 'Une rue en pente d’Alger, immeubles blancs aux volets bleus, la mer au bout',
+      items: [
+        { title: 'Votre numéro reste privé', text: 'Il n’est transmis à l’artisan qu’une fois votre demande acceptée.' },
+        { title: 'Votre adresse aussi', text: 'Seul l’artisan à qui vous envoyez la demande peut la lire.' },
+        { title: 'Des avis de vrais clients', text: 'Seul un client dont la prestation est terminée peut noter l’artisan.' },
+      ],
+    },
+    pro: {
+      title: 'Vous êtes artisan ?',
+      text: 'Recevez les demandes des clients de votre wilaya. Visible gratuitement pendant le lancement, sans commission sur vos travaux.',
+      cta: 'Créer mon profil d’artisan',
+    },
+  },
+  footer: {
+    tagline: 'Les artisans de votre wilaya.',
+    links: 'Liens utiles',
+    help: 'Aide',
+    terms: 'Conditions d’utilisation',
+    privacy: 'Confidentialité',
+  },
+  notFound: {
+    title: 'Cette page n’existe pas',
+    text: 'Elle a peut-être été déplacée, ou elle n’est pas encore construite.',
+    back: 'Revenir à l’accueil',
+  },
   // Une clé par catégorie de la base (categories.slug), vérifié par tests/db/contract.test.ts.
   categories: {
     plomberie: 'Plomberie',
