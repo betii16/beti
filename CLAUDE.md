@@ -33,7 +33,9 @@ Site + app mobile pour trouver et réserver des artisans par wilaya. Interface e
 - Jamais de `catch {}` vide ni d'erreur Supabase ignorée sur un chemin critique (demande, message, avis, abonnement, suppression de compte, photos, code de connexion).
 
 ## Design et i18n
-- Nouvelle identité en cours de choix. Trois directions montrées au propriétaire le 2026-11-15 : A « Enseigne », B « Plein cadre », C « Affiche », sur le canevas https://claude.ai/artifact/3q8s7T1bMZdBi133vCngZp. Ne rien construire de visuel avant sa réponse.
+- Nouvelle identité en cours de choix, sur le canevas https://claude.ai/artifact/3q8s7T1bMZdBi133vCngZp. Ne rien construire de visuel avant sa réponse.
+- Trois directions montrées le 2026-11-15 (A « Enseigne », B « Plein cadre », C « Affiche ») : jugées « trop ancien » le 2026-11-16, même s'il les préfère à la v1. Donc pas de motifs patrimoniaux (étoiles, enseigne peinte, affiche), pas d'angles droits partout, pas de texte doublé en arabe à côté du français.
+- D « Direct » ajoutée le 2026-11-16 : blanc, noir, un vert vif (`#12D46B`, réglable sur le canevas), vert nuit `#073B28`, coins arrondis, police Readex Pro (latin et arabe), une seule langue par page, écrans d'appli (suivi d'une demande).
 - Son reproche à la v1 : « trop fade, trop claudifié ». Donc de vraies images dans les écrans ; pas de fond crème, pas de cartes arrondies identiques partout, pas d'étiquette en capitales au-dessus de chaque titre.
 - Images : `public/images/`. Cinq photos générées avec son compte Higgsfield le 2026-11-15 ; trois manquent (ménage, climatisation, portrait d'artisan : limite quotidienne de son compte atteinte). Chaque génération coûte ses crédits : une seule prise par image, jamais de relance sans son accord. Ce sont des photos d'illustration : jamais de faux profil d'artisan ni de faux avis.
 - Français et arabe (RTL) : propriétés logiques CSS (`margin-inline-start`…), jamais `left` / `right` sauf carte et champ téléphone.
