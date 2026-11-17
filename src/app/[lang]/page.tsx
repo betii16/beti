@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Check, Search } from 'lucide-react'
-import { wilayas } from '@/domain/wilayas'
+import { Check } from 'lucide-react'
+import { SearchForm } from '@/components/search-form'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import electricite from '../../../public/images/metiers/electricite.jpg'
@@ -95,41 +95,7 @@ export default async function Home({ params }: PageProps<'/[lang]'>) {
               </ol>
             </div>
 
-            <form
-              action={search}
-              role="search"
-              className="flex min-w-0 flex-[1_1_100%] flex-wrap items-stretch gap-2 rounded-[30px] bg-paper p-2.5 shadow-float"
-            >
-              <label className="flex min-w-0 flex-[2_1_260px] flex-col justify-center rounded-[22px] px-4.5 py-1.5 focus-within:outline-2 focus-within:outline-ink">
-                <span className="text-[13px] leading-snug font-semibold">{t.search.need}</span>
-                <input
-                  name="q"
-                  type="search"
-                  maxLength={80}
-                  placeholder={t.search.needPlaceholder}
-                  className="min-h-[30px] min-w-0 bg-transparent py-0.5 text-[17px] outline-hidden"
-                />
-              </label>
-              <label className="flex min-w-0 flex-[1_1_180px] flex-col justify-center rounded-[22px] border-line px-4.5 py-1.5 focus-within:outline-2 focus-within:outline-ink sm:border-s">
-                <span className="text-[13px] leading-snug font-semibold">{t.search.wilaya}</span>
-                {/* -ms-1 : rattrape le retrait interne d'un <select> pour l'aligner sur son étiquette. */}
-                <select name="wilaya" defaultValue="" className="-ms-1 min-h-[30px] min-w-0 bg-transparent py-0.5 text-[17px] outline-hidden">
-                  <option value="">{t.search.allWilayas}</option>
-                  {wilayas.map((wilaya, i) => (
-                    <option key={wilaya.fr} value={i + 1}>
-                      {wilaya[lang]} ({i + 1})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="submit"
-                className="inline-flex min-h-[60px] flex-[1_1_220px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-accent px-7 text-lg font-semibold transition-colors hover:bg-ink hover:text-paper"
-              >
-                <Search aria-hidden className="size-5" strokeWidth={2.6} />
-                {t.search.submit}
-              </button>
-            </form>
+            <SearchForm lang={lang} dict={dict} className="flex-[1_1_100%] bg-paper shadow-float" />
           </div>
         </div>
       </section>
