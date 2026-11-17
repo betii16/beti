@@ -1,18 +1,19 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { BadgeCheck, Star } from 'lucide-react'
+import { BadgeCheck } from 'lucide-react'
 import type { CategorySlug } from '@/domain/search'
 import { wilayaName } from '@/domain/wilayas'
 import { href, type Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionary'
 import { mediaUrl } from '@/lib/media'
 import type { Database } from '@/lib/supabase/database.types'
+import { Rating } from './rating'
 
 export type ArtisanSummary = Database['public']['Functions']['search_artisans']['Returns'][number]
 
 /** Une ligne de la liste des artisans : toute la ligne mène au profil. */
 export function ArtisanCard({ artisan, lang, dict }: { artisan: ArtisanSummary; lang: Locale; dict: Dictionary }) {
-  const t = dict.search
+  const t = dict.artisan
   const number = new Intl.NumberFormat(lang === 'ar' ? 'ar-DZ' : 'fr-DZ', { maximumFractionDigits: 1 })
   const name = artisan.display_name ?? ''
   const trade = dict.categories[artisan.category as CategorySlug] ?? dict.categories.autre
@@ -58,16 +59,12 @@ export function ArtisanCard({ artisan, lang, dict }: { artisan: ArtisanSummary; 
             {place && <span>{place}</span>}
           </span>
           {reviews > 0 ? (
-            <span className="inline-flex items-center gap-1.5 text-[15px]">
-              <Star aria-hidden className="size-4 fill-ink" />
-              <span aria-hidden className="font-semibold">
-                {rating}
-              </span>
-              <span aria-hidden className="text-muted">
-                ({reviews})
-              </span>
-              <span className="sr-only">{t.rating.replace('{rating}', rating).replace('{count}', String(reviews))}</span>
-            </span>
+            <Rating
+              value={rating}
+              count={reviews}
+              label={t.rating.replace('{rating}', rating).replace('{count}', String(reviews))}
+              className="text-[15px]"
+            />
           ) : (
             <span className="text-[15px] text-muted">{t.noReviews}</span>
           )}
