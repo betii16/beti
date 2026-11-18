@@ -1,6 +1,7 @@
 // Textes français : la référence. ar.ts doit porter exactement les mêmes clés,
 // ce que le type Dictionary vérifie à la compilation.
 
+import type { BookingStatus } from '@/domain/bookings'
 import type { ErrorCode } from '@/lib/errors'
 
 // Les chiffres cités (5 demandes, 7 jours, 60 jours, 20 signalements, 10 caractères)
@@ -35,6 +36,8 @@ const errors: Record<ErrorCode, string> = {
   code_invalid: 'Code incorrect ou expiré. Vérifiez-le, ou demandez-en un nouveau.',
   code_rate_limited: 'Trop de codes demandés. Patientez une minute avant de réessayer.',
   invalid_full_name: 'Entrez votre nom, entre 2 et 80 caractères.',
+  invalid_description: 'Décrivez votre besoin en 10 à 2 000 caractères.',
+  invalid_date: 'Choisissez une date à venir, dans l’année.',
   invalid_phone: 'Numéro de téléphone invalide. Vérifiez-le et réessayez.',
   invalid_photos: 'Les photos n’ont pas été acceptées. Retirez-les puis ajoutez-les de nouveau.',
   invalid_location: 'Position invalide. Placez le repère sur la carte, en Algérie.',
@@ -95,7 +98,7 @@ export const fr = {
       alt: 'Une rue en pente d’Alger, immeubles blancs aux volets bleus, la mer au bout',
       items: [
         { title: 'Votre numéro reste privé', text: 'Il n’est transmis à l’artisan qu’une fois votre demande acceptée.' },
-        { title: 'Votre adresse aussi', text: 'Seul l’artisan à qui vous envoyez la demande peut la lire.' },
+        { title: 'Votre adresse aussi', text: 'Elle n’est transmise à l’artisan que s’il accepte votre demande.' },
         { title: 'Des avis de vrais clients', text: 'Seul un client dont la prestation est terminée peut noter l’artisan.' },
       ],
     },
@@ -144,7 +147,46 @@ export const fr = {
     change: 'Changer d’adresse',
     description: 'Connectez-vous à BETI avec un code reçu par e-mail.',
   },
+  booking: {
+    metaTitle: 'Envoyer une demande',
+    title: 'Votre demande à {name}',
+    backToProfile: 'Retour au profil',
+    yourName: 'Votre nom',
+    yourNameHelp: 'L’artisan le verra avec votre demande.',
+    description: 'Votre besoin',
+    descriptionPlaceholder: 'Exemple : fuite sous l’évier de la cuisine depuis ce matin, le robinet d’arrêt ne ferme plus.',
+    descriptionHelp: 'Entre 10 et 2 000 caractères. Plus c’est précis, plus le prix indicatif sera juste.',
+    wilaya: 'Wilaya',
+    commune: 'Commune',
+    address: 'Adresse',
+    addressHelp: 'Elle n’est transmise à l’artisan que s’il accepte votre demande.',
+    date: 'Date souhaitée',
+    optional: 'facultatif',
+    urgent: 'C’est urgent',
+    send: 'Envoyer la demande',
+    already: 'Vous avez déjà une demande en cours avec cet artisan.',
+    seeRequests: 'Voir mes demandes',
+    listTitle: 'Mes demandes',
+    sent: 'Demande envoyée. L’artisan est prévenu, sa réponse arrivera ici.',
+    empty: 'Aucune demande pour l’instant.',
+    find: 'Trouver un artisan',
+    received: 'Demande reçue',
+    urgentTag: 'Urgent',
+    sentOn: 'Envoyée le {date}',
+    wishedOn: 'Souhaitée le {date}',
+    quoted: 'Prix indicatif : {n} DA',
+    // Un libellé par état de bookings.status : le compilateur refuse un état oublié.
+    status: {
+      pending: 'En attente de réponse',
+      accepted: 'Acceptée',
+      declined: 'Déclinée',
+      cancelled: 'Annulée',
+      finished: 'Terminée, à confirmer',
+      completed: 'Terminée',
+    } satisfies Record<BookingStatus, string>,
+  },
   account: {
+    requests: 'Mes demandes',
     title: 'Mon compte',
     signedInAs: 'Connecté avec {email}',
     client: 'Compte client',

@@ -7,19 +7,12 @@
 
 import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { defaultLocale, href, isLocale } from '@/i18n/config'
+import { href } from '@/i18n/config'
 import { errorCode, type ErrorCode } from '@/lib/errors'
+import { field, localeOf } from '@/lib/form'
+import { saveFullName } from '@/lib/profile'
 import { createClient } from '@/lib/supabase/server'
 import { isValidEmail, normalizeCode, normalizeEmail, safeNext } from './input'
-
-const field = (formData: FormData, name: string): string => {
-  const value = formData.get(name)
-  return typeof value === 'string' ? value : ''
-}
-const localeOf = (formData: FormData) => {
-  const lang = field(formData, 'lang')
-  return isLocale(lang) ? lang : defaultLocale
-}
 
 export type LoginState = { sentTo?: string; resent?: boolean; error?: ErrorCode }
 
@@ -63,11 +56,10 @@ export async function signOut(formData: FormData): Promise<void> {
 
 export type NameState = { saved?: boolean; error?: ErrorCode }
 
-/** Enregistre le nom. La fonction save_profile identifie elle-même l'appelant et contrôle la valeur. */
+/** Enregistre le nom, sans toucher au reste de la fiche (voir saveFullName). */
 export async function saveName(_previous: NameState, formData: FormData): Promise<NameState> {
-  const supabase = await createClient()
-  const { error } = await supabase.rpc('save_profile', { p_full_name: field(formData, 'name') })
-  if (error) return { error: errorCode(error) }
+  const error = await saveFullName(field(formData, 'name'))
+  if (error) return { error }
   refresh()
   return { saved: true }
 }

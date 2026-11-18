@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { NameForm } from '@/components/name-form'
-import { isLocale } from '@/i18n/config'
+import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import { signOut } from '@/lib/auth/actions'
 import { requireSession } from '@/lib/auth/session'
@@ -60,6 +61,13 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
         ) : (
           <NameForm name={profile?.full_name ?? ''} t={t} errors={dict.errors} />
         )}
+
+        <Link
+          href={href(lang, '/demandes')}
+          className="inline-flex min-h-12 items-center self-start rounded-full bg-ink px-6 font-semibold text-paper transition-colors hover:bg-accent hover:text-ink"
+        >
+          {t.requests}
+        </Link>
 
         <form action={signOut} className="border-t border-line pt-6">
           <input type="hidden" name="lang" value={lang} />

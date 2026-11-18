@@ -42,6 +42,8 @@ export const ERROR_CODES = [
   'code_rate_limited',
   // saisie
   'invalid_full_name',
+  'invalid_description',
+  'invalid_date',
   'invalid_phone',
   'invalid_photos',
   'invalid_location',

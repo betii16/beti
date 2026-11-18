@@ -2,33 +2,19 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { cache } from 'react'
 import { BadgeCheck, ChevronLeft } from 'lucide-react'
-import { z } from 'zod'
 import { Rating } from '@/components/rating'
 import type { CategorySlug } from '@/domain/search'
 import { wilayaName } from '@/domain/wilayas'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
+import { getArtisan } from '@/lib/artisans'
 import { errorCode } from '@/lib/errors'
 import { mediaUrl } from '@/lib/media'
 import { createClient } from '@/lib/supabase/server'
 
 const H2 = 'text-[clamp(1.5rem,2.6vw,2rem)] leading-tight font-bold tracking-[-0.03em] rtl:leading-[1.4]'
 const BADGE = 'inline-flex items-center gap-1 rounded-full bg-paper px-2.5 py-0.5 text-[13px] font-medium'
-
-// Seules les colonnes affichées sont demandées : ni l'abonnement de l'artisan, ni qui a écrit un avis.
-const ARTISAN =
-  'id, display_name, category, skills, bio, hourly_rate, wilaya_code, commune, radius_km, avatar_path, cover_path, is_available, phone_verified, verified_at, rating_avg, rating_count, jobs_done'
-
-// Lu deux fois par requête (titre de l'onglet, puis page) : cache() n'interroge la base qu'une fois.
-const getArtisan = cache(async (id: string) => {
-  // L'identifiant vient de l'adresse : s'il n'a pas la forme attendue, la base n'est pas interrogée.
-  if (!z.uuid().safeParse(id).success) return { artisan: null, error: null }
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('artisans').select(ARTISAN).eq('id', id).maybeSingle()
-  return { artisan: data, error }
-})
 
 export async function generateMetadata({ params }: PageProps<'/[lang]/artisans/[id]'>): Promise<Metadata> {
   const { lang, id } = await params
