@@ -66,7 +66,8 @@ export function BookingForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <label className={FIELD}>
           <span className={LABEL}>{t.wilaya}</span>
-          <select name="wilaya" defaultValue={saved?.wilaya ?? String(wilaya)} required className={INPUT}>
+          {/* React ne met pas à jour la valeur par défaut d'un select déjà affiché : la clé le recrée avec la saisie rendue. */}
+          <select key={saved?.wilaya ?? String(wilaya)} name="wilaya" defaultValue={saved?.wilaya ?? String(wilaya)} required className={INPUT}>
             {wilayas.map((item, i) => (
               <option key={item.fr} value={i + 1}>
                 {item[lang]} ({i + 1})

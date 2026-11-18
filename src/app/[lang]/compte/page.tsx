@@ -62,12 +62,20 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
           <NameForm name={profile?.full_name ?? ''} t={t} errors={dict.errors} />
         )}
 
-        <Link
-          href={href(lang, '/demandes')}
-          className="inline-flex min-h-12 items-center self-start rounded-full bg-ink px-6 font-semibold text-paper transition-colors hover:bg-accent hover:text-ink"
-        >
-          {t.requests}
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={href(lang, '/demandes')}
+            className="inline-flex min-h-12 items-center rounded-full bg-ink px-6 font-semibold text-paper transition-colors hover:bg-accent hover:text-ink"
+          >
+            {t.requests}
+          </Link>
+          <Link
+            href={href(lang, '/artisan')}
+            className="inline-flex min-h-12 items-center rounded-full bg-mist px-6 font-semibold transition-colors hover:bg-ink hover:text-paper"
+          >
+            {profile?.role === 'artisan' ? t.listing : t.becomeArtisan}
+          </Link>
+        </div>
 
         <form action={signOut} className="border-t border-line pt-6">
           <input type="hidden" name="lang" value={lang} />
