@@ -76,10 +76,10 @@ export default async function RequestsPage({ params, searchParams }: PageProps<'
               <li key={booking.id} className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 py-5">
                 <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
                   <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                    <span className="text-xl leading-snug font-semibold tracking-[-0.01em]">
+                    <Link href={href(lang, `/demandes/${booking.id}`)} className="text-xl leading-snug font-semibold tracking-[-0.01em] underline-offset-4 hover:underline">
                       {/* Côté artisan, on ne lit pas ici la fiche du client : la demande est simplement « reçue ». */}
                       {booking.client_id === session.userId ? (booking.artisans?.display_name ?? t.received) : t.received}
-                    </span>
+                    </Link>
                     {booking.is_urgent && <span className="rounded-full bg-ink px-2.5 py-0.5 text-[13px] font-medium text-paper">{t.urgentTag}</span>}
                   </p>
                   <p className="flex flex-wrap gap-x-2.5 text-body">

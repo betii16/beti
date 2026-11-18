@@ -7,6 +7,26 @@ export type BookingStatus = Database['public']['Tables']['bookings']['Row']['sta
 /** États d'une demande « en cours » : create_booking n'en ouvre pas une seconde avec le même artisan. */
 export const OPEN_STATUSES = ['pending', 'accepted', 'finished'] as const satisfies readonly BookingStatus[]
 
+export type BookingRole = 'client' | 'artisan'
+export type BookingAction = 'accept' | 'decline' | 'cancel' | 'finish' | 'complete'
+
+/**
+ * Ce que chacun peut faire d'une demande selon son état : le reflet exact des
+ * fonctions SQL (respond_booking, cancel_booking, finish_booking, complete_booking).
+ * L'écran s'en sert pour n'offrir que des boutons qui aboutiront ; la base, elle,
+ * revérifie toujours.
+ */
+export function bookingActions(role: BookingRole, status: BookingStatus): BookingAction[] {
+  if (role === 'artisan') {
+    if (status === 'pending') return ['accept', 'decline']
+    if (status === 'accepted') return ['finish', 'cancel']
+    return []
+  }
+  if (status === 'pending' || status === 'accepted') return ['cancel']
+  if (status === 'finished') return ['complete']
+  return []
+}
+
 /**
  * Jour choisi dans le formulaire (AAAA-MM-JJ) → instant enregistré : la fin de ce
  * jour à l'heure d'Algérie (UTC+1 toute l'année). La fin de journée, pour

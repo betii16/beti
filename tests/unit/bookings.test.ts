@@ -1,5 +1,19 @@
 import { expect, it } from 'vitest'
-import { dayToTimestamp } from '@/domain/bookings'
+import { bookingActions, dayToTimestamp } from '@/domain/bookings'
+
+it('n’offre à chacun que les actions que la base acceptera', () => {
+  expect(bookingActions('artisan', 'pending')).toEqual(['accept', 'decline'])
+  expect(bookingActions('artisan', 'accepted')).toEqual(['finish', 'cancel'])
+  expect(bookingActions('client', 'pending')).toEqual(['cancel'])
+  expect(bookingActions('client', 'accepted')).toEqual(['cancel'])
+  expect(bookingActions('client', 'finished')).toEqual(['complete'])
+  // Une fois le travail déclaré terminé, l'artisan attend ; une demande close ne bouge plus.
+  expect(bookingActions('artisan', 'finished')).toEqual([])
+  for (const closed of ['declined', 'cancelled', 'completed'] as const) {
+    expect(bookingActions('client', closed)).toEqual([])
+    expect(bookingActions('artisan', closed)).toEqual([])
+  }
+})
 
 it('transforme le jour choisi en fin de journée, heure d’Algérie', () => {
   expect(dayToTimestamp('2026-11-21')).toBe('2026-11-21T23:59:59+01:00')

@@ -4,6 +4,7 @@
 // tout (qui appelle, artisan visible, longueurs, limites), cette action ne fait
 // que mettre en forme et rendre à l'écran ce qui a été saisi en cas de refus.
 
+import { refresh } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { dayToTimestamp } from '@/domain/bookings'
@@ -12,6 +13,42 @@ import { errorCode, type ErrorCode } from '@/lib/errors'
 import { field, localeOf } from '@/lib/form'
 import { saveFullName } from '@/lib/profile'
 import { createClient } from '@/lib/supabase/server'
+
+export type UpdateState = { error?: ErrorCode }
+
+/**
+ * Fait avancer une demande : accepter, décliner, annuler, déclarer la fin,
+ * confirmer la fin. Chaque fonction SQL vérifie elle-même qui appelle et si
+ * l'état le permet ; une demande qui a changé entre-temps revient en « invalid_transition ».
+ */
+export async function updateBooking(_previous: UpdateState, formData: FormData): Promise<UpdateState> {
+  const booking = field(formData, 'booking')
+  if (!z.uuid().safeParse(booking).success) return { error: 'not_found' }
+  const supabase = await createClient()
+  const action = field(formData, 'do')
+
+  let error: unknown = null
+  if (action === 'accept' || action === 'decline') {
+    const price = field(formData, 'price').replace(/\s+/g, '')
+    if (price && !/^\d{1,9}$/.test(price)) return { error: 'invalid_input' }
+    ;({ error } = await supabase.rpc('respond_booking', {
+      p_booking_id: booking,
+      p_accept: action === 'accept',
+      p_quoted_price: action === 'accept' && price ? Number(price) : undefined,
+    }))
+  } else if (action === 'cancel') {
+    ;({ error } = await supabase.rpc('cancel_booking', { p_booking_id: booking, p_reason: field(formData, 'reason') }))
+  } else if (action === 'finish') {
+    ;({ error } = await supabase.rpc('finish_booking', { p_booking_id: booking }))
+  } else if (action === 'complete') {
+    ;({ error } = await supabase.rpc('complete_booking', { p_booking_id: booking }))
+  } else {
+    return { error: 'invalid_input' }
+  }
+  if (error) return { error: errorCode(error) }
+  refresh()
+  return {}
+}
 
 const FIELDS = ['name', 'description', 'wilaya', 'commune', 'address', 'date', 'urgent'] as const
 type Values = Record<(typeof FIELDS)[number], string>
