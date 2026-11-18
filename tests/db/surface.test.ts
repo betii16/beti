@@ -63,13 +63,36 @@ describe('surface exposée à l’API', () => {
           `select c.relname as t
              from pg_class c join pg_namespace n on n.oid = c.relnamespace
             where n.nspname in ('public', 'private') and c.relkind = 'r'
-              and has_table_privilege($1, c.oid, 'SELECT')
+              and (has_table_privilege($1, c.oid, 'SELECT') or has_any_column_privilege($1, c.oid, 'SELECT'))
             order by 1`,
           [role],
         )
       ).map(r => r.t)
     expect(await readable('anon')).toEqual(ANON_TABLES)
     expect(await readable('authenticated')).toEqual(USER_TABLES)
+  })
+
+  // Le RLS choisit les lignes, pas les colonnes. Liste écrite À LA MAIN des colonnes
+  // d'une table lisible que l'API ne sert pas : une colonne ajoutée à artisans ou à
+  // reviews y apparaît d'office, et il faut alors décider de l'ouvrir ou non.
+  it('colonnes fermées : ni qui a écrit un avis, ni l’abonnement d’un artisan', async () => {
+    const hidden = async (role: string) =>
+      (
+        await su<{ c: string }>(
+          db,
+          `select c.relname || '.' || a.attname as c
+             from pg_class c
+             join pg_namespace n on n.oid = c.relnamespace
+             join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
+            where n.nspname = 'public' and c.relkind = 'r'
+              and has_any_column_privilege($1, c.oid, 'SELECT')
+              and not has_column_privilege($1, c.oid, a.attnum, 'SELECT')
+            order by 1`,
+          [role],
+        )
+      ).map(r => r.c)
+    expect(await hidden('anon')).toEqual(['artisans.plan', 'artisans.plan_until', 'reviews.booking_id', 'reviews.client_id'])
+    expect(await hidden('authenticated')).toEqual(['artisans.plan', 'artisans.plan_until', 'reviews.client_id'])
   })
 
   it('fonctions : seules celles de la liste sont appelables', async () => {

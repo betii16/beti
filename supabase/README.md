@@ -51,6 +51,17 @@ Reste à faire, avec l'accord du propriétaire :
 - retirer les anciens droits de lecture restés sur les tables archivées (`revoke all on all tables in schema v1_archive from anon, authenticated;`), sans effet aujourd'hui puisque le schéma est fermé ;
 - supprimer un jour `v1_archive`, puis PostGIS.
 
+## Droits de lecture par colonne (`…000700_column_grants.sql`)
+
+Les règles RLS choisissent les lignes, pas les colonnes. Sur `artisans` et `reviews`, les seules tables publiques qui portent des colonnes à ne pas montrer, le droit de lecture est donc donné colonne par colonne :
+
+- fermées à tous : `reviews.client_id`, `artisans.plan`, `artisans.plan_until` ;
+- fermée aux visiteurs anonymes seulement : `reviews.booking_id`.
+
+Un artisan lit son abonnement dans `subscriptions` (ses propres lignes), l'équipe aussi. Une colonne ajoutée à l'une de ces deux tables est fermée tant qu'une migration ne l'accorde pas, et `tests/db/surface.test.ts` en tient la liste. Les types de l'application ne contiennent que les colonnes lisibles.
+
+Cette migration est testée mais n'est pas encore appliquée en production (2026-11-18) : elle attend l'accord du propriétaire.
+
 ## À savoir
 
 - La période de lancement (tous les artisans publiés sont visibles, abonnés ou non) est fixée à deux mois après l'installation. Un admin la change depuis le panneau.

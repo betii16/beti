@@ -275,8 +275,15 @@ describe('avis', () => {
     await su(db, `update public.reviews set is_visible = false where booking_id = $1`, [a.booking])
     expect(await rating()).toEqual({ avg: '5.00', rating_count: 1 })
     // l'avis masqué disparaît du public mais son auteur le voit encore
-    expect(await as(db, {}, run => run(`select 1 from public.reviews where booking_id = $1`, [a.booking]))).toEqual([])
+    expect(await as(db, {}, run => run(`select comment from public.reviews where artisan_id = $1`, [a.artisan]))).toEqual([{ comment: 'Très bien' }])
     expect(await as(db, { id: a.client }, run => run(`select 1 from public.reviews where booking_id = $1`, [a.booking]))).toHaveLength(1)
+
+    // personne ne lit qui a écrit un avis ; un visiteur ne lit pas non plus de quelle demande il vient
+    for (const who of [{}, { id: client2 }, { id: a.artisan }]) {
+      expect(await fails(as(db, who, run => run(`select client_id from public.reviews`)))).toMatch(/permission denied/)
+      expect(await fails(as(db, who, run => run(`select * from public.reviews`)))).toMatch(/permission denied/)
+    }
+    expect(await fails(as(db, {}, run => run(`select booking_id from public.reviews`)))).toMatch(/permission denied/)
 
     const [{ id: reviewId }] = await su<{ id: string }>(db, `select id from public.reviews where booking_id = $1`, [booking2])
     const other = await newArtisan(db)

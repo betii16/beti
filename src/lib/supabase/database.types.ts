@@ -1,6 +1,7 @@
 // Généré par tests/db/contract.test.ts depuis le catalogue de la base : ne pas modifier à la main.
 // Après une migration : npm run gen:types.
 // Insert et Update valent never : l’API n’écrit jamais dans une table, toute écriture passe par une fonction.
+// Row ne contient que les colonnes lisibles par une personne connectée : une colonne fermée à l’API n’y figure pas.
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
@@ -50,8 +51,6 @@ export type Database = {
           suspended: boolean
           phone_verified: boolean
           verified_at: string | null
-          plan: 'free' | 'basic' | 'premium'
-          plan_until: string | null
           rating_avg: number
           rating_count: number
           jobs_done: number
@@ -250,7 +249,6 @@ export type Database = {
           id: string
           booking_id: string
           artisan_id: string
-          client_id: string | null
           author_name: string
           rating: number
           comment: string
@@ -265,7 +263,6 @@ export type Database = {
         Relationships: [
           { foreignKeyName: 'reviews_artisan_id_fkey'; columns: ['artisan_id']; isOneToOne: false; referencedRelation: 'artisans'; referencedColumns: ['id'] },
           { foreignKeyName: 'reviews_booking_id_fkey'; columns: ['booking_id']; isOneToOne: true; referencedRelation: 'bookings'; referencedColumns: ['id'] },
-          { foreignKeyName: 'reviews_client_id_fkey'; columns: ['client_id']; isOneToOne: false; referencedRelation: 'profiles'; referencedColumns: ['id'] },
         ]
       }
       subscriptions: {

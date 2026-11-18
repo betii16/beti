@@ -42,6 +42,8 @@ async function generate(): Promise<string> {
     `select c.relname as t, a.attname as c, format_type(a.atttypid, null) as ty, a.attnotnull as nn
        from pg_attribute a join pg_class c on c.oid = a.attrelid
       where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and a.attnum > 0 and not a.attisdropped
+        -- seulement ce que l'API peut lire : une colonne fermée n'existe pas pour l'application
+        and has_column_privilege('authenticated', c.oid, a.attnum, 'select')
       order by c.relname, a.attnum`,
   )
   const tables = [...new Set(columns.map(x => x.t))]
@@ -83,6 +85,8 @@ async function generate(): Promise<string> {
        join pg_class c on c.oid = con.conrelid
        join pg_class r on r.oid = con.confrelid
       where con.contype = 'f' and c.relnamespace = 'public'::regnamespace and r.relnamespace = 'public'::regnamespace
+        and not exists (select 1 from unnest(con.conkey) k(n)
+                         where not has_column_privilege('authenticated', con.conrelid, k.n, 'select'))
       order by c.relname, con.conname`,
   )
 
@@ -155,6 +159,7 @@ async function generate(): Promise<string> {
     '// Généré par tests/db/contract.test.ts depuis le catalogue de la base : ne pas modifier à la main.',
     '// Après une migration : npm run gen:types.',
     '// Insert et Update valent never : l’API n’écrit jamais dans une table, toute écriture passe par une fonction.',
+    '// Row ne contient que les colonnes lisibles par une personne connectée : une colonne fermée à l’API n’y figure pas.',
     '',
     'export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]',
     '',

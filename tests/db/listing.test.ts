@@ -57,6 +57,30 @@ describe('création de la fiche', () => {
   })
 })
 
+describe('ce que l’API ne montre pas d’une fiche', () => {
+  it('l’abonnement ne se lit pas dans la fiche, même par l’artisan : il passe par subscriptions', async () => {
+    const id = await newArtisan(db)
+    const sub = (await as(db, { id }, run => run<{ id: string }>(`select public.request_subscription('premium', 'monthly') as id`)))[0].id
+    await su(db, `update public.artisans set plan = 'premium', plan_until = now() + interval '30 days' where id = $1`, [id])
+
+    for (const who of [{}, { id }, { id: await newUser(db) }]) {
+      expect(await fails(as(db, who, run => run(`select plan from public.artisans`)))).toMatch(/permission denied/)
+      expect(await fails(as(db, who, run => run(`select plan_until from public.artisans`)))).toMatch(/permission denied/)
+      expect(await fails(as(db, who, run => run(`select * from public.artisans`)))).toMatch(/permission denied/)
+    }
+
+    // la fiche publique se lit toujours ; la recherche dit « mis en avant » sans donner la formule
+    expect(await as(db, {}, run => run(`select display_name from public.artisans where id = $1`, [id]))).toHaveLength(1)
+    const found = await as(db, {}, run => run<{ id: string; is_premium: boolean }>(`select * from public.search_artisans()`))
+    expect(found.find(a => a.id === id)?.is_premium).toBe(true)
+    expect(Object.keys(found[0])).not.toContain('plan')
+
+    // l'artisan lit sa propre demande d'abonnement, un autre compte ne la voit pas
+    expect(await as(db, { id }, run => run(`select plan, status from public.subscriptions where id = $1`, [sub]))).toEqual([{ plan: 'premium', status: 'pending' }])
+    expect(await as(db, { id: await newUser(db) }, run => run(`select 1 from public.subscriptions where id = $1`, [sub]))).toEqual([])
+  })
+})
+
 describe('ce que l’artisan ne peut pas changer lui-même', () => {
   it('plan, note, compteurs, mention vérifiée : aucune écriture directe', async () => {
     const id = await newArtisan(db)
