@@ -35,7 +35,13 @@ export const ERROR_CODES = [
   'already_pending',
   // équipe
   'cannot_suspend_staff',
+  // connexion par code (service d'authentification, pas la base)
+  'email_invalid',
+  'email_not_deliverable',
+  'code_invalid',
+  'code_rate_limited',
   // saisie
+  'invalid_full_name',
   'invalid_phone',
   'invalid_photos',
   'invalid_location',
@@ -49,14 +55,33 @@ export type ErrorCode = (typeof ERROR_CODES)[number]
 
 const KNOWN: ReadonlySet<string> = new Set(ERROR_CODES)
 
+// Codes du service d'authentification (connexion par code), rangés dans les nôtres.
+const AUTH: Record<string, ErrorCode> = {
+  otp_expired: 'code_invalid',
+  over_email_send_rate_limit: 'code_rate_limited',
+  over_sms_send_rate_limit: 'code_rate_limited',
+  over_request_rate_limit: 'code_rate_limited',
+  email_address_invalid: 'email_invalid',
+  // Sans service d'envoi branché, Supabase n'écrit qu'aux adresses de l'équipe.
+  email_address_not_authorized: 'email_not_deliverable',
+  user_banned: 'account_suspended',
+  session_not_found: 'not_authenticated',
+  session_expired: 'not_authenticated',
+  bad_jwt: 'not_authenticated',
+  no_authorization: 'not_authenticated',
+}
+
 /** Range une erreur Supabase (ou n'importe quelle erreur) dans un code que l'on sait expliquer. */
 export function errorCode(error: unknown): ErrorCode {
-  const { message, code } = (error ?? {}) as { message?: unknown; code?: unknown }
+  const { message, code, name } = (error ?? {}) as { message?: unknown; code?: unknown; name?: unknown }
   if (typeof message === 'string') {
     if (KNOWN.has(message)) return message as ErrorCode
     // Les autres invalid_* doublent un contrôle que le formulaire fait déjà.
     if (/^invalid_[a-z_]+$/.test(message)) return 'invalid_input'
   }
+  if (typeof code === 'string' && Object.hasOwn(AUTH, code)) return AUTH[code]
+  // Le service d'authentification n'a pas pu être joint.
+  if (name === 'AuthRetryableFetchError') return 'network'
   // Droit refusé par la base ou jeton expiré : la session n'est plus là.
   if (code === '42501' || code === 'PGRST301' || code === 'PGRST303') return 'not_authenticated'
   // Le client Supabase laisse code vide quand la requête n'a pas atteint le serveur.

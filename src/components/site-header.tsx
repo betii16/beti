@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { House } from 'lucide-react'
 import { href, type Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionary'
+import { AccountLink } from './account-link'
 import { LanguageSwitch } from './language-switch'
 
 export function SiteHeader({ lang, t }: { lang: Locale; t: Dictionary['nav'] }) {
@@ -32,12 +33,7 @@ export function SiteHeader({ lang, t }: { lang: Locale; t: Dictionary['nav'] }) 
           {t.artisan}
         </Link>
         <LanguageSwitch lang={lang} />
-        <Link
-          href={href(lang, '/connexion')}
-          className="inline-flex min-h-[46px] items-center rounded-full bg-ink px-5 font-semibold whitespace-nowrap text-paper sm:px-6"
-        >
-          {t.login}
-        </Link>
+        <AccountLink lang={lang} login={t.login} account={t.account} />
       </nav>
     </header>
   )

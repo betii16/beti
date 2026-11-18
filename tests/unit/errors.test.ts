@@ -31,7 +31,15 @@ it('chaque code levé par le SQL est reconnu', () => {
 
 it('chaque code de l’application existe vraiment dans le SQL', () => {
   // Une faute de frappe dans ERROR_CODES donnerait un message que personne ne verrait jamais.
-  expect(ERROR_CODES.filter(c => !sqlCodes.includes(c))).toEqual(['network', 'unknown'])
+  // Les seuls codes qui ne viennent pas du SQL : ceux du service d'authentification et du réseau.
+  expect(ERROR_CODES.filter(c => !sqlCodes.includes(c))).toEqual([
+    'email_invalid',
+    'email_not_deliverable',
+    'code_invalid',
+    'code_rate_limited',
+    'network',
+    'unknown',
+  ])
 })
 
 it('chaque code a sa phrase en français et en arabe', () => {
