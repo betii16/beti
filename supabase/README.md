@@ -60,7 +60,7 @@ Les règles RLS choisissent les lignes, pas les colonnes. Sur `artisans` et `rev
 
 Un artisan lit son abonnement dans `subscriptions` (ses propres lignes), l'équipe aussi. Une colonne ajoutée à l'une de ces deux tables est fermée tant qu'une migration ne l'accorde pas, et `tests/db/surface.test.ts` en tient la liste. Les types de l'application ne contiennent que les colonnes lisibles.
 
-Cette migration est testée mais n'est pas encore appliquée en production (2026-11-18) : elle attend l'accord du propriétaire.
+Appliquée en production le 2026-11-18 (enregistrée `v2_700_column_grants`), puis vérifiée : le catalogue donne la même liste de colonnes fermées que les tests, et l'API répond « permission denied » à un visiteur qui les demande. Sur ces deux tables, `select *` est donc refusé : il faut nommer les colonnes.
 
 ## À savoir
 
