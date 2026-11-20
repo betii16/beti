@@ -91,7 +91,7 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
             <h2 id="profil" className="text-[clamp(1.5rem,3vw,2rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
               {t.editTitle}
             </h2>
-            <ListingForm lang={lang} initial={initial} mode="edit" t={t} categories={dict.categories} errors={dict.errors} />
+            <ListingForm lang={lang} initial={initial} mode="edit" published={own.published} t={t} categories={dict.categories} errors={dict.errors} />
           </section>
         </div>
       </main>
@@ -127,8 +127,11 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
           />
         </div>
         {/* Photo d'ambiance, sur grand écran seulement ; elle suit le formulaire en défilant. */}
-        <div className="relative hidden h-[560px] overflow-hidden rounded-[36px] bg-night lg:sticky lg:top-6 lg:block">
-          <Image src={electricite} alt="" fill sizes="(min-width: 1024px) 400px, 1px" placeholder="blur" className="object-cover" />
+        <div className="hidden lg:sticky lg:top-6 lg:block">
+          {/* Une image « fill » veut un parent en position relative : le bloc collant l'enveloppe. */}
+          <div className="relative h-[560px] overflow-hidden rounded-[36px] bg-night">
+            <Image src={electricite} alt="" fill sizes="(min-width: 1024px) 400px, 1px" placeholder="blur" className="object-cover" />
+          </div>
         </div>
       </div>
     </main>

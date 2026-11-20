@@ -221,6 +221,8 @@ export const ar: Dictionary = {
     create: 'أنشئ ملفي',
     save: 'حفظ التعديلات',
     saved: 'تم حفظ الملف.',
+    savedNotPublished: 'تم حفظ الملف، لكنه غير ظاهر بعد: لا يراه الزبائن إلا بعد نشره.',
+    goPublish: 'انشر ملفي',
     editTitle: 'ملفك',
     stepsTitle: 'لتصلك الطلبات',
     stepProfile: 'الملف مكتمل',

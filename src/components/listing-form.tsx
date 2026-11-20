@@ -16,6 +16,7 @@ export function ListingForm({
   lang,
   initial,
   mode,
+  published = false,
   t,
   categories,
   errors,
@@ -24,6 +25,8 @@ export function ListingForm({
   initial: ListingValues
   /** « become » : compte client, que l'envoi passe d'abord en compte artisan. */
   mode: 'become' | 'create' | 'edit'
+  /** Profil déjà publié : sinon, « enregistré » rappelle qu'il reste invisible tant qu'il n'est pas publié. */
+  published?: boolean
   t: Dictionary['listing']
   categories: Dictionary['categories']
   errors: Dictionary['errors']
@@ -115,11 +118,20 @@ export function ListingForm({
           {errors[state.error]}
         </p>
       ) : (
-        state.saved && (
+        state.saved &&
+        (published ? (
           <p role="status" className="font-medium">
             {t.saved}
           </p>
-        )
+        ) : (
+          // Le premier essai en vrai l'a montré : enregistrer n'est pas publier, il faut le dire ici.
+          <p role="status" className="rounded-[20px] bg-accent px-5 py-3.5 font-medium">
+            {t.savedNotPublished}{' '}
+            <a href="#etapes" className="font-semibold underline underline-offset-4">
+              {t.goPublish}
+            </a>
+          </p>
+        ))
       )}
       <button type="submit" disabled={saving} className={PRIMARY}>
         {mode === 'edit' ? t.save : t.create}

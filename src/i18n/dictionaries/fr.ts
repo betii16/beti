@@ -269,6 +269,8 @@ export const fr = {
     create: 'Créer mon profil',
     save: 'Enregistrer les modifications',
     saved: 'Profil enregistré.',
+    savedNotPublished: 'Profil enregistré, mais pas encore visible : les clients ne le voient qu’une fois publié.',
+    goPublish: 'Publier mon profil',
     editTitle: 'Votre profil',
     stepsTitle: 'Pour recevoir des demandes',
     stepProfile: 'Profil rempli',
