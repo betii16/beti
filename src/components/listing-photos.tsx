@@ -53,7 +53,7 @@ export function ListingPhotos({
   const replace = (kind: 'avatar' | 'cover', file: File | undefined) => {
     if (!file) return
     run(async () => {
-      const upload = await uploadPhotos(kind === 'avatar' ? 'avatars' : 'portfolio', userId, [file])
+      const upload = await uploadPhotos(`${kind === 'avatar' ? 'avatars' : 'portfolio'}/${userId}`, [file])
       return upload.error ? { error: upload.error } : setListingPhoto(kind, upload.paths[0])
     })
   }
@@ -66,7 +66,7 @@ export function ListingPhotos({
     const caption = String(form.get('caption') ?? '')
     run(
       async () => {
-        const upload = await uploadPhotos('portfolio', userId, files)
+        const upload = await uploadPhotos(`portfolio/${userId}`, files)
         return upload.error ? { error: upload.error } : addPortfolioPost(caption, upload.paths)
       },
       () => workForm.current?.reset(),

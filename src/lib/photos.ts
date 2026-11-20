@@ -31,10 +31,11 @@ export async function compressImage(file: Blob): Promise<Blob> {
 type Upload = { paths: string[]; error?: undefined } | { paths?: undefined; error: ErrorCode }
 
 /**
- * Envoie des photos dans le dossier de la personne (avatars/<id>/… ou portfolio/<id>/…, seuls
- * permis par le stockage). Tout ou rien : si une photo échoue, celles déjà envoyées sont retirées.
+ * Envoie des photos dans un dossier que le stockage ouvre à la personne : avatars/<son id>,
+ * portfolio/<son id>, ou reviews/<id d'une de ses demandes terminées>. Tout ou rien : si une
+ * photo échoue, celles déjà envoyées sont retirées.
  */
-export async function uploadPhotos(folder: 'avatars' | 'portfolio', userId: string, files: File[]): Promise<Upload> {
+export async function uploadPhotos(folder: string, files: File[]): Promise<Upload> {
   const storage = createClient().storage.from('media')
   const paths: string[] = []
   let failure: ErrorCode | null = null
@@ -47,7 +48,7 @@ export async function uploadPhotos(folder: 'avatars' | 'portfolio', userId: stri
       failure = 'invalid_photos'
       break
     }
-    const path = `${folder}/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`
+    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`
     const { error } = await storage.upload(path, blob, { contentType: 'image/jpeg', upsert: false })
     if (error) {
       failure = errorCode(error)

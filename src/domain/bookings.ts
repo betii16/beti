@@ -48,3 +48,8 @@ export function conversationClosed(status: BookingStatus, completedAt: string | 
   if (status === 'declined' || status === 'cancelled') return true
   return status === 'completed' && completedAt !== null && now - Date.parse(completedAt) > 7 * 24 * 3600 * 1000
 }
+
+/** Reflet de submit_review : le client note une demande terminée depuis 60 jours au plus. */
+export function canReview(status: BookingStatus, completedAt: string | null, now = Date.now()): boolean {
+  return status === 'completed' && completedAt !== null && now - Date.parse(completedAt) <= 60 * 24 * 3600 * 1000
+}

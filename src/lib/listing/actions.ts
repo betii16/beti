@@ -10,16 +10,8 @@ import { normalizePhone, parseSkills } from '@/domain/listing'
 import { getSession } from '@/lib/auth/session'
 import { errorCode, type ErrorCode } from '@/lib/errors'
 import { field } from '@/lib/form'
+import { removePhotos } from '@/lib/storage'
 import { createClient } from '@/lib/supabase/server'
-
-type Server = Awaited<ReturnType<typeof createClient>>
-
-/** Fichiers devenus inutiles. Un fichier resté en trop ne casse rien : il est consigné, pas montré. */
-async function removePhotos(supabase: Server, paths: string[]) {
-  if (paths.length === 0) return
-  const { error } = await supabase.storage.from('media').remove(paths)
-  if (error) console.error('[beti] photos non retirées du stockage', error)
-}
 
 const FIELDS = ['name', 'category', 'wilaya', 'commune', 'bio', 'skills', 'rate', 'radius'] as const
 type Values = Record<(typeof FIELDS)[number], string>

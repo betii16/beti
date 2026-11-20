@@ -12,6 +12,7 @@ import { href } from '@/i18n/config'
 import { errorCode, type ErrorCode } from '@/lib/errors'
 import { field, localeOf } from '@/lib/form'
 import { saveFullName } from '@/lib/profile'
+import { removePhotos } from '@/lib/storage'
 import { createClient } from '@/lib/supabase/server'
 
 export type UpdateState = { error?: ErrorCode }
@@ -105,4 +106,42 @@ export async function markMessagesRead(bookingId: string): Promise<void> {
   const supabase = await createClient()
   const { error } = await supabase.rpc('mark_messages_read', { p_booking_id: bookingId })
   if (error) console.error('[beti] messages non marqués lus', error)
+}
+
+/**
+ * Avis du client sur une demande terminée, photos déjà envoyées dans reviews/<demande>/.
+ * La base vérifie le client, l'état, le délai de 60 jours et le format ; refusé, les photos sont retirées.
+ */
+export async function submitReview(bookingId: string, rating: number, comment: string, photos: string[]): Promise<{ error?: ErrorCode }> {
+  if (
+    !z.uuid().safeParse(bookingId).success ||
+    !Number.isInteger(rating) ||
+    typeof comment !== 'string' ||
+    !Array.isArray(photos) ||
+    photos.some(photo => typeof photo !== 'string')
+  ) {
+    return { error: 'invalid_input' }
+  }
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('submit_review', { p_booking_id: bookingId, p_rating: rating, p_comment: comment, p_photos: photos })
+  if (error) {
+    await removePhotos(supabase, photos)
+    return { error: errorCode(error) }
+  }
+  refresh()
+  return {}
+}
+
+export type ReplyState = { error?: ErrorCode; saved?: boolean }
+
+/** Réponse de l'artisan à l'avis reçu ; le bouton « retirer » envoie une réponse vide. */
+export async function replyReview(_previous: ReplyState, formData: FormData): Promise<ReplyState> {
+  const review = field(formData, 'review')
+  if (!z.uuid().safeParse(review).success) return { error: 'not_found' }
+  const reply = field(formData, 'do') === 'remove' ? '' : field(formData, 'reply')
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('reply_review', { p_review_id: review, p_reply: reply })
+  if (error) return { error: errorCode(error) }
+  refresh()
+  return { saved: true }
 }

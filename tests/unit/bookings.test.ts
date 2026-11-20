@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { bookingActions, conversationClosed, dayToTimestamp } from '@/domain/bookings'
+import { bookingActions, canReview, conversationClosed, dayToTimestamp } from '@/domain/bookings'
 
 it('n’offre à chacun que les actions que la base acceptera', () => {
   expect(bookingActions('artisan', 'pending')).toEqual(['accept', 'decline'])
@@ -36,4 +36,13 @@ it('ferme la conversation comme send_message', () => {
   expect(conversationClosed('cancelled', null, now)).toBe(true)
   expect(conversationClosed('completed', '2026-11-15T12:00:00Z', now)).toBe(false)
   expect(conversationClosed('completed', '2026-11-12T12:00:00Z', now)).toBe(true)
+})
+
+it('n’ouvre l’avis que sur une demande terminée depuis 60 jours au plus', () => {
+  const now = Date.parse('2026-11-20T12:00:00Z')
+  expect(canReview('completed', '2026-11-19T12:00:00Z', now)).toBe(true)
+  expect(canReview('completed', '2026-09-22T12:00:00Z', now)).toBe(true)
+  expect(canReview('completed', '2026-09-20T12:00:00Z', now)).toBe(false)
+  expect(canReview('finished', null, now)).toBe(false)
+  expect(canReview('completed', null, now)).toBe(false)
 })

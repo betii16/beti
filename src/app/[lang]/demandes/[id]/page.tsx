@@ -1,17 +1,23 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { z } from 'zod'
 import { BookingActions } from '@/components/booking-actions'
 import { Conversation } from '@/components/conversation'
-import { bookingActions, conversationClosed, type BookingRole } from '@/domain/bookings'
+import { Rating } from '@/components/rating'
+import { ReviewForm } from '@/components/review-form'
+import { ReviewReply } from '@/components/review-reply'
+import { bookingActions, canReview, conversationClosed, type BookingRole } from '@/domain/bookings'
+import { formatPhone } from '@/domain/listing'
 import type { CategorySlug } from '@/domain/search'
 import { wilayaName } from '@/domain/wilayas'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import { requireSession } from '@/lib/auth/session'
 import { errorCode } from '@/lib/errors'
+import { mediaUrl } from '@/lib/media'
 import { createClient } from '@/lib/supabase/server'
 
 export async function generateMetadata({ params }: PageProps<'/[lang]/demandes/[id]'>): Promise<Metadata> {
@@ -31,7 +37,7 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
 
   const supabase = await createClient()
   // Le RLS ne rend la demande qu'à ses deux parties (et à l'équipe), l'adresse à l'artisan seulement après acceptation.
-  const [{ data: booking, error }, messages] = await Promise.all([
+  const [{ data: booking, error }, messages, review] = await Promise.all([
     supabase
       .from('bookings')
       .select(
@@ -41,6 +47,7 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
       .maybeSingle(),
     // shortcut: les 200 derniers messages ; paginer si une conversation dépasse un jour cette taille.
     supabase.from('messages').select('id, sender_id, body, created_at, read_at').eq('booking_id', id).order('created_at', { ascending: false }).limit(200),
+    supabase.from('reviews').select('id, rating, comment, photos, reply').eq('booking_id', id).maybeSingle(),
   ])
   if (!booking && !error) notFound()
 
@@ -54,6 +61,13 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
       if (client.data?.full_name) title = t.from.replace('{name}', client.data.full_name)
     }
   }
+
+  // Le numéro de l'autre partie n'existe pour la base qu'une fois la demande acceptée.
+  const contact =
+    booking && role && (booking.status === 'accepted' || booking.status === 'finished' || booking.status === 'completed')
+      ? await supabase.rpc('booking_contact', { p_booking_id: booking.id })
+      : null
+  const phone = contact?.data?.[0]?.phone
 
   const locale = lang === 'ar' ? 'ar-DZ' : 'fr-DZ'
   const date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Algiers' })
@@ -105,7 +119,72 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
               </section>
             )}
 
+            {contact && (
+              <section className="flex flex-col gap-2">
+                <h2 className="text-xl font-semibold tracking-[-0.01em]">{role === 'client' ? t.contactArtisan : t.contactClient}</h2>
+                {contact.error ? (
+                  <p role="alert" className="text-body">
+                    {dict.errors[errorCode(contact.error)]}
+                  </p>
+                ) : phone ? (
+                  <p className="flex flex-wrap items-center gap-4">
+                    <bdi dir="ltr" className="text-xl font-semibold">
+                      {formatPhone(phone)}
+                    </bdi>
+                    <a
+                      href={`tel:${phone}`}
+                      className="inline-flex min-h-12 items-center rounded-full bg-accent px-6 font-semibold text-ink transition-colors hover:bg-ink hover:text-paper"
+                    >
+                      {t.call}
+                    </a>
+                  </p>
+                ) : (
+                  <p className="text-body">{t.noContact}</p>
+                )}
+              </section>
+            )}
+
             <BookingActions bookingId={booking.id} actions={role ? bookingActions(role, booking.status) : []} t={t} errors={dict.errors} />
+
+            {role && review.error && (
+              <p role="alert" className="max-w-[620px] rounded-[20px] border-2 border-ink px-5 py-3.5 font-medium">
+                {dict.errors[errorCode(review.error)]}
+              </p>
+            )}
+            {review.data ? (
+              <section className="flex max-w-[680px] flex-col gap-3">
+                <h2 className="text-xl font-semibold tracking-[-0.01em]">{role === 'artisan' ? t.reviewTitleArtisan : t.reviewTitleClient}</h2>
+                <Rating value={String(review.data.rating)} label={dict.artisan.stars.replace('{rating}', String(review.data.rating))} className="text-lg" />
+                {review.data.comment && <p className="text-lg whitespace-pre-line text-body">{review.data.comment}</p>}
+                {review.data.photos.length > 0 && (
+                  <ul className="flex flex-wrap gap-2">
+                    {review.data.photos.map(photo => (
+                      <li key={photo} className="relative size-28 overflow-hidden rounded-[20px] bg-mist">
+                        <Image src={mediaUrl(photo)} alt="" fill sizes="112px" className="object-cover" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {role === 'artisan' ? (
+                  <ReviewReply reviewId={review.data.id} reply={review.data.reply} t={t} errors={dict.errors} />
+                ) : (
+                  review.data.reply && (
+                    <div className="flex flex-col gap-1 border-s-4 border-sage ps-4">
+                      <p className="font-semibold">{dict.artisan.reply}</p>
+                      <p className="whitespace-pre-line text-body">{review.data.reply}</p>
+                    </div>
+                  )
+                )}
+              </section>
+            ) : (
+              role === 'client' &&
+              canReview(booking.status, booking.completed_at) && (
+                <section className="flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold tracking-[-0.01em]">{t.reviewTitleClient}</h2>
+                  <ReviewForm bookingId={booking.id} t={t} errors={dict.errors} />
+                </section>
+              )
+            )}
 
             {role &&
               (messages.error ? (
