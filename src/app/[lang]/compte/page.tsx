@@ -26,9 +26,11 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
   const t = dict.account
 
   const supabase = await createClient()
-  const [{ data: profile, error: profileError }, contact] = await Promise.all([
+  const [{ data: profile, error: profileError }, contact, unread] = await Promise.all([
     supabase.from('profiles').select('full_name, role').eq('id', session.userId).maybeSingle(),
     supabase.from('user_contacts').select('phone').eq('user_id', session.userId).maybeSingle(),
+    // Le RLS ne compte que les notifications de la personne.
+    supabase.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null),
   ])
   const error = profileError ?? contact.error
 
@@ -82,6 +84,15 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
             className="inline-flex min-h-12 items-center rounded-full bg-mist px-6 font-semibold transition-colors hover:bg-ink hover:text-paper"
           >
             {profile?.role === 'artisan' ? t.listing : t.becomeArtisan}
+          </Link>
+          <Link
+            href={href(lang, '/notifications')}
+            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-mist px-6 font-semibold transition-colors hover:bg-ink hover:text-paper"
+          >
+            {t.notifications}
+            {!unread.error && (unread.count ?? 0) > 0 && (
+              <span className="rounded-full bg-accent px-2.5 py-0.5 text-sm text-ink">{t.unreadCount.replace('{n}', String(unread.count))}</span>
+            )}
           </Link>
         </div>
 

@@ -3,6 +3,7 @@
 
 import type { BookingStatus } from '@/domain/bookings'
 import type { ErrorCode } from '@/lib/errors'
+import type { Database } from '@/lib/supabase/database.types'
 
 // Les chiffres cités (5 demandes, 7 jours, 60 jours, 20 signalements, 10 caractères)
 // sont les limites fixées dans supabase/migrations/…300_api.sql.
@@ -241,6 +242,8 @@ export const fr = {
     phoneHelp: 'Il n’est transmis à l’autre partie d’une demande qu’une fois celle-ci acceptée.',
     savePhone: 'Enregistrer le numéro',
     phoneSaved: 'Numéro enregistré.',
+    notifications: 'Notifications',
+    unreadCount: '{n} nouvelles',
   },
   // Espace de l'artisan (/artisan) : remplir son profil, donner son numéro, le publier.
   listing: {
@@ -341,6 +344,30 @@ export const fr = {
     terms: 'Conditions d’utilisation',
     privacy: 'Confidentialité',
     notice: 'Mentions légales',
+  },
+  notifications: {
+    title: 'Notifications',
+    empty: 'Aucune notification. Vous serez prévenu ici des réponses, des messages et des avis.',
+    unread: 'nouvelle',
+    open: 'Voir la demande',
+    clear: 'Tout effacer',
+    confirmClear: 'Confirmer : effacer toutes les notifications',
+    // Un texte par type de notifications.type : le compilateur refuse un type oublié.
+    types: {
+      booking_new: 'Nouvelle demande reçue',
+      booking_accepted: 'Votre demande a été acceptée',
+      booking_declined: 'Votre demande a été déclinée',
+      booking_cancelled: 'Une demande a été annulée',
+      booking_finished: 'L’artisan a déclaré le travail terminé : confirmez-le',
+      booking_completed: 'Une demande est terminée',
+      message_new: 'Nouveau message',
+      review_new: 'Nouvel avis sur votre profil',
+      review_reply: 'L’artisan a répondu à votre avis',
+      subscription_active: 'Votre abonnement est actif',
+      subscription_rejected: 'Votre demande d’abonnement a été refusée',
+      account_suspended: 'Votre compte a été suspendu',
+      account_restored: 'Votre compte est rétabli',
+    } satisfies Record<Database['public']['Tables']['notifications']['Row']['type'], string>,
   },
   // Page d'aide : chaque réponse décrit une règle réelle (limites fixées dans …300_api.sql).
   help: {
