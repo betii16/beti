@@ -42,3 +42,9 @@ export function dayToTimestamp(day: string): string | null {
   if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== date) return null
   return `${day}T23:59:59+01:00`
 }
+
+/** Reflet de send_message : plus de message sur une demande déclinée, annulée, ou terminée depuis plus de 7 jours. */
+export function conversationClosed(status: BookingStatus, completedAt: string | null, now = Date.now()): boolean {
+  if (status === 'declined' || status === 'cancelled') return true
+  return status === 'completed' && completedAt !== null && now - Date.parse(completedAt) > 7 * 24 * 3600 * 1000
+}

@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { z } from 'zod'
 import { BookingActions } from '@/components/booking-actions'
-import { bookingActions, type BookingRole } from '@/domain/bookings'
+import { Conversation } from '@/components/conversation'
+import { bookingActions, conversationClosed, type BookingRole } from '@/domain/bookings'
 import type { CategorySlug } from '@/domain/search'
 import { wilayaName } from '@/domain/wilayas'
 import { href, isLocale } from '@/i18n/config'
@@ -30,13 +31,17 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
 
   const supabase = await createClient()
   // Le RLS ne rend la demande qu'à ses deux parties (et à l'équipe), l'adresse à l'artisan seulement après acceptation.
-  const { data: booking, error } = await supabase
-    .from('bookings')
-    .select(
-      'id, status, description, category, wilaya_code, commune, scheduled_for, is_urgent, quoted_price, cancel_reason, created_at, client_id, artisan_id, artisans(display_name), booking_private(address)',
-    )
-    .eq('id', id)
-    .maybeSingle()
+  const [{ data: booking, error }, messages] = await Promise.all([
+    supabase
+      .from('bookings')
+      .select(
+        'id, status, description, category, wilaya_code, commune, scheduled_for, is_urgent, quoted_price, cancel_reason, created_at, completed_at, client_id, artisan_id, artisans(display_name), booking_private(address)',
+      )
+      .eq('id', id)
+      .maybeSingle(),
+    // shortcut: les 200 derniers messages ; paginer si une conversation dépasse un jour cette taille.
+    supabase.from('messages').select('id, sender_id, body, created_at, read_at').eq('booking_id', id).order('created_at', { ascending: false }).limit(200),
+  ])
   if (!booking && !error) notFound()
 
   const role: BookingRole | null = !booking ? null : booking.client_id === session.userId ? 'client' : booking.artisan_id === session.userId ? 'artisan' : null
@@ -101,6 +106,23 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
             )}
 
             <BookingActions bookingId={booking.id} actions={role ? bookingActions(role, booking.status) : []} t={t} errors={dict.errors} />
+
+            {role &&
+              (messages.error ? (
+                <p role="alert" className="max-w-[620px] rounded-[20px] border-2 border-ink px-5 py-3.5 font-medium">
+                  {dict.errors[errorCode(messages.error)]}
+                </p>
+              ) : (
+                <Conversation
+                  lang={lang}
+                  bookingId={booking.id}
+                  userId={session.userId}
+                  initial={messages.data.toReversed()}
+                  closed={conversationClosed(booking.status, booking.completed_at)}
+                  t={t}
+                  errors={dict.errors}
+                />
+              ))}
           </>
         )}
       </div>

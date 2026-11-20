@@ -190,6 +190,11 @@ export const fr = {
     cancel: 'Annuler la demande',
     reason: 'Motif',
     confirmCancel: 'Confirmer l’annulation',
+    chatTitle: 'Conversation',
+    chatEmpty: 'Aucun message pour l’instant. Posez vos questions ici : l’autre partie est prévenue.',
+    chatLabel: 'Votre message',
+    chatSend: 'Envoyer le message',
+    chatSeen: 'Vu',
     // Un libellé par état de bookings.status : le compilateur refuse un état oublié.
     status: {
       pending: 'En attente de réponse',

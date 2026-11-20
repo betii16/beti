@@ -85,3 +85,24 @@ export async function createBooking(_previous: BookingState, formData: FormData)
 
   redirect(`${href(localeOf(formData), '/demandes')}?envoyee=1`)
 }
+
+export type Message = { id: string; sender_id: string | null; body: string; created_at: string; read_at: string | null }
+
+/** Message dans la conversation d'une demande ; la base vérifie la partie, l'état et le rythme d'envoi. */
+export async function sendMessage(bookingId: string, body: string): Promise<{ error?: ErrorCode; message?: Message }> {
+  if (!z.uuid().safeParse(bookingId).success) return { error: 'not_found' }
+  if (typeof body !== 'string') return { error: 'invalid_input' }
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('send_message', { p_booking_id: bookingId, p_body: body })
+  if (error) return { error: errorCode(error) }
+  const { id, sender_id, created_at, read_at } = data
+  return { message: { id, sender_id, body: data.body, created_at, read_at } }
+}
+
+/** Messages reçus marqués lus, avec leur notification. Un échec n'empêche pas de lire : il est consigné. */
+export async function markMessagesRead(bookingId: string): Promise<void> {
+  if (!z.uuid().safeParse(bookingId).success) return
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('mark_messages_read', { p_booking_id: bookingId })
+  if (error) console.error('[beti] messages non marqués lus', error)
+}

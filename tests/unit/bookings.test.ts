@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { bookingActions, dayToTimestamp } from '@/domain/bookings'
+import { bookingActions, conversationClosed, dayToTimestamp } from '@/domain/bookings'
 
 it('n’offre à chacun que les actions que la base acceptera', () => {
   expect(bookingActions('artisan', 'pending')).toEqual(['accept', 'decline'])
@@ -26,4 +26,14 @@ it('refuse ce qui n’est pas une date qui existe', () => {
   for (const bad of ['', '21/11/2026', '2026-11-21T10:00', '2026-13-01', '2026-02-30', '2027-02-29', '2026-00-10', "2026-11-21'; drop table bookings"]) {
     expect(dayToTimestamp(bad), bad).toBeNull()
   }
+})
+
+it('ferme la conversation comme send_message', () => {
+  const now = Date.parse('2026-11-20T12:00:00Z')
+  expect(conversationClosed('pending', null, now)).toBe(false)
+  expect(conversationClosed('accepted', null, now)).toBe(false)
+  expect(conversationClosed('declined', null, now)).toBe(true)
+  expect(conversationClosed('cancelled', null, now)).toBe(true)
+  expect(conversationClosed('completed', '2026-11-15T12:00:00Z', now)).toBe(false)
+  expect(conversationClosed('completed', '2026-11-12T12:00:00Z', now)).toBe(true)
 })

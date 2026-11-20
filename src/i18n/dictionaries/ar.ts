@@ -145,6 +145,11 @@ export const ar: Dictionary = {
     cancel: 'ألغِ الطلب',
     reason: 'السبب',
     confirmCancel: 'أكّد الإلغاء',
+    chatTitle: 'المحادثة',
+    chatEmpty: 'لا توجد رسائل بعد. اطرح أسئلتك هنا: يصل إشعار إلى الطرف الآخر.',
+    chatLabel: 'رسالتك',
+    chatSend: 'أرسل الرسالة',
+    chatSeen: 'تمت المشاهدة',
     status: {
       pending: 'في انتظار الرد',
       accepted: 'مقبول',
