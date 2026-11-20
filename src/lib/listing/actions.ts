@@ -5,11 +5,21 @@
 // actions mettent en forme et rendent la saisie à l'écran en cas de refus.
 
 import { refresh } from 'next/cache'
+import { z } from 'zod'
 import { normalizePhone, parseSkills } from '@/domain/listing'
 import { getSession } from '@/lib/auth/session'
 import { errorCode, type ErrorCode } from '@/lib/errors'
 import { field } from '@/lib/form'
 import { createClient } from '@/lib/supabase/server'
+
+type Server = Awaited<ReturnType<typeof createClient>>
+
+/** Fichiers devenus inutiles. Un fichier resté en trop ne casse rien : il est consigné, pas montré. */
+async function removePhotos(supabase: Server, paths: string[]) {
+  if (paths.length === 0) return
+  const { error } = await supabase.storage.from('media').remove(paths)
+  if (error) console.error('[beti] photos non retirées du stockage', error)
+}
 
 const FIELDS = ['name', 'category', 'wilaya', 'commune', 'bio', 'skills', 'rate', 'radius'] as const
 type Values = Record<(typeof FIELDS)[number], string>
@@ -83,6 +93,80 @@ export async function updateListing(_previous: StepState, formData: FormData): P
     return { error: 'invalid_input' }
   }
   if (error) return { error: errorCode(error) }
+  refresh()
+  return {}
+}
+
+export type PhotoResult = { error?: ErrorCode }
+
+/**
+ * Photo de profil ou de couverture, déjà envoyée par le navigateur (src/lib/photos.ts), ou null
+ * pour la retirer. save_listing remplace toute la fiche : elle est relue et renvoyée à l'identique.
+ */
+export async function setListingPhoto(kind: 'avatar' | 'cover', path: string | null): Promise<PhotoResult> {
+  if ((kind !== 'avatar' && kind !== 'cover') || (path !== null && typeof path !== 'string')) return { error: 'invalid_input' }
+  const session = await getSession()
+  if (!session) return { error: 'not_authenticated' }
+  const supabase = await createClient()
+  const { data: listing, error: readError } = await supabase
+    .from('artisans')
+    .select('display_name, category, wilaya_code, commune, bio, skills, hourly_rate, lat, lng, radius_km, avatar_path, cover_path')
+    .eq('id', session.userId)
+    .maybeSingle()
+  if (readError) return { error: errorCode(readError) }
+  if (!listing) return { error: 'listing_missing' }
+
+  const previous = kind === 'avatar' ? listing.avatar_path : listing.cover_path
+  const next = { ...listing, [kind === 'avatar' ? 'avatar_path' : 'cover_path']: path }
+  const { error } = await supabase.rpc('save_listing', {
+    p_display_name: next.display_name,
+    p_category: next.category,
+    p_wilaya_code: next.wilaya_code,
+    p_commune: next.commune ?? undefined,
+    p_bio: next.bio ?? undefined,
+    p_skills: next.skills ?? undefined,
+    p_hourly_rate: next.hourly_rate ?? undefined,
+    p_radius_km: next.radius_km,
+    p_lat: next.lat ?? undefined,
+    p_lng: next.lng ?? undefined,
+    p_avatar_path: next.avatar_path ?? undefined,
+    p_cover_path: next.cover_path ?? undefined,
+  })
+  if (error) {
+    // Refusée, la nouvelle photo ne sert à rien : elle ne reste pas dans le stockage.
+    if (path && path !== previous) await removePhotos(supabase, [path])
+    return { error: errorCode(error) }
+  }
+  if (previous && previous !== path) await removePhotos(supabase, [previous])
+  refresh()
+  return {}
+}
+
+/** Réalisation : légende et photos déjà envoyées. Refusée, ses photos sont retirées du stockage. */
+export async function addPortfolioPost(caption: string, paths: string[]): Promise<PhotoResult> {
+  if (typeof caption !== 'string' || !Array.isArray(paths) || paths.some(path => typeof path !== 'string')) return { error: 'invalid_input' }
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('add_portfolio_post', { p_caption: caption, p_photos: paths })
+  if (error) {
+    await removePhotos(supabase, paths)
+    return { error: errorCode(error) }
+  }
+  refresh()
+  return {}
+}
+
+export async function deletePortfolioPost(id: string): Promise<PhotoResult> {
+  if (!z.uuid().safeParse(id).success) return { error: 'not_found' }
+  const session = await getSession()
+  if (!session) return { error: 'not_authenticated' }
+  const supabase = await createClient()
+  // Les photos sont lues avant : une fois la réalisation supprimée, plus rien ne les nomme.
+  const { data: post, error: readError } = await supabase.from('portfolio_posts').select('photos').eq('id', id).eq('artisan_id', session.userId).maybeSingle()
+  if (readError) return { error: errorCode(readError) }
+  if (!post) return { error: 'not_found' }
+  const { error } = await supabase.rpc('delete_portfolio_post', { p_post_id: id })
+  if (error) return { error: errorCode(error) }
+  await removePhotos(supabase, post.photos)
   refresh()
   return {}
 }

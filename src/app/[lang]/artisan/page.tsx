@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ListingForm, type ListingValues } from '@/components/listing-form'
+import { ListingPhotos } from '@/components/listing-photos'
 import { ListingSteps } from '@/components/listing-steps'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
@@ -27,17 +28,18 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
   const t = dict.listing
 
   const supabase = await createClient()
-  const [profile, listing, contact] = await Promise.all([
+  const [profile, listing, contact, posts] = await Promise.all([
     supabase.from('profiles').select('full_name, role, wilaya_code, commune').eq('id', session.userId).maybeSingle(),
     // Sur artisans la lecture est accordée colonne par colonne : on les nomme.
     supabase
       .from('artisans')
-      .select('display_name, category, skills, bio, hourly_rate, wilaya_code, commune, radius_km, is_available, published, suspended')
+      .select('display_name, category, skills, bio, hourly_rate, wilaya_code, commune, radius_km, avatar_path, cover_path, is_available, published, suspended')
       .eq('id', session.userId)
       .maybeSingle(),
     supabase.from('user_contacts').select('phone').eq('user_id', session.userId).maybeSingle(),
+    supabase.from('portfolio_posts').select('id, caption, photos').eq('artisan_id', session.userId).order('created_at', { ascending: false }),
   ])
-  const error = profile.error ?? listing.error ?? contact.error
+  const error = profile.error ?? listing.error ?? contact.error ?? posts.error
   if (error) {
     return (
       <main id="contenu" className="px-4 pb-6 sm:px-10">
@@ -73,6 +75,15 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
             available={own.is_available}
             suspended={own.suspended}
             profileHref={href(lang, `/artisans/${session.userId}`)}
+            t={t}
+            errors={dict.errors}
+          />
+          <ListingPhotos
+            userId={session.userId}
+            name={own.display_name}
+            avatar={own.avatar_path}
+            cover={own.cover_path}
+            posts={posts.data ?? []}
             t={t}
             errors={dict.errors}
           />
