@@ -2,8 +2,9 @@
 // code reçu, et la page où il voulait aller. Fonctions pures, testées dans
 // tests/unit/auth.test.ts.
 
-/** Longueur du code. Doit rester égale au réglage Supabase (Auth > Providers > Email > Email OTP Length). */
-export const OTP_LENGTH = 6
+// Le réglage Supabase (Auth > Providers > Email > Email OTP Length) va de 6 à 10 chiffres :
+// tout cet intervalle est accepté, le serveur d'authentification juge du reste.
+const OTP_PATTERN = /^[0-9]{6,10}$/
 
 /** Adresse telle qu'on l'envoie : sans espaces (même au milieu), en minuscules. */
 export const normalizeEmail = (raw: string): string => raw.replace(/\s+/g, '').toLowerCase()
@@ -27,11 +28,17 @@ export function suggestEmail(email: string): string | null {
   return fixed ? `${email.slice(0, at)}@${fixed}` : null
 }
 
-/** Code tel qu'on l'envoie : espaces retirés, chiffres arabes convertis ; null s'il n'a pas exactement la bonne longueur. */
+/** Code tel qu'on l'envoie : espaces retirés, chiffres arabes convertis ; null s'il n'a pas de 6 à 10 chiffres. */
 export function normalizeCode(raw: string): string | null {
   const code = raw.replace(/\s+/g, '').replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x660))
-  return new RegExp(`^[0-9]{${OTP_LENGTH}}$`).test(code) ? code : null
+  return OTP_PATTERN.test(code) ? code : null
 }
+
+/**
+ * Cookie de session présent ? Seul le jeton compte (sb-<projet>-auth-token, ou découpé en .0, .1…) :
+ * les cookies « …-auth-token-code-verifier » posés à l'envoi d'un code ne sont pas une session.
+ */
+export const hasSessionCookie = (cookie: string): boolean => /(^|; )sb-[^=;]+-auth-token(\.\d+)?=/.test(cookie)
 
 /**
  * Page de retour après connexion (?next=…) : uniquement une page du site, sous

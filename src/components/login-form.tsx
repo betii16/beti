@@ -7,7 +7,7 @@ import { useActionState, useState } from 'react'
 import type { Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionary'
 import { sendCode, verifyCode, type LoginState, type VerifyState } from '@/lib/auth/actions'
-import { normalizeEmail, OTP_LENGTH, suggestEmail } from '@/lib/auth/input'
+import { normalizeEmail, suggestEmail } from '@/lib/auth/input'
 
 const H1 = 'text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]'
 const FIELD = 'flex flex-col gap-1.5'
@@ -61,7 +61,7 @@ export function LoginForm({
               name="code"
               inputMode="numeric"
               autoComplete="one-time-code"
-              maxLength={OTP_LENGTH + 3}
+              maxLength={14}
               required
               autoFocus
               dir="ltr"

@@ -9,14 +9,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSyncExternalStore } from 'react'
 import { href, type Locale } from '@/i18n/config'
+import { hasSessionCookie } from '@/lib/auth/input'
 
 const noSubscription = () => () => {}
-const hasSessionCookie = () => /(^|; )sb-[^=;]+-auth-token/.test(document.cookie)
+const readCookie = () => hasSessionCookie(document.cookie)
 
 export function AccountLink({ lang, login, account }: { lang: Locale; login: string; account: string }) {
   // Relu à chaque navigation : après une connexion ou une déconnexion, le libellé suit.
   usePathname()
-  const signedIn = useSyncExternalStore(noSubscription, hasSessionCookie, () => false)
+  const signedIn = useSyncExternalStore(noSubscription, readCookie, () => false)
   return (
     <Link
       href={href(lang, signedIn ? '/compte' : '/connexion')}

@@ -133,14 +133,14 @@ export const fr = {
   login: {
     title: 'Connexion',
     intro:
-      'Entrez votre adresse e-mail : nous vous envoyons un code à 6 chiffres. Pas de mot de passe. À la première connexion, votre compte se crée tout seul.',
+      'Entrez votre adresse e-mail : nous vous envoyons un code. Pas de mot de passe. À la première connexion, votre compte se crée tout seul.',
     email: 'Adresse e-mail',
     emailPlaceholder: 'vous@exemple.dz',
     suggestion: 'Vouliez-vous dire {email} ?',
     send: 'Recevoir le code',
     codeTitle: 'Entrez le code',
     codeIntro: 'Nous l’avons envoyé à {email}. Pensez à regarder dans les courriers indésirables.',
-    code: 'Code à 6 chiffres',
+    code: 'Code reçu par e-mail',
     verify: 'Se connecter',
     resend: 'Renvoyer un code',
     resent: 'Un nouveau code vient d’être envoyé.',
