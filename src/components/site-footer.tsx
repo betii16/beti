@@ -3,10 +3,12 @@ import { href, type Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionary'
 
 export function SiteFooter({ lang, t }: { lang: Locale; t: Dictionary['footer'] }) {
+  // Les textes juridiques n'existent qu'en français : leurs liens y mènent depuis l'arabe aussi.
   const links = [
-    { path: '/aide', label: t.help },
-    { path: '/cgu', label: t.terms },
-    { path: '/confidentialite', label: t.privacy },
+    { path: '/aide', label: t.help, to: lang },
+    { path: '/cgu', label: t.terms, to: 'fr' as const },
+    { path: '/confidentialite', label: t.privacy, to: 'fr' as const },
+    { path: '/mentions', label: t.notice, to: 'fr' as const },
   ]
   return (
     <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 pt-10 pb-12 sm:px-10">
@@ -20,7 +22,8 @@ export function SiteFooter({ lang, t }: { lang: Locale; t: Dictionary['footer'] 
         {links.map(link => (
           <Link
             key={link.path}
-            href={href(lang, link.path)}
+            href={href(link.to, link.path)}
+            hrefLang={link.to === lang ? undefined : link.to}
             className="inline-flex min-h-11 items-center text-[15px] underline underline-offset-4"
           >
             {link.label}

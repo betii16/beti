@@ -293,6 +293,45 @@ export const fr = {
     help: 'Aide',
     terms: 'Conditions d’utilisation',
     privacy: 'Confidentialité',
+    notice: 'Mentions légales',
+  },
+  // Page d'aide : chaque réponse décrit une règle réelle (limites fixées dans …300_api.sql).
+  help: {
+    title: 'Aide',
+    intro: 'Les réponses aux questions les plus fréquentes sur BETI.',
+    faq: [
+      {
+        q: 'Combien coûte BETI ?',
+        a: 'Rien pour les clients. BETI ne prend aucune commission sur les travaux : le prix se convient entre vous et l’artisan, et vous le payez directement.',
+      },
+      {
+        q: 'Comment se passe une demande ?',
+        a: 'Vous décrivez votre besoin à un artisan. Il accepte ou décline, et peut annoncer un prix indicatif. Une fois le travail fait, il le déclare terminé et vous le confirmez.',
+      },
+      {
+        q: 'Qui voit mon adresse ?',
+        a: 'Seulement l’artisan à qui vous écrivez, et seulement s’il accepte votre demande. Avant, il ne voit que la commune et la wilaya.',
+      },
+      {
+        q: 'Combien de demandes puis-je envoyer ?',
+        a: 'Jusqu’à 5 demandes en attente de réponse à la fois, et 10 sur 24 heures. Une seule demande en cours par artisan : si vous lui écrivez de nouveau, c’est la même demande qui continue.',
+      },
+      {
+        q: 'Puis-je annuler une demande ?',
+        a: 'Oui, tant que le travail n’est pas déclaré terminé, depuis la page de la demande. L’artisan est prévenu.',
+      },
+      {
+        q: 'Je ne reçois pas le code de connexion',
+        a: 'Regardez dans les courriers indésirables, puis vérifiez l’adresse saisie. Attendez une minute avant de demander un nouveau code : seul le dernier reçu est valable.',
+      },
+      {
+        q: 'Je suis artisan, comment apparaître sur BETI ?',
+        a: 'Connectez-vous, puis ouvrez « Je suis artisan » : remplissez votre profil, ajoutez votre numéro de téléphone et publiez. Pendant le lancement, être visible est gratuit.',
+      },
+    ],
+    contactTitle: 'Une autre question ?',
+    contactText: 'Écrivez-nous, nous répondons par e-mail.',
+    email: 'support@beti.dz',
   },
   notFound: {
     title: 'Cette page n’existe pas',
