@@ -191,6 +191,10 @@ export const ar: Dictionary = {
     signOut: 'تسجيل الخروج',
     listing: 'ملفي كحرفي',
     becomeArtisan: 'هل أنت حرفي؟ أنشئ ملفك',
+    phone: 'رقم هاتفك',
+    phoneHelp: 'لا يصل إلى الطرف الآخر في الطلب إلا بعد قبوله.',
+    savePhone: 'حفظ الرقم',
+    phoneSaved: 'تم حفظ الرقم.',
   },
   listing: {
     title: 'ملفي كحرفي',

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { NameForm } from '@/components/name-form'
+import { PhoneForm } from '@/components/phone-form'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import { signOut } from '@/lib/auth/actions'
@@ -25,7 +26,11 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
   const t = dict.account
 
   const supabase = await createClient()
-  const { data: profile, error } = await supabase.from('profiles').select('full_name, role').eq('id', session.userId).maybeSingle()
+  const [{ data: profile, error: profileError }, contact] = await Promise.all([
+    supabase.from('profiles').select('full_name, role').eq('id', session.userId).maybeSingle(),
+    supabase.from('user_contacts').select('phone').eq('user_id', session.userId).maybeSingle(),
+  ])
+  const error = profileError ?? contact.error
 
   // Message laissé par une action qui a échoué (déconnexion) : seul un code connu est affiché.
   const raw = (await searchParams).erreur
@@ -59,7 +64,10 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
             {dict.errors[errorCode(error)]}
           </p>
         ) : (
-          <NameForm name={profile?.full_name ?? ''} t={t} errors={dict.errors} />
+          <>
+            <NameForm name={profile?.full_name ?? ''} t={t} errors={dict.errors} />
+            <PhoneForm phone={contact.data?.phone ?? null} t={t} errors={dict.errors} />
+          </>
         )}
 
         <div className="flex flex-wrap gap-3">

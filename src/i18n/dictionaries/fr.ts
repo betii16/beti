@@ -237,6 +237,10 @@ export const fr = {
     signOut: 'Se déconnecter',
     listing: 'Mon profil d’artisan',
     becomeArtisan: 'Vous êtes artisan ? Créer mon profil',
+    phone: 'Votre numéro de téléphone',
+    phoneHelp: 'Il n’est transmis à l’autre partie d’une demande qu’une fois celle-ci acceptée.',
+    savePhone: 'Enregistrer le numéro',
+    phoneSaved: 'Numéro enregistré.',
   },
   // Espace de l'artisan (/artisan) : remplir son profil, donner son numéro, le publier.
   listing: {

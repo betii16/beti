@@ -59,7 +59,7 @@ export async function saveListing(_previous: ListingState, formData: FormData): 
   return { saved: true }
 }
 
-export type StepState = { error?: ErrorCode; phone?: string }
+export type StepState = { error?: ErrorCode; phone?: string; saved?: boolean }
 
 /** Numéro, publication, disponibilité : le bouton cliqué donne l'action (champ « do »). */
 export async function updateListing(_previous: StepState, formData: FormData): Promise<StepState> {
@@ -86,7 +86,7 @@ export async function updateListing(_previous: StepState, formData: FormData): P
   }
   if (error) return { error: errorCode(error) }
   refresh()
-  return {}
+  return { saved: true }
 }
 
 export type PhotoResult = { error?: ErrorCode }
