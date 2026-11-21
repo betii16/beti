@@ -46,6 +46,7 @@ Option sans toucher à la production : un 2e projet Supabase de test (checklist 
 - **Nom de domaine** (possèdes-tu `beti.dz` ? les pages légales affichent `support@beti.dz`).
 - **Titre de l'accueil** : « Votre quartier est plein de bons artisans » est trompeur tant que l'annuaire est quasi vide.
 - **Paiement des artisans** : abonnement 2 500 / 5 000 DA par mois, ou crédits prépayés (à tester avec ~10 artisans). Faire vérifier par un juriste que les crédits ne ressemblent pas à une commission.
+- **Coordonnées de paiement des abonnements (v2)** : me donner où les artisans paient (RIB, CCP, BaridiMob). Elles vont dans `src/domain/payment.ts` ; tant qu'elles manquent, l'écran d'abonnement montre les formules mais la demande reste fermée (sans effet pendant le lancement gratuit, jusqu'au 15 janvier 2027).
 - **Encaisser en Algérie** : formaliser (auto-entrepreneur ANAE ou société avec RC + NIF + compte pro), virement BaridiMob/CCP validé à la main au début, puis carte CIB/Edahabia (SATIM ou Chargily). Faire valider par un expert-comptable.
 - **Vérification des artisans** : choisir le niveau réel. Jusque-là, ne jamais écrire « certifié ».
 - **Juriste algérien** : CGU, confidentialité, loi 18-07, mentions de facture.

@@ -3,7 +3,10 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ListingForm, type ListingValues } from '@/components/listing-form'
 import { ListingPhotos } from '@/components/listing-photos'
+import { ListingSubscription } from '@/components/listing-subscription'
 import { ListingSteps } from '@/components/listing-steps'
+import { launchActive } from '@/domain/launch'
+import { PAYMENT_DETAILS } from '@/domain/payment'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import { requireSession } from '@/lib/auth/session'
@@ -28,7 +31,7 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
   const t = dict.listing
 
   const supabase = await createClient()
-  const [profile, listing, contact, posts] = await Promise.all([
+  const [profile, listing, contact, posts, plans, subscriptions, config] = await Promise.all([
     supabase.from('profiles').select('full_name, role, wilaya_code, commune').eq('id', session.userId).maybeSingle(),
     // Sur artisans la lecture est accordée colonne par colonne : on les nomme.
     supabase
@@ -38,8 +41,17 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
       .maybeSingle(),
     supabase.from('user_contacts').select('phone').eq('user_id', session.userId).maybeSingle(),
     supabase.from('portfolio_posts').select('id, caption, photos').eq('artisan_id', session.userId).order('created_at', { ascending: false }),
+    supabase.from('plans').select('id, monthly, yearly, max_portfolio_posts').order('monthly'),
+    // L'abonnement d'un artisan se lit ici, jamais dans sa fiche (colonnes fermées à l'API).
+    supabase
+      .from('subscriptions')
+      .select('id, plan, cycle, amount, status, payment_method, payment_ref, expires_at')
+      .eq('artisan_id', session.userId)
+      .in('status', ['pending', 'active'])
+      .order('created_at', { ascending: false }),
+    supabase.from('app_config').select('launch_free_until').maybeSingle(),
   ])
-  const error = profile.error ?? listing.error ?? contact.error ?? posts.error
+  const error = profile.error ?? listing.error ?? contact.error ?? posts.error ?? plans.error ?? subscriptions.error ?? config.error
   if (error) {
     return (
       <main id="contenu" className="px-4 pb-6 sm:px-10">
@@ -84,6 +96,16 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
             avatar={own.avatar_path}
             cover={own.cover_path}
             posts={posts.data ?? []}
+            t={t}
+            errors={dict.errors}
+          />
+          <ListingSubscription
+            lang={lang}
+            plans={plans.data ?? []}
+            active={(subscriptions.data ?? []).find(sub => sub.status === 'active') ?? null}
+            pending={(subscriptions.data ?? []).find(sub => sub.status === 'pending') ?? null}
+            launchUntil={launchActive(config.data?.launch_free_until ?? null) ? (config.data?.launch_free_until ?? null) : null}
+            paymentDetails={PAYMENT_DETAILS?.[lang] ?? null}
             t={t}
             errors={dict.errors}
           />

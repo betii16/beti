@@ -7,6 +7,7 @@
 import { refresh } from 'next/cache'
 import { z } from 'zod'
 import { normalizePhone, parseSkills } from '@/domain/listing'
+import { PAYMENT_DETAILS } from '@/domain/payment'
 import { getSession } from '@/lib/auth/session'
 import { errorCode, type ErrorCode } from '@/lib/errors'
 import { field } from '@/lib/form'
@@ -161,4 +162,29 @@ export async function deletePortfolioPost(id: string): Promise<PhotoResult> {
   await removePhotos(supabase, post.photos)
   refresh()
   return {}
+}
+
+export type SubscriptionState = { error?: ErrorCode; done?: boolean }
+
+/** Demander un abonnement (après avoir payé) ou annuler sa demande en attente. L'équipe valide dans le panneau admin. */
+export async function subscriptionAction(_previous: SubscriptionState, formData: FormData): Promise<SubscriptionState> {
+  const supabase = await createClient()
+  let error: unknown = null
+  if (field(formData, 'do') === 'cancel') {
+    const id = field(formData, 'id')
+    if (!z.uuid().safeParse(id).success) return { error: 'not_found' }
+    ;({ error } = await supabase.rpc('cancel_subscription_request', { p_subscription_id: id }))
+  } else {
+    // Sans coordonnées de paiement publiées, une demande n'aurait rien à quoi correspondre.
+    if (!PAYMENT_DETAILS) return { error: 'invalid_input' }
+    ;({ error } = await supabase.rpc('request_subscription', {
+      p_plan: field(formData, 'plan'),
+      p_cycle: field(formData, 'cycle'),
+      p_payment_method: field(formData, 'method'),
+      p_payment_ref: field(formData, 'ref'),
+    }))
+  }
+  if (error) return { error: errorCode(error) }
+  refresh()
+  return { done: true }
 }

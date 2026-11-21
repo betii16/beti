@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { AdminForm } from '@/components/admin-form'
 import { ADMIN_DARK, ADMIN_INPUT } from '@/components/admin-styles'
 import type { BookingStatus } from '@/domain/bookings'
+import { launchActive } from '@/domain/launch'
 import { isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import { requireStaff } from '@/lib/auth/session'
@@ -29,9 +30,6 @@ type Overview = {
   reports_open: number
   launch_free_until: string | null
 }
-
-/** Le lancement gratuit court-il encore ? Reflet de private.launch_free(). */
-const launchActive = (until: string | null, now = Date.now()) => until !== null && Date.parse(until) > now
 
 export default async function AdminHome({ params }: PageProps<'/[lang]/admin'>) {
   const { lang } = await params
