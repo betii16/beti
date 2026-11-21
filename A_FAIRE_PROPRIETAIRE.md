@@ -12,7 +12,7 @@ La base de production est à jour et vérifiée. Il reste surtout la configurati
 
 ## 1. Configuration e-mail (la connexion des clients en dépend)
 Dans Supabase > **Authentication** :
-1. **Providers > Email** : activer, longueur du code = **6**.
+1. **Providers > Email** : activer. Longueur du code : l'app accepte de 6 à 10 chiffres (ton projet en envoie plus de 6, constaté le 2026-11-21).
 2. **Emails > SMTP Settings** : brancher un service d'envoi (Brevo ou Resend). Sans cela, le SMTP par défaut envoie très peu de mails et seulement à ton équipe.
    - Le « mot de passe SMTP » est **créé par le service** (clé SMTP Brevo, clé API Resend `re_…`). Ne le colle jamais dans un chat.
    - Il faut un **expéditeur validé** : Resend n'envoie qu'à ton propre e-mail tant qu'un nom de domaine à toi n'est pas validé.
