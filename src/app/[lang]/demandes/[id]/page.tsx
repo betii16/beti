@@ -202,6 +202,12 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
                   errors={dict.errors}
                 />
               ))}
+
+            {role && (
+              <Link href={href(lang, `/signaler?type=booking&id=${booking.id}`)} className="inline-flex min-h-11 items-center self-start text-[15px] text-muted underline underline-offset-4">
+                {dict.report.linkBooking}
+              </Link>
+            )}
           </>
         )}
       </div>

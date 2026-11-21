@@ -250,6 +250,10 @@ export default async function ArtisanPage({ params }: PageProps<'/[lang]/artisan
             </ul>
           )}
         </section>
+
+        <Link href={href(lang, `/signaler?type=artisan&id=${artisan.id}`)} className="inline-flex min-h-11 items-center self-start text-[15px] text-muted underline underline-offset-4">
+          {dict.report.linkArtisan}
+        </Link>
       </div>
     </main>
   )

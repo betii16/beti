@@ -45,6 +45,7 @@ export const ERROR_CODES = [
   'invalid_description',
   'invalid_date',
   'invalid_phone',
+  'invalid_target',
   'invalid_photos',
   'invalid_location',
   'invalid_input',
