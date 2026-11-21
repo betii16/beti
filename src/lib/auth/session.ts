@@ -2,7 +2,7 @@
 // le contrôle se fait au plus près des données, jamais dans un layout (un layout
 // n'est pas rejoué à chaque navigation).
 
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { cache } from 'react'
 import { href, type Locale } from '@/i18n/config'
 import { createClient } from '@/lib/supabase/server'
@@ -23,5 +23,22 @@ export const getSession = cache(async (): Promise<Session | null> => {
 export async function requireSession(lang: Locale, path: string): Promise<Session> {
   const session = await getSession()
   if (!session) redirect(`${href(lang, '/connexion')}?next=${encodeURIComponent(href(lang, path))}`)
+  return session
+}
+
+/**
+ * Page de l'équipe : sans session, la connexion ; hors équipe, une page introuvable (le panneau
+ * ne signale pas son existence). Le panneau est en français seulement : l'adresse en arabe y renvoie.
+ * La base revérifie l'équipe à chaque lecture (RLS) et chaque action (require_staff).
+ */
+export async function requireStaff(lang: Locale, path: string): Promise<Session> {
+  if (lang !== 'fr') redirect(href('fr', path))
+  const session = await requireSession(lang, path)
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('my_access')
+  // Une panne n'est pas un refus : elle part vers la page d'erreur, pas vers « introuvable ».
+  if (error) throw new Error(`my_access: ${error.code}`)
+  const staffRole = data && typeof data === 'object' && !Array.isArray(data) ? data.staff_role : null
+  if (typeof staffRole !== 'string') notFound()
   return session
 }
