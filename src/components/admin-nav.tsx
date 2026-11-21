@@ -19,7 +19,7 @@ const SECTIONS = [
 export function AdminNav() {
   const pathname = usePathname()
   return (
-    <nav aria-label="Sections du panneau admin" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+    <nav aria-label="Sections du panneau admin" className="flex flex-wrap gap-1.5">
       {SECTIONS.map(section => {
         const current = pathname === section.path
         return (
