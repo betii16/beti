@@ -34,6 +34,7 @@ Option sans toucher à la production : un 2e projet Supabase de test (checklist 
 ## 3. Variables Vercel
 - Définir **`NEXT_PUBLIC_LAUNCH_DATE`** (début des 2 mois gratuits). Sans elle, la gratuité est considérée comme **déjà finie** (date par défaut : 1er juillet 2026) et les artisans non abonnés sont **cachés** : l'annuaire paraît vide.
 - Vérifier que le projet Vercel qui sert `beti-ten.vercel.app` a les variables Supabase : URL, clé anon, et clé service (nécessaire pour la suppression de compte).
+- v2 (2026-11-22) : la suppression de compte est écrite, mais elle n'a jamais tourné. Il lui faut `SUPABASE_SERVICE_ROLE_KEY` (Supabase > Project Settings > API keys > `service_role`) : dans Vercel pour le site, et dans `.env.local` pour l'essayer ici. Tu la colles toi-même dans le fichier ou dans Vercel, jamais dans le chat. Ensuite, essai avec un compte jetable (pas le tien : un compte de l'équipe est refusé, exprès).
 - Il existe plusieurs projets `beti*` dans ton compte (`beti`, `beti-rkc2`, `beti-sada`, `beti-bo7h`, `beti-ok8c`). Garde le bon, supprime les autres.
 
 ## 4. Pousser sur GitHub

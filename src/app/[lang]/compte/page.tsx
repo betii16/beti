@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { DeleteAccount } from '@/components/delete-account'
 import { NameForm } from '@/components/name-form'
 import { PhoneForm } from '@/components/phone-form'
 import { href, isLocale } from '@/i18n/config'
@@ -96,12 +97,15 @@ export default async function AccountPage({ params, searchParams }: PageProps<'/
           </Link>
         </div>
 
-        <form action={signOut} className="border-t border-line pt-6">
-          <input type="hidden" name="lang" value={lang} />
-          <button type="submit" className="inline-flex min-h-12 cursor-pointer items-center rounded-full bg-mist px-6 font-semibold transition-colors hover:bg-ink hover:text-paper">
-            {t.signOut}
-          </button>
-        </form>
+        <div className="flex flex-col items-start gap-4 border-t border-line pt-6">
+          <form action={signOut}>
+            <input type="hidden" name="lang" value={lang} />
+            <button type="submit" className="inline-flex min-h-12 cursor-pointer items-center rounded-full bg-mist px-6 font-semibold transition-colors hover:bg-ink hover:text-paper">
+              {t.signOut}
+            </button>
+          </form>
+          <DeleteAccount lang={lang} t={t} errors={dict.errors} />
+        </div>
       </div>
     </main>
   )

@@ -35,6 +35,7 @@ export const ERROR_CODES = [
   'already_pending',
   // équipe
   'cannot_suspend_staff',
+  'staff_account',
   // connexion par code (service d'authentification, pas la base)
   'email_invalid',
   'email_not_deliverable',

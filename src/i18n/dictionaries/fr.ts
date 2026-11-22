@@ -32,6 +32,7 @@ const errors: Record<ErrorCode, string> = {
   portfolio_limit: 'Vous avez atteint le nombre de réalisations prévu par votre formule.',
   already_pending: 'Une demande d’abonnement est déjà en attente de validation.',
   cannot_suspend_staff: 'Un membre de l’équipe ne peut pas être suspendu.',
+  staff_account: 'Ce compte fait partie de l’équipe BETI : il ne se supprime pas d’ici.',
   email_invalid: 'Adresse e-mail invalide. Vérifiez-la et réessayez.',
   email_not_deliverable: 'L’envoi de codes à cette adresse n’est pas encore ouvert.',
   code_invalid: 'Code incorrect ou expiré. Vérifiez-le, ou demandez-en un nouveau.',
@@ -245,6 +246,11 @@ export const fr = {
     phoneSaved: 'Numéro enregistré.',
     notifications: 'Notifications',
     unreadCount: '{n} nouvelles',
+    deleteTitle: 'Supprimer mon compte',
+    deleteText:
+      'Votre profil, vos photos, votre numéro et vos notifications sont effacés. Vos demandes en cours sont annulées et l’autre personne est prévenue. Le texte de vos demandes, de vos messages et de vos avis est effacé ; la note de vos avis reste, sans votre nom.',
+    deleteConfirm: 'Je comprends que cette suppression est définitive.',
+    deleteSubmit: 'Supprimer définitivement mon compte',
   },
   // Espace de l'artisan (/artisan) : remplir son profil, donner son numéro, le publier.
   listing: {
