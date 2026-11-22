@@ -22,9 +22,9 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      // Splash BETI masqué par components/NativeBridge.tsx (ou www/index.html en secours).
+      // Écran de lancement masqué par le site lui-même (src/components/native-bridge.tsx), ou par www/index.html en secours.
       launchShowDuration: 0,
-      launchAutoHide: false, // masqué par NativeBridge quand la page est chargée
+      launchAutoHide: false, // masqué par native-bridge.tsx quand la page est chargée
       backgroundColor: '#0E1922',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,

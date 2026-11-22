@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Readex_Pro } from 'next/font/google'
 import { notFound } from 'next/navigation'
+import { NativeBridge } from '@/components/native-bridge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { TabBar } from '@/components/tab-bar'
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://beti-ten.vercel.app'),
   title: { default: 'BETI', template: '%s | BETI' },
   applicationName: 'BETI',
+  // Fiche d'installation (écran d'accueil du téléphone) : même adresse que du temps de la v1, pour que les applis déjà installées se mettent à jour.
+  manifest: '/site.webmanifest',
+  // Pas de champ « icons » ici : il remplacerait l'icône du dossier (icon.svg, apple-icon.png), que Next relie lui-même.
 }
 
 export const viewport: Viewport = {
@@ -40,6 +44,7 @@ export default async function RootLayout({ children, params }: LayoutProps<'/[la
         {children}
         <SiteFooter lang={lang} t={dict.footer} />
         <TabBar lang={lang} t={dict.nav} />
+        <NativeBridge />
       </body>
     </html>
   )

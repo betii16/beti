@@ -1,26 +1,16 @@
 {
   "id": "/",
-  "name": "BETI — Artisans à domicile",
+  "name": "BETI",
   "short_name": "BETI",
-  "description": "Trouvez un artisan près de chez vous en Algérie. Plombier, électricien, ménage, peinture, serrurerie.",
-  "start_url": "/?source=pwa",
+  "description": "Trouvez un artisan près de chez vous en Algérie : plomberie, électricité, serrurerie, peinture et d'autres métiers.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "orientation": "portrait",
-  "background_color": "#F0ECE3",
-  "theme_color": "#F0ECE3",
-  "lang": "fr",
-  "dir": "ltr",
-  "categories": ["business", "lifestyle", "utilities"],
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "shortcuts": [
-    { "name": "Rechercher un artisan", "short_name": "Recherche", "url": "/recherche", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Carte des artisans", "short_name": "Carte", "url": "/map", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Mon espace", "short_name": "Espace", "url": "/mon-espace", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
