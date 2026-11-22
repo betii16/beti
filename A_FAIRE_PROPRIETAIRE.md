@@ -1,6 +1,18 @@
-# À faire par toi (propriétaire) : état au 2026-11-02
+# À faire par toi (propriétaire) : état au 2026-11-23
 
-La base de production est à jour et vérifiée. Il reste surtout la configuration e-mail, un vrai test avec de vrais comptes, et quelques réglages Vercel.
+## L'essentiel aujourd'hui (v2)
+La v2 a été envoyée sur GitHub le 2026-11-23 (`main`), ce qui la met en ligne par Vercel. Ce qui reste, par ordre d'importance :
+
+1. **Service d'envoi d'e-mails** (section 1 plus bas, toujours valable). Sans lui, seules les adresses de ton équipe reçoivent le code de connexion : aucun vrai utilisateur ne peut s'inscrire.
+2. **Clé `service_role` dans Vercel** (variable `SUPABASE_SERVICE_ROLE_KEY`, à prendre dans Supabase > Project Settings > API keys). Elle sert à « Supprimer mon compte ». Tu la colles toi-même dans Vercel, jamais dans le chat. Ensuite, essai avec un compte jetable (pas le tien : un compte de l'équipe est refusé, exprès).
+3. **Supprimer les quatre projets Vercel en trop** (`beti-sada`, `beti-rkc2`, `beti-ok8c`, `beti-bo7h`). Ils sont tous branchés sur le dépôt : chaque envoi les reconstruit tous. Garde `beti`.
+4. **Essai entre deux comptes** : demande, acceptation avec prix, conversation, suivi de position, avis. Jamais fait, faute de second compte.
+5. **Coordonnées de paiement** des abonnements (CCP, BaridiMob…). Sans elles, la demande d'abonnement reste fermée. Le lancement gratuit se termine vers le 15 janvier 2027 (date réglable dans le panneau admin).
+6. **Relectures** : l'arabe par une personne arabophone ; les CGU, la confidentialité et les mentions par un juriste (les CGU parlent encore de SMS, les mentions ont des champs vides, `support@beti.dz` n'existe pas encore).
+7. **Ton profil d'essai** est publié, visible de tous : à garder ou à retirer (« Je suis artisan » > « Retirer de la recherche »).
+8. **Le dépôt GitHub est public** : le code et les notes de travail sont lisibles par tous. Tu peux le passer en privé (GitHub > Settings > General > Danger Zone), Vercel continue de fonctionner.
+
+Les sections suivantes datent de la v1 (état au 2026-11-02). Les sections 1 et 3 restent utiles ; les fichiers SQL qu'elles citent n'existent plus dans la v2.
 
 ## Déjà fait (ne plus y toucher)
 - `supabase/emergency_hardening.sql` : rôle admin, Premium gratuit, photos, position.
@@ -32,13 +44,13 @@ Rien n'a encore été essayé en vrai. Crée un compte client et un compte artis
 Option sans toucher à la production : un 2e projet Supabase de test (checklist : `scripts/test-project-checklist.md`). Ne colle jamais la clé `service_role` dans un chat.
 
 ## 3. Variables Vercel
-- Définir **`NEXT_PUBLIC_LAUNCH_DATE`** (début des 2 mois gratuits). Sans elle, la gratuité est considérée comme **déjà finie** (date par défaut : 1er juillet 2026) et les artisans non abonnés sont **cachés** : l'annuaire paraît vide.
+- (v1 seulement : la v2 lit la date de fin du lancement dans la base, réglable dans le panneau admin.) Définir **`NEXT_PUBLIC_LAUNCH_DATE`** (début des 2 mois gratuits). Sans elle, la gratuité est considérée comme **déjà finie** (date par défaut : 1er juillet 2026) et les artisans non abonnés sont **cachés** : l'annuaire paraît vide.
 - Vérifier que le projet Vercel qui sert `beti-ten.vercel.app` a les variables Supabase : URL, clé anon, et clé service (nécessaire pour la suppression de compte).
 - v2 (2026-11-22) : la suppression de compte est écrite, mais elle n'a jamais tourné. Il lui faut `SUPABASE_SERVICE_ROLE_KEY` (Supabase > Project Settings > API keys > `service_role`) : dans Vercel pour le site, et dans `.env.local` pour l'essayer ici. Tu la colles toi-même dans le fichier ou dans Vercel, jamais dans le chat. Ensuite, essai avec un compte jetable (pas le tien : un compte de l'équipe est refusé, exprès).
 - Il existe plusieurs projets `beti*` dans ton compte (`beti`, `beti-rkc2`, `beti-sada`, `beti-bo7h`, `beti-ok8c`). Garde le bon, supprime les autres.
 
 ## 4. Pousser sur GitHub
-`main` a environ 48 commits d'avance sur `origin/main`. Rien n'est parti. La base est prête, donc tu peux le faire quand tu veux. Dis « pousse » et je le fais. Je ne pousse jamais de moi-même.
+Fait le 2026-11-23 : la v2 est sur GitHub (`main`). Pour un nouvel envoi, dis « pousse » ; je ne pousse jamais de moi-même.
 
 ## 5. Décisions ouvertes
 - **Avis masqué** : tranché le 2026-11-02, un avis masqué ne compte pas dans la note (`fix_integrity2.sql`, appliqué en production).
