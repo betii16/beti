@@ -17,6 +17,12 @@ export const ar: Dictionary = {
     artisan: 'أنا حرفي',
     login: 'دخول',
     account: 'حسابي',
+    tabs: 'التبويبات',
+    tabHome: 'الرئيسية',
+    tabSearch: 'بحث',
+    tabRequests: 'طلباتي',
+    tabAlerts: 'تنبيهات',
+    unread: '{n} إشعارات غير مقروءة',
   },
   home: {
     heroTag: 'السباكة، الكهرباء، الأقفال وسبع مهن أخرى',

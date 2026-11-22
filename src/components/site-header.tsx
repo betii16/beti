@@ -33,7 +33,7 @@ export function SiteHeader({ lang, t }: { lang: Locale; t: Dictionary['nav'] }) 
           {t.artisan}
         </Link>
         <LanguageSwitch lang={lang} />
-        <AccountLink lang={lang} login={t.login} account={t.account} />
+        <AccountLink lang={lang} login={t.login} account={t.account} unreadLabel={t.unread} />
       </nav>
     </header>
   )

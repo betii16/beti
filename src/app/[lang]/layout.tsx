@@ -3,6 +3,7 @@ import { Readex_Pro } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
+import { TabBar } from '@/components/tab-bar'
 import { dirOf, isLocale, locales } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import '../globals.css'
@@ -33,10 +34,12 @@ export default async function RootLayout({ children, params }: LayoutProps<'/[la
   const dict = getDictionary(lang)
   return (
     <html lang={lang} dir={dirOf(lang)} className={readex.variable}>
-      <body className="bg-paper text-ink antialiased">
+      {/* Sur téléphone, le bas de page laisse la place de la barre d'onglets. */}
+      <body className="bg-paper pb-[calc(4rem+env(safe-area-inset-bottom))] text-ink antialiased sm:pb-0">
         <SiteHeader lang={lang} t={dict.nav} />
         {children}
         <SiteFooter lang={lang} t={dict.footer} />
+        <TabBar lang={lang} t={dict.nav} />
       </body>
     </html>
   )

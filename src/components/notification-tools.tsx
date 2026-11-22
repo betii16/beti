@@ -5,12 +5,14 @@
 import { useActionState, useEffect } from 'react'
 import type { Dictionary } from '@/i18n/dictionary'
 import { clearNotifications, markNotificationsRead, type ClearState } from '@/lib/notifications/actions'
+import { refreshUnread } from '@/lib/notifications/unread'
 import { ALERT } from './form-styles'
 
 /** Affichées, elles sont lues : la prochaine visite ne les montrera plus comme nouvelles. */
 export function MarkSeen() {
   useEffect(() => {
-    void markNotificationsRead()
+    // Puis la pastille de la barre d'onglets retombe à zéro.
+    void markNotificationsRead().then(refreshUnread)
   }, [])
   return null
 }

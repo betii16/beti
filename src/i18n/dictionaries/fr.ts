@@ -63,6 +63,13 @@ export const fr = {
     artisan: 'Je suis artisan',
     login: 'Connexion',
     account: 'Mon compte',
+    // Barre d'onglets du téléphone : des libellés d'un mot, cinq onglets tiennent sur 320 px.
+    tabs: 'Onglets',
+    tabHome: 'Accueil',
+    tabSearch: 'Recherche',
+    tabRequests: 'Demandes',
+    tabAlerts: 'Alertes',
+    unread: '{n} notifications non lues',
   },
   home: {
     heroTag: 'Plomberie, électricité, serrurerie et sept autres métiers',
