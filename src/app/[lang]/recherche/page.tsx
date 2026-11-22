@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArtisanCard } from '@/components/artisan-card'
+import { NearMe } from '@/components/near-me'
 import { SearchForm } from '@/components/search-form'
 import { PAGE_SIZE, parseSearch, searchQuery, type SearchFilters } from '@/domain/search'
 import { wilayaName } from '@/domain/wilayas'
@@ -46,6 +47,8 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
     p_category: filters.categorie,
     p_wilaya_code: filters.wilaya,
     p_q: filters.q,
+    p_lat: filters.pres?.[0],
+    p_lng: filters.pres?.[1],
     p_limit: PAGE_SIZE + 1,
     p_offset: (filters.page - 1) * PAGE_SIZE,
   })
@@ -60,6 +63,21 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
           {titleOf(dict, lang, filters)}
         </h1>
         <SearchForm lang={lang} dict={dict} defaults={filters} keyword className="bg-mist" />
+        {filters.pres ? (
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="font-medium">{t.nearMeOn}</span>
+            <Link href={`${here}${searchQuery({ ...filters, pres: undefined, page: 1 })}`} className="inline-flex min-h-11 items-center underline underline-offset-4">
+              {t.nearMeOff}
+            </Link>
+          </p>
+        ) : (
+          <NearMe
+            base={`${here}${searchQuery({ ...filters, page: 1 })}`}
+            label={t.nearMe}
+            denied={dict.booking.shareDenied}
+            unavailable={dict.booking.shareUnavailable}
+          />
+        )}
 
         {error ? (
           <div role="alert" className={PANEL}>

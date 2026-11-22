@@ -90,6 +90,45 @@ export async function updateListing(_previous: StepState, formData: FormData): P
   return { saved: true }
 }
 
+/**
+ * Position de l'artisan pour la recherche « près de moi », ou null pour la retirer. Elle est
+ * arrondie à 2 décimales (environ 1 km) : la recherche la rend à tous les visiteurs, une adresse
+ * exacte n'a rien à y faire. save_listing remplace toute la fiche : elle est relue et renvoyée entière.
+ */
+export async function setListingPosition(position: { lat: number; lng: number } | null): Promise<{ error?: ErrorCode }> {
+  if (position !== null && !(Number.isFinite(position?.lat) && Number.isFinite(position?.lng))) return { error: 'invalid_input' }
+  const session = await getSession()
+  if (!session) return { error: 'not_authenticated' }
+  const supabase = await createClient()
+  const { data: listing, error: readError } = await supabase
+    .from('artisans')
+    .select('display_name, category, wilaya_code, commune, bio, skills, hourly_rate, radius_km, avatar_path, cover_path')
+    .eq('id', session.userId)
+    .maybeSingle()
+  if (readError) return { error: errorCode(readError) }
+  if (!listing) return { error: 'listing_missing' }
+
+  const round = (value: number) => Math.round(value * 100) / 100
+  // La base vérifie que la position est en Algérie (invalid_location).
+  const { error } = await supabase.rpc('save_listing', {
+    p_display_name: listing.display_name,
+    p_category: listing.category,
+    p_wilaya_code: listing.wilaya_code,
+    p_commune: listing.commune ?? undefined,
+    p_bio: listing.bio ?? undefined,
+    p_skills: listing.skills ?? undefined,
+    p_hourly_rate: listing.hourly_rate ?? undefined,
+    p_radius_km: listing.radius_km,
+    p_lat: position ? round(position.lat) : undefined,
+    p_lng: position ? round(position.lng) : undefined,
+    p_avatar_path: listing.avatar_path ?? undefined,
+    p_cover_path: listing.cover_path ?? undefined,
+  })
+  if (error) return { error: errorCode(error) }
+  refresh()
+  return {}
+}
+
 export type PhotoResult = { error?: ErrorCode }
 
 /**

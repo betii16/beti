@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { ListingForm, type ListingValues } from '@/components/listing-form'
 import { ListingPhotos } from '@/components/listing-photos'
+import { ListingPosition } from '@/components/listing-position'
 import { ListingSubscription } from '@/components/listing-subscription'
 import { ListingSteps } from '@/components/listing-steps'
 import { launchActive } from '@/domain/launch'
@@ -36,7 +37,7 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
     // Sur artisans la lecture est accordée colonne par colonne : on les nomme.
     supabase
       .from('artisans')
-      .select('display_name, category, skills, bio, hourly_rate, wilaya_code, commune, radius_km, avatar_path, cover_path, is_available, published, suspended')
+      .select('display_name, category, skills, bio, hourly_rate, wilaya_code, commune, radius_km, lat, avatar_path, cover_path, is_available, published, suspended')
       .eq('id', session.userId)
       .maybeSingle(),
     supabase.from('user_contacts').select('phone').eq('user_id', session.userId).maybeSingle(),
@@ -97,6 +98,12 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
             cover={own.cover_path}
             posts={posts.data ?? []}
             t={t}
+            errors={dict.errors}
+          />
+          <ListingPosition
+            placed={own.lat !== null}
+            t={t}
+            geo={{ denied: dict.booking.shareDenied, unavailable: dict.booking.shareUnavailable }}
             errors={dict.errors}
           />
           <ListingSubscription

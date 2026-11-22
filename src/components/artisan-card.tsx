@@ -78,6 +78,7 @@ export function ArtisanCard({ artisan, lang, dict }: { artisan: ArtisanSummary; 
               {t.available}
             </span>
           )}
+          {artisan.distance_km != null && <span>{t.distance.replace('{n}', number.format(artisan.distance_km))}</span>}
           {artisan.hourly_rate ? <span className="font-semibold">{t.rate.replace('{n}', number.format(artisan.hourly_rate))}</span> : null}
         </span>
       </Link>
