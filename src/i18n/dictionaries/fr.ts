@@ -72,6 +72,7 @@ export const fr = {
     unread: '{n} notifications non lues',
   },
   home: {
+    currentRequest: 'Votre demande en cours',
     heroTag: 'Plomberie, électricité, serrurerie et sept autres métiers',
     heroTitle1: 'Besoin d’un artisan ?',
     heroTitle2: 'Il est tout près.',

@@ -3,6 +3,7 @@ import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Check } from 'lucide-react'
+import { CurrentRequest } from '@/components/current-request'
 import { SearchForm } from '@/components/search-form'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
@@ -37,6 +38,7 @@ export default async function Home({ params }: PageProps<'/[lang]'>) {
 
   return (
     <main id="contenu">
+      <CurrentRequest lang={lang} title={t.currentRequest} statuses={dict.booking.status} categories={dict.categories} />
       <section className="px-4 sm:px-6">
         <div className="relative isolate overflow-hidden rounded-[28px] bg-night sm:rounded-[36px]">
           {/* Sur téléphone la photo occupe le haut du bloc et le texte vient dessous ; sur écran

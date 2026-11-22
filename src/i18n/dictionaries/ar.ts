@@ -25,6 +25,7 @@ export const ar: Dictionary = {
     unread: '{n} إشعارات غير مقروءة',
   },
   home: {
+    currentRequest: 'طلبك الجاري',
     heroTag: 'السباكة، الكهرباء، الأقفال وسبع مهن أخرى',
     heroTitle1: 'تحتاج إلى حرفي؟',
     heroTitle2: 'هو قريب منك.',
