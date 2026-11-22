@@ -6,6 +6,8 @@ import { ChevronLeft } from 'lucide-react'
 import { z } from 'zod'
 import { BookingActions } from '@/components/booking-actions'
 import { Conversation } from '@/components/conversation'
+import { LiveMap } from '@/components/live-map'
+import { LocationShare } from '@/components/location-share'
 import { Rating } from '@/components/rating'
 import { ReviewForm } from '@/components/review-form'
 import { ReviewReply } from '@/components/review-reply'
@@ -41,7 +43,7 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
     supabase
       .from('bookings')
       .select(
-        'id, status, description, category, wilaya_code, commune, scheduled_for, is_urgent, quoted_price, cancel_reason, created_at, completed_at, client_id, artisan_id, artisans(display_name), booking_private(address)',
+        'id, status, description, category, wilaya_code, commune, scheduled_for, is_urgent, quoted_price, cancel_reason, created_at, completed_at, sharing_location, client_id, artisan_id, artisans(display_name), booking_private(address)',
       )
       .eq('id', id)
       .maybeSingle(),
@@ -68,6 +70,11 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
       ? await supabase.rpc('booking_contact', { p_booking_id: booking.id })
       : null
   const phone = contact?.data?.[0]?.phone
+
+  // Position de l'artisan : le client ne la lit que pendant un partage ouvert sur une demande acceptée.
+  const tracked = booking && role === 'client' && booking.status === 'accepted' && booking.sharing_location ? booking.artisan_id : null
+  const live = tracked ? await supabase.from('artisan_live_location').select('lat, lng, updated_at').eq('artisan_id', tracked).maybeSingle() : null
+  if (live?.error) console.error('[beti] position de l’artisan non lue', live.error)
 
   const locale = lang === 'ar' ? 'ar-DZ' : 'fr-DZ'
   const date = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Algiers' })
@@ -141,6 +148,16 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
                 ) : (
                   <p className="text-body">{t.noContact}</p>
                 )}
+              </section>
+            )}
+
+            {role === 'artisan' && booking.status === 'accepted' && (
+              <LocationShare lang={lang} bookingId={booking.id} sharing={booking.sharing_location} t={t} errors={dict.errors} />
+            )}
+            {tracked && (
+              <section className="flex flex-col gap-3">
+                <h2 className="text-xl font-semibold tracking-[-0.01em]">{t.locationTitle}</h2>
+                <LiveMap lang={lang} artisanId={tracked} initial={live?.data ?? null} t={t} />
               </section>
             )}
 

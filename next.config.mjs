@@ -21,7 +21,8 @@ const csp = [
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob:${supabaseHost ? ` https://${supabaseHost}` : ''}`,
   `font-src 'self' data:`,
-  `connect-src 'self'${supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : ''}${dev ? ' ws: http://localhost:*' : ''}`,
+  // tiles.openfreemap.org : fond de carte du suivi de position (src/components/live-map.tsx).
+  `connect-src 'self' https://tiles.openfreemap.org${supabaseHost ? ` https://${supabaseHost} wss://${supabaseHost}` : ''}${dev ? ' ws: http://localhost:*' : ''}`,
   `worker-src 'self' blob:`,
   `frame-ancestors 'none'`,
   `base-uri 'self'`,

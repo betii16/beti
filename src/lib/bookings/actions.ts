@@ -51,6 +51,20 @@ export async function updateBooking(_previous: UpdateState, formData: FormData):
   return {}
 }
 
+/**
+ * L'artisan ouvre ou coupe le partage de sa position pour une demande acceptée. La base
+ * vérifie que la demande est la sienne et acceptée ; les positions partent ensuite du
+ * navigateur (push_location, voir location-share.tsx).
+ */
+export async function setSharing(bookingId: string, on: boolean): Promise<{ error?: ErrorCode }> {
+  if (!z.uuid().safeParse(bookingId).success) return { error: 'not_found' }
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('set_sharing_location', { p_booking_id: bookingId, p_on: on === true })
+  if (error) return { error: errorCode(error) }
+  refresh()
+  return {}
+}
+
 const FIELDS = ['name', 'description', 'wilaya', 'commune', 'address', 'date', 'urgent'] as const
 type Values = Record<(typeof FIELDS)[number], string>
 
