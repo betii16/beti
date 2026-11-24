@@ -182,10 +182,10 @@ it('les types de la base sont à jour (sinon : npm run gen:types)', async () => 
   await expect(await generate()).toMatchFileSnapshot('../../src/lib/supabase/database.types.ts')
 })
 
-it('chaque catégorie de la base a son libellé dans les deux langues', async () => {
-  const slugs = (await su<{ slug: string }>(db, 'select slug from public.categories order by slug')).map(r => r.slug)
-  expect(Object.keys(fr.categories).sort()).toEqual(slugs)
-  expect(Object.keys(ar.categories).sort()).toEqual(slugs)
+it('chaque catégorie ouverte de la base a son libellé dans les deux langues, dans le même ordre', async () => {
+  const slugs = (await su<{ slug: string }>(db, 'select slug from public.categories where is_active order by sort, slug')).map(r => r.slug)
+  expect(Object.keys(fr.categories)).toEqual(slugs)
+  expect(Object.keys(ar.categories)).toEqual(slugs)
 })
 
 // Jamais exécuté : c'est « npm run typecheck » qui le lit. Si les types générés

@@ -73,7 +73,8 @@ export const fr = {
   },
   home: {
     currentRequest: 'Votre demande en cours',
-    heroTag: 'Plomberie, électricité, serrurerie et sept autres métiers',
+    // Douze : les métiers de « categories » hors « Autre », moins les trois nommés.
+    heroTag: 'Plomberie, électricité, climatisation et douze autres métiers',
     heroTitle1: 'Besoin d’un artisan ?',
     heroTitle2: 'Il est tout près.',
     heroText: 'Dites ce qu’il vous faut et où. Vous choisissez un artisan proche, il vous répond avec un prix indicatif.',
@@ -89,7 +90,7 @@ export const fr = {
     },
     trades: {
       title: 'Quel métier cherchez-vous ?',
-      all: 'Voir les dix métiers',
+      all: 'Voir tous les métiers',
       more: 'Et aussi',
       electricite: 'Panne, câblage, tableau',
       peinture: 'Intérieur, extérieur, enduit',
@@ -501,15 +502,22 @@ export const fr = {
   },
   // Une clé par catégorie de la base (categories.slug), vérifié par tests/db/contract.test.ts.
   categories: {
+    // Rangés par demande, comme categories.sort : cet ordre est celui des listes du site.
     plomberie: 'Plomberie',
     electricite: 'Électricité',
+    climatisation: 'Climatisation',
     serrurerie: 'Serrurerie',
-    menage: 'Ménage',
     peinture: 'Peinture',
+    menage: 'Ménage',
+    maconnerie: 'Maçonnerie',
+    menuiserie: 'Menuiserie',
+    electromenager: 'Électroménager',
+    carrelage: 'Carrelage',
+    ferronnerie: 'Ferronnerie',
+    etancheite: 'Étanchéité',
+    parabole: 'Parabole et caméras',
     demenagement: 'Déménagement',
     jardinage: 'Jardinage',
-    informatique: 'Informatique',
-    coiffure: 'Coiffure',
     autre: 'Autre',
   },
   errors,

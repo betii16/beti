@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Check } from 'lucide-react'
 import { CurrentRequest } from '@/components/current-request'
 import { SearchForm } from '@/components/search-form'
+import { CATEGORY_SLUGS } from '@/domain/search'
 import { href, isLocale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/dictionary'
 import electricite from '../../../public/images/metiers/electricite.jpg'
@@ -13,8 +14,9 @@ import plomberie from '../../../public/images/metiers/plomberie.jpg'
 import serrurerie from '../../../public/images/metiers/serrurerie.jpg'
 import rueAlger from '../../../public/images/rue-alger.jpg'
 
-// Les métiers sans photo pour l'instant : ils sont proposés en liens simples.
-const OTHER_TRADES = ['plomberie', 'menage', 'demenagement', 'jardinage', 'informatique', 'coiffure', 'autre'] as const
+// Les métiers sans tuile photo sont proposés en liens simples, dans l'ordre de la demande.
+const PHOTO_TRADES: readonly string[] = ['electricite', 'peinture', 'serrurerie']
+const OTHER_TRADES = CATEGORY_SLUGS.filter(slug => !PHOTO_TRADES.includes(slug))
 
 const H2 = 'text-[clamp(1.75rem,3.3vw,2.625rem)] leading-[1.1] font-bold tracking-[-0.03em] text-balance rtl:leading-[1.35]'
 
