@@ -17,7 +17,12 @@ Les papiers pour exister légalement et lancer (statut, domaine, marque, donnée
 ## Papiers pour lancer BETI en Algérie (point du 2026-11-26)
 Informations, pas un avis juridique : chaque choix se fait avec un juriste ou un comptable. Lu le 2026-11-26 dans les sources officielles, depuis le navigateur du propriétaire : la loi 18-05 (Journal officiel n° 28 de 2018), la loi 18-07 (JO n° 34 de 2018), la loi 25-11 (JO n° 48 de 2025), nic.dz, anae.dz, inapi.dz. Les textes du JO sont ceux de leur parution : une modification plus récente n'a pas été cherchée. Pas pu lire : commerce.gov.dz et anpdp.dz (connexion refusée), la loi 22-23 sur l'auto-entrepreneur et la charte de nommage du `.dz` (PDF illisibles par l'outil). Ce qui reste marqué « à confirmer » vient de guides.
 
-**Cette semaine** : un rendez-vous avec un comptable ou un juriste (les questions en gras ci-dessous), un domaine générique pour débloquer les e-mails, une recherche d'antériorité sur « BETI ».
+**Réponses retenues le 2026-11-26** (le propriétaire ne veut pas dépendre d'un juriste ; guide pas à pas : https://claude.ai/artifact/H7VZaPDebpQQAkJpPGL3LH). Les questions en gras ci-dessous se posent aux guichets, gratuitement : antenne du CNRC de la wilaya, ANAE, ANPDP.
+- Statut : registre du commerce (en nom propre ou en EURL), pas la carte d'auto-entrepreneur.
+- Hébergement : en Algérie et en `.com.dz` avant de vendre les abonnements ; tant que BETI est gratuit, il reste où il est. Héberger en Algérie règle aussi le transfert des données : chantier technique à prévoir (site et base sur un serveur algérien).
+- Données : d'ici là, case de consentement exprès à l'inscription (loi 18-07, art. 45), qui dit où sont les données. Pas encore écrite dans le site.
+
+**Cette semaine** : passer au guichet du CNRC, prendre un domaine générique pour débloquer les e-mails, lancer la recherche d'antériorité sur « BETI ».
 
 1. **Statut** (avec un comptable). Tout le reste en dépend : NIF, compte pro, `.com.dz`, paiement en ligne, déclaration ANPDP, mentions légales.
    - Auto-entrepreneur : carte ANAE demandée en ligne (activités sur activities.anae.dz), sans registre du commerce ni local, impôt réduit, plafond de 5 M DA de chiffre d'affaires par an (≈ 166 artisans Basique ou 83 Premium à l'année).
