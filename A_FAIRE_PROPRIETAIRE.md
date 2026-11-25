@@ -1,4 +1,4 @@
-# À faire par toi (propriétaire) : état au 2026-11-23
+# À faire par toi (propriétaire) : état au 2026-11-26
 
 ## L'essentiel aujourd'hui (v2)
 La v2 a été envoyée sur GitHub le 2026-11-23 (`main`), ce qui la met en ligne par Vercel. Ce qui reste, par ordre d'importance :
@@ -8,9 +8,44 @@ La v2 a été envoyée sur GitHub le 2026-11-23 (`main`), ce qui la met en ligne
 3. **Supprimer les quatre projets Vercel en trop** (`beti-sada`, `beti-rkc2`, `beti-ok8c`, `beti-bo7h`). Ils sont tous branchés sur le dépôt : chaque envoi les reconstruit tous. Garde `beti`.
 4. **Essai entre deux comptes** : demande, acceptation avec prix, conversation, suivi de position, avis. Jamais fait, faute de second compte.
 5. **Coordonnées de paiement** des abonnements (CCP, BaridiMob…). Sans elles, la demande d'abonnement reste fermée. Le lancement gratuit se termine vers le 15 janvier 2027 (date réglable dans le panneau admin).
-6. **Relectures** : l'arabe par une personne arabophone ; les CGU, la confidentialité et les mentions par un juriste (les CGU parlent encore de SMS, les mentions ont des champs vides, `support@beti.dz` n'existe pas encore).
+6. **Relectures** : l'arabe par une personne arabophone ; les CGU, la confidentialité et les mentions par un juriste (détail : « Papiers pour lancer », point 7).
 7. **Ton profil d'essai** est publié, visible de tous : à garder ou à retirer (« Je suis artisan » > « Retirer de la recherche »).
 8. **Le dépôt GitHub est public** : le code et les notes de travail sont lisibles par tous. Tu peux le passer en privé (GitHub > Settings > General > Danger Zone), Vercel continue de fonctionner.
+
+Les papiers pour exister légalement et lancer (statut, domaine, marque, données personnelles, stores) sont dans la section suivante.
+
+## Papiers pour lancer BETI en Algérie (point du 2026-11-26)
+Informations recoupées, pas un avis juridique : chaque choix se fait avec un juriste ou un comptable. Les sites officiels algériens (commerce.gov.dz, anpdp.dz, nic.dz, joradp.dz) refusent les connexions venues de l'étranger : ce qui est marqué « à confirmer » vient de copies ou de guides, à vérifier depuis l'Algérie.
+
+**Cette semaine** : un rendez-vous avec un comptable ou un juriste (les deux questions en gras ci-dessous), un domaine générique pour débloquer les e-mails, une recherche d'antériorité sur « BETI ».
+
+1. **Statut** (avec un comptable). Tout le reste en dépend : NIF, compte pro, `.com.dz`, paiement en ligne, déclaration ANPDP, mentions légales.
+   - Auto-entrepreneur : carte ANAE demandée en ligne (activités sur activities.anae.dz), sans registre du commerce ni local, impôt réduit, plafond de 5 M DA de chiffre d'affaires par an (≈ 166 artisans Basique ou 83 Premium à l'année).
+   - Société (EURL si seul) au CNRC : RC, NIF, compte bancaire pro. Plus de démarches (notaire, comptable), mais ouvre `.com.dz`, Chargily, les comptes « organisation » des stores et le label start-up.
+   - **Question au juriste ou au CNRC** : la loi 18-05 sur le commerce électronique (art. 8) demande, selon les copies du texte, l'inscription au registre du commerce ou de l'artisanat pour vendre en ligne. La carte ANAE suffit-elle pour vendre les abonnements de BETI ?
+   - Label start-up (startup.dz) : après la société (dossier avec RC, NIF, business model ; réponse en 30 jours ouvrables). Selon la loi de finances 2026 : exonération d'impôt pendant 4 ans, accès à l'Algeria Startup Fund.
+   - Bloque l'encaissement des abonnements, pas le site gratuit.
+2. **Nom de domaine. Bloque le lancement** : sans lui, le service d'e-mails (section 1) n'envoie pas les codes, et personne hors de l'équipe ne peut s'inscrire.
+   - Rapide : un domaine générique (`.com`, `.app`…) chez un registrar étranger, payé par carte internationale ou virtuelle.
+   - `.dz` : seulement par un bureau d'enregistrement agréé par le NIC.dz, pas pour les particuliers. `.com.dz` : entreprises (après le RC). `beti.dz` : organisation ou titulaire de la marque INAPI, nom identique.
+   - À confirmer par le juriste : certaines copies de l'art. 8 de la loi 18-05 demandent un site en `.com.dz` hébergé en Algérie.
+3. **Marque « BETI » à l'INAPI** : protège le nom 10 ans (renouvelable) et ouvre `beti.dz`. D'abord une recherche d'antériorité. Environ 15 000 DA + 2 000 DA par classe selon un cabinet (barème 2026 à confirmer). Ne bloque pas, mais le premier qui dépose garde le nom.
+4. **Données personnelles : ANPDP** (loi 18-07, modifiée par la loi 25-11 de juillet 2025). Déclaration préalable sur anpdp.dz, au nom du statut choisi. Point délicat : les données sont hors d'Algérie (base Supabase en Irlande, `eu-west-1` ; site sur Vercel, États-Unis par défaut). L'art. 44 soumet tout transfert à l'étranger à l'autorisation de l'ANPDP, avec des exceptions (art. 45 : consentement exprès…). **Question au juriste** : demander l'autorisation, s'appuyer sur une exception, ou héberger en Algérie (gros chantier, seulement après son avis). Ce que change la loi 25-11 : à lui faire lire. À régler avant d'ouvrir largement les inscriptions.
+5. **Paiement des abonnements**, avant la fin du lancement gratuit (date réglable dans le panneau admin, sans code, si le statut n'est pas prêt).
+   - CCP / BaridiMob validé à la main : déjà prévu par le site, il ne manque que les coordonnées (`src/domain/payment.ts`). Pas sur un CCP personnel : il faut le statut pour facturer.
+   - Carte CIB / Edahabia par Chargily Pay : nationalité algérienne, résidence en Algérie, site inscrit au registre du commerce ou au répertoire des métiers ; sans abonnement, 1,5 % à 4,5 % par paiement, 300 paiements offerts au départ ; pas de prélèvement automatique (l'artisan repaie chaque mois).
+   - Loi 18-05 : afficher sur le site NIF, n° RC (ou de carte), adresse, téléphone, e-mail et prix TTC.
+6. **Stores**, pour l'appli seulement (le site s'installe déjà sur le téléphone sans store).
+   - Google Play d'abord : 25 $ une fois (carte internationale). Compte personnel : test fermé avec 12 testeurs pendant 14 jours avant de publier. Compte organisation : numéro D-U-N-S, donc une société.
+   - Apple : 99 $ par an. Risque de refus (règle 4.2) : l'appli charge le site en ligne.
+   - Les deux : page de confidentialité corrigée (point 7) et suppression de compte qui marche (clé service, point 2 de « L'essentiel »).
+7. **Relecture des textes juridiques** (`src/legal/documents.ts`, non réécrits). Ce qui ne colle plus à la v2 :
+   - CGU : inscription « par numéro de téléphone », code par SMS ou WhatsApp (la v2 envoie un code par e-mail ; le téléphone n'est obligatoire que pour qu'un artisan publie) ; formules « Standard ou Premium » (le site dit Basique 2 500 DA et Premium 5 000 DA) ; moyens de paiement cités pas encore fixés ; rien sur le partage de position ni les signalements.
+   - Confidentialité : le compte se crée par e-mail, pas par téléphone ; SMS/WhatsApp cités deux fois, service d'envoi d'e-mails absent. Manquent : la position en direct de l'artisan (toutes les 10 s pendant une demande acceptée), sa zone arrondie à 1 km visible de tous, « Près de moi », les photos (position GPS retirée), la carte OpenFreeMap (adresse IP du visiteur), le lieu des données (Irlande, États-Unis), des durées de conservation. Le « thème clair/sombre en stockage local » n'existe pas (session en cookies).
+   - Mentions légales : champs entre crochets, à remplir selon le statut (pour une société : raison sociale, RC, NIF, siège) ; Supabase cité sans société ni pays.
+   - Partout : `support@beti.dz` (domaine pas acheté), « Dernière mise à jour : juin 2026 ».
+
+Ensuite, dans l'ordre : statut, NIF et compte, ANPDP, marque, `.com.dz`, paiement, relecture des textes, Google Play, label start-up.
 
 Les sections suivantes datent de la v1 (état au 2026-11-02). Les sections 1 et 3 restent utiles ; les fichiers SQL qu'elles citent n'existent plus dans la v2.
 
@@ -56,14 +91,11 @@ Fait le 2026-11-23 : la v2 est sur GitHub (`main`). Pour un nouvel envoi, dis «
 - **Avis masqué** : tranché le 2026-11-02, un avis masqué ne compte pas dans la note (`fix_integrity2.sql`, appliqué en production).
 - **`artisans.location`** : le centre de la zone d'intervention reste lisible par tous et n'est pas arrondi. Ce n'est pas la position en direct. L'accepter ou l'arrondir ?
 - **`siret` et assurance** : ces deux champs sont lisibles par tout visiteur (aucune valeur saisie aujourd'hui). Les cacher avant que des artisans les remplissent ?
-- **Nom de domaine** (possèdes-tu `beti.dz` ? les pages légales affichent `support@beti.dz`).
 - **Titre de l'accueil** : « Votre quartier est plein de bons artisans » est trompeur tant que l'annuaire est quasi vide.
 - **Paiement des artisans** : abonnement 2 500 / 5 000 DA par mois, ou crédits prépayés (à tester avec ~10 artisans). Faire vérifier par un juriste que les crédits ne ressemblent pas à une commission.
 - **Coordonnées de paiement des abonnements (v2)** : me donner où les artisans paient (RIB, CCP, BaridiMob). Elles vont dans `src/domain/payment.ts` ; tant qu'elles manquent, l'écran d'abonnement montre les formules mais la demande reste fermée (sans effet pendant le lancement gratuit, jusqu'au 15 janvier 2027).
-- **Encaisser en Algérie** : formaliser (auto-entrepreneur ANAE ou société avec RC + NIF + compte pro), virement BaridiMob/CCP validé à la main au début, puis carte CIB/Edahabia (SATIM ou Chargily). Faire valider par un expert-comptable.
+- **Nom de domaine, encaissement, juriste, stores** : repris dans « Papiers pour lancer » (2026-11-26).
 - **Vérification des artisans** : choisir le niveau réel. Jusque-là, ne jamais écrire « certifié ».
-- **Juriste algérien** : CGU, confidentialité, loi 18-07, mentions de facture.
-- **Stores** : comptes développeur Google/Apple (carte internationale), risque de refus Apple (règle 4.2), URL de politique de confidentialité.
 - **Logo** et **pub vidéo** : valider le logo (`C:\tmp\beti-logo-pistes\`), puis dire si tu veux la vidéo refaite (`C:\Users\raouf\Desktop\betii-video\out\`) et quelle voix.
 
 ## 6. Ce que je ferai à ta prochaine venue (dis « reprends »)
