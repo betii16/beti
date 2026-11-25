@@ -152,6 +152,8 @@ export const fr = {
     email: 'Adresse e-mail',
     emailPlaceholder: 'vous@exemple.dz',
     suggestion: 'Vouliez-vous dire {email} ?',
+    consent: 'J’accepte que mes données soient conservées et traitées hors d’Algérie (Union européenne et États-Unis) pour faire fonctionner BETI.',
+    consentLink: 'Lire la politique de confidentialité',
     send: 'Recevoir le code',
     codeTitle: 'Entrez le code',
     codeIntro: 'Nous l’avons envoyé à {email}. Pensez à regarder dans les courriers indésirables.',

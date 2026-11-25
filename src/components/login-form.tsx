@@ -3,8 +3,9 @@
 // Connexion en deux temps : l'adresse e-mail, puis le code reçu. Les textes
 // arrivent en props (seulement ceux de cet écran), les erreurs sous forme de code.
 
+import Link from 'next/link'
 import { useActionState, useState } from 'react'
-import type { Locale } from '@/i18n/config'
+import { href, type Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionary'
 import { sendCode, verifyCode, type LoginState, type VerifyState } from '@/lib/auth/actions'
 import { normalizeEmail, suggestEmail } from '@/lib/auth/input'
@@ -34,6 +35,7 @@ export function LoginForm({
   const [checked, verify, verifying] = useActionState<VerifyState, FormData>(verifyCode, {})
   const [email, setEmail] = useState('')
   const [changing, setChanging] = useState(false)
+  const [consent, setConsent] = useState(false)
   const suggestion = suggestEmail(normalizeEmail(email))
 
   if (sent.sentTo && !changing) {
@@ -81,6 +83,8 @@ export function LoginForm({
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
           <form action={send}>
             <input type="hidden" name="email" value={sent.sentTo} />
+            {/* L'accord a été donné à l'étape de l'adresse : sans lui, pas d'écran du code. */}
+            <input type="hidden" name="consent" value="oui" />
             <button type="submit" disabled={sending} className={TEXT_BUTTON}>
               {t.resend}
             </button>
@@ -137,6 +141,24 @@ export function LoginForm({
             {t.suggestion.replace('{email}', suggestion)}
           </button>
         )}
+        <label className="flex cursor-pointer items-start gap-3 text-[15px]">
+          {/* Case contrôlée, comme l'adresse : elle reste cochée si l'envoi échoue. */}
+          <input
+            type="checkbox"
+            name="consent"
+            value="oui"
+            required
+            checked={consent}
+            onChange={event => setConsent(event.target.checked)}
+            className="mt-0.5 size-6 shrink-0 accent-ink"
+          />
+          <span>
+            {t.consent}{' '}
+            <Link href={href(lang, '/confidentialite')} target="_blank" className="font-medium underline underline-offset-4">
+              {t.consentLink}
+            </Link>
+          </span>
+        </label>
         {sent.error && (
           <p role="alert" className={ALERT}>
             {errors[sent.error]}

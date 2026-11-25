@@ -22,6 +22,9 @@ export type LoginState = { sentTo?: string; resent?: boolean; error?: ErrorCode 
 export async function sendCode(previous: LoginState, formData: FormData): Promise<LoginState> {
   const email = normalizeEmail(field(formData, 'email'))
   if (!isValidEmail(email)) return { error: 'email_invalid' }
+  // Les données sont gardées hors d'Algérie : la loi 18-07 (art. 45) demande l'accord exprès de la personne.
+  // shortcut: l'accord n'est pas enregistré en base, y ajouter une date par compte si une preuve devient nécessaire.
+  if (field(formData, 'consent') !== 'oui') return { error: 'invalid_input' }
   const again = previous.sentTo === email
 
   const supabase = await createClient()

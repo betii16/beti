@@ -102,6 +102,8 @@ export const ar: Dictionary = {
     email: 'البريد الإلكتروني',
     emailPlaceholder: 'vous@exemple.dz',
     suggestion: 'هل تقصد {email}؟',
+    consent: 'أوافق على حفظ بياناتي ومعالجتها خارج الجزائر (الاتحاد الأوروبي والولايات المتحدة) لتشغيل BETI.',
+    consentLink: 'اقرأ سياسة الخصوصية',
     send: 'استلم الرمز',
     codeTitle: 'أدخل الرمز',
     codeIntro: 'أرسلناه إلى {email}. تحقق أيضاً من البريد غير المرغوب فيه.',
