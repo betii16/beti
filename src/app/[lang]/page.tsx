@@ -18,7 +18,7 @@ import rueAlger from '../../../public/images/rue-alger.jpg'
 const PHOTO_TRADES: readonly string[] = ['electricite', 'peinture', 'serrurerie']
 const OTHER_TRADES = CATEGORY_SLUGS.filter(slug => !PHOTO_TRADES.includes(slug))
 
-const H2 = 'text-[clamp(1.75rem,3.3vw,2.625rem)] leading-[1.1] font-bold tracking-[-0.03em] text-balance rtl:leading-[1.35]'
+const H2 = 'text-[clamp(1.5rem,2.8vw,2.25rem)] leading-[1.1] font-bold tracking-[-0.03em] text-balance rtl:leading-[1.35]'
 
 export async function generateMetadata({ params }: PageProps<'/[lang]'>): Promise<Metadata> {
   const { lang } = await params
@@ -64,7 +64,7 @@ export default async function Home({ params }: PageProps<'/[lang]'>) {
                 <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-accent" />
                 {t.heroTag}
               </p>
-              <h1 className="text-[clamp(2.375rem,4.7vw,3.75rem)] leading-[1.04] font-bold tracking-[-0.035em] rtl:leading-[1.3]">
+              <h1 className="text-[clamp(2rem,3.9vw,3.125rem)] leading-[1.04] font-bold tracking-[-0.035em] rtl:leading-[1.3]">
                 {t.heroTitle1}
                 <br />
                 {t.heroTitle2}
@@ -143,7 +143,7 @@ export default async function Home({ params }: PageProps<'/[lang]'>) {
           <ol className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-x-6 gap-y-8">
             {t.steps.items.map((step, i) => (
               <li key={step.title} className="flex flex-col items-start gap-2.5 border-t-2 border-ink pt-4.5">
-                {/* Le suivi en direct est l'étape qui distingue BETI : c'est la seule pastille verte. */}
+                {/* Le suivi en direct est l'étape qui distingue BETI : c'est la seule pastille en couleur. */}
                 <span
                   aria-hidden
                   className={`flex size-11 items-center justify-center rounded-full text-xl font-semibold ${i === 2 ? 'bg-accent' : 'bg-ink text-paper'}`}
@@ -164,7 +164,7 @@ export default async function Home({ params }: PageProps<'/[lang]'>) {
             <Image src={rueAlger} alt={t.trust.alt} fill sizes="(min-width: 1024px) 50vw, 100vw" placeholder="blur" className="object-cover" />
           </div>
           <div className="flex min-w-0 flex-[1_1_440px] flex-col justify-center gap-6 p-7 sm:p-14">
-            <h2 className="text-[clamp(1.75rem,3vw,2.375rem)] leading-[1.12] font-bold tracking-[-0.03em] text-balance rtl:leading-[1.35]">
+            <h2 className="text-[clamp(1.5rem,2.6vw,2rem)] leading-[1.12] font-bold tracking-[-0.03em] text-balance rtl:leading-[1.35]">
               {t.trust.title}
             </h2>
             <ul className="flex flex-col gap-6">
@@ -187,7 +187,7 @@ export default async function Home({ params }: PageProps<'/[lang]'>) {
       <section className="px-4 pt-6 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-x-12 gap-y-6 rounded-[28px] bg-night px-7 py-12 text-paper sm:rounded-[36px] sm:px-14 sm:py-16">
           <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-2">
-            <h2 className="text-[clamp(1.875rem,3.6vw,2.875rem)] leading-[1.1] font-bold tracking-[-0.03em] rtl:leading-[1.35]">{t.pro.title}</h2>
+            <h2 className="text-[clamp(1.625rem,3vw,2.375rem)] leading-[1.1] font-bold tracking-[-0.03em] rtl:leading-[1.35]">{t.pro.title}</h2>
             <p className="max-w-[32em] text-[19px] text-sage">{t.pro.text}</p>
           </div>
           <Link

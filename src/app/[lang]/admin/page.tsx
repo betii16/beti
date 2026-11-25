@@ -68,7 +68,7 @@ export default async function AdminHome({ params }: PageProps<'/[lang]/admin'>) 
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em]">Vue d’ensemble</h1>
+      <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em]">Vue d’ensemble</h1>
 
       {/* Ce qui attend une décision de l'équipe passe avant les chiffres. */}
       <div className="grid gap-3 sm:grid-cols-2">

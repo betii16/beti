@@ -55,7 +55,8 @@ export function TabBar({ lang, t }: { lang: Locale; t: Dictionary['nav'] }) {
 
   return (
     <nav aria-label={t.tabs} className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper pb-[env(safe-area-inset-bottom)] sm:hidden">
-      <ul className="grid grid-cols-5">
+      {/* Même ordre en arabe qu'en français (demande du propriétaire) : la barre ne se retourne pas. */}
+      <ul dir="ltr" className="grid grid-cols-5">
         {tabs.map(({ path, label, icon: Icon, sections, badge = 0 }) => {
           const current = sections.includes(section)
           return (
@@ -65,7 +66,7 @@ export function TabBar({ lang, t }: { lang: Locale; t: Dictionary['nav'] }) {
                 aria-current={current ? 'page' : undefined}
                 className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-[11px] ${current ? 'font-semibold text-ink' : 'font-medium text-muted'}`}
               >
-                <span className={`relative flex h-8 w-14 items-center justify-center rounded-full ${current ? 'bg-accent text-ink' : ''}`}>
+                <span className={`relative flex h-8 w-14 items-center justify-center rounded-full ${current ? 'bg-petale text-ink' : ''}`}>
                   <Icon aria-hidden className="size-[22px]" strokeWidth={current ? 2.4 : 2} />
                   {badge > 0 && (
                     <span className="absolute -top-1 end-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ink px-1 text-[11px] leading-none font-semibold text-paper">

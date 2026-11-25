@@ -3,27 +3,38 @@
 @import 'tailwindcss' source(none);
 @source '../';
 
-/* Identité D « Direct », choisie par le propriétaire le 2026-11-16 : blanc, noir,
-   un vert vif. La palette par défaut de Tailwind est retirée : seules ces
-   couleurs existent, ce qui évite les gris et les bleus de passage. */
+/* Identité « Le bloc », choisie par le propriétaire le 2026-11-24 (canevas « Identité BETI ») :
+   pages blanches, logo et titres noirs, couleur tirée du dégradé « Pétale » (D15).
+   La palette par défaut de Tailwind est retirée : seules ces couleurs existent. */
 @theme {
   --color-*: initial;
   --color-paper: #ffffff;
-  --color-ink: #000000;
-  /* Vert vif : en fond seulement, texte noir dessus (10,6:1). Jamais en texte sur blanc (2:1). */
-  --color-accent: #12d46b;
-  --color-night: #073b28;
-  --color-mist: #f2f5f3;
-  --color-line: #dde4e0;
-  /* Textes secondaires : 5,9:1 et 9,6:1 sur blanc. */
-  --color-muted: #5b6660;
-  --color-body: #3d4742;
+  --color-ink: #111111;
+  /* Lavande du dégradé : en fond seulement, texte noir dessus (11:1). Jamais en texte sur blanc. */
+  --color-accent: #e0c3fc;
+  --color-night: #111111;
+  --color-mist: #f3f1f7;
+  --color-line: #e4e1ea;
+  /* Textes secondaires : 6,6:1 et 10:1 sur blanc. */
+  --color-muted: #5f5b6b;
+  --color-body: #3e3b47;
   /* Textes sur photo assombrie et sur night. */
-  --color-haze: #e8eeea;
-  --color-sage: #d5e6dc;
+  --color-haze: #eeecf2;
+  --color-sage: #dcd6e8;
 
-  --font-sans: var(--font-readex), 'Segoe UI', Tahoma, sans-serif;
-  --shadow-float: 0 24px 60px rgb(7 59 40 / 0.28);
+  --font-sans: var(--font-alexandria), 'Segoe UI', Tahoma, sans-serif;
+  /* Unbounded n'a pas de lettres arabes : le navigateur prend alors Noto Kufi Arabic. */
+  --font-display: var(--font-unbounded), var(--font-kufi), var(--font-alexandria), sans-serif;
+  --shadow-float: 0 24px 60px rgb(17 17 17 / 0.22);
+}
+
+/* Dégradé « Pétale » (rose poudré, pêche pâle, lavande, en nuage) : réservé à l'icône de
+   l'appli et à l'onglet courant de la barre du bas, comme sur la planche validée. */
+@utility bg-petale {
+  background:
+    radial-gradient(circle at 12% 12%, #ffc2d1 0%, transparent 58%),
+    radial-gradient(circle at 88% 88%, #e0c3fc 0%, transparent 58%),
+    #ffe3d3;
 }
 
 @layer base {
@@ -35,6 +46,11 @@
     color: var(--color-muted);
     opacity: 1;
   }
+  /* Les titres prennent la police du logo. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+  }
   /* L'arabe est une écriture liée : resserrer les lettres les décroche. */
   :lang(ar) {
     letter-spacing: 0 !important;
@@ -42,11 +58,11 @@
 }
 
 /* Voiles posés sur les photos pour que le texte reste lisible.
-   Accueil, téléphone : la photo est en haut du bloc et se fond dans le vert nuit.
+   Accueil, téléphone : la photo est en haut du bloc et se fond dans le noir.
    Accueil, écran large : le voile est plus sombre du côté où commence le texte,
    il se retourne donc en arabe. */
 .scrim-hero {
-  background: linear-gradient(180deg, rgb(7 59 40 / 0) 35%, var(--color-night) 100%);
+  background: linear-gradient(180deg, rgb(17 17 17 / 0) 35%, var(--color-night) 100%);
 }
 @media (min-width: 40rem) {
   .scrim-hero {

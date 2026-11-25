@@ -51,7 +51,7 @@ export default async function RequestsPage({ params, searchParams }: PageProps<'
   return (
     <main id="contenu" className="px-4 pb-6 sm:px-10">
       <div className="mx-auto flex max-w-[1000px] flex-col gap-7 pt-4 lg:pt-8">
-        <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]">{t.listTitle}</h1>
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]">{t.listTitle}</h1>
 
         {justSent && !error && (
           <p role="status" className="max-w-[620px] rounded-[20px] bg-accent px-5 py-3.5 font-medium">

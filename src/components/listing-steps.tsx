@@ -76,7 +76,7 @@ export function ListingSteps({
 
   return (
     <section aria-labelledby="etapes" className="flex flex-col gap-7 rounded-[28px] bg-night px-6 py-8 text-paper sm:rounded-[36px] sm:px-10 sm:py-10">
-      <h2 id="etapes" className="text-[clamp(1.5rem,3vw,2rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
+      <h2 id="etapes" className="text-[clamp(1.375rem,2.6vw,1.75rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
         {t.stepsTitle}
       </h2>
 

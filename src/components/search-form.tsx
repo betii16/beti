@@ -71,7 +71,7 @@ export function SearchForm({
       )}
       <button
         type="submit"
-        className="inline-flex min-h-[60px] flex-[1_1_220px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-accent px-7 text-lg font-semibold transition-colors hover:bg-ink hover:text-paper"
+        className="inline-flex min-h-[60px] flex-[1_1_220px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-ink px-7 text-lg font-semibold text-paper transition-colors hover:bg-accent hover:text-ink"
       >
         <Search aria-hidden className="size-5" strokeWidth={2.6} />
         {t.submit}

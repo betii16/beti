@@ -13,7 +13,7 @@ import { errorCode } from '@/lib/errors'
 import { mediaUrl } from '@/lib/media'
 import { createClient } from '@/lib/supabase/server'
 
-const H2 = 'text-[clamp(1.5rem,2.6vw,2rem)] leading-tight font-bold tracking-[-0.03em] rtl:leading-[1.4]'
+const H2 = 'text-[clamp(1.375rem,2.3vw,1.75rem)] leading-tight font-bold tracking-[-0.03em] rtl:leading-[1.4]'
 const BADGE = 'inline-flex items-center gap-1 rounded-full bg-paper px-2.5 py-0.5 text-[13px] font-medium'
 
 export async function generateMetadata({ params }: PageProps<'/[lang]/artisans/[id]'>): Promise<Metadata> {
@@ -113,7 +113,7 @@ export default async function ArtisanPage({ params }: PageProps<'/[lang]/artisan
             )}
 
             <div className="flex min-w-0 flex-[1_1_300px] flex-col items-start gap-2.5">
-              <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">{name}</h1>
+              <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">{name}</h1>
               {(artisan.verified_at || artisan.phone_verified) && (
                 <p className="flex flex-wrap gap-2">
                   {artisan.verified_at && (

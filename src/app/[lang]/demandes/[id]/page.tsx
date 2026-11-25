@@ -95,7 +95,7 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/demande
         ) : (
           <>
             <div className="flex flex-col items-start gap-2.5">
-              <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">{title}</h1>
+              <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">{title}</h1>
               <p className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-ink px-3.5 py-1 text-[15px] font-semibold text-paper">{t.status[booking.status]}</span>
                 {booking.is_urgent && <span className="rounded-full border-2 border-ink px-3 py-0.5 text-[15px] font-semibold">{t.urgentTag}</span>}

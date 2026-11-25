@@ -92,7 +92,7 @@ export function ListingPhotos({
 
   return (
     <section aria-labelledby="photos" className="flex flex-col gap-8">
-      <h2 id="photos" className="text-[clamp(1.5rem,3vw,2rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
+      <h2 id="photos" className="text-[clamp(1.375rem,2.6vw,1.75rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
         {t.photosTitle}
       </h2>
 

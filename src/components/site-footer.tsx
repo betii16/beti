@@ -13,9 +13,7 @@ export function SiteFooter({ lang, t }: { lang: Locale; t: Dictionary['footer'] 
   return (
     <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 pt-10 pb-12 sm:px-10">
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span lang="fr" className="text-2xl leading-none font-bold tracking-[-0.04em]">
-          beti
-        </span>
+        <span className="font-display text-[22px] leading-none font-extrabold tracking-[-0.03em] rtl:leading-[1.4]">{lang === 'ar' ? 'باتي' : 'beti'}</span>
         <span className="text-[15px] text-muted">{t.tagline}</span>
       </p>
       <nav aria-label={t.links} className="flex flex-wrap gap-x-7 gap-y-1">

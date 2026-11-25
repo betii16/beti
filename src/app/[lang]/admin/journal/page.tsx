@@ -41,7 +41,7 @@ export default async function AdminJournal({ params }: PageProps<'/[lang]/admin/
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em]">Journal</h1>
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em]">Journal</h1>
         <p className="text-body">Chaque action de l’équipe y est inscrite par la base, sans possibilité de la modifier.</p>
       </div>
       {error ? (

@@ -57,7 +57,7 @@ export default async function RequestPage({ params }: PageProps<'/[lang]/artisan
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">
+              <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">
                 {t.title.replace('{name}', artisan.display_name)}
               </h1>
               <p className="flex flex-wrap gap-x-2.5 text-lg text-body">

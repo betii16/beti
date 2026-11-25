@@ -54,7 +54,7 @@ export default async function AdminReports({ params }: PageProps<'/[lang]/admin/
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em]">Signalements</h1>
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em]">Signalements</h1>
         <p className="max-w-[70ch] text-body">
           Les plus anciens d’abord. « Résolu » avec « Suspension » suspend le compte signalé dans la même opération ; la note reste interne à l’équipe.
         </p>

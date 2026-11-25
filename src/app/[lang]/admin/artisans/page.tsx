@@ -35,7 +35,7 @@ export default async function AdminArtisans({ params, searchParams }: PageProps<
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em]">Artisans</h1>
+      <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em]">Artisans</h1>
       <form className="flex flex-wrap gap-2" role="search">
         <label className="flex min-w-0 flex-[1_1_260px]">
           <span className="sr-only">Nom de l’artisan</span>

@@ -35,7 +35,7 @@ export default async function AdminSubscriptions({ params }: PageProps<'/[lang]/
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em]">Abonnements</h1>
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em]">Abonnements</h1>
         <p className="max-w-[70ch] text-body">
           Vérifiez le paiement avec sa référence avant de valider. Un renouvellement du même plan prolonge la date en cours ; l’artisan est prévenu dans les deux cas.
         </p>

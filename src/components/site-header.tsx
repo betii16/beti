@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { House } from 'lucide-react'
 import { href, type Locale } from '@/i18n/config'
 import type { Dictionary } from '@/i18n/dictionary'
 import { AccountLink } from './account-link'
@@ -14,15 +13,10 @@ export function SiteHeader({ lang, t }: { lang: Locale; t: Dictionary['nav'] }) 
       >
         {t.skip}
       </a>
-      <Link href={href(lang)} aria-label={t.home} className="flex min-h-11 items-center gap-2.5">
-        <span className="flex size-[38px] shrink-0 items-center justify-center rounded-xl bg-accent">
-          <House aria-hidden className="size-[22px]" strokeWidth={2.4} />
-        </span>
-        <span lang="fr" className="text-3xl leading-none font-bold tracking-[-0.04em]">
-          beti
-        </span>
-        <span lang="ar" className="hidden text-[22px] leading-none font-medium text-muted sm:inline">
-          بيتي
+      {/* Le nom sur une ligne, dans la langue de la page : « beti » ou « باتي » (choix du propriétaire, 2026-11-24). */}
+      <Link href={href(lang)} aria-label={t.home} className="flex min-h-11 items-center">
+        <span className="font-display text-[28px] leading-none font-extrabold tracking-[-0.03em] rtl:text-[30px] rtl:leading-[1.4]">
+          {lang === 'ar' ? 'باتي' : 'beti'}
         </span>
       </Link>
       <nav aria-label={t.main} className="flex items-center gap-x-4 sm:gap-x-7">

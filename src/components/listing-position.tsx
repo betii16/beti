@@ -52,7 +52,7 @@ export function ListingPosition({
   const busy = locating || saving
   return (
     <section aria-labelledby="zone" className="flex max-w-[620px] flex-col items-start gap-3">
-      <h2 id="zone" className="text-[clamp(1.5rem,3vw,2rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
+      <h2 id="zone" className="text-[clamp(1.375rem,2.6vw,1.75rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
         {t.positionTitle}
       </h2>
       <p className="text-body">{placed ? t.positionOn : t.positionHelp}</p>

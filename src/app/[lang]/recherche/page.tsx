@@ -59,7 +59,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
   return (
     <main id="contenu" className="px-4 pb-6 sm:px-10">
       <div className="mx-auto flex max-w-[1000px] flex-col gap-7 pt-4 lg:pt-8">
-        <h1 className="text-[clamp(2rem,4vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">
           {titleOf(dict, lang, filters)}
         </h1>
         <SearchForm lang={lang} dict={dict} defaults={filters} keyword className="bg-mist" />

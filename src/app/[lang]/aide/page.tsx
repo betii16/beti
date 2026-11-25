@@ -19,7 +19,7 @@ export default async function HelpPage({ params }: PageProps<'/[lang]/aide'>) {
     <main id="contenu" className="px-4 pb-6 sm:px-10">
       <div className="mx-auto flex max-w-[760px] flex-col gap-8 pt-4 lg:pt-8">
         <div className="flex flex-col gap-3">
-          <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]">{t.title}</h1>
+          <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]">{t.title}</h1>
           <p className="text-lg text-body">{t.intro}</p>
         </div>
         <dl className="flex flex-col gap-7">

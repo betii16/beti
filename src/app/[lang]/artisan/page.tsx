@@ -15,7 +15,7 @@ import { errorCode } from '@/lib/errors'
 import { createClient } from '@/lib/supabase/server'
 import electricite from '../../../../public/images/metiers/electricite.jpg'
 
-const TITLE = 'text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]'
+const TITLE = 'text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]'
 
 export async function generateMetadata({ params }: PageProps<'/[lang]/artisan'>): Promise<Metadata> {
   const { lang } = await params
@@ -117,7 +117,7 @@ export default async function ArtisanSpacePage({ params }: PageProps<'/[lang]/ar
             errors={dict.errors}
           />
           <section aria-labelledby="profil" className="flex flex-col gap-5">
-            <h2 id="profil" className="text-[clamp(1.5rem,3vw,2rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
+            <h2 id="profil" className="text-[clamp(1.375rem,2.6vw,1.75rem)] leading-tight font-bold tracking-[-0.025em] rtl:leading-snug">
               {t.editTitle}
             </h2>
             <ListingForm lang={lang} initial={initial} mode="edit" published={own.published} t={t} categories={dict.categories} errors={dict.errors} />

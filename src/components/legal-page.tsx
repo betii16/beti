@@ -6,7 +6,7 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
     <main id="contenu" className="px-4 pb-6 sm:px-10">
       <article className="mx-auto flex max-w-[760px] flex-col gap-8 pt-4 lg:pt-8">
         <header className="flex flex-col gap-3">
-          <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance">{doc.title}</h1>
+          <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance">{doc.title}</h1>
           <p className="text-[15px] text-muted">{doc.updated}</p>
           {doc.intro && <p className="max-w-[65ch] text-lg text-body">{doc.intro}</p>}
         </header>

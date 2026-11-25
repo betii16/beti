@@ -29,7 +29,7 @@ export default async function AdminReviews({ params }: PageProps<'/[lang]/admin/
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em]">Avis</h1>
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em]">Avis</h1>
         <p className="max-w-[70ch] text-body">
           Masquer un avis le retire du profil public et de la note moyenne, sans le supprimer : il peut être réaffiché.
         </p>

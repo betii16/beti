@@ -9,7 +9,7 @@ import type { Dictionary } from '@/i18n/dictionary'
 import { sendCode, verifyCode, type LoginState, type VerifyState } from '@/lib/auth/actions'
 import { normalizeEmail, suggestEmail } from '@/lib/auth/input'
 
-const H1 = 'text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]'
+const H1 = 'text-[clamp(1.75rem,3.4vw,2.375rem)] leading-[1.08] font-bold tracking-[-0.035em] rtl:leading-[1.3]'
 const FIELD = 'flex flex-col gap-1.5'
 const LABEL = 'text-[15px] font-semibold'
 const INPUT = 'min-h-[60px] w-full rounded-[22px] bg-mist px-5 text-lg'
