@@ -20,7 +20,7 @@ Informations, pas un avis juridique : chaque choix se fait avec un juriste ou un
 **Réponses retenues le 2026-11-26** (le propriétaire ne veut pas dépendre d'un juriste ; guide pas à pas : https://claude.ai/artifact/H7VZaPDebpQQAkJpPGL3LH). Les questions en gras ci-dessous se posent aux guichets, gratuitement : antenne du CNRC de la wilaya, ANAE, ANPDP.
 - Statut : registre du commerce (en nom propre ou en EURL), pas la carte d'auto-entrepreneur.
 - Hébergement : en Algérie et en `.com.dz` avant de vendre les abonnements ; tant que BETI est gratuit, il reste où il est. Héberger en Algérie règle aussi le transfert des données : chantier technique à prévoir (site et base sur un serveur algérien).
-- Données : d'ici là, case de consentement exprès à l'inscription (loi 18-07, art. 45), qui dit où sont les données. Pas encore écrite dans le site.
+- Données : d'ici là, case de consentement exprès à l'inscription (loi 18-07, art. 45), qui dit où sont les données. Écrite le 2026-11-27 sur la page de connexion (case obligatoire avant l'envoi du code) ; l'accord n'est pas encore gardé en base.
 
 **Cette semaine** : passer au guichet du CNRC, prendre un domaine générique pour débloquer les e-mails, lancer la recherche d'antériorité sur « BETI ».
 
