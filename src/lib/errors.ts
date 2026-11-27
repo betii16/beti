@@ -33,6 +33,7 @@ export const ERROR_CODES = [
   'phone_required',
   'portfolio_limit',
   'already_pending',
+  'skills_required',
   // équipe
   'cannot_suspend_staff',
   'staff_account',

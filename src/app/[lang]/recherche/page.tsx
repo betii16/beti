@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ArtisanCard } from '@/components/artisan-card'
 import { NearMe } from '@/components/near-me'
 import { SearchForm } from '@/components/search-form'
 import { PAGE_SIZE, parseSearch, searchQuery, type SearchFilters } from '@/domain/search'
+import { tradeFromQuery } from '@/domain/trades'
 import { wilayaName } from '@/domain/wilayas'
 import { href, isLocale, type Locale } from '@/i18n/config'
 import { getDictionary, type Dictionary } from '@/i18n/dictionary'
@@ -40,6 +41,10 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
   const dict = getDictionary(lang)
   const t = dict.search
   const here = href(lang, '/recherche')
+
+  // « plombier » tapé seul : c'est le métier qu'on cherche. La page s'ouvre sur ce métier, choisi dans le formulaire.
+  const trade = filters.categorie ? undefined : tradeFromQuery(filters.q)
+  if (trade) redirect(`${here}${searchQuery({ ...filters, categorie: trade, q: undefined, page: 1 })}`)
 
   const supabase = await createClient()
   // Un artisan de plus que la page : s'il arrive, il existe une page suivante.

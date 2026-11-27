@@ -26,6 +26,8 @@ export async function saveListing(_previous: ListingState, formData: FormData): 
   // Un tarif illisible deviendrait « pas de tarif » sans prévenir : il est refusé ici.
   const rate = values.rate.replace(/\s+/g, '')
   if (rate && !/^\d{1,7}$/.test(rate)) return fail('invalid_input')
+  // « Autre » ne dit pas le métier : sans spécialité, aucun mot-clé ne mènerait à cet artisan.
+  if (values.category === 'autre' && parseSkills(values.skills).length === 0) return fail('skills_required')
 
   const session = await getSession()
   if (!session) return fail('not_authenticated')

@@ -31,9 +31,10 @@ it('chaque code levé par le SQL est reconnu', () => {
 
 it('chaque code de l’application existe vraiment dans le SQL', () => {
   // Une faute de frappe dans ERROR_CODES donnerait un message que personne ne verrait jamais.
-  // Les seuls codes qui ne viennent pas du SQL : le refus de supprimer un compte de l'équipe
-  // (deleteAccount), ceux du service d'authentification et du réseau.
+  // Les seuls codes qui ne viennent pas du SQL : « Autre » sans spécialité (saveListing), le refus
+  // de supprimer un compte de l'équipe (deleteAccount), ceux du service d'authentification et du réseau.
   expect(ERROR_CODES.filter(c => !sqlCodes.includes(c))).toEqual([
+    'skills_required',
     'staff_account',
     'email_invalid',
     'email_not_deliverable',
