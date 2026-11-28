@@ -21,6 +21,8 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Android 12 et plus : l'écran de lancement du système prend ce fond (gris clair par défaut). -->
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
         <item name="android:statusBarColor">#FFFFFF</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
