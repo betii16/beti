@@ -10,6 +10,10 @@ const FIELD =
 const DIVIDED = 'sm:before:absolute sm:before:inset-y-2 sm:before:start-0 sm:before:w-px sm:before:bg-line'
 const LABEL = 'text-[13px] leading-snug font-semibold'
 const CONTROL = 'min-h-[30px] min-w-0 bg-transparent py-0.5 text-[17px] outline-hidden'
+// Page de résultats sur téléphone : formulaire ramassé en deux lignes (métier, wilaya ; mot-clé, loupe),
+// pour laisser l'écran à la liste.
+const TIGHT_FORM = 'max-sm:gap-1.5 max-sm:rounded-[24px] max-sm:p-1.5'
+const TIGHT_FIELD = 'max-sm:rounded-[18px] max-sm:bg-paper max-sm:px-3 max-sm:py-1 max-sm:[&>input]:text-[15px] max-sm:[&>select]:text-[15px]'
 
 /** Recherche de l'accueil et de la page de résultats : un simple envoi vers /recherche, sans script. */
 export function SearchForm({
@@ -27,13 +31,15 @@ export function SearchForm({
   className?: string
 }) {
   const t = dict.search
+  // Métier et wilaya se partagent la première ligne, le mot-clé laisse la place de la loupe.
+  const field = keyword ? `${FIELD} ${TIGHT_FIELD} max-sm:basis-[40%]` : FIELD
   return (
     <form
       action={href(lang, '/recherche')}
       role="search"
-      className={`flex min-w-0 flex-wrap items-stretch gap-2 rounded-[30px] p-2.5 ${className}`}
+      className={`flex min-w-0 flex-wrap items-stretch gap-2 rounded-[30px] p-2.5 ${keyword ? TIGHT_FORM : ''} ${className}`}
     >
-      <label className={FIELD}>
+      <label className={field}>
         <span className={LABEL}>{t.trade}</span>
         {/* -ms-1 : rattrape le retrait interne d'un <select> pour l'aligner sur son étiquette. */}
         <select name="categorie" defaultValue={defaults.categorie ?? ''} className={`-ms-1 ${CONTROL}`}>
@@ -45,7 +51,7 @@ export function SearchForm({
           ))}
         </select>
       </label>
-      <label className={`${FIELD} ${DIVIDED}`}>
+      <label className={`${field} ${DIVIDED}`}>
         <span className={LABEL}>{t.wilaya}</span>
         <select name="wilaya" defaultValue={defaults.wilaya ?? ''} className={`-ms-1 ${CONTROL}`}>
           <option value="">{t.allWilayas}</option>
@@ -57,7 +63,7 @@ export function SearchForm({
         </select>
       </label>
       {keyword && (
-        <label className={`${FIELD} ${DIVIDED}`}>
+        <label className={`${FIELD} ${TIGHT_FIELD} ${DIVIDED} max-sm:basis-[60%]`}>
           <span className={LABEL}>{t.keyword}</span>
           <input
             name="q"
@@ -71,10 +77,10 @@ export function SearchForm({
       )}
       <button
         type="submit"
-        className="inline-flex min-h-[60px] flex-[1_1_220px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-ink px-7 text-lg font-semibold text-paper transition-colors hover:bg-accent hover:text-ink"
+        className={`inline-flex min-h-[60px] flex-[1_1_220px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-ink px-7 text-lg font-semibold text-paper transition-colors hover:bg-accent hover:text-ink ${keyword ? 'max-sm:min-h-0 max-sm:w-14 max-sm:flex-none max-sm:px-0' : ''}`}
       >
         <Search aria-hidden className="size-5" strokeWidth={2.6} />
-        {t.submit}
+        <span className={keyword ? 'max-sm:sr-only' : ''}>{t.submit}</span>
       </button>
     </form>
   )

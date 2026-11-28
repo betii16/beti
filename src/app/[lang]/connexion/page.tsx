@@ -25,7 +25,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<'/[l
   const dict = getDictionary(lang)
 
   return (
-    <main id="contenu" className="px-4 pb-6 sm:px-10">
+    <main id="contenu" data-ecran className="px-4 pb-6 sm:px-10">
       <div className="mx-auto grid max-w-[1000px] items-center gap-10 pt-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:gap-14 lg:pt-8">
         <LoginForm lang={lang} next={next} t={dict.login} errors={dict.errors} />
         {/* Photo d'ambiance, sur grand écran seulement. */}

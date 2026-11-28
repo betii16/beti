@@ -270,7 +270,6 @@ export const fr = {
     becomeArtisan: 'Vous êtes artisan ? Créer mon profil',
     phone: 'Votre numéro de téléphone',
     phoneHelp: 'Il n’est transmis à l’autre partie d’une demande qu’une fois celle-ci acceptée.',
-    savePhone: 'Enregistrer le numéro',
     phoneSaved: 'Numéro enregistré.',
     notifications: 'Notifications',
     unreadCount: '{n} nouvelles',

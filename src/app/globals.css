@@ -79,3 +79,27 @@
 .scrim-tile {
   background: linear-gradient(0deg, rgb(0 0 0 / 0.72), transparent 58%);
 }
+
+/* Onglets sur téléphone (pages dont le <main> porte data-ecran) : un écran d'appli, pas une page web.
+   En-tête et barre d'onglets restent en place, le bas de page disparaît ; si le contenu déborde,
+   il défile seul entre les deux. L'accueil n'est pas concerné. */
+@media (width < 40rem) {
+  body:has(> main[data-ecran]) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  body:has(> main[data-ecran]) > main {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  body:has(> main[data-ecran]) > header {
+    padding-block: 0.5rem;
+  }
+  body:has(> main[data-ecran]) > footer {
+    display: none;
+  }
+}

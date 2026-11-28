@@ -218,7 +218,6 @@ export const ar: Dictionary = {
     becomeArtisan: 'هل أنت حرفي؟ أنشئ ملفك',
     phone: 'رقم هاتفك',
     phoneHelp: 'لا يصل إلى الطرف الآخر في الطلب إلا بعد قبوله.',
-    savePhone: 'حفظ الرقم',
     phoneSaved: 'تم حفظ الرقم.',
     notifications: 'الإشعارات',
     unreadCount: '{n} جديدة',

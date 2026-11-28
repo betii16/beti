@@ -62,9 +62,10 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
   const hasNext = found.length > PAGE_SIZE
 
   return (
-    <main id="contenu" className="px-4 pb-6 sm:px-10">
-      <div className="mx-auto flex max-w-[1000px] flex-col gap-7 pt-4 lg:pt-8">
-        <h1 className="text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.08] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">
+    <main id="contenu" data-ecran className="px-4 pb-6 max-sm:pb-0 sm:px-10">
+      {/* Sur téléphone, la recherche reste en haut et seule la liste défile (data-ecran, globals.css). */}
+      <div className="mx-auto flex max-w-[1000px] flex-col gap-7 pt-4 max-sm:h-full max-sm:gap-3 lg:pt-8">
+        <h1 className="text-[clamp(1.75rem,3.4vw,2.5rem)] leading-[1.08] max-sm:text-[1.375rem] font-bold tracking-[-0.035em] text-balance rtl:leading-[1.3]">
           {titleOf(dict, lang, filters)}
         </h1>
         <SearchForm lang={lang} dict={dict} defaults={filters} keyword className="bg-mist" />
@@ -84,65 +85,67 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
           />
         )}
 
-        {error ? (
-          <div role="alert" className={PANEL}>
-            <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em]">{t.errorTitle}</h2>
-            <p className="text-body">{dict.errors[errorCode(error)]}</p>
-            {/* Un vrai rechargement : la page est redemandée au serveur. */}
-            <a href={`${here}${searchQuery(filters)}`} className={`${PILL} mt-2 bg-ink text-paper hover:bg-accent hover:text-ink`}>
-              {t.retry}
-            </a>
-          </div>
-        ) : artisans.length === 0 ? (
-          <div className={PANEL}>
-            <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em]">{t.emptyTitle}</h2>
-            <p className="max-w-[34em] text-body">{t.emptyText}</p>
-            <div className="flex flex-wrap gap-2.5 pt-2">
-              {filters.wilaya && (
-                <Link
-                  href={`${here}${searchQuery({ ...filters, wilaya: undefined, page: 1 })}`}
-                  className={`${PILL} bg-ink text-paper hover:bg-accent hover:text-ink`}
-                >
-                  {t.widenPlace}
-                </Link>
-              )}
-              {filters.categorie && (
-                <Link
-                  href={`${here}${searchQuery({ ...filters, categorie: undefined, page: 1 })}`}
-                  className={`${PILL} bg-paper hover:bg-ink hover:text-paper`}
-                >
-                  {t.widenTrade}
-                </Link>
-              )}
-              <Link href={href(lang, '/artisan')} className={`${PILL} bg-paper hover:bg-ink hover:text-paper`}>
-                {dict.home.pro.cta}
-              </Link>
+        <div className="flex flex-col gap-7 max-sm:-mx-4 max-sm:min-h-0 max-sm:flex-1 max-sm:gap-4 max-sm:overflow-y-auto max-sm:overscroll-contain max-sm:px-4 max-sm:pb-4">
+          {error ? (
+            <div role="alert" className={PANEL}>
+              <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em]">{t.errorTitle}</h2>
+              <p className="text-body">{dict.errors[errorCode(error)]}</p>
+              {/* Un vrai rechargement : la page est redemandée au serveur. */}
+              <a href={`${here}${searchQuery(filters)}`} className={`${PILL} mt-2 bg-ink text-paper hover:bg-accent hover:text-ink`}>
+                {t.retry}
+              </a>
             </div>
-          </div>
-        ) : (
-          <ul className="divide-y divide-line border-y border-line">
-            {artisans.map(artisan => (
-              <ArtisanCard key={artisan.id} artisan={artisan} lang={lang} dict={dict} />
-            ))}
-          </ul>
-        )}
+          ) : artisans.length === 0 ? (
+            <div className={PANEL}>
+              <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em]">{t.emptyTitle}</h2>
+              <p className="max-w-[34em] text-body">{t.emptyText}</p>
+              <div className="flex flex-wrap gap-2.5 pt-2">
+                {filters.wilaya && (
+                  <Link
+                    href={`${here}${searchQuery({ ...filters, wilaya: undefined, page: 1 })}`}
+                    className={`${PILL} bg-ink text-paper hover:bg-accent hover:text-ink`}
+                  >
+                    {t.widenPlace}
+                  </Link>
+                )}
+                {filters.categorie && (
+                  <Link
+                    href={`${here}${searchQuery({ ...filters, categorie: undefined, page: 1 })}`}
+                    className={`${PILL} bg-paper hover:bg-ink hover:text-paper`}
+                  >
+                    {t.widenTrade}
+                  </Link>
+                )}
+                <Link href={href(lang, '/artisan')} className={`${PILL} bg-paper hover:bg-ink hover:text-paper`}>
+                  {dict.home.pro.cta}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <ul className="divide-y divide-line border-y border-line">
+              {artisans.map(artisan => (
+                <ArtisanCard key={artisan.id} artisan={artisan} lang={lang} dict={dict} />
+              ))}
+            </ul>
+          )}
 
-        {(filters.page > 1 || hasNext) && (
-          <nav aria-label={t.pages} className="flex flex-wrap justify-between gap-3">
-            {filters.page > 1 ? (
-              <Link href={`${here}${searchQuery({ ...filters, page: filters.page - 1 })}`} className={`${PILL} bg-mist hover:bg-ink hover:text-paper`}>
-                {t.prev}
-              </Link>
-            ) : (
-              <span />
-            )}
-            {hasNext && (
-              <Link href={`${here}${searchQuery({ ...filters, page: filters.page + 1 })}`} className={`${PILL} bg-ink text-paper hover:bg-accent hover:text-ink`}>
-                {t.next}
-              </Link>
-            )}
-          </nav>
-        )}
+          {(filters.page > 1 || hasNext) && (
+            <nav aria-label={t.pages} className="flex flex-wrap justify-between gap-3">
+              {filters.page > 1 ? (
+                <Link href={`${here}${searchQuery({ ...filters, page: filters.page - 1 })}`} className={`${PILL} bg-mist hover:bg-ink hover:text-paper`}>
+                  {t.prev}
+                </Link>
+              ) : (
+                <span />
+              )}
+              {hasNext && (
+                <Link href={`${here}${searchQuery({ ...filters, page: filters.page + 1 })}`} className={`${PILL} bg-ink text-paper hover:bg-accent hover:text-ink`}>
+                  {t.next}
+                </Link>
+              )}
+            </nav>
+          )}
+        </div>
       </div>
     </main>
   )
