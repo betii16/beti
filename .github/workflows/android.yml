@@ -1,0 +1,55 @@
+# Appli Android d'essai : un APK installable à la main sur un téléphone (signé avec la clé de
+# débogage, donc pas pour Google Play). Le télécharger : onglet Actions de GitHub, dernière
+# exécution « Appli Android », fichier « beti-android-debug » en bas de la page.
+# Se lance à la main (bouton « Run workflow ») ou à chaque envoi qui touche l'appli native.
+name: Appli Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'assets/**'
+      - 'www/**'
+      - 'capacitor.config.ts'
+      - 'package-lock.json'
+      - '.github/workflows/android.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      # Les paquets Capacitor de node_modules portent le code Android des plugins.
+      - run: npm ci
+      # Capacitor 8 demande Java 21 ; le kit Android est déjà sur les machines de GitHub.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npx cap sync android
+      - name: Construire l'APK d'essai
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beti-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

@@ -12,12 +12,13 @@ const config: CapacitorConfig = {
     // Page locale affichée si le site distant est injoignable
     errorPath: 'index.html',
   },
+  // Blanc comme le site (identité « Le bloc ») : pas d'éclair de couleur entre l'écran de lancement et la page.
   android: {
     allowMixedContent: false,
-    backgroundColor: '#0E1922',
+    backgroundColor: '#ffffff',
   },
   ios: {
-    backgroundColor: '#0E1922',
+    backgroundColor: '#ffffff',
     contentInset: 'automatic',
   },
   plugins: {
@@ -25,7 +26,7 @@ const config: CapacitorConfig = {
       // Écran de lancement masqué par le site lui-même (src/components/native-bridge.tsx), ou par www/index.html en secours.
       launchShowDuration: 0,
       launchAutoHide: false, // masqué par native-bridge.tsx quand la page est chargée
-      backgroundColor: '#0E1922',
+      backgroundColor: '#ffffff',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
       splashFullScreen: true,

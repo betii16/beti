@@ -11,6 +11,7 @@ La v2 a été envoyée sur GitHub le 2026-11-23 (`main`), ce qui la met en ligne
 6. **Relectures** : l'arabe par une personne arabophone ; les CGU, la confidentialité et les mentions par un juriste (détail : « Papiers pour lancer », point 7).
 7. **Ton profil d'essai** est publié, visible de tous : à garder ou à retirer (« Je suis artisan » > « Retirer de la recherche »).
 8. **Le dépôt GitHub est public** : le code et les notes de travail sont lisibles par tous. Tu peux le passer en privé (GitHub > Settings > General > Danger Zone), Vercel continue de fonctionner.
+9. **Essayer l'appli Android sur ton téléphone** (une fois l'envoi qui la construit fait) : sur GitHub, onglet **Actions**, dernière exécution « Appli Android », télécharge « beti-android-debug » en bas de la page (il faut être connecté à GitHub). Dézippe, mets `app-debug.apk` sur le téléphone, ouvre-le et autorise l'installation depuis cette source. C'est une version d'essai : pour Google Play, il faudra une clé de signature que tu crées et gardes toi-même.
 
 Les papiers pour exister légalement et lancer (statut, domaine, marque, données personnelles, stores) sont dans la section suivante.
 
