@@ -21,3 +21,12 @@ it('les icônes annoncées existent, à la bonne taille', () => {
 it('l’appli installée s’ouvre sur l’accueil, que le proxy envoie vers la bonne langue', () => {
   expect(manifest.start_url).toBe('/')
 })
+
+// La v1 avait installé un service worker à /sw.js qui affiche l'ancien site en cache. Le fichier de la v2
+// au même endroit le remplace et se désinscrit : le supprimer laisserait les anciens visiteurs sur la v1.
+it('/sw.js reste le service worker qui retire celui de la v1', () => {
+  const sw = readFileSync('public/sw.js', 'utf8')
+  expect(sw).toContain('caches.delete')
+  expect(sw).toContain('registration.unregister()')
+  expect(sw).not.toContain("addEventListener('fetch'")
+})
