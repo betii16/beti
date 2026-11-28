@@ -53,3 +53,42 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+  # Essai sans téléphone : l'APK est installé sur un émulateur Android, lancé, et photographié
+  # (fichier « beti-android-captures » : écran de lancement, site chargé, icône, erreurs du journal).
+  essai:
+    needs: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: beti-android-debug
+      - name: Activer KVM (accélère l'émulateur)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      # Chaque ligne du script est une commande à part.
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            mkdir -p captures
+            adb install app-debug.apk
+            adb shell am start -n dz.beti.app/.MainActivity
+            sleep 3 && adb exec-out screencap -p > captures/1-lancement.png
+            sleep 40 && adb exec-out screencap -p > captures/2-site.png
+            adb logcat -d -s Capacitor Capacitor/Console chromium > captures/journal-appli.txt || true
+            adb logcat -d '*:E' > captures/erreurs.txt || true
+            adb shell input keyevent KEYCODE_HOME && sleep 2 && adb shell input swipe 540 2000 540 500 300 && sleep 3 && adb exec-out screencap -p > captures/3-icone.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: beti-android-captures
+          path: captures/
+          retention-days: 30
